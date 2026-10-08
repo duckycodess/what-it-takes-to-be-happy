@@ -189,6 +189,28 @@ Each invented figure, what it is for, and where it appears. None is evidence; no
 | `ivy` | Solitude chosen, not suffered | `s055`, `s072`, `s086` |
 | `marco` | A service that exists on paper and not from where he stands | `s068`, `s072`, `s078`, `s085`, `s086` |
 
+## Who speaks, and where they do not
+
+Every distinct position above is on the main path. Spoken dialogue is a different matter: `c4` and
+`c5` carry TJ's lines only, because relationships, care, money, and time appear in his Brainstorm
+notes and nowhere in Koj's or Vier's. Koj and Vier appear as drawn figures in those chapters and
+their positions are cited through the narrator, but they do not speak there.
+
+| Chapter | Koj lines | TJ lines | Vier lines |
+| --- | --- | --- | --- |
+| `c1` | 3 | 3 | 6 |
+| `c2` | 2 | 11 | 0 |
+| `c3` | 0 | 9 | 8 |
+| `c4` | 0 | 6 | 0 |
+| `c5` | 0 | 17 | 0 |
+| `c6` | 1 | 9 | 1 |
+
+No line was written for a member to even this out, and no TJ position was moved into another
+member's mouth. The remedy is a contribution: see
+[the storyboard's handoff note](storyboard.md#known-limitation-who-speaks-in-c4-and-c5) for the
+scenes a delta would land in. `docs/decisions.md` records that equal word quotas are not required,
+so this is a gap in voice, not in coverage.
+
 ## Standpoint and unresolved tensions
 
 Required by the assignment's instruction to say which position you are answering from and to
@@ -216,11 +238,11 @@ Measured with `./tools/count-main-path.sh`. Re-run it after any change to the pr
 
 | Measure | Value |
 | --- | --- |
-| Main-path words | 8,548 at the time of writing; re-run the tool after any prose change |
+| Main-path words | 8,627 at the time of writing; re-run the tool after any prose change |
 | Scenes | 87 |
-| Mean words per scene | 98 |
+| Mean words per scene | 99 |
 | Words-per-minute assumption | 200–250, silent reading of ordinary nonfiction |
-| Reading estimate | roughly 35–43 minutes |
+| Reading estimate | roughly 35–44 minutes |
 
 **What counts.** Narrator prose, dialogue, and visible caveats — everything inside a blockquote in a
 scene block. That is exactly what a reader sees in presentation view, in the full reading view, and
@@ -230,10 +252,14 @@ in print.
 transition, provenance, status), chapter headers and the chapter index, the handoff section, source
 citations in panels, and optional detail — which is supplementary by definition.
 
+The figure quoted to the reader on the landing scene (`s001`) is this same range, and
+`tools/count-main-path.sh` is the only place it is computed. If the prose changes, re-run the tool
+and update both this table and `s001` together.
+
 **This is longer than the 15–30 minutes the brief anticipated, and we did not cut to fit.**
 `docs/brief.md` sets that range as an approximate commitment "to be estimated from actual content",
 and states explicitly that it "is not a hard cap that deletes distinct perspectives". Getting to 30
-minutes would mean removing about a quarter of the main path. The longest scenes are the ones
+minutes would mean removing roughly a third of the main path. The longest scenes are the ones
 carrying quoted evidence and its stated limits (`s069`, `s053`, `s064`, `s038`, `s087`), and the
 acceptance criteria require those limits to stay on the main path rather than hide in a panel.
 

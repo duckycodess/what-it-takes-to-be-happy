@@ -30,18 +30,22 @@ metadata for the people building the site, and never appears in the product.
 
 Dialogue standing is one of:
 
-- **member-endorsed** — the position comes from that member's own notes, with the line range given.
-  Wording may be tightened for reading; the position may not be changed, and no member is given an
-  event, memory, or circumstance their notes do not contain.
+- **member-endorsed** — the position comes from that member's own notes, with the source given:
+  `(Brainstorm <lines>)` for the imported snapshot, or `(delta: <file under docs/notes/deltas/>)` for
+  a later contribution. Wording may be tightened for reading; the position may not be changed, and no
+  member is given an event, memory, or circumstance their notes do not contain.
 - **fictional illustration** — a generic invented figure. Never evidence, never anyone's biography.
 
 ## How to read the identifiers
 
 - Chapter identifiers are `c0`–`c6`. `c0` is the opening; `c1`–`c6` are the six shared questions
   from [the content plan](content-plan.md).
-- Scene identifiers are `s001`–`s087`, assigned once and **never renumbered**. Reading order comes
-  from each chapter's ordered scene list, not from the number. A scene inserted later takes the
-  next unused number and is placed into a chapter's list wherever it belongs.
+- Scene identifiers are assigned once and **never renumbered**. Reading order comes from each
+  chapter's ordered scene list, not from the number. A scene inserted later takes the next unused
+  number and is placed into a chapter's list wherever it belongs; a scene that is removed takes its
+  number out of use rather than freeing it, so gaps in the sequence are expected and correct.
+- Highest scene identifier assigned: `s087`. Raise this line when a new scene is added, and never
+  reuse a number below it.
 - Cast identifiers come from [the cast registry](cast.md). Expression names come from the same
   file's six-state vocabulary.
 - Source identifiers come from [the research register](research.md). A scene may only cite a source
@@ -90,7 +94,7 @@ and from where before any argument begins.
   >
   > Three of us tried to answer that for a class. We ended up disagreeing — about what happiness is, about whether it has to be earned, about how much of it is ours to decide. We kept the disagreements in.
   >
-  > TJ. Koj. Vier. Roughly 35 to 45 minutes, depending on how long you look at things. Next and Back are yours.
+  > TJ. Koj. Vier. Roughly 35 to 44 minutes, depending on how long you look at things. Next and Back are yours.
 - Sources/concepts: —
 - Visual purpose: the centred question surrounded by stickmen in different states, so the opening never implies one correct emotion.
 - Static description: Four figures stand around a large question. One is laughing, one is slumped and tired, one is looking off and thinking, one is watching the others. Nothing in the picture says which of them has it right.
@@ -829,7 +833,7 @@ asking what we want to keep rather than how to escape.
   - `vier` — member-endorsed (Brainstorm 365–373) — `reflection`
     > This makes me question whether freedom from society's definition is even possible. The things I want are still shaped by my family, culture, friends, media, and the opportunities available to me. So maybe the goal isn't to find some completely authentic definition that exists outside society. It is being able to reflect on these influences and decide what I actually want to keep.
   - `vier` — member-endorsed (Brainstorm 373–377) — `reflection`
-    > Happiness becomes less about finding the correct definition and more about having enough freedom to negotiate that definition for myself. Pero ibig sabihin niyan, partly social question din pala siya. Kung yung kakayahan ng tao na piliin yung buhay niya ay nakadepende sa pera, oras, healthcare, education, or working conditions — hindi lahat may kakayahang i-pursue yung sarili nilang version ng happiness.
+    > Which makes it less about the correct definition and more about having enough freedom to negotiate one. Pero ibig sabihin niyan, partly social question din pala siya. Kung yung kakayahan ng tao na piliin yung buhay niya ay nakadepende sa pera, oras, healthcare, education, or working conditions — hindi lahat may kakayahang i-pursue yung sarili nilang version ng happiness.
 - Narrator:
   > Which is the sentence that turns this essay. Vier starts from freedom and arrives at conditions. The next two chapters are about conditions.
 - Sources/concepts: agency; ideology
@@ -1176,9 +1180,9 @@ enjoyed, then examines our own position.
 - Beat purpose: the local study, identified as a local survey and not a national statement, held together with the refusal to use reported happiness as proof that poverty is acceptable.
 - Cast: `narrator` `koj` (`reflection`), `tj` (`frustration`)
 - Narrator:
-  > One study here did run in the Philippines. In November 2019, Palanca-Tan surveyed 522 households across all 27 barangays of Koronadal City in Mindanao. Mean self-rated happiness came back at 6.75 out of 10 — comfortably above the midpoint — in a sample where average monthly household income was PHP 19,444 and more than a third of households were below the poverty threshold. In that sample, happiness rose with income up to roughly PHP 20,000 a month and then stopped rising.
+  > One study here did run in the Philippines. In November 2019, Palanca-Tan surveyed 522 households across all 27 barangays of Koronadal City in Mindanao. Mean self-rated happiness came back at 6.75 out of 10 — comfortably above the midpoint — in a sample where average monthly household income was PHP 19,444 and more than a third of households — 35.44% — were below the provincial and regional poverty thresholds. In that sample, happiness rose with income up to roughly PHP 20,000 a month and then stopped rising.
 - Visible caveat:
-  > One city, 522 people, one month in 2019. The paper itself notes its sample's poverty incidence is much higher than the national figure, so it is not a picture of the Philippines. The PHP 20,000 figure belongs to that sample — it is not a national price for happiness, and the highest income band in it holds only 30 people.
+  > One city, 522 people, one month in 2019. That 35.44% is measured against the provincial and regional thresholds, not the national one, and the paper notes the sample's poverty incidence is much higher than the national 21.6% — so it is not a picture of the Philippines. The PHP 20,000 figure belongs to that sample — it is not a national price for happiness, and the highest income band in it holds only 30 people.
 - Dialogue:
   - `tj` — member-endorsed (Brainstorm 129) — `frustration`
     > Ayokong gamitin yung happiness score as "see, okay lang maging mahirap." We can take someone's joy seriously and also take their lack of security seriously.
@@ -1593,7 +1597,9 @@ The assignment's fourth part, followed by what we have not settled.
 - Narrator:
   > Everything we cited is listed with a link, and we have tried to be exact about what each one can carry.
   >
-  > Published research and philosophical texts support the specific claims they are attached to, with their population and measure stated where there is one. Several we could only read at abstract level, and we said so each time. Two books we could only read the publisher's description of, and we said so. Four sources we could not open at all, and nothing in this essay depends on them — where one appears, we told you we had not read it.
+  > Published research and philosophical texts support the specific claims they are attached to, with their population and measure stated where there is one. Eleven we could only read at abstract level, and we said so each time. For three books we only had the publisher's own description — Lambek, Das, Harvey — and we said so, and marked what followed as ours.
+  >
+  > Five we could not open at all. Three of those are public threads, and nothing here rests on what is in them. The other two are not like that: Pe-Pua and Protacio-Marcelino on kapwa, and Sen on capabilities, are where two ideas in this essay come from, and we reached those ideas through other published work that quotes or explains them. We told you that in the scenes where it happened, and we are telling you again here.
   >
   > Blog posts and public threads are here as perspectives, never as evidence, and never on their own. The invented friends — Bob, Nessa, Dino, Ivy, Marco — are drawings. They show you an argument. They do not prove one.
   >
@@ -1624,3 +1630,37 @@ The assignment's fourth part, followed by what we have not settled.
   equivalent. None carries the only statement of a perspective, and none gates Next.
 - **Integration (`#6`).** This file plus [the cast registry](cast.md), [the research
   register](research.md), and [the coverage matrix](coverage.md) are the editorial inputs.
+
+### Known limitation: who speaks in `c4` and `c5`
+
+Member dialogue is not evenly distributed, and in two chapters it is not distributed at all.
+
+| Chapter | Koj lines | TJ lines | Vier lines |
+| --- | --- | --- | --- |
+| `c1` | 3 | 3 | 6 |
+| `c2` | 2 | 11 | 0 |
+| `c3` | 0 | 9 | 8 |
+| `c4` | 0 | 6 | 0 |
+| `c5` | 0 | 17 | 0 |
+| `c6` | 1 | 9 | 1 |
+
+**`c4` and `c5` carry TJ's dialogue only.** That is a direct consequence of the source material:
+relationships, care, money, and time appear in TJ's Brainstorm notes (lines 115–181) and nowhere in
+Koj's or Vier's. Koj and Vier are present in those chapters as drawn figures and their positions are
+cited through the narrator, but they do not speak.
+
+We did not fix this by writing lines for them. Inventing a position for a member is the one thing
+this project forbids outright, and redistributing TJ's positions into their mouths would be the same
+act with extra steps — shared *research* can be explained by any avatar, but a *position* belongs to
+whoever holds it.
+
+**The remedy is a contribution, not an edit.** If Koj or Vier supply or endorse positions on
+relationships, care, money, or time, they arrive as a delta under `docs/notes/deltas/` following
+[the delta protocol](notes/README.md). Reconciling one adds dialogue to the existing `c4` and `c5`
+scenes without new scene numbers; `s047`, `s052`, `s054`, `s055`, `s056`, `s060`, `s063`, `s065`,
+`s068`, `s072` and `s074` all have an obvious place for a second voice. The dialogue standing rule
+already accepts `(delta: <file>)` as a source, so nothing in the format has to change.
+
+Until then the imbalance stands, and it is recorded here rather than hidden. It does not cost
+coverage: every distinct Koj and Vier position in the notes is on the main path, as
+[the coverage matrix](coverage.md) shows per position.

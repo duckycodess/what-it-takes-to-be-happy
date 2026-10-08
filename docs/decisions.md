@@ -52,7 +52,9 @@ The user confirmed the shared brief and subsequently requested repository creati
 Framework, bundler, storage format, and production editing tools have not been mandated. Built-in image generation is the chosen starting point for visual concepts. SVG components, browser motion, Anime.js, and Rough.js are production options described in [the asset workflow](asset-workflow.md), not installed dependencies. Choose actual tooling to meet the static hosted/offline outputs, accessibility, editable content, and original artwork requirements. The current repository has no application scaffold. Record meaningful implementation decisions and actual commands when that work is performed.
 
 The source audit for the editorial package was carried out on 9 October 2026. Every retained source now has an
-evidence record with its review status in [the research register](research.md); four sources could not be opened
-and two yield only publisher descriptions, and the scenes that touch them say so in reader-visible text. The
+evidence record with its review status in [the research register](research.md): 13 verified in the full work, 11 at
+article-abstract level, 3 from a publisher's book description only (R15, R16, R29), and 5 not opened at all (R11,
+R14, R21, R22, R30). The scenes that touch any of those say so in reader-visible text; where R21 and R30 could not
+be opened, the concepts they originate are carried by R31 and R32 and the substitution is disclosed to the reader. The
 authored main path is [the storyboard](storyboard.md), with [the cast registry](cast.md) and
 [the coverage matrix](coverage.md).

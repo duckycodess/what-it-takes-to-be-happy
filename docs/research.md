@@ -28,8 +28,8 @@ Review status values:
 | Status | Meaning |
 | --- | --- |
 | `verified-full` | The relevant passage was read in the full work and is quoted in the record. |
-| `verified-abstract` | Only the abstract or publisher-deposited summary was read; claims are limited to it. |
-| `verified-locator` | Only a publisher/catalogue/index page was read. It supports bibliographic detail and the publisher's own description, nothing more. |
+| `verified-abstract` | Only the authors' own abstract of a study or article was read; claims are limited to what that abstract states. |
+| `verified-locator` | Only a publisher, catalogue, or index page was read — including a publisher's book description or publisher-deposited book abstract. It supports bibliographic detail and the publisher's own wording about the book, and nothing from inside the book. |
 | `not-accessed` | The work could not be opened from this working environment. No claim rests on its contents. |
 
 ## Current sources
@@ -64,7 +64,7 @@ Review status values:
 | R26 | [Diener, Lucas & Scollon's Beyond the hedonic treadmill](https://pubmed.ncbi.nlm.nih.gov/16719675/) | Research/theory review | `verified-abstract` | `s043` |
 | R27 | [Galtung's Violence, Peace, and Peace Research](https://journals.sagepub.com/doi/10.1177/002234336900600301) | Primary theoretical text | `verified-full` (alternate host) | `s069` `s079` |
 | R28 | [Mosse's relational approach to poverty](https://www.tandfonline.com/doi/abs/10.1080/00220388.2010.487095) | Research/theory | `verified-abstract` | `s070` |
-| R29 | [Harvey's A Brief History of Neoliberalism](https://academic.oup.com/book/40603) | Book/theory locator | `verified-abstract` (publisher) | `s071` |
+| R29 | [Harvey's A Brief History of Neoliberalism](https://academic.oup.com/book/40603) | Book/theory locator | `verified-locator` | `s071` |
 | R30 | [Sen's Development as Freedom](https://sen.scholars.harvard.edu/publications/development-freedom) | Book/theory locator | `not-accessed` | `s068` `s079` |
 | R31 | [Bautista & Aguilar on Sikolohiyang Pilipino](https://www.um.edu.mt/library/oar/handle/123456789/116643) | Research (open access) | `verified-full` | `s053` `s054` |
 | R32 | [Robeyns & Byskov, 'The Capability Approach'](https://plato.stanford.edu/entries/capability-approach/) | Peer-reviewed reference work | `verified-full` | `s068` `s079` |
@@ -72,6 +72,22 @@ Review status values:
 R31 and R32 are new identifiers added by this audit because R21 and R30 could not be opened. They
 are different works and carry their own identifiers; the original identifiers keep their original
 links and an honest `not-accessed` status, as the notes protocol requires.
+
+## Review status rollup
+
+Counts over the 32 rows of the table above. `tools/check-storyboard.sh` recomputes them from the
+table and fails if this rollup drifts.
+
+| Status | Count | Sources |
+| --- | --- | --- |
+| `verified-full` | 13 | R01, R02, R03, R05, R06, R07, R08, R10, R19, R20, R27, R31, R32 |
+| `verified-abstract` | 11 | R04, R09, R12, R13, R17, R18, R23, R24, R25, R26, R28 |
+| `verified-locator` | 3 | R15, R16, R29 |
+| `not-accessed` | 5 | R11, R14, R21, R22, R30 |
+
+Three of the `verified-full` rows were read at an alternate host after the register's original link
+refused access (R05, R27) or pointed at a catalogue rather than the work (R20); R19 is one chapter of
+a report, not the whole report. Each record says so.
 
 ---
 
@@ -92,8 +108,8 @@ links and an honest `not-accessed` status, as the notes protocol requires.
 
 - **Citation:** Daniel Kahneman and Angus Deaton, "High income improves evaluation of life but not emotional well-being", *Proceedings of the National Academy of Sciences* 107(38), 2010, pp. 16489–16493. doi:10.1073/pnas.1011492107.
 - **Original link:** https://www.pnas.org/doi/10.1073/pnas.1011492107 (returned HTTP 403 on 9 October 2026).
-- **Access:** Author copy at https://www.princeton.edu/~deaton/downloads/deaton_kahneman_high_income_improves_evaluation_August2010.pdf, downloaded and text-extracted, 9 October 2026. **Status:** `verified-full`.
-- **Passage locator and quotation:** Abstract and opening section, p. 1 of the author copy — "Emotional well-being refers to the emotional quality of an individual's everyday experience"; "Life evaluation refers to the thoughts that people have about their life when they think about it"; "We report an analysis of more than 450,000 responses to the Gallup-Healthways Well-Being Index, a daily survey of 1,000 US residents conducted by the Gallup Organization"; "emotional well-being (measured by questions about emotional experiences yesterday) and life evaluation (measured by Cantril's Self-Anchoring Scale) have different correlates"; "When plotted against log income, life evaluation rises steadily. Emotional well-being also rises with log income, but there is no further progress beyond an annual income of ∼$75,000"; "Low income exacerbates the emotional pain associated with such misfortunes as divorce, ill health, and being alone."
+- **Access:** Two retrievals, both 9 October 2026. The full text was read from the August 2010 author copy at https://www.princeton.edu/~deaton/downloads/deaton_kahneman_high_income_improves_evaluation_August2010.pdf, downloaded and text-extracted. The **published** abstract was retrieved separately through NCBI E-utilities `efetch` for PMID 20823223 and is word-for-word identical to the author copy's abstract, so the quotations below are the published wording and not a manuscript variant. **Status:** `verified-full`.
+- **Passage locator and quotation:** Published abstract (PNAS 107(38), p. 16489), reproduced on p. 1 of the author copy, with the opening section on the same page — "Emotional well-being refers to the emotional quality of an individual's everyday experience"; "Life evaluation refers to the thoughts that people have about their life when they think about it"; "We report an analysis of more than 450,000 responses to the Gallup-Healthways Well-Being Index, a daily survey of 1,000 US residents conducted by the Gallup Organization"; "emotional well-being (measured by questions about emotional experiences yesterday) and life evaluation (measured by Cantril's Self-Anchoring Scale) have different correlates"; "When plotted against log income, life evaluation rises steadily. Emotional well-being also rises with log income, but there is no further progress beyond an annual income of ∼$75,000"; "Low income exacerbates the emotional pain associated with such misfortunes as divorce, ill health, and being alone."
 - **Supported claim:** Everyday emotional well-being and life evaluation are distinct measures with different correlates, and in this dataset they related to income differently.
 - **Design/population:** Cross-sectional survey analysis; more than 450,000 US residents surveyed in 2008 and 2009; emotional well-being from yesterday-experience questions, life evaluation from Cantril's Self-Anchoring Scale.
 - **Limitation:** US respondents, 2008–2009, self-reported, correlational. The ~$75,000 figure is a plateau in that dataset in US dollars of that period. It cannot be converted into a peso figure or a national standard, and the paper's own later reassessment is R09.
@@ -364,7 +380,7 @@ links and an honest `not-accessed` status, as the notes protocol requires.
 
 - **Citation:** Johan Galtung, "Violence, Peace, and Peace Research", *Journal of Peace Research* 6(3), 1969, pp. 167–191. doi:10.1177/002234336900600301.
 - **Original link:** https://journals.sagepub.com/doi/10.1177/002234336900600301 (returned HTTP 403 on 9 October 2026).
-- **Access:** Full article read from a JSTOR scan of the published pages (stable URL http://www.jstor.org/stable/422690) hosted for coursework at Kobe University, downloaded and text-extracted, 9 October 2026. **Status:** `verified-full` at an alternate host.
+- **Access:** Full article read from a JSTOR scan of the published pages (stable URL http://www.jstor.org/stable/422690), downloaded from the coursework copy at `https://www2.kobe-u.ac.jp/~alexroni/IPD%202015%20readings/IPD%202015_7/Galtung_Violence,%20Peace,%20and%20Peace%20Research.pdf` and text-extracted, 9 October 2026. That exact URL was re-checked and returned HTTP 200. The scan carries the published pagination, so the page numbers below are the journal's. **Status:** `verified-full` at an alternate host.
 - **Passage locator and quotation:** p. 168 — "violence is present when human beings are being influenced so that their actual somatic and mental realizations are below their potential realizations." pp. 168–169 — "when the potential is higher than the actual is by definition avoidable and when it is avoidable, then violence is present. When the actual is unavoidable, then violence is not present even if the actual is at a very low level", illustrated by tuberculosis deaths in the eighteenth century against tuberculosis deaths today. p. 171 — "There may not be any person who directly harms another person in the structure. The violence is built into the structure and shows up as unequal power and consequently as unequal life chances."
 - **Supported claim:** Galtung defines violence as the avoidable gap between what people could realise and what they actually realise, and defines structural violence as that gap produced by a social structure with no identifiable actor harming anyone directly.
 - **Design/population:** Not applicable; a theoretical article.
@@ -386,11 +402,11 @@ links and an honest `not-accessed` status, as the notes protocol requires.
 
 - **Citation:** David Harvey, *A Brief History of Neoliberalism*, Oxford University Press, 22 September 2005. ISBN 9780199283262. doi:10.1093/oso/9780199283262.001.0001.
 - **Original link:** https://academic.oup.com/book/40603
-- **Access:** Publisher page read and the publisher-deposited book abstract retrieved from Crossref, 9 October 2026. No chapter text is readable without a subscription. **Status:** `verified-abstract` at book level.
+- **Access:** Publisher page read and the publisher-deposited book abstract retrieved from Crossref, 9 October 2026. No chapter text is readable without a subscription. **Status:** `verified-locator`. A publisher's book abstract is the publisher's description of the book, not a passage from inside it, so this sits with R15 and R16 rather than with the journal-article abstracts.
 - **Passage locator and quotation:** Publisher abstract — "Neoliberalism--the doctrine that market exchange is an ethic in itself, capable of acting as a guide for all human action--has become dominant in both thought and practice throughout much of the world since 1970 or so." The chapter list runs: Introduction; 1 Freedom's Just Another Word…; 2 The Construction of Consent; 3 The Neoliberal State; 4 Uneven Geographical Developments; 5 Neoliberalism 'with Chinese Characteristics'; 6 Neoliberalism on Trial; 7 Freedom's Prospect.
 - **Supported claim:** Harvey's book characterises neoliberalism as the doctrine that market exchange is itself an ethic capable of guiding all human action, and tells the political-economic history of its spread since around 1970.
 - **Design/population:** Not applicable; a work of political-economic history and critique.
-- **Limitation:** No chapter was read, so no page-level argument is attributed. The connection the group draws — from this doctrine to hustle culture, to treating oneself as an enterprise, and to wellness advice offered while workload stays untouched — is **the group's interpretation**, stated as such in the scene. Harvey is not cited as having made that claim about present-day Filipino student or worker life.
+- **Limitation:** Only the publisher's own description of the book was read. No chapter, and no page-level argument, is attributed. The connection the group draws — from this doctrine to hustle culture, to treating oneself as an enterprise, and to wellness advice offered while workload stays untouched — is **the group's interpretation**, stated as such in the scene. Harvey is not cited as having made that claim about present-day Filipino student or worker life.
 - **Scenes:** `s071`.
 
 ### R30 — Sen, *Development as Freedom*
@@ -465,9 +481,11 @@ the group's application or criticism.
   contributions, and shared research supports their endorsed interpretations without transferring
   authorship of the position.
 - The precise classroom wording of the money-baseline claim is still not independently available.
-- Four sources could not be opened at all (R11, R14, R22, R30) and two more are supported only by a
-  publisher's description (R15, R16). If any of them becomes reachable, the relevant scene can be
-  deepened; nothing currently depends on them.
+- Five sources could not be opened at all: R11, R14, R22, R21, R30. Three more are supported only by
+  a publisher's own description of a book: R15, R16, R29. If any becomes reachable, the relevant
+  scene can be deepened. Nothing rests on the contents of R11, R14 or R22. R21 and R30 are different:
+  the concepts they originate — kapwa and the capability distinction — do appear in the essay, carried
+  by R31 and R32, and the scenes say so.
 - New repo deltas may add or revise source-backed claims. Retain existing identifiers and add new
   identifiers rather than silently pointing an old identifier at a different work. R31 and R32 were
   added under that rule.

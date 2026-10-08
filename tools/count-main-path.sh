@@ -52,7 +52,7 @@ fast=$(( (words + WPM_FAST - 1) / WPM_FAST ))
 printf 'main-path words : %s\n' "$words"
 printf 'scenes          : %s\n' "$scenes"
 printf 'words per scene : %s (mean)\n' "$(( words / scenes ))"
-printf 'words per minute: %s-%s (assumed)\n' "$WPM_FAST" "$WPM_SLOW"
+printf 'words per minute: %s-%s (assumed)\n' "$WPM_SLOW" "$WPM_FAST"
 printf 'reading estimate: ~%s-%s minutes\n' "$fast" "$slow"
 
 if [ "${1:-}" = "--chapters" ]; then

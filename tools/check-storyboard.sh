@@ -31,10 +31,22 @@ else
   ok "$n_scenes scene identifiers, all unique"
 fi
 
-expected=$(seq -f 's%03g' 1 "$n_scenes")
-gaps=$(comm -13 <(printf '%s\n' "$scene_ids" | sort) <(printf '%s\n' "$expected" | sort))
-[ -z "$gaps" ] || problem "scene identifiers are not contiguous from s001; missing: $(printf '%s' "$gaps" | tr '\n' ' ')"
-[ -n "$gaps" ] || ok "scene identifiers run contiguously s001-$(printf '%s\n' "$scene_ids" | sort | tail -1)"
+# Identifiers are permanent, so gaps are expected once a scene is ever removed. What must hold is
+# that nothing exceeds the declared high-water mark -- that is what stops a number being reused.
+highwater=$(grep -oE '^- Highest scene identifier assigned: `s[0-9]{3}`' "$STORYBOARD" | grep -oE 's[0-9]{3}')
+if [ -z "$highwater" ]; then
+  problem "$STORYBOARD does not declare a highest scene identifier assigned"
+else
+  over=$(printf '%s\n' "$scene_ids" | awk -v hw="$highwater" '$0 > hw')
+  actual_max=$(printf '%s\n' "$scene_ids" | sort | tail -1)
+  if [ -n "$over" ]; then
+    problem "scene identifiers above the declared high-water mark $highwater: $(printf '%s' "$over" | tr '\n' ' ')"
+  elif [ "$actual_max" != "$highwater" ]; then
+    problem "declared high-water mark is $highwater but the highest identifier in use is $actual_max"
+  else
+    ok "identifiers are within the declared high-water mark $highwater (gaps are legal; reuse is not)"
+  fi
+fi
 
 # --- scenes appear in reading order inside the file --------------------------
 sorted=$(printf '%s\n' "$scene_ids" | sort)
@@ -51,7 +63,9 @@ awk '
   END { for (c in count) printf "%s %d\n", c, count[c] }
 ' "$STORYBOARD" | sort > /tmp/.sb_actual.$$
 awk -F'|' '
-  /^\| `c[0-9]` \|/ {
+  /^## Chapter index/ { inindex = 1; next }
+  /^## / && !/^## Chapter index/ { inindex = 0 }
+  inindex && /^\| `c[0-9]` \|/ {
     gsub(/[ `]/, "", $2); gsub(/[ ]/, "", $4); printf "%s %s\n", $2, $4
   }
 ' "$STORYBOARD" | sort > /tmp/.sb_index.$$
@@ -149,7 +163,9 @@ fi
 bad_standing=$(awk '
   /^#### `s[0-9][0-9][0-9]`/ { id = $2; gsub(/`/, "", id) }
   /^  - `[a-z-]+` — / {
-    if ($0 !~ /member-endorsed \(Brainstorm [0-9]+/ && $0 !~ /fictional illustration/)
+    if ($0 !~ /member-endorsed \(Brainstorm [0-9]+/ &&
+        $0 !~ /member-endorsed \(delta: [^)]+\)/ &&
+        $0 !~ /fictional illustration/)
       print id ": " $0
   }
 ' "$STORYBOARD")
@@ -157,7 +173,7 @@ if [ -n "$bad_standing" ]; then
   problem "dialogue lines without a standing and a notes reference:"
   printf '%s\n' "$bad_standing" | sed 's/^/      /'
 else
-  ok "every dialogue line declares member-endorsed with note lines, or fictional illustration"
+  ok "every dialogue line declares member-endorsed with a notes or delta source, or fictional illustration"
 fi
 
 # --- every source has an evidence record with the required fields ------------
@@ -230,6 +246,69 @@ if [ -n "$no_status" ]; then
   problem "register rows without a recognised review status: $(printf '%s' "$no_status" | tr '\n' ' ')"
 else
   ok "every register row carries a recognised review status"
+fi
+
+# --- the review status rollup matches the register table ----------------------
+awk -F'|' '/^\| R[0-9][0-9] \|/ { gsub(/[ `]/, "", $2); st = $5; gsub(/[ `]/, "", st); sub(/\(.*/, "", st); print st }' "$RESEARCH" |
+  sort | uniq -c | awk '{ printf "%s %s\n", $2, $1 }' | sort > /tmp/.sb_tally.$$
+awk -F'|' '/^\| `(verified-full|verified-abstract|verified-locator|not-accessed)` \|/ {
+    st = $2; gsub(/[ `]/, "", st); n = $3; gsub(/[ ]/, "", n)
+    if (n ~ /^[0-9]+$/) printf "%s %s\n", st, n
+  }' "$RESEARCH" | sort > /tmp/.sb_rollup.$$
+if ! diff -q /tmp/.sb_tally.$$ /tmp/.sb_rollup.$$ >/dev/null; then
+  problem "the review status rollup disagrees with the register table (rollup vs actual):"
+  diff /tmp/.sb_rollup.$$ /tmp/.sb_tally.$$ | sed 's/^/      /'
+else
+  ok "the review status rollup matches the register table ($(wc -l < /tmp/.sb_tally.$$) statuses)"
+fi
+rm -f /tmp/.sb_tally.$$ /tmp/.sb_rollup.$$
+
+# --- the stated dialogue distribution matches the actual lines ----------------
+awk '
+  /^## `c[0-9]`/ { ch = $2; gsub(/`/, "", ch) }
+  /^## Handoff/ { ch = "" }
+  ch != "" && /^  - `[a-z-]+` — / { sp = $2; gsub(/`/, "", sp); n[ch "|" sp]++ }
+  END { for (k in n) { split(k, a, "|"); printf "%s %s %d\n", a[1], a[2], n[k] } }
+' "$STORYBOARD" | sort > /tmp/.sb_speak.$$
+for f in "$STORYBOARD" docs/coverage.md; do
+  awk -F'|' '/^\| `c[0-9]` \| [0-9]+ \| [0-9]+ \| [0-9]+ \|/ {
+      ch = $2; gsub(/[ `]/, "", ch)
+      k = $3; gsub(/[ ]/, "", k); t = $4; gsub(/[ ]/, "", t); v = $5; gsub(/[ ]/, "", v)
+      if (k > 0) printf "%s koj %s\n", ch, k
+      if (t > 0) printf "%s tj %s\n", ch, t
+      if (v > 0) printf "%s vier %s\n", ch, v
+    }' "$f" | sort > /tmp/.sb_claim.$$
+  if [ ! -s /tmp/.sb_claim.$$ ]; then
+    problem "$f states no dialogue distribution table"
+  elif ! diff -q /tmp/.sb_speak.$$ /tmp/.sb_claim.$$ >/dev/null; then
+    problem "the dialogue distribution stated in $f disagrees with the actual lines:"
+    diff /tmp/.sb_claim.$$ /tmp/.sb_speak.$$ | sed 's/^/      /'
+  else
+    ok "dialogue distribution stated in $f matches the actual lines"
+  fi
+done
+rm -f /tmp/.sb_speak.$$ /tmp/.sb_claim.$$
+
+# --- the reader-facing reading estimate matches the measured one --------------
+if [ -x tools/count-main-path.sh ]; then
+  measured=$(./tools/count-main-path.sh | awk -F'~' '/reading estimate/ { print $2 }' | tr -d ' minutes')
+  m_lo=${measured%%-*}
+  m_hi=${measured##*-}
+  stated=$(grep -oE 'Roughly [0-9]+ to [0-9]+ minutes' "$STORYBOARD" | head -1)
+  s_lo=$(printf '%s' "$stated" | awk '{print $2}')
+  s_hi=$(printf '%s' "$stated" | awk '{print $4}')
+  cov=$(grep -oE 'roughly [0-9]+.[0-9]+ minutes' docs/coverage.md | head -1 | grep -oE '[0-9]+' | tr '\n' '-' | sed 's/-$//')
+  if [ -z "$stated" ]; then
+    problem "no reading estimate found on the landing scene of $STORYBOARD"
+  elif [ "$s_lo" != "$m_lo" ] || [ "$s_hi" != "$m_hi" ]; then
+    problem "landing scene says ${s_lo}-${s_hi} minutes but tools/count-main-path.sh measures ${m_lo}-${m_hi}"
+  elif [ "$cov" != "${m_lo}-${m_hi}" ]; then
+    problem "docs/coverage.md states ${cov} minutes but tools/count-main-path.sh measures ${m_lo}-${m_hi}"
+  else
+    ok "reading estimate agrees across the tool, the landing scene, and the coverage matrix (${m_lo}-${m_hi} min)"
+  fi
+else
+  problem "tools/count-main-path.sh is missing or not executable"
 fi
 
 # --- relative links resolve --------------------------------------------------
