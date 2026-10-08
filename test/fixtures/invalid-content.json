@@ -50,6 +50,8 @@
       ],
       "visual": {
         "description": "Describes the drawing.",
+        "artId": "art-nowhere",
+        "artState": "revealed",
         "cast": [{ "characterId": "cast-tj", "expressionId": "ex-smug" }]
       },
       "conceptIds": [],
@@ -65,7 +67,12 @@
       "title": "Ordered under a chapter it does not declare",
       "narration": ["Reads on the main path."],
       "dialogue": [],
-      "visual": { "description": "Describes the drawing.", "cast": [] },
+      "visual": {
+        "description": "Describes the drawing.",
+        "artId": "art-figure-row",
+        "artState": "revealed",
+        "cast": []
+      },
       "conceptIds": [],
       "sourceIds": [],
       "limitations": [],
@@ -78,7 +85,12 @@
       "title": "Also claims the shared detail",
       "narration": ["Reads on the main path."],
       "dialogue": [],
-      "visual": { "description": "Describes the drawing.", "cast": [] },
+      "visual": {
+        "description": "Describes the drawing.",
+        "artId": null,
+        "artState": "situation",
+        "cast": []
+      },
       "conceptIds": ["cn-planned-but-written"],
       "sourceIds": [],
       "limitations": [],
@@ -91,7 +103,12 @@
       "title": "Never listed in any chapter order",
       "narration": ["Reads on the main path, but no reader reaches it."],
       "dialogue": [],
-      "visual": { "description": "Describes the drawing.", "cast": [] },
+      "visual": {
+        "description": "Describes the drawing.",
+        "artId": null,
+        "artState": null,
+        "cast": []
+      },
       "conceptIds": [],
       "sourceIds": [],
       "limitations": [],
@@ -105,9 +122,10 @@
       "role": "member",
       "displayName": "TJ",
       "appearance": "Original stickman.",
+      "artId": "bob",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy" },
-        { "id": "ex-joy", "label": "Joy again" }
+        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
+        { "id": "ex-joy", "label": "Joy again", "artId": "delighted" }
       ]
     },
     {
@@ -115,7 +133,8 @@
       "role": "acquaintance",
       "displayName": "Bob",
       "appearance": "Original stickman.",
-      "expressions": [{ "id": "ex-joy", "label": "Joy" }]
+      "artId": "nobody-drawn",
+      "expressions": [{ "id": "ex-joy", "label": "Joy", "artId": "joy" }]
     }
   ],
   "sources": [

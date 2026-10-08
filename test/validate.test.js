@@ -87,6 +87,10 @@ test('a deliberately broken document reports every located problem at once', () 
     'INTERACTION_DETAIL_NOT_IN_SCENE',
     'ENTRY_CLAIMED_TWICE',
     'UNUSED_ENTRY',
+    'UNKNOWN_ART_REFERENCE',
+    'ART_ROLE_MISMATCH',
+    'ART_STATE_UNAVAILABLE',
+    'ART_FIGURE_COUNT',
   ]) {
     assert.ok(reported.has(code), `expected the broken fixture to report ${code}`);
   }
@@ -208,6 +212,76 @@ test('a source destination must be a web address a reader can open', () => {
   const doc = loadValidContent();
   byId(doc.sources, 'R01').url = 'http://example.org/a-plain-http-destination';
   assert.deepEqual(validateContent(doc).errors, []);
+});
+
+/* ---- The artwork a scene asks for -------------------------------------- */
+
+test('a beat may name a drawing or declare that it has none, and nothing else', () => {
+  const drawn = loadValidContent();
+  const scene = byId(drawn.scenes, 'sc-ordinary-afternoon');
+  assert.equal(typeof scene.visual.artId, 'string', 'the fixture should exercise a drawn beat');
+
+  // Declaring no drawing is a legitimate state: the written description is the
+  // text alternative, the print illustration, and the reduced-motion equivalent.
+  const undrawn = loadValidContent();
+  const fallback = byId(undrawn.scenes, 'sc-ordinary-afternoon').visual;
+  fallback.artId = null;
+  fallback.artState = null;
+  assert.deepEqual(validateContent(undrawn).errors, []);
+});
+
+test('a scene asking for a drawing that does not exist is reported', () => {
+  const doc = loadValidContent();
+  byId(doc.scenes, 'sc-three-readings').visual.artId = 'art-a-drawing-nobody-made';
+  const reported = codesAt(validateContent(doc).errors, 'scenes[1].visual.artId');
+  assert.ok(reported.includes('UNKNOWN_ART_REFERENCE'), `got ${reported.join(', ')}`);
+});
+
+test('a condition layer may only be asked of a composition that has one', () => {
+  const doc = loadValidContent();
+  const visual = byId(doc.scenes, 'sc-ordinary-afternoon').visual;
+  visual.artId = 'art-figure-row';
+  visual.artState = 'revealed';
+  const reported = codesAt(validateContent(doc).errors, 'scenes[0].visual.artState');
+  assert.ok(reported.includes('ART_STATE_UNAVAILABLE'), `got ${reported.join(', ')}`);
+
+  // And a beat with no drawing cannot claim a settled state either.
+  const undrawn = loadValidContent();
+  const other = byId(undrawn.scenes, 'sc-ordinary-afternoon').visual;
+  other.artId = null;
+  assert.ok(codes(validateContent(undrawn).errors).includes('ART_STATE_UNAVAILABLE'));
+});
+
+test('a composition is never handed more figures than it can place', () => {
+  const doc = loadValidContent();
+  const visual = byId(doc.scenes, 'sc-ordinary-afternoon').visual;
+  visual.artId = 'art-two-instruments';
+  visual.artState = 'revealed';
+  const reported = codesAt(validateContent(doc).errors, 'scenes[0].visual.cast');
+  assert.ok(reported.includes('ART_FIGURE_COUNT'), `got ${reported.join(', ')}`);
+});
+
+test('a contributor may not be drawn as an invented friend, or the reverse', () => {
+  const doc = loadValidContent();
+  byId(doc.cast, 'cast-tj').artId = 'bob';
+  const reported = codesAt(validateContent(doc).errors, 'cast[0].artId');
+  assert.ok(reported.includes('ART_ROLE_MISMATCH'), `got ${reported.join(', ')}`);
+
+  const friend = loadValidContent();
+  byId(friend.cast, 'cast-bob').artId = 'tj';
+  assert.ok(codes(validateContent(friend).errors).includes('ART_ROLE_MISMATCH'));
+
+  // The unnamed outline belongs to the drawings, not to anyone in the cast.
+  const unnamed = loadValidContent();
+  byId(unnamed.cast, 'cast-bob').artId = 'unnamed';
+  assert.ok(codes(validateContent(unnamed).errors).includes('ART_ROLE_MISMATCH'));
+});
+
+test('an expression must name a state the artwork can actually draw', () => {
+  const doc = loadValidContent();
+  byId(doc.cast, 'cast-koj').expressions[0].artId = 'delighted';
+  const reported = codesAt(validateContent(doc).errors, 'cast[1].expressions[0].artId');
+  assert.ok(reported.includes('UNKNOWN_ART_REFERENCE'), `got ${reported.join(', ')}`);
 });
 
 test('a misspelled field is reported instead of being ignored', () => {

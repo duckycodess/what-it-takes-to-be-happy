@@ -17,7 +17,19 @@ import {
   CAST_ROLES,
   CONCEPT_STATUSES,
   INTERACTION_SURFACES,
+  ART_STATES,
 } from './schema.js';
+import {
+  COMPOSITION_IDS,
+  EXPRESSION_IDS,
+  FIGURES,
+  FIGURE_IDS,
+  compositionHasReveal,
+  figureRange,
+  hasComposition,
+  hasExpression,
+  hasFigure,
+} from '../art/index.js';
 
 const FIELDS = {
   root: ['schema', 'status', 'project', 'chapters', 'scenes', 'cast', 'sources', 'concepts', 'details', 'interactions', 'provenance'],
@@ -25,11 +37,11 @@ const FIELDS = {
   project: ['title', 'question', 'summary', 'readingTimeEstimate'],
   chapter: ['id', 'title', 'question', 'opening', 'closing', 'sceneIds'],
   scene: ['id', 'chapterId', 'title', 'narration', 'dialogue', 'visual', 'conceptIds', 'sourceIds', 'limitations', 'detailIds', 'interactionIds'],
-  visual: ['description', 'cast'],
+  visual: ['description', 'artId', 'artState', 'cast'],
   visualCast: ['characterId', 'expressionId'],
   dialogue: ['id', 'speakerId', 'text', 'stance', 'sourceIds', 'provenanceId'],
-  castMember: ['id', 'role', 'displayName', 'appearance', 'expressions'],
-  expression: ['id', 'label'],
+  castMember: ['id', 'role', 'displayName', 'appearance', 'artId', 'expressions'],
+  expression: ['id', 'label', 'artId'],
   source: ['id', 'label', 'url', 'type', 'intendedRole', 'limitation', 'reviewStatus', 'evidenceBasis', 'citation', 'supportedClaim'],
   concept: ['id', 'name', 'status', 'explanation', 'application', 'question', 'sourceIds'],
   detail: ['id', 'title', 'body', 'sourceIds'],
@@ -252,6 +264,7 @@ function validateCast(bag, doc) {
     checkEnum(bag, character.role, `${path}.role`, CAST_ROLES);
     checkString(bag, character.displayName, `${path}.displayName`);
     checkString(bag, character.appearance, `${path}.appearance`);
+    validateCharacterArt(bag, character, path);
     if (!checkArray(bag, character.expressions, `${path}.expressions`, { allowEmpty: false })) return;
     character.expressions.forEach((expression, expressionIndex) => {
       const expressionPath = `${path}.expressions[${expressionIndex}]`;
@@ -260,8 +273,30 @@ function validateCast(bag, doc) {
         bag.add(`${expressionPath}.id`, 'INVALID_ID', `Expression identifier ${JSON.stringify(expression.id)} must be alphanumeric groups joined by hyphens.`);
       }
       checkString(bag, expression.label, `${expressionPath}.label`);
+      if (checkString(bag, expression.artId, `${expressionPath}.artId`) && !hasExpression(expression.artId)) {
+        bag.add(`${expressionPath}.artId`, 'UNKNOWN_ART_REFERENCE', `The artwork package draws no expression ${JSON.stringify(expression.artId)}. Drawable states: ${EXPRESSION_IDS.join(', ')}.`);
+      }
     });
   });
+}
+
+/**
+ * A character is drawn by one of the artwork package's figures, and the figure
+ * has to be the right kind. An invented friend may not be drawn as one of the
+ * three contributors, a contributor may not be drawn as an invented friend, and
+ * neither may be drawn with the unnamed outline the essay uses for figures it
+ * has deliberately not named.
+ */
+function validateCharacterArt(bag, character, path) {
+  if (!checkString(bag, character.artId, `${path}.artId`)) return;
+  if (!hasFigure(character.artId)) {
+    bag.add(`${path}.artId`, 'UNKNOWN_ART_REFERENCE', `The artwork package draws no figure ${JSON.stringify(character.artId)}. Drawable figures: ${FIGURE_IDS.join(', ')}.`);
+    return;
+  }
+  const drawnRole = FIGURES[character.artId].role;
+  if (CAST_ROLES.includes(character.role) && drawnRole !== character.role) {
+    bag.add(`${path}.artId`, 'ART_ROLE_MISMATCH', `Figure ${JSON.stringify(character.artId)} is drawn as a ${drawnRole}, but this cast entry is a ${character.role}. A contributor and an invented friend must stay visibly different people.`);
+  }
 }
 
 function validateSources(bag, doc) {
@@ -432,6 +467,7 @@ function validateSceneVisual(bag, scene, path, ids, expressionsByCharacter) {
     label: `${visualPath}.description (also the text alternative and reduced-motion equivalent)`,
   });
   if (!checkArray(bag, scene.visual.cast, `${visualPath}.cast`)) return;
+  validateSceneArt(bag, scene.visual, visualPath);
   scene.visual.cast.forEach((appearance, appearanceIndex) => {
     const appearancePath = `${visualPath}.cast[${appearanceIndex}]`;
     if (!checkObject(bag, appearance, appearancePath, FIELDS.visualCast)) return;
@@ -443,6 +479,41 @@ function validateSceneVisual(bag, scene, path, ids, expressionsByCharacter) {
       bag.add(`${appearancePath}.expressionId`, 'UNKNOWN_EXPRESSION', `Character ${JSON.stringify(appearance.characterId)} has no expression ${JSON.stringify(appearance.expressionId)}. Available: ${[...available].join(', ') || 'none'}.`);
     }
   });
+}
+
+/**
+ * A scene either names a drawing or declares that it has none. Both are
+ * legitimate: the written description is the text alternative, the
+ * reduced-motion equivalent, and the print illustration, so a beat without a
+ * composition still carries its meaning. What is rejected is a scene asking for
+ * a drawing that does not exist, a layer a composition cannot show, or more
+ * figures than it can place.
+ */
+function validateSceneArt(bag, visual, visualPath) {
+  const { artId, artState } = visual;
+
+  if (artId === null || artId === undefined) {
+    if (artState !== null && artState !== undefined) {
+      bag.add(`${visualPath}.artState`, 'ART_STATE_UNAVAILABLE', `${visualPath}.artState must be null while this scene has no composition. The written description is what carries the beat.`);
+    }
+    return;
+  }
+
+  if (!checkString(bag, artId, `${visualPath}.artId`)) return;
+  if (!hasComposition(artId)) {
+    bag.add(`${visualPath}.artId`, 'UNKNOWN_ART_REFERENCE', `The artwork package draws no composition ${JSON.stringify(artId)}. Available compositions: ${COMPOSITION_IDS.join(', ')}. Use null to declare that this beat has no drawing yet.`);
+    return;
+  }
+
+  if (checkEnum(bag, artState, `${visualPath}.artState`, ART_STATES) && artState === 'revealed' && !compositionHasReveal(artId)) {
+    bag.add(`${visualPath}.artState`, 'ART_STATE_UNAVAILABLE', `Composition ${JSON.stringify(artId)} has no condition layer to reveal, so it can only be shown as "situation".`);
+  }
+
+  const range = figureRange(artId);
+  const placed = Array.isArray(visual.cast) ? visual.cast.length : 0;
+  if (placed < range.min || placed > range.max) {
+    bag.add(`${visualPath}.cast`, 'ART_FIGURE_COUNT', `Composition ${JSON.stringify(artId)} places ${range.min} to ${range.max} figures, but this scene lists ${placed}. Choose a composition that fits the cast, or change the cast.`);
+  }
 }
 
 function validateSceneDialogue(bag, scene, path, ids) {

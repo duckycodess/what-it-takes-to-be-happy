@@ -74,7 +74,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: three stickmen stand apart on a plain light background, each in a different posture, with their names set above their heads as text. The final drawing is not made yet.",
+        "description": "Three stickmen stand apart, each on a separate patch of ground and in a different state, with their names set above their heads as text. An unnamed dashed figure stands to one side, carrying no name: this essay's mark for a figure it invented rather than a person who exists.",
+        "artId": "art-apart-together",
+        "artState": "revealed",
         "cast": [
           { "characterId": "cast-tj", "expressionId": "ex-joy" },
           { "characterId": "cast-koj", "expressionId": "ex-reflective" },
@@ -97,10 +99,12 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: the same afternoon drawn three times side by side, with the emphasis moved rather than the scene replaced. The final composition is not made yet.",
+        "description": "One ordinary moment sits framed in the middle of the drawing, with a path running from it to each figure and a different shape at the end of every path. One of the figures is drawn unsettled rather than decided.",
+        "artId": "art-three-readings",
+        "artState": "revealed",
         "cast": [
           { "characterId": "cast-koj", "expressionId": "ex-curious" },
-          { "characterId": "cast-vier", "expressionId": "ex-reflective" }
+          { "characterId": "cast-vier", "expressionId": "ex-uncertain" }
         ]
       },
       "conceptIds": ["cn-eudaimonia"],
@@ -130,7 +134,9 @@
         }
       ],
       "visual": {
-        "description": "Placeholder illustration note: Bob mid-effort, drawn so that strain and enjoyment read at the same time. The final drawing is not made yet.",
+        "description": "Two identical slopes stand side by side. Bob climbs one of them with empty hands. On the other, the same climb is drawn with a block resting on it that nobody chose to pick up.",
+        "artId": "art-two-climbs",
+        "artState": "revealed",
         "cast": [
           { "characterId": "cast-bob", "expressionId": "ex-tired" }
         ]
@@ -151,7 +157,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: a figure doing nothing in particular, drawn without the visual language of recovery or productivity. The final drawing is not made yet.",
+        "description": "A figure rests inside a frame of measuring ticks and a rising arrow. The frame has lifted clear of the figure and is drawn dashed above it, leaving the rest with nothing attached to it.",
+        "artId": "art-rest-without-a-frame",
+        "artState": "revealed",
         "cast": [
           { "characterId": "cast-tj", "expressionId": "ex-tired" }
         ]
@@ -172,7 +180,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: a row of familiar milestones drawn as plain shapes, with one figure standing beside rather than on the row. The final drawing is not made yet.",
+        "description": "A line of unnamed dashed figures each carry the same square, handed out identically. One named figure stands apart from the row, holding nothing.",
+        "artId": "art-handed-template",
+        "artState": "situation",
         "cast": [
           { "characterId": "cast-vier", "expressionId": "ex-frustrated" }
         ]
@@ -193,7 +203,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: the same two figures drawn across several small panels, with only small changes between them. The final drawing is not made yet.",
+        "description": "Between the two figures, small identical marks have stacked up into something with a shape: one ordinary gesture repeated until the repetition itself is visible.",
+        "artId": "art-accumulating-care",
+        "artState": "situation",
         "cast": [
           { "characterId": "cast-koj", "expressionId": "ex-joy" },
           { "characterId": "cast-bob", "expressionId": "ex-curious" }
@@ -227,7 +239,9 @@
         }
       ],
       "visual": {
-        "description": "Placeholder illustration note: the earlier scene redrawn with the conditions behind it made visible, rather than a new scene. The final drawing is not made yet.",
+        "description": "The invitation still floats above the line with its friends attached to it. Below the line, in a band of its own, are the travel, the tasks, and the person being cared for that the free evening already contained.",
+        "artId": "art-invitation-conditions",
+        "artState": "revealed",
         "cast": [
           { "characterId": "cast-bob", "expressionId": "ex-sad" }
         ]
@@ -250,7 +264,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: the same figure drawn beside different obligations, so that enough changes without the person changing. The final drawing is not made yet.",
+        "description": "A field of points sits at many different heights above one baseline, with a single average line drawn straight across them, and a figure at the side pointing at it.",
+        "artId": "art-spread-and-average",
+        "artState": "situation",
         "cast": [
           { "characterId": "cast-tj", "expressionId": "ex-frustrated" }
         ]
@@ -274,7 +290,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Placeholder illustration note: an earlier joyful scene drawn once more, now with its conditions shown alongside it. The final drawing is not made yet.",
+        "description": "Three figures in an unhurried scene above the line, one of them mid-throw. Underneath the line, drawn as three bars with arrows pushing up into it, are the supports the afternoon was resting on.",
+        "artId": "art-joy-and-conditions",
+        "artState": "revealed",
         "cast": [
           { "characterId": "cast-tj", "expressionId": "ex-reflective" },
           { "characterId": "cast-koj", "expressionId": "ex-reflective" },
@@ -297,13 +315,15 @@
       "role": "member",
       "displayName": "TJ",
       "appearance": "Original stickman with a small hair tuft, following the first concept sheet. The appearance is provisional and not an approved likeness.",
+      "artId": "tj",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy" },
-        { "id": "ex-curious", "label": "Curiosity" },
-        { "id": "ex-sad", "label": "Sadness" },
-        { "id": "ex-frustrated", "label": "Frustration" },
-        { "id": "ex-tired", "label": "Fatigue" },
-        { "id": "ex-reflective", "label": "Reflection" }
+        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
+        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
+        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
+        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
+        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
+        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
+        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
       ]
     },
     {
@@ -311,13 +331,15 @@
       "role": "member",
       "displayName": "Koj",
       "appearance": "Original stickman with a curl, following the first concept sheet. The appearance is provisional and not an approved likeness.",
+      "artId": "koj",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy" },
-        { "id": "ex-curious", "label": "Curiosity" },
-        { "id": "ex-sad", "label": "Sadness" },
-        { "id": "ex-frustrated", "label": "Frustration" },
-        { "id": "ex-tired", "label": "Fatigue" },
-        { "id": "ex-reflective", "label": "Reflection" }
+        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
+        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
+        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
+        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
+        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
+        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
+        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
       ]
     },
     {
@@ -325,13 +347,15 @@
       "role": "member",
       "displayName": "Vier",
       "appearance": "Original stickman with an angular tuft, following the first concept sheet. The appearance is provisional and not an approved likeness.",
+      "artId": "vier",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy" },
-        { "id": "ex-curious", "label": "Curiosity" },
-        { "id": "ex-sad", "label": "Sadness" },
-        { "id": "ex-frustrated", "label": "Frustration" },
-        { "id": "ex-tired", "label": "Fatigue" },
-        { "id": "ex-reflective", "label": "Reflection" }
+        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
+        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
+        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
+        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
+        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
+        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
+        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
       ]
     },
     {
@@ -339,13 +363,15 @@
       "role": "friend",
       "displayName": "Bob",
       "appearance": "Original stickman with a plain round head, deliberately distinct from the three contributors. Bob is invented for illustration.",
+      "artId": "bob",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy" },
-        { "id": "ex-curious", "label": "Curiosity" },
-        { "id": "ex-sad", "label": "Sadness" },
-        { "id": "ex-frustrated", "label": "Frustration" },
-        { "id": "ex-tired", "label": "Fatigue" },
-        { "id": "ex-reflective", "label": "Reflection" }
+        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
+        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
+        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
+        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
+        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
+        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
+        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
       ]
     }
   ],
