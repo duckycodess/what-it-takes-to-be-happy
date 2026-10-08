@@ -44,8 +44,10 @@ Dialogue standing is one of:
   chapter's ordered scene list, not from the number. A scene inserted later takes the next unused
   number and is placed into a chapter's list wherever it belongs; a scene that is removed takes its
   number out of use rather than freeing it, so gaps in the sequence are expected and correct.
-- Highest scene identifier assigned: `s087`. Raise this line when a new scene is added, and never
-  reuse a number below it.
+- Highest scene identifier assigned: `s087`. This is a high-water mark, not a count of scenes. Raise
+  it when a scene is added; never lower it.
+- Retired scene identifiers: none. When a scene is removed, move its identifier to this line rather
+  than letting the number fall out of the document. A retired identifier is never reused.
 - Cast identifiers come from [the cast registry](cast.md). Expression names come from the same
   file's six-state vocabulary.
 - Source identifiers come from [the research register](research.md). A scene may only cite a source
@@ -53,6 +55,11 @@ Dialogue standing is one of:
   `not-accessed` or `verified-locator`, the scene says so in its own main-path text.
 - Concept identifiers are the lens names used in the content plan. They are editorial labels, not
   claims that a named theorist endorsed our application of their work.
+
+The high-water mark and the retired list are what make permanence checkable rather than merely
+promised. Every number from `s001` up to the mark must be either in use above or listed as retired,
+so a gap is always something somebody wrote down on purpose, and `tools/check-storyboard.sh` rejects
+an identifier that is in use and retired at once.
 
 ## Boundaries this storyboard keeps
 

@@ -31,20 +31,45 @@ else
   ok "$n_scenes scene identifiers, all unique"
 fi
 
-# Identifiers are permanent, so gaps are expected once a scene is ever removed. What must hold is
-# that nothing exceeds the declared high-water mark -- that is what stops a number being reused.
+# Identifiers are permanent, so a removed scene leaves a gap. Two declared lines make that
+# checkable instead of merely promised: a high-water mark, and a list of retired identifiers.
+# The invariant is that s001..mark is exactly (in use) union (retired), and the two do not overlap.
+# That is what actually rejects reuse -- the mark alone cannot, since a freed number sits below it.
 highwater=$(grep -oE '^- Highest scene identifier assigned: `s[0-9]{3}`' "$STORYBOARD" | grep -oE 's[0-9]{3}')
+retired_line=$(grep -E '^- Retired scene identifiers: ' "$STORYBOARD" | head -1)
 if [ -z "$highwater" ]; then
   problem "$STORYBOARD does not declare a highest scene identifier assigned"
+elif [ -z "$retired_line" ]; then
+  problem "$STORYBOARD does not declare a retired scene identifier list (use 'none' when empty)"
 else
-  over=$(printf '%s\n' "$scene_ids" | awk -v hw="$highwater" '$0 > hw')
-  actual_max=$(printf '%s\n' "$scene_ids" | sort | tail -1)
-  if [ -n "$over" ]; then
+  retired=$(printf '%s' "$retired_line" | grep -oE 's[0-9]{3}' | sort -u)
+  in_use=$(printf '%s\n' "$scene_ids" | sort -u)
+  span=$(seq -f 's%03g' 1 "$(printf '%s' "$highwater" | tr -d 's' | sed 's/^0*//')")
+
+  reused=$(comm -12 <(printf '%s\n' "$in_use") <(printf '%s\n' "$retired"))
+  over=$(printf '%s\n' "$in_use" "$retired" | grep -v '^$' | sort -u | awk -v hw="$highwater" '$0 > hw')
+  unaccounted=$(comm -23 <(printf '%s\n' "$span" | sort) \
+                         <(printf '%s\n' "$in_use" "$retired" | grep -v '^$' | sort -u))
+
+  if [ -n "$reused" ]; then
+    problem "retired scene identifiers are back in use: $(printf '%s' "$reused" | tr '\n' ' ')"
+  elif [ -n "$over" ]; then
     problem "scene identifiers above the declared high-water mark $highwater: $(printf '%s' "$over" | tr '\n' ' ')"
-  elif [ "$actual_max" != "$highwater" ]; then
-    problem "declared high-water mark is $highwater but the highest identifier in use is $actual_max"
+  elif [ -n "$unaccounted" ]; then
+    problem "numbers below the high-water mark $highwater that are neither in use nor retired: $(printf '%s' "$unaccounted" | tr '\n' ' ')"
   else
-    ok "identifiers are within the declared high-water mark $highwater (gaps are legal; reuse is not)"
+    n_ret=$(printf '%s\n' "$retired" | grep -c . || true)
+    ok "identifiers are permanent: $n_unique in use, $n_ret retired, none reused, high-water mark $highwater"
+  fi
+
+  # Monotonicity needs the previous revision, so skip cleanly when there is not one.
+  prev=$(git show HEAD:"$STORYBOARD" 2>/dev/null | grep -oE '^- Highest scene identifier assigned: `s[0-9]{3}`' | grep -oE 's[0-9]{3}')
+  if [ -z "$prev" ]; then
+    ok "high-water mark monotonicity: no committed previous revision to compare against (skipped)"
+  elif [ "$highwater" \< "$prev" ]; then
+    problem "high-water mark went backwards: $prev at HEAD, $highwater now"
+  else
+    ok "high-water mark has not gone backwards since HEAD ($prev -> $highwater)"
   fi
 fi
 
