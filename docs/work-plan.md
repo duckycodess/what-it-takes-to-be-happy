@@ -23,7 +23,7 @@ These are implementation input boundaries, not scheduling preferences:
 - **P6 requires P5** because release checks and submission packaging must cover the integrated complete essay, not an empty shell.
 - P1, P2, and P4 have no hard blockers between them. The parent is membership context, not a dependency.
 
-Only these evidenced same-repository edges belong in canonical TicketSpecs/Beads. The issue index will be filled with actual publication URLs after the tickets exist.
+Only these evidenced same-repository edges belong in canonical TicketSpecs/Beads. The publisher has verified the child contracts, classification labels, and dependency edges. Parent membership remains reference context.
 
 ## Publication state
 
@@ -31,4 +31,10 @@ All tickets are unqueued. Exact `agent:ready` is reserved for a later explicit a
 
 ## Issue index
 
-Actual issue links will be added after canonical publication.
+- [Deliver the illustrated happiness essay: project index](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/1)
+- [Draft the complete multi-perspective storyboard and audit its sources](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/2)
+- [Establish the static application foundation and editable content contracts](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/3)
+- [Build the responsive reader, chapter navigation, sources, and reading view](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)
+- [Create original emotional stickmen and explanatory scene assets](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/4)
+- [Integrate the complete six-chapter essay, dialogue, scenes, and reflection](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/6)
+- [Package the offline submission and deploy the reviewed essay to Vercel](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)

@@ -40,7 +40,7 @@ There are no application commands yet. The implementation foundation ticket will
 
 ## Work tracking
 
-Use the [work plan](docs/work-plan.md) and [GitHub issues](https://github.com/duckycodess/what-it-takes-to-be-happy/issues). The installed Agent Flow front door publishes canonical tickets; exact `agent:ready` separately authorizes autonomous implementation.
+Start with the [project index](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/1), [work plan](docs/work-plan.md), and [GitHub issues](https://github.com/duckycodess/what-it-takes-to-be-happy/issues). Six implementation packages have canonical contracts and verified classification labels. All remain unqueued. The installed Agent Flow front door publishes tickets; exact `agent:ready` separately authorizes autonomous implementation.
 
 ## Source material
 
