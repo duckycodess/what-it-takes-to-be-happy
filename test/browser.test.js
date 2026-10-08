@@ -134,13 +134,22 @@ probe
   })
   .step(function () { probe.q('[data-scene][data-current] .source [data-source-link]').click(); })
   .step(function () {
-    var entry = probe.q('.source-register .source:not([hidden])');
+    // The entry the reader actually followed, not whichever one is first in
+    // the register: an earlier version of this check measured the wrong
+    // element and would have passed with the reader left off screen.
+    var entry = probe.q('.source-register [data-source="' + location.hash.slice(1) + '"]');
     report.sources = {
+      entryIsTheOneFollowed: !!entry,
       view: document.documentElement.getAttribute('data-view'),
       registerVisible: probe.visible(probe.q('.source-register')),
       focused: probe.activeId(),
       hash: location.hash,
       entryVisible: probe.visible(entry),
+      entryInViewport: probe.inViewport(entry),
+      entryTop: Math.round(entry.getBoundingClientRect().top),
+      windowHeight: window.innerHeight,
+      entryOutlineStyle: probe.style(entry, 'outlineStyle'),
+      entryOutlineWidth: probe.style(entry, 'outlineWidth'),
       returnOffered: probe.visible(probe.q('.register-return')),
     };
   })
@@ -230,7 +239,12 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
 
   assert.equal(value.sources.view, 'reading');
   assert.equal(value.sources.registerVisible, true);
+  assert.equal(value.sources.entryIsTheOneFollowed, true, 'the register holds an entry for the citation that was clicked');
   assert.equal(value.sources.entryVisible, true);
+  assert.equal(value.sources.entryInViewport, true,
+    `the entry was laid out but off screen: top ${value.sources.entryTop} in a ${value.sources.windowHeight}px window`);
+  assert.equal(value.sources.entryOutlineStyle, 'solid', 'the entry the reader landed on is ringed, not just focused');
+  assert.notEqual(value.sources.entryOutlineWidth, '0px');
   assert.equal(value.sources.returnOffered, true);
   assert.ok(value.sources.hash.startsWith('#R'), `expected a source fragment, got ${value.sources.hash}`);
   assert.equal(value.sources.focused, value.sources.hash.slice(1), 'the reader lands on the entry they followed');
@@ -316,6 +330,115 @@ test('nothing scrolls sideways at phone width, on any beat or in any view', { sk
   }
 });
 
+test('an in-page landmark moves the reader within the beat, not out of it', { skip }, () => {
+  // The skip link is a real control in the page, and #chapters is a real
+  // identifier on the chapter list. Following either must not be mistaken for
+  // "go somewhere else in the essay".
+  const { value } = runInChrome({
+    html: offline,
+    width: 1024,
+    height: 900,
+    driver: `
+      var report = {};
+      probe
+        .step(function () { probe.q('[data-begin]').click(); })
+        .step(function () { probe.q('[data-next]').click(); })
+        .step(function () { report.before = { view: document.documentElement.getAttribute('data-view'), scene: probe.sceneId() }; })
+        .step(function () { probe.q('.skip-link').click(); })
+        .step(function () {
+          report.afterSkipLink = {
+            view: document.documentElement.getAttribute('data-view'),
+            scene: probe.sceneId(),
+            hash: location.hash,
+            focused: probe.activeId(),
+            beatStillVisible: probe.visible(probe.q('[data-scene][data-current]')),
+          };
+        })
+        .step(function () { location.hash = '#chapters'; })
+        .step(function () {
+          report.afterChaptersFragment = {
+            view: document.documentElement.getAttribute('data-view'),
+            scene: probe.sceneId(),
+            navInViewport: probe.inViewport(probe.q('.chapter-nav')),
+          };
+        })
+        .step(function () { location.hash = '#nothing-here'; })
+        .step(function () {
+          report.afterUnknownFragment = { view: document.documentElement.getAttribute('data-view'), scene: probe.sceneId() };
+        })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.before.view, 'beat');
+  assert.equal(value.afterSkipLink.view, 'beat', 'the skip link must not throw the reader back to the landing');
+  assert.equal(value.afterSkipLink.scene, value.before.scene);
+  assert.equal(value.afterSkipLink.hash, '#essay');
+  assert.equal(value.afterSkipLink.focused, 'essay', 'and it does what a skip link is for: focus moves to the essay');
+  assert.equal(value.afterSkipLink.beatStillVisible, true);
+
+  assert.equal(value.afterChaptersFragment.view, 'beat');
+  assert.equal(value.afterChaptersFragment.scene, value.before.scene);
+  assert.equal(value.afterChaptersFragment.navInViewport, true, 'the browser took the reader to the chapter list');
+
+  assert.equal(value.afterUnknownFragment.view, 'beat', 'an unrecognised fragment after loading is not a reason to move anyone');
+  assert.equal(value.afterUnknownFragment.scene, value.before.scene);
+});
+
+test('the drawings are drawn, with the names above the heads and inside the frame', { skip }, () => {
+  const { value } = runInChrome({
+    html: offline,
+    width: 360,
+    height: 780,
+    driver: `
+      var report = { beats: [] };
+      probe.step(function () { probe.q('[data-begin]').click(); });
+      ${ORDER.map(() => `probe
+        .step(function () {
+          var scene = probe.q('[data-scene][data-current]');
+          var frame = probe.q('.scene-visual-frame', scene);
+          var frameBox = frame.getBoundingClientRect();
+          var svg = probe.q('svg.scene-art', frame);
+          report.beats.push({
+            scene: probe.sceneId(),
+            art: frame.getAttribute('data-art'),
+            hasSvg: !!svg,
+            svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
+            pendingNotice: !!probe.q('.scene-visual-pending', frame),
+            labels: probe.all('.art-label', frame).map(function (label) {
+              var box = label.getBoundingClientRect();
+              var head = box.bottom;
+              return {
+                name: probe.q('.nametag', label).textContent,
+                insideFrame: box.left >= frameBox.left - 1 && box.right <= frameBox.right + 1,
+                aboveItsAnchor: head <= frameBox.bottom + 1,
+                baked: label.closest('svg') !== null,
+              };
+            }),
+            caption: probe.q('figcaption', scene).textContent.length,
+          });
+        })
+        .step(function () { var next = probe.q('[data-next]'); if (!next.disabled) next.click(); });`).join('\n')}
+      probe.run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.beats.length, ORDER.length);
+  for (const beat of value.beats) {
+    const drawn = beat.art !== 'none';
+    assert.equal(beat.hasSvg, drawn, `${beat.scene} declares data-art="${beat.art}" but ${beat.hasSvg ? 'has' : 'has no'} drawing`);
+    assert.equal(beat.pendingNotice, !drawn,
+      `${beat.scene} ${drawn ? 'has a drawing and must not say one is missing' : 'has no drawing and should say so'}`);
+    if (drawn) assert.ok(beat.svgWidth > 0, `${beat.scene} drew nothing with width`);
+    assert.ok(beat.caption > 0, `${beat.scene} needs its written description whether or not it is drawn`);
+
+    assert.ok(beat.labels.length > 0, `${beat.scene} should name who is in the frame`);
+    for (const label of beat.labels) {
+      assert.equal(label.baked, false, `${beat.scene}: "${label.name}" is inside the SVG; names are browser text`);
+      assert.equal(label.insideFrame, true, `${beat.scene}: "${label.name}" hangs outside the frame at phone width`);
+      assert.equal(label.aboveItsAnchor, true, `${beat.scene}: "${label.name}" sits below the drawing`);
+    }
+  }
+});
+
 test('a wide window gets two columns and still fits', { skip }, () => {
   const { value } = runInChrome({
     html: offline,
@@ -352,10 +475,15 @@ test('a reader who asked for less motion gets the same essay', { skip }, () => {
         .step(function () { probe.q('[data-begin]').click(); })
         .step(function () {
           var scene = probe.q('[data-scene][data-current]');
+          var reveal = probe.q("[data-art-layer='reveal']", scene);
           report.scene = probe.sceneId();
           report.visible = probe.visible(scene);
-          report.animation = probe.style(scene, 'animationDuration');
           report.describedInText = probe.q('figcaption', scene).textContent.length;
+          // The drawings carry an entrance animation now, so there is
+          // something for the preference to actually switch off.
+          report.hasRevealLayer = !!reveal;
+          report.revealAnimation = reveal ? probe.style(reveal, 'animationName') : null;
+          report.revealOpacity = reveal ? probe.style(reveal, 'opacity') : null;
         })
         .run(function () { probe.done(report); });`,
   });
@@ -363,5 +491,8 @@ test('a reader who asked for less motion gets the same essay', { skip }, () => {
   assert.equal(value.honoured, true, 'the browser reported the preference, so the result means something');
   assert.equal(value.visible, true);
   assert.equal(value.scene, ORDER[0], 'the beat is simply there, with nothing to wait for');
-  assert.ok(value.describedInText > 0, 'and what the picture would show is written out');
+  assert.ok(value.describedInText > 0, 'and what the picture shows is also written out');
+  assert.equal(value.hasRevealLayer, true, 'this beat does have a condition layer, so the check means something');
+  assert.equal(value.revealAnimation, 'none', 'the entrance is switched off');
+  assert.equal(value.revealOpacity, '1', 'and the explanation it would have animated into is simply there');
 });

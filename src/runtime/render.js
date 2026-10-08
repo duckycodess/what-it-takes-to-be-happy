@@ -303,14 +303,17 @@ ${content.sources.map((source) => renderSourceReference(source, { register: true
  * announces its title, and a live region here would say the same move twice.
  */
 function renderBeatControls(totalScenes) {
+  // Each accessible name starts with the word on the button, so a reader who
+  // says "Next" is understood by voice control and a screen-reader user hears
+  // a name that matches what a sighted reader is describing to them.
   return `<nav class="beat-controls js-only" aria-label="Move through the essay">
-<button type="button" data-back aria-label="Back to the previous beat">Back</button>
+<button type="button" data-back aria-label="Back one beat">Back</button>
 <p class="beat-position">
 <span class="beat-count">Beat <span data-position-current>1</span> of ${totalScenes}</span>
 <span class="beat-where" data-position-where></span>
 <span class="beat-boundary" data-position-boundary></span>
 </p>
-<button type="button" data-next aria-label="On to the next beat">Next</button>
+<button type="button" data-next aria-label="Next beat">Next</button>
 </nav>`;
 }
 
@@ -387,7 +390,7 @@ ${head}
 <body>
 <a class="skip-link" href="#essay">Skip to the essay</a>
 ${renderDraftNotice(content.status)}
-<main id="essay">
+<main id="essay" tabindex="-1">
 ${renderLanding(content, options, orderedSceneIds[0], context.castById)}
 ${renderChapterNav(content)}
 <div class="essay-body" data-essay>

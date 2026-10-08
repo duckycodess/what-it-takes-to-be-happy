@@ -196,14 +196,32 @@ test('each move is recorded, so the browser Back button walks back through them'
   assert.equal(page.view(), 'landing', 'back past the first beat leaves the essay the way it was opened');
 });
 
-test('Back works where the History API is refused, as it can be on a local file', () => {
-  const page = openDocument(html, { history: false });
+// A file:// document can be refused the History API in two different ways,
+// and the fallback has to be reached by both. Missing is the easy one; a
+// method that is present and throws is the one a browser actually does.
+for (const [label, history] of [['is missing', false], ['throws a SecurityError', 'throws']]) {
+  test(`Back works where pushState ${label}, as it can on a local file`, () => {
+    const page = openDocument(html, { history });
+    page.click(page.find('[data-begin]'));
+    page.click(page.find('[data-next]'));
+    assert.equal(page.location.hash, `#${ORDER[1]}`, 'the fragment is still written');
+
+    page.goBack();
+    assert.equal(page.currentSceneId(), ORDER[0]);
+    page.goBack();
+    assert.equal(page.view(), 'landing');
+  });
+}
+
+test('a refused pushState is refused on every move, not detected once', () => {
+  const page = openDocument(html, { history: 'throws' });
   page.click(page.find('[data-begin]'));
   page.click(page.find('[data-next]'));
-  assert.equal(page.location.hash, `#${ORDER[1]}`, 'the fragment is still written');
+  page.click(page.find('[data-next]'));
 
-  page.goBack();
-  assert.equal(page.currentSceneId(), ORDER[0]);
+  assert.ok(page.historyRefusals >= 3, `expected every move to try and be refused, saw ${page.historyRefusals}`);
+  assert.equal(page.currentSceneId(), ORDER[2], 'and the reader moved anyway');
+  assert.equal(page.location.hash, `#${ORDER[2]}`);
 });
 
 test('a fragment the script itself wrote does not send it round again', () => {
@@ -217,6 +235,47 @@ test('a fragment the script itself wrote does not send it round again', () => {
 });
 
 /* --- Sources -------------------------------------------------------------- */
+
+/* --- Landmarks that are not the reader's state ---------------------------- */
+
+// The document has fragments of its own that mean "move within this page":
+// the skip link's #essay, the chapter list's #chapters. Following one must
+// not be read as "go somewhere else in the essay".
+for (const landmark of ['essay', 'chapters', 'landing']) {
+  test(`following #${landmark} from a beat leaves the reader on that beat`, () => {
+    const page = begin();
+    page.click(page.find('[data-next]'));
+    const where = page.currentSceneId();
+
+    page.navigateTo(`#${landmark}`);
+
+    assert.equal(page.view(), 'beat', `#${landmark} is a place on the page, not a change of view`);
+    assert.equal(page.currentSceneId(), where);
+  });
+}
+
+test('#essay from the continuous view keeps the continuous view', () => {
+  const page = begin();
+  page.click(page.find('[data-view-toggle]'));
+
+  page.navigateTo('#essay');
+
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.scenes().length, ORDER.length);
+});
+
+test('the skip link points at a target that can take focus', () => {
+  const page = open();
+  const target = page.find('#essay');
+  assert.equal(page.find('.skip-link').getAttribute('href'), '#essay');
+  assert.equal(target.getAttribute('tabindex'), '-1', 'a main element is not focusable without this, so the skip link would do nothing');
+});
+
+test('an unknown fragment still opens the essay on a first load', () => {
+  // Only on a first load: that is the one moment with no reader state to lose.
+  const page = open({ hash: '#not-a-thing' });
+  assert.equal(page.view(), 'landing');
+});
 
 test('the register is reachable from the landing and from inside a beat', () => {
   const fromLanding = open();

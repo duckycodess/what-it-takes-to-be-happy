@@ -331,6 +331,13 @@
    * which is what Back should restore. Without one — an entry written by
    * assigning the fragment, or a link a reader was sent — the current view
    * is kept.
+   *
+   * A fragment this script does not recognise is not an error and is not a
+   * reason to move the reader. The document has landmarks of its own — the
+   * skip link's `#essay`, the chapter list's `#chapters` — and following one
+   * is a move *within* the page, which the browser already does correctly.
+   * Throwing the reader back to the landing because they used the skip link
+   * would lose the beat they were on.
    */
   function applyFragment(options) {
     var settings = options || {};
@@ -341,6 +348,10 @@
     var wanted = settings.view || view;
 
     if (!requested) {
+      // An empty fragment is the top of the essay, and so is a first load
+      // that named nothing this script knows. Afterwards, leave the view
+      // alone: the reader is moving around the page they are already on.
+      if (id !== '' && !settings.initial) return;
       setView('landing');
       offerReturnToBeats(false);
       window.scrollTo(0, 0);
@@ -477,5 +488,5 @@
      scrolls to it instead. From here on, every move is the reader's. */
 
   offerReturnToBeats(false);
-  applyFragment({ focus: false });
+  applyFragment({ focus: false, initial: true });
 })();

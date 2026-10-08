@@ -435,9 +435,12 @@ class HtmlDocument {
  * Loads a rendered document and runs the real browser script against it.
  *
  * @param {string} html the renderer's output
- * @param {{hash?: string, history?: boolean}} [options]
- *   `history: false` removes `pushState`, which is how the script behaves on a
- *   file:// document in a browser that refuses it.
+ * @param {{hash?: string, history?: boolean|'throws'}} [options]
+ *   `history` models the two ways a browser can refuse the History API on a
+ *   file:// document: `false` removes `pushState` altogether, and `'throws'`
+ *   keeps it but makes every call raise a `SecurityError`, which is what a
+ *   browser that dislikes the document's origin actually does. The script has
+ *   to reach the same fallback either way.
  */
 export function openDocument(html, options = {}) {
   const document = parseHtml(html);
@@ -448,6 +451,7 @@ export function openDocument(html, options = {}) {
     hashChanges: [],
     historyEntries: [],
     scrollPositions: [],
+    historyRefusals: 0,
   };
 
   const location = {
@@ -484,7 +488,21 @@ export function openDocument(html, options = {}) {
   // from the first move returns to the deep link rather than to nothing.
   page.historyEntries.push({ hash: location._hash, state: null });
 
-  if (options.history === false) delete history.pushState;
+  if (options.history === false) {
+    delete history.pushState;
+    delete history.replaceState;
+  } else if (options.history === 'throws') {
+    // A real SecurityError is thrown by the call, not by its absence, so the
+    // methods stay in place and feature detection still finds them.
+    const refuse = () => {
+      page.historyRefusals += 1;
+      const error = new Error('Failed to execute \'pushState\' on \'History\': A history state object with URL of scheme file cannot be created in a document with origin \'null\'.');
+      error.name = 'SecurityError';
+      throw error;
+    };
+    history.pushState = refuse;
+    history.replaceState = refuse;
+  }
 
   const window = {
     document,

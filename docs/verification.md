@@ -17,15 +17,17 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 
 ### Checked in a real browser
 
-Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against `dist/offline.html` opened through a `file://` URL with nothing served. All five browser tests ran; none skipped.
+Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against `dist/offline.html` opened through a `file://` URL with nothing served. All seven browser tests ran; none skipped.
 
 - The landing shows the landing. Begin, Next, Back, the two disabled boundaries, chapter shortcuts, and the continuous view all behave, and the beat lands at the top of the window on every arrival rather than below the banner and the chapter list.
 - Focus moves to the beat and is **painted**: `outline-style: solid` with a non-zero width on the focused beat. Back, Next, and the view switch all measure at least 44 CSS pixels tall.
 - Clicking a disclosure keeps focus on its own summary, leaves the beat where it was, and leaves Next available. A panel the reader opened stays open across both view switches while an untouched one still follows the view.
-- A source beside a beat reaches its register entry; the entry is focused and on screen; the return control brings the reader back to the beat they left.
+- A source beside a beat reaches its register entry. The entry the reader followed — not merely the first one in the register — is focused, is inside the window, and carries its own ring. The return control brings them back to the beat they left.
+- The skip link does what a skip link is for: focus moves to the essay, and the reader stays on the beat they were reading. So does `#chapters`, and so does a fragment this script does not recognise.
 - `history.back()` works on a local file and restores how the reader was reading as well as where they were.
 - No horizontal overflow at a 320-pixel layout viewport, measured on the landing, on each of the nine beats in turn, and in the continuous view with the register open. A wide window puts the illustration beside the prose and the chapter list into two columns.
-- With `--force-prefers-reduced-motion`, the browser reported the preference and the beat was simply present, with the visual description in text.
+- Every beat draws what the content document says it draws: an inline SVG where a composition is named, the "not made yet" notice only where none is, and in both cases the written description underneath. Every figure's name is HTML text outside the SVG, inside the frame, and above its anchor, checked on all nine beats at phone width.
+- With `--force-prefers-reduced-motion`, the browser reported the preference, the condition layer's `animation-name` computed to `none`, and its opacity was already 1 — the explanation the entrance would have animated into is simply there.
 
 A note on how the narrow width is measured: a desktop browser window will not go below roughly 500 CSS pixels, so `--window-size=360` silently lays the page out at about 490. The narrow-width tests therefore load the page in a frame of the requested width, which does give it that layout viewport. An earlier pass that missed this reported a phone width it had not actually tested.
 
@@ -63,11 +65,12 @@ not is below.
 - **A real phone and a real desktop browser.** Headless Chrome at a 320-pixel layout viewport is not a device: it says nothing about touch accuracy, a software keyboard, an address bar that grows and shrinks, or how the page feels in the hand.
 - **A screen reader.** The structure is there — one accessible name per beat, no competing live region, semantic controls, a `summary` that keeps its focus — but no assistive technology has read it. "Announced once" is an argument from the markup, not an observation.
 - **Print, on paper or in a print preview.** Print is covered by the stylesheet structure test and by the `beforeprint` behaviour test. Neither is a rendered page. Headless Chrome cannot emulate print media without a DevTools connection, which is not available from WSL to a Windows browser.
-- **Reduced motion with actual scene motion**, because there is no scene motion yet.
+- **Rapid Next and Back against a running entrance animation**, on a real machine. The stylesheet animates only opacity and transform on a layer that is already in its settled state, and reduced motion is measured as computed style above, but nobody has hammered the controls in a browser and watched what happens.
 - **Contrast as perceived**, rather than computed. The ratios are measured from the declared tokens; nothing has been checked against a display or a low-vision reader.
-- Anything about the finished prose or artwork. The content document is still an explicitly non-final fixture.
+- **The container query that hides a state word on a narrow frame**, as experienced rather than as a rule: the labels were measured for position and containment, not read aloud.
+- Anything about the finished prose. The content document is still an explicitly non-final fixture.
 
-`node ~/.claude/skills/impeccable/scripts/detect.mjs` over the three runtime files reports two warnings, both pre-existing and both deliberate: the left rule on a dialogue line and the left rule on a "keep in mind" callout. Both are ordinary essay typography — a quotation rule and a callout rule — rather than the card accent the heuristic is looking for.
+`node ~/.claude/skills/impeccable/scripts/detect.mjs` over the runtime files reports two warnings, both pre-existing and both deliberate: the left rule on a dialogue line and the left rule on a "keep in mind" callout. Both are ordinary essay typography — a quotation rule and a callout rule — rather than the card accent the heuristic is looking for.
 
 No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every source file instead.
 

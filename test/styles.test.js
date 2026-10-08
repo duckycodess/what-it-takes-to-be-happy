@@ -178,10 +178,23 @@ test('a reader who asked for less motion is answered', () => {
   assert.match(block, /transition-duration:\s*0\.001ms\s*!important/);
 });
 
-test('the focused beat and the register carry a ring without waiting for :focus-visible', () => {
+test('every target the script focuses carries a ring without waiting for :focus-visible', () => {
   // A programmatic focus move after a pointer click does not satisfy
-  // `:focus-visible`, so these two cannot rely on it.
-  const ring = screen.find((rule) => rule.selector.includes('.scene:focus') && rule.selector.includes('.source-register:focus'));
-  assert.ok(ring, 'the two programmatic focus targets should share an explicit ring');
-  assert.match(ring.body, /outline:\s*\d+px solid/);
+  // `:focus-visible`, so none of these can rely on it. Each one is somewhere
+  // the browser script sends the reader: a beat, the register, and the single
+  // source entry a citation links to.
+  const ringed = screen
+    .filter((rule) => /outline:\s*\d+px solid/.test(rule.body))
+    .map((rule) => rule.selector)
+    .join(' ');
+  for (const target of ['.scene:focus', '.source-register:focus', '.source:focus']) {
+    // Not `:focus-visible`, which the browser withholds after a pointer click.
+    assert.ok(new RegExp(`\\${target}(?![\\w-])`).test(ringed), `${target} is focused by the script but is never ringed`);
+  }
+
+  // And a ring marks where a reader is looking, which paper does not have.
+  const reset = print.filter((rule) => /outline:\s*none/.test(rule.body)).map((rule) => rule.selector).join(' ');
+  for (const target of ['.scene:focus', '.source-register:focus', '.source:focus']) {
+    assert.ok(reset.includes(target), `${target} would print its focus ring`);
+  }
 });

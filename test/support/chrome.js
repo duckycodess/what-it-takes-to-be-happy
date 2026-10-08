@@ -166,6 +166,15 @@ var probe = (function () {
       if (!element) return false;
       return element.getClientRects().length > 0;
     },
+    // Rendered is not the same as on screen. An element the reader was just
+    // sent to has to be inside the window, not merely laid out somewhere.
+    inViewport: function (element) {
+      if (!element || element.getClientRects().length === 0) return false;
+      var box = element.getBoundingClientRect();
+      var height = window.innerHeight || document.documentElement.clientHeight;
+      var width = window.innerWidth || document.documentElement.clientWidth;
+      return box.bottom > 0 && box.top < height && box.right > 0 && box.left < width;
+    },
     style: function (element, property) { return window.getComputedStyle(element)[property]; },
     sceneId: function () {
       var scene = document.querySelector('[data-scene][data-current]');
