@@ -1,0 +1,222 @@
+# Content contract
+
+The essay's chapters, scenes, cast, sources, concepts, optional detail, interactions, and authoring provenance live in one JSON document: [`content/content.json`](../content/content.json). The hosted site, the continuous reading and print view, and the offline file are all generated from that single document.
+
+Schema identifier: `happiness-essay-content/v1`. The machine definition is [`src/content/schema.js`](../src/content/schema.js) and [`src/content/validate.js`](../src/content/validate.js). This page is the editor's version of the same rules; changing one without the other is a contract break.
+
+Run `npm run validate` after every edit. It prints a located, named error for each problem and exits nonzero, so a broken document cannot reach a build.
+
+## What is in the repository today
+
+`content/content.json` is a **non-final fixture**. It exists so the foundation could be built, validated, rendered, packaged, and checked before the essay is written. Every chapter connection, scene, dialogue line, and illustration note in it is a structural stand-in, `status.final` is `false`, and the reader shows that notice to anyone who opens the page. The storyboard package writes the real chapters; the integration package replaces the fixture scenes.
+
+Nothing in the fixture states a position held by TJ, Koj, or Vier, and no source in it carries an audited claim. Those are contract rules, not fixture habits — see *Member positions* and *Sources* below.
+
+## Document shape
+
+```
+{
+  "schema":   "happiness-essay-content/v1",
+  "status":   { final, label, notice },
+  "project":  { title, question, summary, readingTimeEstimate },
+  "chapters": [ ... ],   "scenes":       [ ... ],
+  "cast":     [ ... ],   "sources":      [ ... ],
+  "concepts": [ ... ],   "details":      [ ... ],
+  "interactions": [ ... ],
+  "provenance":   [ ... ]
+}
+```
+
+Unknown fields are rejected rather than ignored, so a typo surfaces instead of silently deleting content.
+
+### `status`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `final` | boolean | Whether the content is the finished essay. |
+| `label` | string | Short badge text, shown in the reader while `final` is `false`. |
+| `notice` | string, required while `final` is `false` | The honest sentence readers see about the state of the draft. |
+
+### `project`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `title` | string | Working title, used as the page title and landing heading. |
+| `question` | string | The large centred question on the landing view. |
+| `summary` | string | The working synthesis shown on the landing view. |
+| `readingTimeEstimate` | string or `null` | Stays `null` until real prose can actually be measured. |
+
+### `chapters[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | Stable chapter identifier. |
+| `title` | string | Chapter name used for the chapter shortcuts. |
+| `question` | string | The shared question this chapter organises. |
+| `opening` | string | The connection **into** this chapter from the previous argument. |
+| `closing` | string | The connection **out of** this chapter into the next. |
+| `sceneIds` | identifier[] | The chapter's beats, **in reading order**. |
+
+`opening` and `closing` are required. They are what keep six questions reading as one argument instead of six separate essays, and they are the first thing a reordering delta has to rewrite.
+
+### `scenes[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | Stable beat identifier. |
+| `chapterId` | identifier | The owning chapter. Must agree with the chapter that lists this scene. |
+| `title` | string | Short beat title, used in the reading view and as a heading. |
+| `narration` | string[] | **Essential** narrative paragraphs. At least one must be non-empty. |
+| `dialogue` | object[] | Optional spoken lines (see below). |
+| `visual` | object | `description` plus `cast` appearances (see below). |
+| `conceptIds` | identifier[] | Class concepts this beat explains, applies, or questions. |
+| `sourceIds` | identifier[] | Sources whose labels and limits belong on this beat. |
+| `limitations` | string[] | Caveats that must stay visible on the main reading path. |
+| `detailIds` | identifier[] | Optional expandable detail carried by this beat. |
+| `interactionIds` | identifier[] | Optional reveals attached to this beat. |
+
+`narration` is the main reading path. It must carry the beat on its own, with dialogue, illustration, and every optional surface removed — that is exactly what the print and reduced-motion routes fall back to.
+
+#### `scenes[].visual`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `description` | string | What the illustration shows. This doubles as the text alternative and as the reduced-motion equivalent, so it is never optional. |
+| `cast[].characterId` | identifier | Who appears. |
+| `cast[].expressionId` | identifier | Which of that character's own expressions they wear. |
+
+#### `scenes[].dialogue[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | Stable line identifier, so a provenance record or a delta can address one line. |
+| `speakerId` | identifier | A cast entry. |
+| `text` | string | The spoken line. |
+| `stance` | `member-endorsed` or `fictional-illustration` | See *Member positions*. |
+| `sourceIds` | identifier[] | Research this line draws on. Research is shared; attribution stays with the source. |
+| `provenanceId` | identifier or `null` | The authoring record behind the line. |
+
+### `cast[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | Stable cast identifier. |
+| `role` | `member` or `friend` | A contributor, or an invented figure used to make a situation concrete. |
+| `displayName` | string | The name rendered as text above the avatar. Never baked into an image. |
+| `appearance` | string | How the original drawing identifies this figure. |
+| `expressions[]` | `{ id, label }` | The emotional states this figure can be drawn in. |
+
+Expression identifiers are scoped to their character, so every figure can have an `ex-tired`. Every other identifier in the document is globally unique.
+
+### `sources[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | Keeps the `R01`…`R30` identifiers from the [source register](research.md). |
+| `label` | string | How the source is named to readers. |
+| `url` | string | The original destination. |
+| `type` | string | Primary text, research, gray literature, external personal accounts, and so on. |
+| `intendedRole` | string | What the notes expect this source to support. Not a claim that it does. |
+| `limitation` | string | The caveat that travels with the source. |
+| `reviewStatus` | `unreviewed`, `in-review`, `verified` | How far the passage-level audit has gone. |
+| `citation` | string or `null` | Verified bibliographic detail. |
+| `supportedClaim` | string or `null` | The exact statement the read passage supports. |
+
+`citation` and `supportedClaim` **must** be `null` unless `reviewStatus` is `verified`, and **must** be filled once it is. An unaudited import therefore cannot harden into published evidence by accident.
+
+### `concepts[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id`, `name` | identifier, string | The class concept. |
+| `status` | `planned` or `drafted` | Whether its treatment is written. |
+| `explanation`, `application`, `question` | string or `null` | Explain it, apply it, question it. |
+| `sourceIds` | identifier[] | Where the concept comes from. |
+
+All three treatment fields are `null` while `status` is `planned`, and all three are required once it is `drafted`. The agreed treatment is to explain, apply, *and* question a concept rather than name it as decoration, so the contract will not accept two out of three.
+
+### `details[]` and `interactions[]`
+
+| `details[]` | Type | Meaning |
+| --- | --- | --- |
+| `id`, `title` | identifier, string | The optional panel. |
+| `body` | string[] | Longer supporting text. |
+| `sourceIds` | identifier[] | Sources cited inside the panel. |
+
+| `interactions[]` | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | The optional reveal. |
+| `surface` | `scene-detail` or `source-detail` | Which reader surface it attaches to. |
+| `purpose` | string | The explanatory reason it exists. |
+| `trigger` | string | What activates it. |
+| `keyboard` | string | Its keyboard behaviour. Required. |
+| `staticEquivalent` | string | How the same material reads with the reveal unused. Required. |
+| `detailId` | identifier | The detail it reveals. |
+
+Each detail and each interaction belongs to exactly one scene, and an interaction may only reveal a detail that its own scene already lists in `detailIds`. An optional reveal can therefore never be the only route to an explanation — the validator rejects that arrangement rather than trusting the renderer to be careful.
+
+### `provenance[]`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `id` | identifier | Stable record identifier. |
+| `appliesTo` | identifier | The chapter, scene, dialogue line, source, concept, or detail it explains. |
+| `note` | string | Why this content says what it says. |
+| `sourceNote` | string | The note or delta file that supports it. |
+
+**Provenance is authoring material and is never published.** It does not appear in the hosted page, the reading view, print output, or the offline file, and a build-time check fails if any of it leaks. Readers see citations and real context; they never see editorial workflow.
+
+## Member positions
+
+A dialogue line marked `member-endorsed` speaks for TJ, Koj, or Vier. Such a line **must** carry a `provenanceId` pointing at a provenance record, which in turn names the note or delta where that contributor said it. A line without that record is rejected as an invented position.
+
+Lines marked `fictional-illustration` are spoken by invented figures such as Bob. They make a situation concrete. They are not evidence, not population data, and not any contributor's biography.
+
+Research is shared group material: any avatar may draw on a source another member found, as long as the citation stays attached to the source and the spoken position matches what that member endorses.
+
+## Identifiers and editorial deltas
+
+Identifiers are ASCII alphanumerics in hyphen-separated groups: `ch-what-counts`, `sc-ordinary-afternoon`, `dl-bob-tired-and-pleased`, `R02`. They are unique across the whole document, except for expression identifiers, which are unique within their character.
+
+Nothing in the contract refers to an array position. Reading order comes from `chapters[].sceneIds`; chapter order comes from the order of `chapters`. A delta therefore maps onto identifiers:
+
+| Editorial change | What to edit |
+| --- | --- |
+| Rewrite a beat | The `scenes[]` entry with that `id`. Its position in the file does not matter. |
+| Reorder beats in a chapter | That chapter's `sceneIds` only. |
+| Move a beat to another chapter | The chapter's `sceneIds`, the new chapter's `sceneIds`, and the scene's `chapterId`. The validator reports it if you forget one. |
+| Insert a beat | Add the scene with a new `id`, then list that `id` where it belongs in `sceneIds`. |
+| Remove a beat | Delete the scene and its `sceneIds` entry, plus any detail, interaction, or provenance record that only it used. |
+| Add a contributor's position | Add the provenance record first, then the dialogue line pointing at it. |
+| Finish auditing a source | Set `reviewStatus` to `verified` and record `citation` and `supportedClaim`. |
+| Draft a concept's treatment | Set `status` to `drafted` and write all three of `explanation`, `application`, `question`. |
+
+Keep an existing identifier pointing at the same thing. If a source is replaced by a different work, add a new identifier rather than repointing the old one.
+
+## Validation rules
+
+`npm run validate` reports these codes. Each error names a path such as `scenes[4].dialogue[0].speakerId`.
+
+| Code | Reported when |
+| --- | --- |
+| `SCHEMA_MISMATCH` | The `schema` field is not `happiness-essay-content/v1`. |
+| `NOT_AN_OBJECT`, `NOT_AN_ARRAY`, `NOT_A_STRING`, `NOT_A_BOOLEAN` | A field has the wrong type. |
+| `MISSING_FIELD`, `UNKNOWN_FIELD` | A required field is absent, or an unrecognised one is present. |
+| `EMPTY_STRING`, `EMPTY_ARRAY` | Required text or a required list is blank. |
+| `INVALID_ID` | An identifier does not match the naming rule. |
+| `DUPLICATE_ID` | An identifier is reused, including an expression repeated within a character. |
+| `UNKNOWN_REFERENCE`, `WRONG_REFERENCE_KIND`, `DUPLICATE_REFERENCE` | A reference points at nothing, at the wrong kind of entry, or is listed twice. |
+| `INVALID_ENUM` | A role, stance, review status, concept status, or interaction surface is not one of the allowed values. |
+| `EMPTY_ESSENTIAL_SCENE` | A scene has no essential narration. |
+| `SCENE_ORPHANED` | A scene is in no chapter's reading order. |
+| `SCENE_CLAIMED_TWICE` | A scene appears in more than one chapter order, or twice in one. |
+| `SCENE_CHAPTER_MISMATCH` | A scene's `chapterId` disagrees with the chapter that orders it. |
+| `UNKNOWN_EXPRESSION` | A scene asks a character for an expression it does not have. |
+| `UNSUPPORTED_MEMBER_POSITION` | A `member-endorsed` line has no provenance record. |
+| `UNVERIFIED_SOURCE_CLAIM` | An unaudited source records a citation or a supported claim. |
+| `UNDRAFTED_CONCEPT_TEXT` | A `planned` concept carries treatment text. |
+| `INTERACTION_DETAIL_NOT_IN_SCENE` | An optional reveal is the only route to its detail. |
+| `UNUSED_ENTRY`, `ENTRY_CLAIMED_TWICE` | A detail or interaction is referenced by no scene, or by several. |
+| `INVALID_JSON`, `UNREADABLE` | The document could not be parsed or opened. |
+
+[`test/fixtures/invalid-content.json`](../test/fixtures/invalid-content.json) is a document broken on purpose; `npm test` asserts that every one of those situations is actually caught.

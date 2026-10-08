@@ -1,0 +1,534 @@
+{
+  "schema": "happiness-essay-content/v1",
+  "status": {
+    "final": false,
+    "label": "Non-final foundation fixture",
+    "notice": "This is scaffolding, not the essay. Every chapter, scene, line, and illustration here is a structural stand-in used to build and check the website before the writing exists. Nothing below states a position held by TJ, Koj, or Vier, no friend shown here is a real person, and no source listed here has been checked passage by passage yet."
+  },
+  "project": {
+    "title": "What Does It Take to Be Happy?",
+    "question": "What does it take to be happy?",
+    "summary": "Happiness takes different forms. Small joys count, while security, time, relationships, and freedom shape who can sustain them. This is a working synthesis, not a formula that predicts feelings or erases disagreements.",
+    "readingTimeEstimate": null
+  },
+
+  "chapters": [
+    {
+      "id": "ch-what-counts",
+      "title": "What counts as happiness?",
+      "question": "What counts as happiness?",
+      "opening": "Placeholder connection. The authored opening will start from an ordinary day rather than a definition, and let the same hours be read in more than one way.",
+      "closing": "Placeholder connection. The authored close will carry the unsettled definitions forward instead of resolving them.",
+      "sceneIds": ["sc-ordinary-afternoon", "sc-three-readings"]
+    },
+    {
+      "id": "ch-meaningful-or-not",
+      "title": "Must enjoyment become meaningful or productive?",
+      "question": "Must enjoyment become meaningful or productive?",
+      "opening": "Placeholder connection. The authored opening will pick up the unsettled definitions and press on one of them: whether enjoyment has to earn its place.",
+      "closing": "Placeholder connection. The authored close will leave pleasure, meaning, growth, and rest in negotiation rather than ranking them.",
+      "sceneIds": ["sc-chosen-difficulty", "sc-rest-without-a-reason"]
+    },
+    {
+      "id": "ch-whose-definition",
+      "title": "Whose definition are we following?",
+      "question": "Whose definition are we following?",
+      "opening": "Placeholder connection. The authored opening will ask where the ranking in the previous chapter came from.",
+      "closing": "Placeholder connection. The authored close will keep socially shaped desire and real agency in tension rather than declaring either one false.",
+      "sceneIds": ["sc-inherited-markers"]
+    },
+    {
+      "id": "ch-relationships",
+      "title": "How do relationships help, and when does care become pressure?",
+      "question": "How do relationships help, and when does care become pressure?",
+      "opening": "Placeholder connection. The authored opening will move from inherited expectations to the people those expectations are negotiated with.",
+      "closing": "Placeholder connection. The authored close will hold belonging and its labour together, including boundaries and solitude.",
+      "sceneIds": ["sc-ordinary-belonging"]
+    },
+    {
+      "id": "ch-room-for-happiness",
+      "title": "Who has room for happiness?",
+      "question": "Who has room for happiness?",
+      "opening": "Placeholder connection. The authored opening will return to an earlier enjoyable scene and reveal what it quietly required.",
+      "closing": "Placeholder connection. The authored close will separate the reality of joy in hardship from any claim that the hardship is acceptable.",
+      "sceneIds": ["sc-conditions-behind-the-invitation", "sc-what-enough-means"]
+    },
+    {
+      "id": "ch-what-could-change",
+      "title": "What could change, and what do we still disagree about?",
+      "question": "What could change, and what do we still disagree about?",
+      "opening": "Placeholder connection. The authored opening will turn from description to the assignment's change question.",
+      "closing": "Placeholder connection. The authored close will name what the group still disagrees about, including the risk of universalising its own standpoint.",
+      "sceneIds": ["sc-changes-and-open-questions"]
+    }
+  ],
+
+  "scenes": [
+    {
+      "id": "sc-ordinary-afternoon",
+      "chapterId": "ch-what-counts",
+      "title": "An ordinary afternoon",
+      "narration": [
+        "Placeholder beat. The authored version will open on an ordinary afternoon that nobody would describe as remarkable, and ask the reader what they would call it.",
+        "This fixture text exists so the reading view, the printed view, and the offline file can be built and checked before the essay is written. It is not a draft of the opening."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: three stickmen stand apart on a plain light background, each in a different posture, with their names set above their heads as text. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-tj", "expressionId": "ex-joy" },
+          { "characterId": "cast-koj", "expressionId": "ex-reflective" },
+          { "characterId": "cast-vier", "expressionId": "ex-curious" }
+        ]
+      },
+      "conceptIds": [],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": [],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-three-readings",
+      "chapterId": "ch-what-counts",
+      "title": "Three readings of the same hours",
+      "narration": [
+        "Placeholder beat. The authored version will let the same afternoon be read three ways, keeping the disagreement rather than resolving it into one definition.",
+        "In this fixture, no reading is attributed to anyone. The contributors' own positions are written only from notes they have endorsed, and those notes are not wired in yet."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: the same afternoon drawn three times side by side, with the emphasis moved rather than the scene replaced. The final composition is not made yet.",
+        "cast": [
+          { "characterId": "cast-koj", "expressionId": "ex-curious" },
+          { "characterId": "cast-vier", "expressionId": "ex-reflective" }
+        ]
+      },
+      "conceptIds": ["cn-eudaimonia"],
+      "sourceIds": ["R01"],
+      "limitations": [
+        "The source below is listed for its intended role only. Nothing in this fixture states what it actually supports."
+      ],
+      "detailIds": ["dt-definitions-still-open"],
+      "interactionIds": ["in-definitions-still-open"]
+    },
+    {
+      "id": "sc-chosen-difficulty",
+      "chapterId": "ch-meaningful-or-not",
+      "title": "Difficulty someone chose",
+      "narration": [
+        "Placeholder beat. The authored version will separate difficulty a person chose from difficulty they cannot refuse, because the two are often argued as though they were one thing.",
+        "The fictional friend below exists to make a situation concrete. He is an illustration, not evidence, and not anyone's biography."
+      ],
+      "dialogue": [
+        {
+          "id": "dl-bob-tired-and-pleased",
+          "speakerId": "cast-bob",
+          "text": "Placeholder line. Bob has played all afternoon and is both wrecked and pleased about it.",
+          "stance": "fictional-illustration",
+          "sourceIds": [],
+          "provenanceId": null
+        }
+      ],
+      "visual": {
+        "description": "Placeholder illustration note: Bob mid-effort, drawn so that strain and enjoyment read at the same time. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-bob", "expressionId": "ex-tired" }
+        ]
+      },
+      "conceptIds": ["cn-self-determination"],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": [],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-rest-without-a-reason",
+      "chapterId": "ch-meaningful-or-not",
+      "title": "Rest that is not preparation",
+      "narration": [
+        "Placeholder beat. The authored version will ask whether rest keeps its value when it is not justified as preparation for tomorrow's work.",
+        "This fixture holds the place in the reading order. The argument itself has not been written."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: a figure doing nothing in particular, drawn without the visual language of recovery or productivity. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-tj", "expressionId": "ex-tired" }
+        ]
+      },
+      "conceptIds": [],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": [],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-inherited-markers",
+      "chapterId": "ch-whose-definition",
+      "title": "Markers someone handed us",
+      "narration": [
+        "Placeholder beat. The authored version will examine success markers that may help a person or may become the only acceptable path, without claiming that a socially learned desire is automatically false.",
+        "This fixture carries no claim about which influences anyone would keep."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: a row of familiar milestones drawn as plain shapes, with one figure standing beside rather than on the row. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-vier", "expressionId": "ex-frustrated" }
+        ]
+      },
+      "conceptIds": ["cn-adaptation"],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": [],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-ordinary-belonging",
+      "chapterId": "ch-relationships",
+      "title": "The ordinary work of belonging",
+      "narration": [
+        "Placeholder beat. The authored version will move from the pleasure of company to the repeated, unglamorous effort that keeps company available, and then to its limits.",
+        "This fixture does not describe any real friendship, household, or community."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: the same two figures drawn across several small panels, with only small changes between them. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-koj", "expressionId": "ex-joy" },
+          { "characterId": "cast-bob", "expressionId": "ex-curious" }
+        ]
+      },
+      "conceptIds": ["cn-weak-ties", "cn-kapwa"],
+      "sourceIds": ["R17"],
+      "limitations": [
+        "The source below is listed for its intended role only. Its design, measures, and population have not been read yet."
+      ],
+      "detailIds": [],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-conditions-behind-the-invitation",
+      "chapterId": "ch-room-for-happiness",
+      "title": "What the invitation required",
+      "narration": [
+        "Placeholder beat. The authored version will return to an earlier enjoyable scene and make visible what it already required: fare, hours, energy, safety, and someone else's work.",
+        "This fixture reserves the position in the reading order and nothing more."
+      ],
+      "dialogue": [
+        {
+          "id": "dl-bob-cannot-come",
+          "speakerId": "cast-bob",
+          "text": "Placeholder line. Bob answers that he cannot come, and the reason is ordinary rather than dramatic.",
+          "stance": "fictional-illustration",
+          "sourceIds": [],
+          "provenanceId": null
+        }
+      ],
+      "visual": {
+        "description": "Placeholder illustration note: the earlier scene redrawn with the conditions behind it made visible, rather than a new scene. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-bob", "expressionId": "ex-sad" }
+        ]
+      },
+      "conceptIds": ["cn-structural-violence"],
+      "sourceIds": ["R27"],
+      "limitations": [
+        "Naming a structural barrier requires identifying the affected people and the mechanism. This fixture does neither."
+      ],
+      "detailIds": [],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-what-enough-means",
+      "chapterId": "ch-room-for-happiness",
+      "title": "What enough means",
+      "narration": [
+        "Placeholder beat. The authored version will treat enough as a question about responsibilities and costs rather than a number, and will keep the measurement limits of the income research visible.",
+        "No figure, threshold, or finding is asserted in this fixture."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: the same figure drawn beside different obligations, so that enough changes without the person changing. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-tj", "expressionId": "ex-frustrated" }
+        ]
+      },
+      "conceptIds": [],
+      "sourceIds": ["R02", "R10", "R11"],
+      "limitations": [
+        "Income findings depend on the population studied and the well-being measure used. This fixture states no threshold and converts no finding into a local figure.",
+        "External personal accounts are outside perspectives. They are not population evidence and not any contributor's history."
+      ],
+      "detailIds": ["dt-income-measurement-limits"],
+      "interactionIds": ["in-income-measurement-limits"]
+    },
+    {
+      "id": "sc-changes-and-open-questions",
+      "chapterId": "ch-what-could-change",
+      "title": "Changes, costs, and what stays unsettled",
+      "narration": [
+        "Placeholder beat. The authored version will answer the change question at several scales and ask, for each proposal, who benefits, who bears the cost, and who is left out.",
+        "It will end with what the group still disagrees about. This fixture names none of those disagreements, because they belong to the contributors rather than to the scaffolding."
+      ],
+      "dialogue": [],
+      "visual": {
+        "description": "Placeholder illustration note: an earlier joyful scene drawn once more, now with its conditions shown alongside it. The final drawing is not made yet.",
+        "cast": [
+          { "characterId": "cast-tj", "expressionId": "ex-reflective" },
+          { "characterId": "cast-koj", "expressionId": "ex-reflective" },
+          { "characterId": "cast-vier", "expressionId": "ex-reflective" }
+        ]
+      },
+      "conceptIds": [],
+      "sourceIds": [],
+      "limitations": [
+        "Reducing a barrier creates an opportunity. It does not guarantee anyone's feelings."
+      ],
+      "detailIds": [],
+      "interactionIds": []
+    }
+  ],
+
+  "cast": [
+    {
+      "id": "cast-tj",
+      "role": "member",
+      "displayName": "TJ",
+      "appearance": "Original stickman with a small hair tuft, following the first concept sheet. The appearance is provisional and not an approved likeness.",
+      "expressions": [
+        { "id": "ex-joy", "label": "Joy" },
+        { "id": "ex-curious", "label": "Curiosity" },
+        { "id": "ex-sad", "label": "Sadness" },
+        { "id": "ex-frustrated", "label": "Frustration" },
+        { "id": "ex-tired", "label": "Fatigue" },
+        { "id": "ex-reflective", "label": "Reflection" }
+      ]
+    },
+    {
+      "id": "cast-koj",
+      "role": "member",
+      "displayName": "Koj",
+      "appearance": "Original stickman with a curl, following the first concept sheet. The appearance is provisional and not an approved likeness.",
+      "expressions": [
+        { "id": "ex-joy", "label": "Joy" },
+        { "id": "ex-curious", "label": "Curiosity" },
+        { "id": "ex-sad", "label": "Sadness" },
+        { "id": "ex-frustrated", "label": "Frustration" },
+        { "id": "ex-tired", "label": "Fatigue" },
+        { "id": "ex-reflective", "label": "Reflection" }
+      ]
+    },
+    {
+      "id": "cast-vier",
+      "role": "member",
+      "displayName": "Vier",
+      "appearance": "Original stickman with an angular tuft, following the first concept sheet. The appearance is provisional and not an approved likeness.",
+      "expressions": [
+        { "id": "ex-joy", "label": "Joy" },
+        { "id": "ex-curious", "label": "Curiosity" },
+        { "id": "ex-sad", "label": "Sadness" },
+        { "id": "ex-frustrated", "label": "Frustration" },
+        { "id": "ex-tired", "label": "Fatigue" },
+        { "id": "ex-reflective", "label": "Reflection" }
+      ]
+    },
+    {
+      "id": "cast-bob",
+      "role": "friend",
+      "displayName": "Bob",
+      "appearance": "Original stickman with a plain round head, deliberately distinct from the three contributors. Bob is invented for illustration.",
+      "expressions": [
+        { "id": "ex-joy", "label": "Joy" },
+        { "id": "ex-curious", "label": "Curiosity" },
+        { "id": "ex-sad", "label": "Sadness" },
+        { "id": "ex-frustrated", "label": "Frustration" },
+        { "id": "ex-tired", "label": "Fatigue" },
+        { "id": "ex-reflective", "label": "Reflection" }
+      ]
+    }
+  ],
+
+  "sources": [
+    {
+      "id": "R01",
+      "label": "Aristotle, Nicomachean Ethics, Book I",
+      "url": "https://classics.mit.edu/Aristotle/nicomachaen.1.i.html",
+      "type": "Primary philosophical text",
+      "intendedRole": "Flourishing across a life, activity, virtue, and external goods.",
+      "limitation": "Use Book I passages for the actual claim; distinguish explanation from the group's criticism.",
+      "reviewStatus": "unreviewed",
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "R02",
+      "label": "Kahneman & Deaton (2010)",
+      "url": "https://www.pnas.org/doi/10.1073/pnas.1011492107",
+      "type": "Research",
+      "intendedRole": "Everyday emotional well-being versus life evaluation and income patterns.",
+      "limitation": "Keep outcome, population, and year visible; no universal Filipino salary threshold.",
+      "reviewStatus": "unreviewed",
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "R10",
+      "label": "Palanca-Tan, income and happiness in Koronadal (2021)",
+      "url": "https://philjournalsci.dost.gov.ph/income-and-happiness-a-philippine-context/",
+      "type": "Research, local context",
+      "intendedRole": "Income and happiness in the Koronadal setting.",
+      "limitation": "Local findings do not justify poverty or automatically represent the Philippines.",
+      "reviewStatus": "unreviewed",
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "R11",
+      "label": "r/adultingph discussion of how much money is enough",
+      "url": "https://fi.reddit.com/r/adultingph/comments/zqcpwd/how_much_money_do_we_need_to_be_happy/?sort=old",
+      "type": "External personal accounts",
+      "intendedRole": "Different meanings of enough, comfort, family responsibility, and options.",
+      "limitation": "Anecdotes remain external perspectives, not group biography or population proof.",
+      "reviewStatus": "unreviewed",
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "R17",
+      "label": "Sandstrom & Dunn on weak ties",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/24769739/",
+      "type": "Research",
+      "intendedRole": "Weak ties and well-being beyond close friends.",
+      "limitation": "Keep the actual measures and design visible, alongside the need for welcoming spaces.",
+      "reviewStatus": "unreviewed",
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "R27",
+      "label": "Galtung, Violence, Peace, and Peace Research",
+      "url": "https://journals.sagepub.com/doi/10.1177/002234336900600301",
+      "type": "Primary theoretical text",
+      "intendedRole": "Structural violence and avoidable gaps in realisation.",
+      "limitation": "Identify a concrete barrier, affected people, and mechanism; ordinary discomfort is not automatically violence.",
+      "reviewStatus": "unreviewed",
+      "citation": null,
+      "supportedClaim": null
+    }
+  ],
+
+  "concepts": [
+    {
+      "id": "cn-eudaimonia",
+      "name": "Flourishing across a life",
+      "status": "planned",
+      "explanation": null,
+      "application": null,
+      "question": null,
+      "sourceIds": ["R01"]
+    },
+    {
+      "id": "cn-self-determination",
+      "name": "Autonomy, competence, and relatedness",
+      "status": "planned",
+      "explanation": null,
+      "application": null,
+      "question": null,
+      "sourceIds": []
+    },
+    {
+      "id": "cn-weak-ties",
+      "name": "Weak ties",
+      "status": "planned",
+      "explanation": null,
+      "application": null,
+      "question": null,
+      "sourceIds": ["R17"]
+    },
+    {
+      "id": "cn-kapwa",
+      "name": "Kapwa and relational selfhood",
+      "status": "planned",
+      "explanation": null,
+      "application": null,
+      "question": null,
+      "sourceIds": []
+    },
+    {
+      "id": "cn-structural-violence",
+      "name": "Structural violence",
+      "status": "planned",
+      "explanation": null,
+      "application": null,
+      "question": null,
+      "sourceIds": ["R27"]
+    },
+    {
+      "id": "cn-adaptation",
+      "name": "Adaptation and changing baselines",
+      "status": "planned",
+      "explanation": null,
+      "application": null,
+      "question": null,
+      "sourceIds": []
+    }
+  ],
+
+  "details": [
+    {
+      "id": "dt-definitions-still-open",
+      "title": "Why the definitions stay open",
+      "body": [
+        "Placeholder supplementary text. The authored version will set out why the group does not close the definition question, and what each remaining reading would cost.",
+        "Nothing essential to the argument will live only in a panel like this one."
+      ],
+      "sourceIds": ["R01"]
+    },
+    {
+      "id": "dt-income-measurement-limits",
+      "title": "What the income research does and does not measure",
+      "body": [
+        "Placeholder supplementary text. The authored version will state which outcome each study measured, in which population, and in which year.",
+        "The main reading path will already carry the limitation; this panel only carries the longer detail."
+      ],
+      "sourceIds": ["R02", "R10"]
+    }
+  ],
+
+  "interactions": [
+    {
+      "id": "in-definitions-still-open",
+      "surface": "scene-detail",
+      "purpose": "Offer the longer reasoning behind leaving the definitions open, without putting it in the way of readers who do not want it.",
+      "trigger": "Activating the disclosure control under the scene.",
+      "keyboard": "The control is a button in the normal tab order; Enter or Space opens and closes it, and focus stays on the control.",
+      "staticEquivalent": "In the reading view, in print, and with scripting unavailable, the panel is already open and reads in place.",
+      "detailId": "dt-definitions-still-open"
+    },
+    {
+      "id": "in-income-measurement-limits",
+      "surface": "source-detail",
+      "purpose": "Offer measurement detail for the income research to readers who want it, while the limitation itself stays on the main path.",
+      "trigger": "Activating the disclosure control under the scene.",
+      "keyboard": "The control is a button in the normal tab order; Enter or Space opens and closes it, and focus stays on the control.",
+      "staticEquivalent": "In the reading view, in print, and with scripting unavailable, the panel is already open and reads in place.",
+      "detailId": "dt-income-measurement-limits"
+    }
+  ],
+
+  "provenance": [
+    {
+      "id": "pv-fixture-scaffold",
+      "appliesTo": "sc-ordinary-afternoon",
+      "note": "Authoring record, not published: this scene exists to exercise the content contract and the shared outputs. Its text is deliberately not drafted prose.",
+      "sourceNote": "docs/foundation-plan.md"
+    },
+    {
+      "id": "pv-source-register-import",
+      "appliesTo": "R02",
+      "note": "Authoring record, not published: imported from the shared source register with its intended role and limitation, and with no audited claim attached.",
+      "sourceNote": "docs/research.md"
+    }
+  ]
+}
