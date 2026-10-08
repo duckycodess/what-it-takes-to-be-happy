@@ -17,7 +17,7 @@ fail=0
 problem() { printf 'FAIL: %s\n' "$*"; fail=1; }
 ok()      { printf 'ok:   %s\n' "$*"; }
 
-for f in "$STORYBOARD" "$CAST" "$RESEARCH"; do
+for f in "$STORYBOARD" "$CAST" "$RESEARCH" docs/coverage.md; do
   [ -f "$f" ] || { problem "missing $f"; exit 1; }
 done
 
@@ -129,6 +129,37 @@ else
   ok "all cited source identifiers resolve against $RESEARCH"
 fi
 
+# --- every dialogue speaker is present in that scene's cast --------------------
+absent=$(awk '
+  /^#### `s[0-9][0-9][0-9]`/ { id = $2; gsub(/`/, "", id); cast = "" }
+  /^- Cast:/ { cast = $0 }
+  /^  - `[a-z-]+` — / {
+    sp = $2; gsub(/`/, "", sp)
+    if (index(cast, "`" sp "`") == 0) print id " " sp
+  }
+' "$STORYBOARD")
+if [ -n "$absent" ]; then
+  problem "dialogue speakers absent from their scene's cast list:"
+  printf '%s\n' "$absent" | sed 's/^/      /'
+else
+  ok "every dialogue speaker appears in its scene's cast list"
+fi
+
+# --- every dialogue line declares its standing and its notes ------------------
+bad_standing=$(awk '
+  /^#### `s[0-9][0-9][0-9]`/ { id = $2; gsub(/`/, "", id) }
+  /^  - `[a-z-]+` — / {
+    if ($0 !~ /member-endorsed \(Brainstorm [0-9]+/ && $0 !~ /fictional illustration/)
+      print id ": " $0
+  }
+' "$STORYBOARD")
+if [ -n "$bad_standing" ]; then
+  problem "dialogue lines without a standing and a notes reference:"
+  printf '%s\n' "$bad_standing" | sed 's/^/      /'
+else
+  ok "every dialogue line declares member-endorsed with note lines, or fictional illustration"
+fi
+
 # --- every source has an evidence record with the required fields ------------
 missing_rec=$(awk '
   /^### R[0-9][0-9] / { if (id != "") check(id); id = $2; cit=acc=pas=sup=lim=sce=0; next }
@@ -202,7 +233,7 @@ else
 fi
 
 # --- relative links resolve --------------------------------------------------
-for f in "$STORYBOARD" "$CAST"; do
+for f in "$STORYBOARD" "$CAST" docs/coverage.md; do
   grep -oE '\]\(([^)#:]+)(#[^)]*)?\)' "$f" | sed -E 's/^\]\(//; s/\)$//; s/#.*$//' | sort -u |
   while read -r target; do
     [ -n "$target" ] || continue
@@ -211,7 +242,7 @@ for f in "$STORYBOARD" "$CAST"; do
   done
 done | tee /tmp/.sb_links.$$
 [ -s /tmp/.sb_links.$$ ] && fail=1
-[ -s /tmp/.sb_links.$$ ] || ok "relative links in the storyboard and cast registry resolve"
+[ -s /tmp/.sb_links.$$ ] || ok "relative links in the storyboard, cast registry and coverage matrix resolve"
 rm -f /tmp/.sb_links.$$
 
 echo
