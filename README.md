@@ -4,7 +4,7 @@ An independently readable illustrated essay for a SOC SCI midterm, created by TJ
 
 The visual and presentation reference is [Nicky Case's The Evolution of Trust](https://ncase.me/trust/). This project uses its presentation rhythm and handwritten aesthetic as inspiration, with original artwork and an original argument about happiness.
 
-**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented, and an initial character concept sheet has been generated. On 9 October the owner authorized autonomous implementation of the six build packages, automatic merging after verification, and generated-art support from this chat. Application and release progress is tracked on the issues; new unrelated tickets remain unqueued by default.
+**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented; an initial character concept sheet has been generated; and the editorial package is drafted — an 87-scene storyboard whose sources were audited on 9 October 2026: 13 verified in the full work, 11 at article-abstract level, 3 from a publisher's book description only, and 5 that could not be opened. Every scene touching a limited or unopened source says so in its own reader-visible text. On 9 October the owner authorized autonomous implementation of the six build packages, automatic merging after verification, and generated-art support from this chat. Application and release progress is tracked on the issues; new unrelated tickets remain unqueued by default.
 
 ## Read first
 
@@ -14,7 +14,10 @@ The visual and presentation reference is [Nicky Case's The Evolution of Trust](h
 | [Decisions](docs/decisions.md) | Confirmed choices and superseded proposals |
 | [Architecture](docs/architecture.md) | Content contract, reader, illustration, citations, hosted/offline outputs |
 | [Content plan](docs/content-plan.md) | Six shared questions, perspectives, conceptual lenses, coverage |
-| [Research register](docs/research.md) | Current source pool, intended claim roles, limitations, audit status |
+| [Storyboard](docs/storyboard.md) | The authored main path: chapters, scenes, exact prose, dialogue, visible caveats, visual purpose |
+| [Cast registry](docs/cast.md) | Stable identifiers for the three members and the fictional friends, and the six expression states |
+| [Coverage matrix](docs/coverage.md) | Assignment parts, six questions, lenses, and member positions mapped to scenes; reading measurement; delta inventory |
+| [Research register](docs/research.md) | Per-source evidence record: what was actually opened, the supported claim, the limitation, and a review-status rollup |
 | [Art direction](docs/art-direction.md) | Original characters, emotions, typography, meaningful scene changes |
 | [Asset workflow](docs/asset-workflow.md) | Built-in generation, first character sheet, drawing parts, animation, optional tools |
 | [Autonomous build](docs/autonomous-build.md) | Owner authorization, reviewed merges, issue labels, art requests, local supervision |
@@ -38,7 +41,14 @@ The working synthesis is that happiness takes different forms: small joys matter
 
 Add new member notes using [the delta template](docs/notes/delta-template.md), then reconcile the affected story sections and references. Research can be shared among all three contributors; personal claims should remain faithful to what each member endorses.
 
-There are no application commands yet. The implementation foundation ticket will establish and document the chosen tooling, local preview, validation, hosted build, and offline packaging commands.
+Two editorial commands exist. They need nothing beyond coreutils, grep, and awk:
+
+```sh
+./tools/check-storyboard.sh    # storyboard, cast, and research-register consistency
+./tools/count-main-path.sh     # main-path word count and reading estimate (--chapters, --text)
+```
+
+There are still no application commands. The implementation foundation ticket will establish and document the chosen tooling, local preview, validation, hosted build, and offline packaging commands.
 
 ## Work tracking
 
