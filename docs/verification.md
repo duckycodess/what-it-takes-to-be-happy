@@ -1,6 +1,16 @@
 # Verification plan
 
-These are concrete acceptance scenarios for future implementation. The repository currently has no application commands or tests; add actual commands when the foundation exists. Avoid tests that merely mirror rendering code.
+These are concrete acceptance scenarios for the finished essay. Avoid tests that merely mirror rendering code.
+
+## What the foundation already checks
+
+`npm run check` runs the content validation, the automated suite, and the build. The suite covers the contract rules against a deliberately broken fixture, reordering beats by stable identifier, the renderer's coverage of essential content, the absence of authoring provenance in any output, the packaging audits, build determinism, and the preview server. The build itself refuses to write an output that drops essential content or an offline file that depends on anything it does not carry.
+
+Checked by hand on 9 October 2026 against `dist/offline.html` opened through a `file://` URL in headless Chrome with name resolution disabled and the proxy pointed at a dead port: the landing, Begin, Next, Back, arrow keys, chapter shortcuts, the current-chapter marker, the reading view, the optional panels opening and closing, focus moving to the current beat, the embedded illustration, and the embedded font. Printing from inside a single beat still produced the complete essay. The layout reflows without horizontal overflow at a 360-pixel-wide document and composes into two columns on a wide screen.
+
+Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, contrast measurement, reduced-motion behaviour with actual scene motion, and anything about the finished prose or artwork.
+
+## Scenarios for the finished essay
 
 ## Argument and source coverage
 

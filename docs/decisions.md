@@ -49,6 +49,21 @@ The user confirmed the shared brief and subsequently requested repository creati
 
 ## Implementation discretion
 
-Framework, bundler, storage format, and production editing tools have not been mandated. Built-in image generation is the chosen starting point for visual concepts. SVG components, browser motion, Anime.js, and Rough.js are production options described in [the asset workflow](asset-workflow.md), not installed dependencies. Choose actual tooling to meet the static hosted/offline outputs, accessibility, editable content, and original artwork requirements. The current repository has no application scaffold. Record meaningful implementation decisions and actual commands when that work is performed.
+Framework, bundler, storage format, and production editing tools were not mandated. Built-in image generation is the chosen starting point for visual concepts. SVG components, browser motion, Anime.js, and Rough.js are production options described in [the asset workflow](asset-workflow.md), not installed dependencies.
+
+The foundation package made these choices, all reversible:
+
+| Choice | Made | Reason |
+| --- | --- | --- |
+| Runtime | Node 24, pinned by `.nvmrc` and `engines` | Only the build and the checks need it; the deployed essay is static files. |
+| Dependencies | None at all; the committed lockfile has no packages | Nothing should stand between the authored content and a file that must open from a local disk with no network. |
+| Content format | One JSON document, `content/content.json` | Editable by hand, diffable, and checkable; see [the content contract](content-contract.md). |
+| Validation | A dependency-light validator with a nonzero exit code | Broken references and invented positions fail before a build, not during review. |
+| Rendering | One renderer; the whole essay is in the markup, and the browser script only chooses what is visible | Print, a scriptless browser, and the offline file all keep the complete argument for free. |
+| Browser script | A classic script, not an ES module | Module loading is blocked for `file://` documents. |
+| Checks | Node's built-in test runner, plus `node --check` over every source file | No linter, formatter, or type checker is configured; this is the honest substitute. |
+| Fallback font | DejaVu Sans, committed with its licence | A temporary stand-in that proves a real font embeds in both outputs. Not the project typeface. |
+
+Actual commands are in the [README](../README.md) and [architecture](architecture.md); the hosting settings are in [delivery](delivery.md).
 
 Source claims are currently collected from group notes. They still require passage-level verification before becoming final published assertions; see [the research register](research.md).

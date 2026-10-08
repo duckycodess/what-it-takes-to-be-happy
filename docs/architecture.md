@@ -84,6 +84,54 @@ Runtime module loading, runtime fetching of content, remote fonts, or remote ill
 
 Do not invent build commands now. The foundation implementation must document the actual local preview, validation, hosted packaging, and offline export commands it introduces.
 
+## The implemented foundation
+
+The foundation package filled in the implementation choices this document left open. What follows records what exists, not what is planned.
+
+### Tooling, and why it is this small
+
+Node 24 with **no dependencies at all**. The committed `package-lock.json` contains no packages, tests use Node's built-in runner, and the build uses only `node:fs`, `node:path`, `node:crypto`, and `node:http`.
+
+The reasoning is the offline requirement. A framework or bundler would put a toolchain between the authored content and a file that has to open from a local disk with no network, and every dependency added to that path is another way for the submission artifact to break on the night it is due. A static essay with one page, one stylesheet, and one browser script does not need one. Nothing here prevents a later package from adding a dependency if it earns its place; the decision is only that the foundation did not need one.
+
+Consequences worth knowing: there is no linter, formatter, or type checker configured, so `npm test` runs Node's own parser over every source file instead. The browser script is a classic script rather than an ES module, because module loading is blocked for `file://` documents.
+
+| Path | Role |
+| --- | --- |
+| `content/content.json` | The single content document. See [the content contract](content-contract.md). |
+| `src/content/` | Schema constants, the validator, and the loader. |
+| `src/runtime/` | The shared renderer, the stylesheet, and the browser script. |
+| `src/build/` | Asset declarations, data-URI inlining, the output audits, and the build. |
+| `src/tools/` | The validation command and the local preview server. |
+| `test/` | Contract, renderer, packaging, and preview checks, plus a deliberately broken fixture. |
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run validate` | Checks `content/content.json` against the contract. Exits nonzero with located errors. |
+| `npm test` | Runs every check: contract rules, stable-identifier reordering, rendering, packaging, determinism, and the preview server. |
+| `npm run build` | Validates, renders, audits, and writes `dist/`. |
+| `npm run export:offline` | Writes only `dist/offline.html`. |
+| `npm run preview` | Serves `dist/` at `http://localhost:4173`. |
+| `npm run check` | `validate`, then `test`, then `build`. |
+
+`dist/` is generated and git-ignored. The exact hosting settings are in [delivery](delivery.md).
+
+### One render, three outputs
+
+`src/runtime/render.js` renders the **entire** essay into the markup — every chapter, every beat, every optional panel — and the browser script only decides what is on screen. That single decision is what makes the rest hold together:
+
+- Print carries the complete argument whichever view is open, and optional panels are reopened before printing.
+- A browser with scripting unavailable shows the continuous reading view, which is the same thing the print route needs.
+- The hosted page and the offline file differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical.
+
+The build refuses to publish an output that drops essential content, and refuses an offline file that references anything it does not carry. External source destinations stay as ordinary links: offline, their labels, roles, and limitations are all still readable, and only following the link needs a connection.
+
+### What the foundation did not decide
+
+Final prose, finished artwork, scene motion, the project typeface, and the reader's finished visual design are all still open. The committed font and the committed illustration are temporary and exist to prove binary packaging works end to end.
+
 ## Handoffs that create real prerequisites
 
 The reader depends on the foundation's content/runtime interfaces. Final narrative integration depends on an audited storyboard, a working reader, and original scene assets. Hosted/offline release verification depends on the integrated complete essay. Editorial work and original asset development can begin alongside the foundation using these documented contracts.
