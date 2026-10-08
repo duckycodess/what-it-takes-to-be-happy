@@ -18,6 +18,7 @@ import {
   ART_STATES,
   COMPOSITIONS,
   COMPOSITION_IDS,
+  VIEW,
   EXPRESSIONS,
   EXPRESSION_IDS,
   FIGURES,
@@ -64,7 +65,7 @@ test('the drawable identifiers are stable, because content points at them by nam
     'art-two-instruments',
     'art-balance',
     'art-two-climbs',
-    'art-rest-without-a-frame',
+    'art-rest-and-the-frame',
     'art-handed-template',
     'art-one-screen-two-things',
     'art-invitation-conditions',
@@ -186,6 +187,73 @@ test('the settled state is what is drawn: the condition layer is present only wh
       assert.ok(revealed.svg.includes('data-art-layer="reveal"'), `${id} should be able to show what is under the situation`);
       assert.ok(revealed.svg.length > situation.svg.length);
       assert.match(composition.settled, /\S/, `${id} must describe the state it settles into`);
+    }
+  }
+});
+
+test('the revealed state adds to the situation and never contradicts it', () => {
+  // This is what lets a written description be true of both states of one
+  // motif, and what lets the entrance animation be an addition rather than a
+  // correction: everything in the situation is still there afterwards.
+  for (const id of COMPOSITION_IDS) {
+    const composition = COMPOSITIONS[id];
+    if (!composition.reveal) continue;
+    for (let count = composition.minFigures; count <= composition.maxFigures; count += 1) {
+      const figures = figuresFor(count);
+      const situation = renderSceneArt({ artId: id, artState: 'situation', figures }).svg;
+      const revealed = renderSceneArt({ artId: id, artState: 'revealed', figures }).svg;
+      const base = situation.slice(situation.indexOf('<g data-art-layer="base">'), situation.lastIndexOf('</g>'));
+      assert.ok(base.length > 0);
+      assert.ok(revealed.includes(base), `${id} with ${count} figures redraws its situation when the condition layer arrives`);
+    }
+  }
+});
+
+/** The scenery in a layer, as the shapes a figure could be standing on. */
+function footings(layer) {
+  const found = [];
+  for (const match of layer.matchAll(/<rect x="(-?[\d.]+)" y="(-?[\d.]+)" width="([\d.]+)" height="([\d.]+)"/g)) {
+    const [x, y, width] = [Number(match[1]), Number(match[2]), Number(match[3])];
+    found.push([[x, y], [x + width, y]]);
+  }
+  for (const match of layer.matchAll(/<line x1="(-?[\d.]+)" y1="(-?[\d.]+)" x2="(-?[\d.]+)" y2="(-?[\d.]+)"/g)) {
+    found.push([[Number(match[1]), Number(match[2])], [Number(match[3]), Number(match[4])]]);
+  }
+  for (const match of layer.matchAll(/<polyline points="([^"]+)"/g)) {
+    const points = match[1].split(' ').map((pair) => pair.split(',').map(Number));
+    for (let index = 0; index + 1 < points.length; index += 1) found.push([points[index], points[index + 1]]);
+  }
+  return found;
+}
+
+/** Whether a segment passes under a standing point, within a line's width. */
+const holdsUp = ([[x1, y1], [x2, y2]], slot) => {
+  const within = slot.x >= Math.min(x1, x2) - 1 && slot.x <= Math.max(x1, x2) + 1;
+  if (!within) return false;
+  const y = x2 === x1 ? y1 : y1 + ((slot.x - x1) * (y2 - y1)) / (x2 - x1);
+  return Math.abs(y - slot.y) <= 2;
+};
+
+test('nobody stands on something that only the condition layer draws', () => {
+  // A figure placed above the ground line has to be standing on scenery that is
+  // part of the situation. Otherwise it hovers in the state a scene is perfectly
+  // entitled to choose, waiting for a layer that may never be asked for.
+  for (const id of COMPOSITION_IDS) {
+    const composition = COMPOSITIONS[id];
+    for (let count = Math.max(composition.minFigures, 1); count <= composition.maxFigures; count += 1) {
+      const figures = figuresFor(count);
+      const raised = composition.slots(figures.length).filter((slot) => slot.y < VIEW.ground);
+      if (raised.length === 0) continue;
+
+      const svg = renderSceneArt({ artId: id, artState: 'situation', figures }).svg;
+      const base = svg.slice(svg.indexOf('<g data-art-layer="base">'));
+      const scenery = footings(base.replace(/<g data-figure=[\s\S]*?<\/g><\/g><\/g>/g, ''));
+      for (const slot of raised) {
+        assert.ok(
+          scenery.some((segment) => holdsUp(segment, slot)),
+          `${id} with ${count} figures stands someone at ${slot.x},${slot.y} with nothing under them in the situation`,
+        );
+      }
     }
   }
 });

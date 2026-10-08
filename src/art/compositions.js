@@ -86,7 +86,11 @@ const CATALOGUE = [
     settled: 'Every figure stands on the shared ground line wearing its own expression.',
     minFigures: 1,
     maxFigures: 8,
-    slots: (count) => row(count, { scale: count > 5 ? 0.62 : 0.82, spread: Math.min(count > 5 ? 400 : 300, count * 86) }),
+    slots: (count) => row(count, {
+      scale: count > 5 ? 0.62 : 0.82,
+      spread: Math.min(count > 5 ? 400 : 300, count * 86),
+      poses: count === 1 ? ['ease'] : ['stand'],
+    }),
     base: ({ slots, figures }) => `${ground()}${placeAll(slots, figures)}`,
   },
   {
@@ -103,7 +107,7 @@ const CATALOGUE = [
       const spread = (n, from, to) =>
         Array.from({ length: n }, (_, index) => (n === 1 ? (from + to) / 2 : from + (index * (to - from)) / (n - 1)));
       const left = Math.ceil(count / 2);
-      const xs = [...spread(left, 66, 176), ...spread(count - left, 304, 414)];
+      const xs = [...spread(left, 66, 176), ...spread(count - left, 312, 422)];
       return xs.map((x, index) => ({
         x,
         y: VIEW.ground,
@@ -228,7 +232,7 @@ const CATALOGUE = [
     id: 'art-balance',
     title: 'Weighing one thing against another',
     purpose: 'Make a comparison visible as a balance, and then make visible that somebody decided how the pans were set.',
-    settled: 'A balance holds two unlike things, and a figure stands on a small platform beside it, where the ranking is done.',
+    settled: 'A balance holds two unlike things. Where a second figure is placed, it stands on the platform the ranking is done from, and an arrow runs from there to the pans.',
     minFigures: 0,
     maxFigures: 2,
     slots: (count) => (count <= 1
@@ -248,15 +252,19 @@ const CATALOGUE = [
       curve([284, 174], [304, 196], [324, 174], MEDIUM),
       circle(176, 142, 9, MEDIUM),
       rect(296, 162, 16, 14, MEDIUM),
+      // The platform is part of the situation: a figure placed on it has to be
+      // standing on something in both states, not hovering until a layer arrives.
+      slots.length > 1 ? rect(368, VIEW.ground - 34, 64, 34, MEDIUM) : '',
       placeAll(slots, figures),
     ].join(''),
-    reveal: () => [rect(368, VIEW.ground - 34, 64, 34, MEDIUM), arrow(372, 198, 318, 170)].join(''),
+    // What the reveal adds is the judging itself, not the furniture.
+    reveal: () => arrow(372, 198, 318, 170),
   },
   {
     id: 'art-two-climbs',
     title: 'A climb entered, and a climb imposed',
     purpose: 'Separate difficulty somebody chose from difficulty somebody cannot refuse, without claiming either one is easy.',
-    settled: 'Two identical slopes stand side by side. One figure climbs with empty hands; the other climbs carrying a block it did not pick up by choice.',
+    settled: 'Two identical slopes stand side by side. One figure climbs with empty hands; the other climbs carrying a block it did not pick up by choice. With only one figure placed, the load is drawn coming down onto the second climb instead.',
     minFigures: 1,
     maxFigures: 2,
     slots: (count) => [
@@ -270,7 +278,7 @@ const CATALOGUE = [
       placeAll(slots, figures),
     ].join(''),
     reveal: ({ slots }) => {
-      if (slots.length < 2) return [rect(326, 172, 36, 24, MEDIUM), arrow(344, 142, 344, 166)].join('');
+      if (slots.length < 2) return [rect(356, 146, 36, 24, MEDIUM), arrow(374, 176, 374, 192)].join('');
       const [left, right] = handPoints(slots[1]);
       const width = right.x - left.x + 16;
       return [
@@ -280,21 +288,19 @@ const CATALOGUE = [
     },
   },
   {
-    id: 'art-rest-without-a-frame',
-    title: 'Rest, and the frame drawn around it',
-    purpose: 'Show rest that produces nothing, and then show the measuring frame somebody drew around it lifting away.',
-    settled: 'A figure rests. The frame of ticks and rising arrows that was around it has lifted clear and is drawn dashed above.',
+    id: 'art-rest-and-the-frame',
+    title: 'Rest, and the frame somebody draws around it',
+    purpose: 'Show rest with nothing attached to it, and then show the measure somebody draws around that rest. Taking the frame away is the same drawing in the other state.',
+    settled: 'A figure rests with nothing attached to it, inside a frame of measuring ticks and a rising arrow that has been drawn around the rest.',
     minFigures: 1,
     maxFigures: 2,
     slots: (count) => row(count, { scale: 0.78, spread: 110, centre: 236, poses: ['sit', 'stand'] }),
-    base: ({ slots, figures }) => [
-      ground(),
-      rect(140, 112, 196, 136, MEDIUM),
+    base: ({ slots, figures }) => `${ground()}${placeAll(slots, figures)}`,
+    reveal: () => [
+      rect(140, 100, 196, 148, MEDIUM),
       ...[164, 192, 220].map((x) => line(x, 244, x, 236, THIN)),
-      arrow(306, 232, 326, 196),
-      placeAll(slots, figures),
+      arrow(306, 232, 326, 192),
     ].join(''),
-    reveal: () => [rect(140, 22, 196, 48, FAINT), line(160, 78, 160, 112, THIN), line(316, 78, 316, 112, THIN), arrow(166, 104, 166, 76)].join(''),
   },
   {
     id: 'art-handed-template',

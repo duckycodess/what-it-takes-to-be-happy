@@ -34,7 +34,7 @@ import {
 const FIELDS = {
   root: ['schema', 'status', 'project', 'chapters', 'scenes', 'cast', 'sources', 'concepts', 'details', 'interactions', 'provenance'],
   status: ['final', 'label', 'notice'],
-  project: ['title', 'question', 'summary', 'readingTimeEstimate'],
+  project: ['title', 'question', 'summary', 'readingTimeEstimate', 'visual'],
   chapter: ['id', 'title', 'question', 'opening', 'closing', 'sceneIds'],
   scene: ['id', 'chapterId', 'title', 'narration', 'dialogue', 'visual', 'conceptIds', 'sourceIds', 'limitations', 'detailIds', 'interactionIds'],
   visual: ['description', 'artId', 'artState', 'cast'],
@@ -247,13 +247,17 @@ function validateStatus(bag, doc) {
   }
 }
 
-function validateProject(bag, doc) {
+function validateProject(bag, doc, ids, expressionsByCharacter) {
   if (!checkObject(bag, doc.project, 'project', FIELDS.project)) return;
   checkString(bag, doc.project.title, 'project.title');
   checkString(bag, doc.project.question, 'project.question');
   checkString(bag, doc.project.summary, 'project.summary');
   // The reading-time estimate stays null until real prose can be measured.
   checkNullableString(bag, doc.project.readingTimeEstimate, 'project.readingTimeEstimate');
+  // The landing illustration is authored content like any other beat's, so it
+  // obeys the same rules: a drawing the artwork can produce, a state it can
+  // settle into, a cast it can place, and a description that stands in for it.
+  validateVisual(bag, doc.project.visual, 'project.visual', ids, expressionsByCharacter);
 }
 
 function validateCast(bag, doc) {
@@ -441,7 +445,7 @@ function validateScenes(bag, doc, ids, expressionsByCharacter) {
     checkReferenceList(bag, ids, scene.detailIds, `${path}.detailIds`, ['detail'], { what: 'Detail' });
     checkReferenceList(bag, ids, scene.interactionIds, `${path}.interactionIds`, ['interaction'], { what: 'Interaction' });
 
-    validateSceneVisual(bag, scene, path, ids, expressionsByCharacter);
+    validateVisual(bag, scene.visual, `${path}.visual`, ids, expressionsByCharacter);
     validateSceneDialogue(bag, scene, path, ids);
 
     // An optional interaction must reveal a detail the same scene already
@@ -458,17 +462,21 @@ function validateScenes(bag, doc, ids, expressionsByCharacter) {
   });
 }
 
-function validateSceneVisual(bag, scene, path, ids, expressionsByCharacter) {
-  const visualPath = `${path}.visual`;
-  if (!checkObject(bag, scene.visual, visualPath, FIELDS.visual)) return;
+/**
+ * A drawing and the figures in it. Scenes use this, and so does the landing:
+ * one rule set, so the opening cannot quietly become a special case that
+ * invents a cast or claims a drawing nobody made.
+ */
+function validateVisual(bag, visual, visualPath, ids, expressionsByCharacter) {
+  if (!checkObject(bag, visual, visualPath, FIELDS.visual)) return;
   // The visual description doubles as the text alternative and as the static
   // equivalent when motion is reduced, so it is never optional.
-  checkString(bag, scene.visual.description, `${visualPath}.description`, {
+  checkString(bag, visual.description, `${visualPath}.description`, {
     label: `${visualPath}.description (also the text alternative and reduced-motion equivalent)`,
   });
-  if (!checkArray(bag, scene.visual.cast, `${visualPath}.cast`)) return;
-  validateSceneArt(bag, scene.visual, visualPath);
-  scene.visual.cast.forEach((appearance, appearanceIndex) => {
+  if (!checkArray(bag, visual.cast, `${visualPath}.cast`)) return;
+  validateSceneArt(bag, visual, visualPath);
+  visual.cast.forEach((appearance, appearanceIndex) => {
     const appearancePath = `${visualPath}.cast[${appearanceIndex}]`;
     if (!checkObject(bag, appearance, appearancePath, FIELDS.visualCast)) return;
     const known = checkReference(bag, ids, appearance.characterId, `${appearancePath}.characterId`, ['character'], { what: 'Character' });
@@ -641,7 +649,7 @@ export function validateContent(doc) {
   const { ids, expressionsByCharacter } = collectIds(bag, doc);
 
   validateStatus(bag, doc);
-  validateProject(bag, doc);
+  validateProject(bag, doc, ids, expressionsByCharacter);
   validateCast(bag, doc);
   validateSources(bag, doc);
   validateConcepts(bag, doc, ids);

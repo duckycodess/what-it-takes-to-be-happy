@@ -59,7 +59,7 @@ function renderFigureLabel(character, expression, anchor) {
 }
 
 /**
- * A scene's drawing.
+ * One authored drawing: a scene's, or the landing's.
  *
  * The illustration is inline SVG generated during the build, so it carries no
  * request, no font, and no external reference, and the single offline file owns
@@ -67,21 +67,26 @@ function renderFigureLabel(character, expression, anchor) {
  * drawing: they stay selectable, they scale with the reader's own type size,
  * and they are never baked into the artwork.
  *
- * A scene may have no composition yet. That is declared in the content document
- * rather than guessed at here, and the figures and the written description
- * carry the beat exactly as they do in print.
+ * Everything drawn is named by the content document — the composition, the
+ * state it settles into, who is in it, and what each of them is feeling. There
+ * is no illustration in this file, including on the landing: an opening that
+ * chose its own cast would be inventing one.
+ *
+ * A beat may have no composition yet. That too is declared in the content
+ * document rather than guessed at here, and the figures and the written
+ * description carry it exactly as they do in print.
  */
-function renderVisual(scene, castById) {
-  const appearances = scene.visual.cast.map((appearance) => {
+function renderVisual(visual, castById, className) {
+  const appearances = visual.cast.map((appearance) => {
     const character = castById.get(appearance.characterId);
     const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
     return { character, expression };
   });
 
-  const drawing = scene.visual.artId
+  const drawing = visual.artId
     ? renderSceneArt({
-      artId: scene.visual.artId,
-      artState: scene.visual.artState,
+      artId: visual.artId,
+      artState: visual.artState,
       figures: appearances.map(({ character, expression }) => ({ figure: character.artId, expression: expression.artId })),
     })
     : null;
@@ -91,7 +96,7 @@ function renderVisual(scene, castById) {
     .join('\n');
 
   const frame = [
-    `<div class="scene-visual-frame" data-art="${esc(scene.visual.artId ?? 'none')}" data-art-state="${esc(scene.visual.artState ?? 'described')}">`,
+    `<div class="scene-visual-frame" data-art="${esc(visual.artId ?? 'none')}" data-art-state="${esc(visual.artState ?? 'described')}">`,
     drawing ? drawing.svg : '',
     labels ? `<ul class="art-labels" aria-label="Who is in this drawing">\n${labels}\n</ul>` : '',
     '</div>',
@@ -99,9 +104,9 @@ function renderVisual(scene, castById) {
 
   // The description lives in the caption rather than an aria-label, so the
   // nametags stay real text and nothing is announced twice.
-  return `<figure class="scene-visual">
+  return `<figure class="${className}">
 ${frame}
-<figcaption>${esc(scene.visual.description)}</figcaption>
+<figcaption>${esc(visual.description)}</figcaption>
 </figure>`;
 }
 
@@ -160,7 +165,7 @@ ${scene.sourceIds.map((id) => renderSourceReference(sourceById.get(id))).join('\
 
   return `<li class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}" tabindex="-1">
 <h3 class="scene-title">${esc(scene.title)}</h3>
-${renderVisual(scene, castById)}
+${renderVisual(scene.visual, castById, 'scene-visual')}
 <div class="narration">
 ${paragraphs(scene.narration)}
 </div>
@@ -190,49 +195,16 @@ ${scenes}
 </section>`;
 }
 
-/**
- * The opening deliberately shows different states at once, because the landing
- * is the one place a reader could mistake this essay for an argument that
- * happiness is one feeling everybody should be having.
- */
-const LANDING_STATES = ['joy', 'fatigue', 'reflection'];
-
-function renderLandingArt(content) {
-  const members = content.cast.filter((character) => character.role === 'member').slice(0, 5);
-  if (members.length === 0) return '';
-
-  const appearances = members.map((member, index) => {
-    const wanted = LANDING_STATES[index % LANDING_STATES.length];
-    const expression = member.expressions.find((entry) => entry.artId === wanted) ?? member.expressions[0];
-    return { character: member, expression };
-  });
-
-  const drawing = renderSceneArt({
-    artId: 'art-opening-question',
-    artState: 'revealed',
-    figures: appearances.map(({ character, expression }) => ({ figure: character.artId, expression: expression.artId })),
-  });
-
-  const labels = appearances
-    .map(({ character, expression }, index) => renderFigureLabel(character, expression, drawing.anchors[index]))
-    .join('\n');
-
-  return `<figure class="landing-art">
-<div class="scene-visual-frame" data-art="art-opening-question" data-art-state="revealed">
-${drawing.svg}
-<ul class="art-labels" aria-label="Who is in this drawing">
-${labels}
-</ul>
-</div>
-<figcaption>The three of us around the question, each drawn in a different state, with a different answer under each of us. Nothing in the picture says which one of us has it right.</figcaption>
-</figure>`;
-}
-
-function renderLanding(content, options, firstSceneId) {
+function renderLanding(content, options, firstSceneId, castById) {
   const members = content.cast.filter((character) => character.role === 'member');
   const names = members.map((member) => `<li class="nametag">${esc(member.displayName)}</li>`).join('\n');
 
-  const illustration = renderLandingArt(content);
+  // The opening illustration is authored like any other: which figures stand
+  // around the question, and what each of them is feeling, are content
+  // decisions, not something this renderer picks.
+  const illustration = content.project.visual
+    ? renderVisual(content.project.visual, castById, 'landing-art')
+    : '';
 
   const readingTime = content.project.readingTimeEstimate
     ? `<p class="reading-time">About ${esc(content.project.readingTimeEstimate)} to read.</p>`
@@ -363,7 +335,7 @@ ${head}
 <a class="skip-link" href="#essay">Skip to the essay</a>
 ${renderDraftNotice(content.status)}
 <main id="essay">
-${renderLanding(content, options, orderedSceneIds[0])}
+${renderLanding(content, options, orderedSceneIds[0], context.castById)}
 ${renderChapterNav(content)}
 <div class="essay-body" data-essay>
 ${content.chapters.map((chapter) => renderChapter(chapter, context)).join('\n')}

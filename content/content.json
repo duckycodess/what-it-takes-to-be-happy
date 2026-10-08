@@ -9,7 +9,18 @@
     "title": "What Does It Take to Be Happy?",
     "question": "What does it take to be happy?",
     "summary": "Happiness takes different forms. Small joys count, while security, time, relationships, and freedom shape who can sustain them. This is a working synthesis, not a formula that predicts feelings or erases disagreements.",
-    "readingTimeEstimate": null
+    "readingTimeEstimate": null,
+    "visual": {
+      "description": "Four stickmen stand to either side of a large question mark: one at ease and smiling, one slumped and tired, one still and considering, and one invented friend watching the others. Under each of them is an answer stroke, and no two are the same length.",
+      "artId": "art-opening-question",
+      "artState": "revealed",
+      "cast": [
+        { "characterId": "cast-tj", "expressionId": "ex-joy" },
+        { "characterId": "cast-koj", "expressionId": "ex-tired" },
+        { "characterId": "cast-vier", "expressionId": "ex-reflective" },
+        { "characterId": "cast-bob", "expressionId": "ex-curious" }
+      ]
+    }
   },
 
   "chapters": [
@@ -134,7 +145,7 @@
         }
       ],
       "visual": {
-        "description": "Two identical slopes stand side by side. Bob climbs one of them with empty hands. On the other, the same climb is drawn with a block resting on it that nobody chose to pick up.",
+        "description": "Two identical slopes stand side by side. Bob climbs one of them with empty hands. Over the other, a block is drawn coming down onto the same climb, with an arrow pointing at the place it will sit.",
         "artId": "art-two-climbs",
         "artState": "revealed",
         "cast": [
@@ -157,9 +168,9 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "A figure rests inside a frame of measuring ticks and a rising arrow. The frame has lifted clear of the figure and is drawn dashed above it, leaving the rest with nothing attached to it.",
-        "artId": "art-rest-without-a-frame",
-        "artState": "revealed",
+        "description": "A figure rests on an open ground line with nothing else in the frame: no measuring ticks, no rising arrow, nothing the rest is supposed to be producing.",
+        "artId": "art-rest-and-the-frame",
+        "artState": "situation",
         "cast": [
           { "characterId": "cast-tj", "expressionId": "ex-tired" }
         ]
@@ -239,7 +250,7 @@
         }
       ],
       "visual": {
-        "description": "The invitation still floats above the line with its friends attached to it. Below the line, in a band of its own, are the travel, the tasks, and the person being cared for that the free evening already contained.",
+        "description": "The invitation still floats above the line with its friends attached to it. Below the line, in a band of its own, are the travel, the tasks, the person being cared for, and the person doing the caring, all of which the free evening already contained.",
         "artId": "art-invitation-conditions",
         "artState": "revealed",
         "cast": [
@@ -290,7 +301,7 @@
       ],
       "dialogue": [],
       "visual": {
-        "description": "Three figures in an unhurried scene above the line, one of them mid-throw. Underneath the line, drawn as three bars with arrows pushing up into it, are the supports the afternoon was resting on.",
+        "description": "Three figures stand above the line, one with both arms up, and a ball arcs away past them. Underneath the line, drawn as three bars with arrows pushing up into it, are the supports the afternoon was resting on.",
         "artId": "art-joy-and-conditions",
         "artState": "revealed",
         "cast": [

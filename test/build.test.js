@@ -100,7 +100,8 @@ test('the single offline file carries every drawing, with nothing left to fetch'
 
   const count = (html) => (html.match(/<svg class="scene-art"/g) ?? []).length;
   const drawn = content.scenes.filter((scene) => scene.visual.artId !== null).length;
-  assert.equal(count(offline), drawn + 1, 'every drawn beat plus the landing');
+  const landing = content.project.visual.artId ? 1 : 0;
+  assert.equal(count(offline), drawn + landing, 'every drawn beat, plus the landing when it has a drawing');
   assert.equal(count(offline), count(hosted), 'the offline file draws exactly what the hosted page draws');
 
   assert.deepEqual(auditInlineArtwork(offline), []);

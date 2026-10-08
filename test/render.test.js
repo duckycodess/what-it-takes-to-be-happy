@@ -238,6 +238,33 @@ test('every drawn beat renders its drawing inline, at the state the content aske
   assert.ok(html.includes('data-art-layer="base"'));
 });
 
+test('the landing drawing is authored content, not a choice the renderer makes', () => {
+  const content = loadValidContent();
+  const html = render(content);
+  const landing = html.slice(html.indexOf('<figure class="landing-art">'), html.indexOf('</figure>', html.indexOf('<figure class="landing-art">')));
+
+  assert.ok(landing.includes(`data-art="${content.project.visual.artId}" data-art-state="${content.project.visual.artState}"`));
+  assert.equal((landing.match(/<li class="art-label"/g) ?? []).length, content.project.visual.cast.length);
+  assert.ok(landing.includes(esc(content.project.visual.description)), 'the landing caption is the authored description');
+
+  // Who stands around the question, and what each of them is feeling, follow
+  // the document. An opening that picked its own cast would be inventing one.
+  for (const appearance of content.project.visual.cast) {
+    const character = byId(content.cast, appearance.characterId);
+    const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
+    assert.ok(landing.includes(`<span class="nametag">${esc(character.displayName)}</span><span class="expression">${esc(expression.label)}</span>`));
+    assert.ok(landing.includes(`data-figure="${character.artId}" data-expression="${expression.artId}"`));
+  }
+
+  const changed = loadValidContent();
+  changed.project.visual.artId = 'art-figure-row';
+  changed.project.visual.artState = 'situation';
+  changed.project.visual.cast = [{ characterId: 'cast-vier', expressionId: 'ex-uncertain' }];
+  const other = render(changed);
+  assert.ok(other.includes('<figure class="landing-art">\n<div class="scene-visual-frame" data-art="art-figure-row"'));
+  assert.ok(!other.includes('data-art="art-opening-question"'));
+});
+
 test('a beat with no drawing keeps its figures and its description', () => {
   const content = loadValidContent();
   const scene = byId(content.scenes, 'sc-ordinary-afternoon');

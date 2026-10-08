@@ -12,8 +12,8 @@ designs came from and [art direction](art-direction.md) for the look they follow
 
 - It **is** a small set of reusable parts — identities, expressions, postures — and a catalogue of
   explanatory motifs that scenes point at by identifier.
-- It is **not** 87 bespoke illustrations. Thirty-three of the storyboard's 87 beats have a motif
-  today; the other 54 declare that they have none and are carried by their written description,
+- It is **not** 87 bespoke illustrations. Thirty-four of the storyboard's 87 beats have a motif
+  today; the other 53 declare that they have none and are carried by their written description,
   which is also the text alternative, the print illustration, and the reduced-motion equivalent.
   [`src/art/storyboard-map.js`](../src/art/storyboard-map.js) records the decision for every beat,
   and `npm test` fails if a beat is missing from it.
@@ -78,7 +78,8 @@ and every state still reads.
 
 ## Postures
 
-`stand`, `ease`, `walk`, `reach`, `celebrate`, `carry`, `sit`, `slump`, `point`. A composition
+`stand`, `ease`, `walk`, `reach`, `celebrate`, `carry`, `sit` (on the ground, legs out), `slump`,
+`point`. A composition
 chooses the posture, because the posture belongs to the situation rather than to the person. Each
 one declares where its hands are, so a composition can put a load, a template, or a prop into them.
 
@@ -96,9 +97,9 @@ that shows what was under the situation all along.
 | `art-three-readings` | One moment, a path to each reader of it | 1–3 | The paths, each ending in its own shape |
 | `art-life-line` | A life as a marked length, not a moment | 0–2 | Stretches of it fenced off |
 | `art-two-instruments` | A dial and a ruler aimed at one person | 0–2 | The second instrument and its reading |
-| `art-balance` | Two unlike things weighed against each other | 0–2 | The platform the ranking is done from |
-| `art-two-climbs` | A climb entered beside a climb imposed | 1–2 | The load, and the hands it was put into |
-| `art-rest-without-a-frame` | Rest, inside the frame somebody drew round it | 1–2 | The frame lifting clear |
+| `art-balance` | Two unlike things weighed against each other, and the platform a second figure stands on to do the ranking | 0–2 | The arrow from that platform to the pans |
+| `art-two-climbs` | A climb entered beside a climb imposed | 1–2 | The load, in the hands carrying it — or, with one figure, coming down onto the second climb |
+| `art-rest-and-the-frame` | Rest with nothing attached to it | 1–2 | The measuring frame somebody draws around that rest |
 | `art-handed-template` | The same shape handed to everybody | 1–2 | One of them set down |
 | `art-one-screen-two-things` | Contact and ranking on one screen | 1–2 | The ladder inside it |
 | `art-invitation-conditions` | An invitation, and the evening it assumed | 1–3 | Travel, tasks, and care, below the line |
@@ -113,9 +114,18 @@ Two states settle a composition:
 - `revealed` — the base layer with its condition layer.
 
 That pair is how a beat returns to an earlier scene and shows what was always inside it: `s057` and
-`s058` are the same invitation, `s016` and `s075` the same afternoon, in the two states. Asking a
-composition for a layer it does not have is a validation error (`ART_STATE_UNAVAILABLE`), and so is
-handing it more figures than it can place (`ART_FIGURE_COUNT`).
+`s058` are the same invitation, `s016` and `s075` the same afternoon, `s019` and `s026` the same
+rest, in the two states. Asking a composition for a layer it does not have is a validation error
+(`ART_STATE_UNAVAILABLE`), and so is handing it more figures than it can place
+(`ART_FIGURE_COUNT`).
+
+**`revealed` only ever adds.** The condition layer arrives on top of a situation that stays exactly
+as it was drawn; it never redraws or contradicts it. A test asserts that for every composition at
+every figure count, and it is what lets one written description be true of a drawing whether or not
+the layer has animated in — and what makes a beat that *removes* something, like the frame around
+rest in `s026`, the same drawing in the other state rather than a second drawing that has to agree
+with the first. The scenery a figure stands on belongs to the situation for the same reason: a
+second test fails if any composition raises a figure onto something only the condition layer draws.
 
 ## How a scene asks for a drawing
 
@@ -143,6 +153,33 @@ names and its description, and says so in the markup with `data-art="none"`.
 
 The figures are placed in the scene's own cast order, so moving a name up the list moves that figure
 to the composition's first slot.
+
+### The landing
+
+The opening illustration is authored the same way, in `project.visual`, with the same fields and the
+same validation:
+
+```json
+"project": {
+  "title": "…", "question": "…", "summary": "…", "readingTimeEstimate": null,
+  "visual": {
+    "description": "Four stickmen stand to either side of a large question mark …",
+    "artId": "art-opening-question",
+    "artState": "revealed",
+    "cast": [
+      { "characterId": "cast-tj", "expressionId": "ex-joy" },
+      { "characterId": "cast-koj", "expressionId": "ex-tired" }
+    ]
+  }
+}
+```
+
+The renderer contains no illustration of its own, including here. Who stands around the question and
+what each of them is feeling are editorial decisions — the landing is the one place a reader could
+mistake this essay for an argument that happiness is one feeling everybody should be having — so an
+opening that picked its own cast would be inventing one, and a caption written in the renderer would
+be prose nobody could edit. The build audit requires the landing's description in both outputs, like
+any other essential text.
 
 ## What reaches the page
 
@@ -221,7 +258,7 @@ explanation.
 
 ## Known limitations
 
-- Fifty-four of the 87 beats have no drawing. Each one says, in `storyboard-map.js`, what a drawing
+- Fifty-three of the 87 beats have no drawing. Each one says, in `storyboard-map.js`, what a drawing
   would have to show.
 - The contributors' appearances are provisional and have not been approved by the people they
   represent.

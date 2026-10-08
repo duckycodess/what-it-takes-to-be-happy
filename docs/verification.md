@@ -19,10 +19,18 @@ each name above a head, byte-identical output on a second render, and the covera
 87 storyboard beats. The build refuses an output whose drawings reach outside it.
 
 Visual checking was done by rasterising the generated SVG and looking at the result: every figure in
-every expression, every composition, and then the frames of the built page with each nametag drawn
-at its real anchor at a 480-pixel and a 300-pixel frame width. That is what caught labels colliding
-with artwork, a figure standing beside a slope rather than on it, and a load drawn over a head. It
-is a check of the drawings and the label geometry, not of a browser.
+every expression, every composition in both settled states, and then the frames of the built page
+with each nametag drawn at its real anchor at a 480-pixel and a 300-pixel frame width. That is what
+caught labels colliding with artwork, a figure standing beside a slope rather than on it, a load
+drawn over a head, a resting figure that read as a standing one, and a figure left hovering where
+its platform had been drawn in the wrong layer.
+
+The rasteriser was a throwaway written for this check, in a scratch directory outside the
+repository; it is not committed and nothing depends on it. It supports only the subset of SVG this
+project generates — lines, polylines, rectangles, circles, and `M`/`L`/`Q` paths under
+translate/scale/rotate transforms — and it renders no text, no dashes, and no CSS, so nametags were
+drawn into it as boxes at their real anchors, sized from the stylesheet's own clamp, and dashed
+outlines appear solid. It shows the geometry. It does not show the page.
 
 **No browser was available in this environment.** The entrance animation, the reduced-motion
 override, the container query that sizes label type, and the print rules were verified as rules in

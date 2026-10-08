@@ -230,6 +230,29 @@ test('a beat may name a drawing or declare that it has none, and nothing else', 
   assert.deepEqual(validateContent(undrawn).errors, []);
 });
 
+test('the landing illustration obeys the same rules as every other drawing', () => {
+  const doc = loadValidContent();
+  assert.ok(doc.project.visual, 'the landing drawing is part of the content document');
+
+  const unknown = loadValidContent();
+  unknown.project.visual.artId = 'art-a-landing-nobody-made';
+  assert.ok(codesAt(validateContent(unknown).errors, 'project.visual.artId').includes('UNKNOWN_ART_REFERENCE'));
+
+  const crowded = loadValidContent();
+  crowded.project.visual.artId = 'art-two-instruments';
+  assert.ok(codesAt(validateContent(crowded).errors, 'project.visual.cast').includes('ART_FIGURE_COUNT'));
+
+  // And it cannot put somebody on the landing who is not in the cast, or give
+  // them a state they do not have.
+  const invented = loadValidContent();
+  invented.project.visual.cast[0].characterId = 'cast-nobody';
+  assert.ok(codes(validateContent(invented).errors).includes('UNKNOWN_REFERENCE'));
+
+  const impossible = loadValidContent();
+  impossible.project.visual.cast[0].expressionId = 'ex-smug';
+  assert.ok(codes(validateContent(impossible).errors).includes('UNKNOWN_EXPRESSION'));
+});
+
 test('a scene asking for a drawing that does not exist is reported', () => {
   const doc = loadValidContent();
   byId(doc.scenes, 'sc-three-readings').visual.artId = 'art-a-drawing-nobody-made';

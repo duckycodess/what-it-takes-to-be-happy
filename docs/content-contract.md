@@ -45,6 +45,7 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `question` | string | The large centred question on the landing view. |
 | `summary` | string | The working synthesis shown on the landing view. |
 | `readingTimeEstimate` | string or `null` | Stays `null` until real prose can actually be measured. |
+| `visual` | object | The landing illustration, in exactly the shape of `scenes[].visual` below and under exactly the same rules. The opening drawing is authored content, not something the renderer decides. |
 
 ### `chapters[]`
 

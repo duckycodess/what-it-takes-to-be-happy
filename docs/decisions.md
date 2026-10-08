@@ -73,6 +73,8 @@ The artwork package then made these, equally reversible:
 | Expression vocabulary | The six editorial states, plus `uncertainty` as a seventh *drawable* state | The brief asks the drawings to carry not-knowing, and `reflection` is settled consideration. The storyboard's six-state vocabulary is unchanged. |
 | Scene coverage | Reusable motifs chosen per beat, with declared fallbacks | 33 of 87 beats have a drawing; the rest say what one would have to show. A map claiming 87 bespoke illustrations would be false. |
 | Concept sheet | Kept, moved into the colophon as provenance | It is a flattened study, not production art; it belongs beside the credits rather than on the landing. |
+| Landing illustration | Authored in the content document, like every other drawing | The opening is where a reader could most easily be told that happiness is one feeling; who stands around the question is an editorial decision, not a renderer's. |
+| Layer model | A revealed state only ever adds to its situation | One description stays true of a drawing whether or not the layer has animated in, and a beat that removes something is the same drawing in the other state. |
 
 Actual commands are in the [README](../README.md) and [architecture](architecture.md); the hosting settings are in [delivery](delivery.md).
 

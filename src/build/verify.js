@@ -88,6 +88,9 @@ export function auditContentCoverage(html, content) {
 
   requireText('project-question', content.project.question);
   requireText('project-summary', content.project.summary);
+  // The landing's drawing has a text alternative like every other drawing, and
+  // an output that dropped it would leave the opening unexplained.
+  if (content.project.visual) requireText('landing-visual-description', content.project.visual.description);
   if (!content.status.final) requireText('draft-notice', content.status.notice);
 
   for (const chapter of content.chapters) {

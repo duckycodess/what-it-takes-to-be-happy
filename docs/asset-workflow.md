@@ -35,8 +35,8 @@ inline SVG. The renderer places names above heads as browser text, the build ref
 that reaches outside the document or carries its own lettering, and the single offline file contains
 every line of every drawing.
 
-Thirty-three of the storyboard's 87 beats are mapped to a composition today;
-[`src/art/storyboard-map.js`](../src/art/storyboard-map.js) records what each of the other 54 would
+Thirty-four of the storyboard's 87 beats are mapped to a composition today;
+[`src/art/storyboard-map.js`](../src/art/storyboard-map.js) records what each of the other 53 would
 need, and a test fails if a beat is missing from that record. The concept sheet below is where the
 identities came from, and it is still packaged into both outputs — in the colophon, labelled as the
 provisional study it is.
