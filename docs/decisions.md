@@ -66,4 +66,10 @@ The foundation package made these choices, all reversible:
 
 Actual commands are in the [README](../README.md) and [architecture](architecture.md); the hosting settings are in [delivery](delivery.md).
 
-Source claims are currently collected from group notes. They still require passage-level verification before becoming final published assertions; see [the research register](research.md).
+The source audit for the editorial package was carried out on 9 October 2026. Every retained source now has an
+evidence record with its review status in [the research register](research.md): 13 verified in the full work, 11 at
+article-abstract level, 3 from a publisher's book description only (R15, R16, R29), and 5 not opened at all (R11,
+R14, R21, R22, R30). The scenes that touch any of those say so in reader-visible text; where R21 and R30 could not
+be opened, the concepts they originate are carried by R31 and R32 and the substitution is disclosed to the reader. The
+authored main path is [the storyboard](storyboard.md), with [the cast registry](cast.md) and
+[the coverage matrix](coverage.md).
