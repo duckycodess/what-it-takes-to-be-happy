@@ -450,14 +450,14 @@ Moves from the pleasure of company to the ordinary work of belonging, then to it
 - Beat purpose: explain the Sikolohiyang Pilipino lens accurately, as a way of beginning from our own relationships rather than adding family as a variable to an individual account.
 - Visual purpose: the self drawn as overlapping with others rather than bounded.
 - Cast: `narrator` `vier` (`curiosity`)
-- Planned sources/concepts: `R21`; kapwa
+- Planned sources/concepts: `R21` (via `R31`); kapwa
 - Status: skeleton
 
 #### `s054` — Collective does not automatically mean supportive
 - Beat purpose: question the lens. Family and community can carry expectation, conformity, and exclusion; boundaries can be part of living well; no single Filipino personality follows from the concept.
 - Visual purpose: the same overlap, with one figure pressed out of shape by it.
 - Cast: `koj` (`frustration`), `vier` (`reflection`)
-- Planned sources/concepts: `R21`; kapwa; boundaries
+- Planned sources/concepts: `R21` (via `R31`); kapwa; boundaries
 - Status: skeleton
 
 #### `s055` — Ivy, who is not lonely
@@ -562,7 +562,7 @@ enjoyed, then examines our own position.
 - Beat purpose: introduce Marco; the capabilities distinction between a resource existing and being usable from where someone actually stands — hours that clash with work, a space that is unsafe or unreachable.
 - Visual purpose: an open door with no route to it.
 - Cast: `marco` (`frustration`)
-- Planned sources/concepts: `R30`; capabilities/real freedom
+- Planned sources/concepts: `R30` (via `R32`); capabilities/real freedom
 - Status: skeleton
 
 #### `s069` — Structural violence, used carefully
@@ -645,7 +645,7 @@ The assignment's fourth part, followed by what we have not settled.
 - Beat purpose: predictable work, manageable schedules, transport, healthcare, housing, and usable services — stated as a direction supported by the mechanisms already explained, not as evaluated policy.
 - Visual purpose: the barriers from `c5` reduced rather than removed.
 - Cast: `narrator` (`reflection`)
-- Planned sources/concepts: `R27`, `R30`; conditions
+- Planned sources/concepts: `R27`, `R30` (via `R32`); conditions
 - Status: skeleton
 
 #### `s080` — Who benefits, who pays

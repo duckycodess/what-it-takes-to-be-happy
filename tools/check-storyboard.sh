@@ -129,6 +129,78 @@ else
   ok "all cited source identifiers resolve against $RESEARCH"
 fi
 
+# --- every source has an evidence record with the required fields ------------
+missing_rec=$(awk '
+  /^### R[0-9][0-9] / { if (id != "") check(id); id = $2; cit=acc=pas=sup=lim=sce=0; next }
+  /^- \*\*Citation:\*\*/ { cit = 1 }
+  /^- \*\*Access:\*\*/   { acc = 1 }
+  /^- \*\*Passage locator and quotation:\*\*/ { pas = 1 }
+  /^- \*\*Supported claim:\*\*/ { sup = 1 }
+  /^- \*\*Limitation:\*\*/ { lim = 1 }
+  /^- \*\*Scenes:\*\*/ { sce = 1 }
+  /^## / { if (id != "") check(id); id = "" }
+  END { if (id != "") check(id) }
+  function check(i) {
+    if (!cit) print i " citation"
+    if (!acc) print i " access"
+    if (!pas) print i " passage-locator"
+    if (!sup) print i " supported-claim"
+    if (!lim) print i " limitation"
+    if (!sce) print i " scenes"
+  }
+' "$RESEARCH")
+if [ -n "$missing_rec" ]; then
+  problem "evidence records missing required fields:"
+  printf '%s\n' "$missing_rec" | sed 's/^/      /'
+else
+  ok "every evidence record carries citation, access, passage locator, claim, limitation, scenes"
+fi
+
+rec_ids=$(grep -oE '^### R[0-9]{2} ' "$RESEARCH" | grep -oE 'R[0-9]{2}' | sort -u)
+no_record=$(comm -23 <(printf '%s\n' "$known_src") <(printf '%s\n' "$rec_ids"))
+if [ -n "$no_record" ]; then
+  problem "sources in the register table with no evidence record: $(printf '%s' "$no_record" | tr '\n' ' ')"
+else
+  ok "every source in the register table has an evidence record"
+fi
+
+# --- a source's declared scenes match where the storyboard cites it ----------
+awk '
+  /^#### `s[0-9][0-9][0-9]`/ { id = $2; gsub(/`/, "", id) }
+  /^- (Planned s|S)ources\/concepts:/ {
+    line = $0
+    while (match(line, /R[0-9][0-9]/)) {
+      print substr(line, RSTART, RLENGTH) " " id
+      line = substr(line, RSTART + RLENGTH)
+    }
+  }
+' "$STORYBOARD" | sort -u > /tmp/.sb_cites.$$
+awk '
+  /^### R[0-9][0-9] / { id = $2 }
+  /^- \*\*Scenes:\*\*/ {
+    line = $0
+    while (match(line, /s[0-9][0-9][0-9]/)) {
+      print id " " substr(line, RSTART, RLENGTH)
+      line = substr(line, RSTART + RLENGTH)
+    }
+  }
+' "$RESEARCH" | sort -u > /tmp/.sb_decl.$$
+if ! diff -q /tmp/.sb_cites.$$ /tmp/.sb_decl.$$ >/dev/null; then
+  problem "source-to-scene mapping disagrees between $STORYBOARD and $RESEARCH:"
+  diff /tmp/.sb_decl.$$ /tmp/.sb_cites.$$ | sed 's/^/      /'
+else
+  ok "source-to-scene mapping agrees between the storyboard and the register"
+fi
+rm -f /tmp/.sb_cites.$$ /tmp/.sb_decl.$$
+
+# --- no source is cited without a review status ------------------------------
+no_status=$(awk -F'|' '/^\| R[0-9][0-9] \|/ { gsub(/[ `]/, "", $2); if ($5 !~ /verified-full|verified-abstract|verified-locator|not-accessed/) print $2 }' "$RESEARCH")
+if [ -n "$no_status" ]; then
+  problem "register rows without a recognised review status: $(printf '%s' "$no_status" | tr '\n' ' ')"
+else
+  ok "every register row carries a recognised review status"
+fi
+
 # --- relative links resolve --------------------------------------------------
 for f in "$STORYBOARD" "$CAST"; do
   grep -oE '\]\(([^)#:]+)(#[^)]*)?\)' "$f" | sed -E 's/^\]\(//; s/\)$//; s/#.*$//' | sort -u |
