@@ -19,7 +19,7 @@ import { formatErrors } from '../content/validate.js';
 import { renderDocument } from '../runtime/render.js';
 import { FONT, FONT_LICENSE, ILLUSTRATION, FONT_URL_TOKEN } from './assets.js';
 import { toDataUri, withFontUrl } from './inline.js';
-import { auditOfflineHtml, auditContentCoverage, auditBundledLicence, formatProblems } from './verify.js';
+import { auditOfflineHtml, auditContentCoverage, auditBundledLicence, auditInlineArtwork, formatProblems } from './verify.js';
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const DIST = join(repoRoot, 'dist');
@@ -98,6 +98,9 @@ export function auditOutputs(outputs, content) {
 
     const licence = auditBundledLicence(html, outputs.fontLicense);
     if (licence.length > 0) fail(`${label} does not carry the bundled font licence`, licence);
+
+    const artwork = auditInlineArtwork(html);
+    if (artwork.length > 0) fail(`${label} contains a drawing that reaches outside itself or carries its own lettering`, artwork);
   }
 }
 

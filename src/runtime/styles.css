@@ -185,15 +185,7 @@ html.js .js-only { display: block; }
   margin: 1rem auto;
 }
 
-.landing-art { margin: 1.5rem 0; }
-
-.landing-art img {
-  display: block;
-  width: 100%;
-  height: auto;
-  border: 2px solid var(--rule);
-  background: #fff;
-}
+.landing-art { margin: 1.5rem auto; max-width: 34rem; }
 
 figcaption {
   font-size: 0.9rem;
@@ -263,9 +255,30 @@ figcaption {
 
 .scene-visual { margin: 0 0 1.25rem; }
 
+/* The frame is the positioning context for the nametags and the container the
+   label type scales against, so a drawing reads the same on a phone and on a
+   wide screen instead of being a shrunken copy of the desktop stage. */
 .scene-visual-frame {
-  border: 2px dashed var(--rule);
+  position: relative;
+  container-type: inline-size;
+  border: 2px solid var(--rule);
   background: #fff;
+}
+
+/* Inline SVG: no request, no font, nothing outside the document. `currentColor`
+   keeps the linework on the same ink as the text, including in print. */
+.scene-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  color: var(--ink);
+}
+
+/* A beat with no drawing yet says so in the content document. It keeps the
+   earlier dashed frame and its row of names; the written description beneath
+   carries the beat, exactly as it does in print. */
+.scene-visual-frame[data-art='none'] {
+  border-style: dashed;
   min-height: 7rem;
   display: flex;
   align-items: center;
@@ -273,21 +286,86 @@ figcaption {
   padding: 1rem;
 }
 
-.figure-cast-list {
+.art-labels {
   list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scene-visual-frame[data-art='none'] .art-labels {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  padding: 0;
-  margin: 0;
   justify-content: center;
 }
 
-.figure-cast {
+/* Names are browser text sitting above each head, never lettering inside the
+   drawing: selectable, searchable, and able to grow with the reader's own type
+   size. The anchor comes from the composition that placed the figure. */
+.art-label {
+  position: absolute;
+  left: var(--art-x, 50%);
+  top: var(--art-y, 50%);
+  transform: translate(-50%, -100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15em;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.15;
+  font-size: clamp(0.58rem, 3.1cqw, 0.85rem);
+}
+
+.scene-visual-frame[data-art='none'] .art-label {
+  position: static;
+  transform: none;
+  font-size: 1rem;
+}
+
+.art-label .nametag {
+  padding: 0.05em 0.5em;
+  font-size: 1em;
+}
+
+.art-label .expression { font-size: 0.75em; }
+
+/* On a narrow frame there is no room for a state word under every head without
+   the names colliding. The word is removed from sight, not from the document:
+   it stays available to a screen reader, and the caption under the drawing
+   states the same thing for everyone. */
+@container (max-width: 26rem) {
+  .art-label .expression {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* --- Scene motion --------------------------------------------------------
+   The condition layer is in the markup and settled by default, so print, a
+   scriptless browser, the offline file, and a reduced-motion reader all see the
+   finished explanation. The animation is an entrance for a drawing that is
+   already correct; Next and Back cannot leave it part-way, because the state it
+   settles into is the state it already had. */
+@keyframes art-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+html.js[data-view='beat'] .scene[data-current] [data-art-layer='reveal'] {
+  animation: art-reveal 600ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js[data-view='beat'] .scene[data-current] [data-art-layer='reveal'] {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 .nametag {
@@ -442,9 +520,26 @@ html.js .beat-controls {
 
 html.js .view-switch { display: block; }
 
+.concept-sheet,
 .licence {
   margin-top: 0.75rem;
 }
+
+.concept-sheet > summary {
+  cursor: pointer;
+  padding: 0.4rem 0;
+  min-height: 2.25rem;
+}
+
+.concept-sheet img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--rule);
+  background: #fff;
+}
+
+.concept-sheet figure { margin: 0.5rem 0 0; }
 
 .licence > summary {
   cursor: pointer;
@@ -514,7 +609,7 @@ html.js[data-view='reading'] .landing { display: none; }
   .scene > .scene-title { grid-column: 1 / -1; }
   .scene > .scene-visual { grid-column: 2; grid-row: 2; position: sticky; top: 1.5rem; }
   .scene > :not(.scene-title):not(.scene-visual) { grid-column: 1; }
-  .landing-art img { max-width: 40rem; margin: 0 auto; }
+  .landing-art { max-width: 40rem; }
 }
 
 /* --- Print --------------------------------------------------------------
@@ -551,6 +646,13 @@ html.js[data-view='reading'] .landing { display: none; }
   details::details-content { content-visibility: visible; block-size: auto; }
   details:not([open]) > *:not(summary) { display: block; }
 
-  .landing-art img { max-width: 12cm; }
+  .scene-visual-frame { border-color: #000; break-inside: avoid; }
+  .scene-art { max-width: 12cm; }
+  .landing-art { max-width: 12cm; }
+  .concept-sheet img { max-width: 12cm; }
+
+  /* A printed page has no beats, so the condition layer must simply be there. */
+  [data-art-layer='reveal'] { animation: none !important; opacity: 1 !important; transform: none !important; }
+
   a { color: #000; }
 }

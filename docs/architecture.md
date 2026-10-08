@@ -100,6 +100,7 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 | --- | --- |
 | `content/content.json` | The single content document. See [the content contract](content-contract.md). |
 | `src/content/` | Schema constants, the validator, and the loader. |
+| `src/art/` | The original drawings: figures, expressions, postures, scene compositions, and the storyboard coverage map. See [the drawing system](art-system.md). |
 | `src/runtime/` | The shared renderer, the stylesheet, and the browser script. |
 | `src/build/` | Asset declarations, data-URI inlining, the output audits, and the build. |
 | `src/tools/` | The validation command and the local preview server. |
@@ -134,9 +135,23 @@ A source's `reviewStatus` is the level the audit actually reached: read in full,
 
 The bundled font's licence is rendered into the document rather than left beside it, because the offline file is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
 
-### What the foundation did not decide
+### Illustration, as built
 
-Final prose, finished artwork, scene motion, the project typeface, and the reader's finished visual design are all still open. The committed font and the committed illustration are temporary and exist to prove binary packaging works end to end.
+The artwork package filled in the illustration side of this contract. The drawings are authored
+geometry generated into the markup as inline SVG, so a scene costs the offline file no request and
+no asset; a scene names its composition and its settled state by identifier, and content validation
+refuses a document that asks for a drawing the artwork cannot produce. Names above heads are browser
+text positioned over the drawing, never lettering inside it. A composition's condition layer is in
+the markup and settled by default, and the one CSS entrance animates a drawing that is already
+correct — which is what makes rapid Next/Back and reduced motion safe rather than special cases.
+[The drawing system](art-system.md) is the full account, including the 33 of 87 storyboard beats
+that have a motif and the 54 that are still carried by their written description.
+
+### What is still open
+
+Final prose, the project typeface, the complete scene set, and the reader's finished visual design
+are all still open. The committed font and the committed concept sheet are temporary and exist to
+prove binary packaging works end to end.
 
 ## Handoffs that create real prerequisites
 

@@ -82,8 +82,18 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `description` | string | What the illustration shows. This doubles as the text alternative and as the reduced-motion equivalent, so it is never optional. |
+| `artId` | identifier or `null` | The composition the beat is drawn with, from [the drawing system](art-system.md). `null` declares that this beat has no drawing yet. |
+| `artState` | `situation`, `revealed`, or `null` | Which layers are settled: the situation alone, or the situation with the condition layer that explains it. `null` when `artId` is `null`. |
 | `cast[].characterId` | identifier | Who appears. |
 | `cast[].expressionId` | identifier | Which of that character's own expressions they wear. |
+
+The scene's cast order is the order the composition places figures in, so moving a name up the list
+moves that figure to the first slot.
+
+`artId: null` is a legitimate, declared state rather than an omission: the figures are still named
+and `description` still carries the beat, exactly as it does in print and under reduced motion.
+A scene may not ask a composition for a layer it does not have, or hand it more figures than it can
+place; both are rejected.
 
 #### `scenes[].dialogue[]`
 
@@ -104,7 +114,8 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `role` | `member` or `friend` | A contributor, or an invented figure used to make a situation concrete. |
 | `displayName` | string | The name rendered as text above the avatar. Never baked into an image. |
 | `appearance` | string | How the original drawing identifies this figure. |
-| `expressions[]` | `{ id, label }` | The emotional states this figure can be drawn in. |
+| `artId` | identifier | Which figure of [the drawing system](art-system.md) draws this character. A contributor must be drawn as a contributor and an invented friend as an invented friend; the unnamed outline belongs to the drawings and to nobody in the cast. |
+| `expressions[]` | `{ id, label, artId }` | The emotional states this figure can be drawn in. `artId` is the drawable state behind the label. |
 
 Expression identifiers are scoped to their character, so every figure can have an `ex-tired`. Every other identifier in the document is globally unique.
 
@@ -207,6 +218,8 @@ Nothing in the contract refers to an array position. Reading order comes from `c
 | Add a contributor's position | Add the provenance record first, then the dialogue line pointing at it. |
 | Record a source audit | Set `reviewStatus` to the level actually reached, then record `evidenceBasis` and `citation`, and `supportedClaim` if the level allows one. |
 | Draft a concept's treatment | Set `status` to `drafted` and write all three of `explanation`, `application`, `question`. |
+| Give a beat a drawing | Set `visual.artId` to a composition and `visual.artState` to the state it settles into, and rewrite `visual.description` to describe what is actually drawn. |
+| Take a drawing away | Set both `visual.artId` and `visual.artState` to `null`. The description carries the beat. |
 
 Keep an existing identifier pointing at the same thing. If a source is replaced by a different work, add a new identifier rather than repointing the old one.
 
@@ -229,6 +242,10 @@ Keep an existing identifier pointing at the same thing. If a source is replaced 
 | `SCENE_CLAIMED_TWICE` | A scene appears in more than one chapter order, or twice in one. |
 | `SCENE_CHAPTER_MISMATCH` | A scene's `chapterId` disagrees with the chapter that orders it. |
 | `UNKNOWN_EXPRESSION` | A scene asks a character for an expression it does not have. |
+| `UNKNOWN_ART_REFERENCE` | A character, an expression, or a scene names a drawing the artwork package cannot produce. |
+| `ART_ROLE_MISMATCH` | A contributor is drawn as an invented friend, or the reverse, or anyone is drawn as the unnamed outline. |
+| `ART_STATE_UNAVAILABLE` | A scene asks a composition for a condition layer it does not have, or declares a state for a beat that has no drawing. |
+| `ART_FIGURE_COUNT` | A scene gives a composition more or fewer figures than it can place. |
 | `UNSUPPORTED_MEMBER_POSITION` | A `member-endorsed` line has no provenance record. |
 | `INVALID_SOURCE_URL` | A source destination is not an `http://` or `https://` address. |
 | `UNSUPPORTED_SOURCE_CLAIM` | A source states what it supports at an evidence level where nothing inside the work was read. |
