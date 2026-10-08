@@ -1,0 +1,15 @@
+{
+  "ticket_policy": {
+    "default_queue": false,
+    "ready_label": "agent:ready"
+  },
+  "workflow_version": 1,
+  "ticket_schema": "ticket-spec/v1",
+  "backend": "agent-flow",
+  "commands": {},
+  "integrations": {
+    "serena": "optional",
+    "openspec": "optional",
+    "beads": "agent-flow"
+  }
+}
