@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderDocument, esc } from '../src/runtime/render.js';
-import { auditContentCoverage, auditOfflineHtml, auditBundledLicence } from '../src/build/verify.js';
+import { auditContentCoverage, auditOfflineHtml, auditBundledLicence, auditInlineArtwork } from '../src/build/verify.js';
 import { SOURCE_EVIDENCE_LEVELS } from '../src/content/schema.js';
 import { loadValidContent, byId } from './helpers.js';
 
@@ -209,6 +209,126 @@ test('an abstract-level reading is never shown as a passage-level one', () => {
   const preceding = html.slice(Math.max(0, claimIndex - 200), claimIndex);
   assert.match(preceding, /The abstract supports/);
   assert.ok(!/The passage read supports<\/span>\s*$/.test(preceding));
+});
+
+/* ---- The drawings ------------------------------------------------------- */
+
+const frames = (html) => [...html.matchAll(/<div class="scene-visual-frame"[\s\S]*?<\/div>/g)].map((match) => match[0]);
+
+test('every drawn beat renders its drawing inline, at the state the content asked for', () => {
+  const content = loadValidContent();
+  const html = render(content);
+
+  for (const scene of content.scenes) {
+    const frame = frames(html).find((entry) => entry.includes(`data-art="${scene.visual.artId ?? 'none'}"`));
+    assert.ok(frame, `${scene.id} should render a frame`);
+  }
+
+  const drawn = content.scenes.filter((scene) => scene.visual.artId !== null);
+  assert.ok(drawn.length > 0, 'the fixture should exercise drawn beats');
+  for (const scene of drawn) {
+    assert.ok(html.includes(`data-art="${scene.visual.artId}" data-art-state="${scene.visual.artState}"`), `${scene.id} should settle into ${scene.visual.artState}`);
+  }
+
+  // The settled state is in the markup, not applied later by a script: print,
+  // a scriptless browser, and the offline file all get the finished drawing.
+  const revealed = drawn.filter((scene) => scene.visual.artState === 'revealed');
+  assert.ok(revealed.length > 0);
+  assert.ok(html.includes('data-art-layer="reveal"'));
+  assert.ok(html.includes('data-art-layer="base"'));
+});
+
+test('the landing drawing is authored content, not a choice the renderer makes', () => {
+  const content = loadValidContent();
+  const html = render(content);
+  const landing = html.slice(html.indexOf('<figure class="landing-art">'), html.indexOf('</figure>', html.indexOf('<figure class="landing-art">')));
+
+  assert.ok(landing.includes(`data-art="${content.project.visual.artId}" data-art-state="${content.project.visual.artState}"`));
+  assert.equal((landing.match(/<li class="art-label"/g) ?? []).length, content.project.visual.cast.length);
+  assert.ok(landing.includes(esc(content.project.visual.description)), 'the landing caption is the authored description');
+
+  // Who stands around the question, and what each of them is feeling, follow
+  // the document. An opening that picked its own cast would be inventing one.
+  for (const appearance of content.project.visual.cast) {
+    const character = byId(content.cast, appearance.characterId);
+    const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
+    assert.ok(landing.includes(`<span class="nametag">${esc(character.displayName)}</span><span class="expression">${esc(expression.label)}</span>`));
+    assert.ok(landing.includes(`data-figure="${character.artId}" data-expression="${expression.artId}"`));
+  }
+
+  const changed = loadValidContent();
+  changed.project.visual.artId = 'art-figure-row';
+  changed.project.visual.artState = 'situation';
+  changed.project.visual.cast = [{ characterId: 'cast-vier', expressionId: 'ex-uncertain' }];
+  const other = render(changed);
+  assert.ok(other.includes('<figure class="landing-art">\n<div class="scene-visual-frame" data-art="art-figure-row"'));
+  assert.ok(!other.includes('data-art="art-opening-question"'));
+});
+
+test('a beat with no drawing keeps its figures and its description', () => {
+  const content = loadValidContent();
+  const scene = byId(content.scenes, 'sc-ordinary-afternoon');
+  scene.visual.artId = null;
+  scene.visual.artState = null;
+
+  const html = render(content);
+  const frame = frames(html).find((entry) => entry.includes('data-art="none"'));
+  assert.ok(frame, 'a beat without a composition still renders its frame');
+  assert.ok(!frame.includes('<svg'), 'nothing is drawn where nothing has been drawn');
+  assert.ok(frame.includes('<span class="nametag">TJ</span>'), 'the figures present are still named');
+  assert.ok(html.includes(esc(scene.visual.description)), 'the description still carries the beat');
+});
+
+test('names sit above heads as browser text, positioned by the drawing itself', () => {
+  const content = loadValidContent();
+  const html = render(content);
+
+  const labels = [...html.matchAll(/<li class="art-label" data-role="(\w+)" style="--art-x:([\d.]+)%;--art-y:([\d.]+)%"><span class="nametag">([^<]+)<\/span><span class="expression">([^<]+)<\/span>/g)];
+  assert.ok(labels.length >= 10, `expected a label for every drawn figure, found ${labels.length}`);
+
+  for (const [, role, x, y, name, state] of labels) {
+    assert.ok(['member', 'friend'].includes(role));
+    assert.ok(Number(x) > 0 && Number(x) < 100, `${name} is anchored off the frame`);
+    assert.ok(Number(y) > 0 && Number(y) < 100, `${name} is anchored off the frame`);
+    assert.match(name, /\S/);
+    assert.match(state, /\S/);
+  }
+
+  // The nametag is text in the page. Nothing in the artwork spells a name.
+  for (const drawing of [...html.matchAll(/<svg[\s\S]*?<\/svg>/g)].map((match) => match[0])) {
+    assert.ok(!/<text\b/.test(drawing));
+    for (const member of content.cast) assert.ok(!drawing.includes(member.displayName));
+  }
+});
+
+test('the same figure is drawn differently when the content says it feels differently', () => {
+  const content = loadValidContent();
+  const one = render(content);
+
+  const changed = loadValidContent();
+  byId(changed.scenes, 'sc-ordinary-afternoon').visual.cast[0].expressionId = 'ex-sad';
+  const other = render(changed);
+
+  assert.notEqual(one, other, 'an expression change must reach the drawing');
+  assert.ok(other.includes('data-expression="sadness"'));
+});
+
+test('every drawing in an output is self-contained and carries no lettering', () => {
+  assert.deepEqual(auditInlineArtwork(render(loadValidContent())), []);
+
+  const cases = [
+    ['<svg><image href="art.png"/></svg>', /raster file/],
+    ['<svg><use href="#head"/></svg>', /identifier/],
+    ['<svg><text x="0">TJ</text></svg>', /Lettering/],
+    ['<svg><g id="head"></g></svg>', /identifier/],
+    ['<svg><circle fill="url(#g)"/></svg>', /another resource/],
+    ['<svg><style>.a{font-family:Futura}</style></svg>', /stylesheet or script/],
+  ];
+  for (const [html, message] of cases) {
+    const problems = auditInlineArtwork(html);
+    assert.ok(problems.length > 0, `expected a problem for ${html}`);
+    assert.ok(problems.some((problem) => message.test(problem.message)), `${html}: ${problems.map((p) => p.message).join(' / ')}`);
+  }
 });
 
 test('the bundled font licence travels inside the document', () => {

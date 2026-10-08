@@ -8,7 +8,35 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 
 Checked by hand on 9 October 2026 against `dist/offline.html` opened through a `file://` URL in headless Chrome with name resolution disabled and the proxy pointed at a dead port: the landing, Begin, Next, Back, arrow keys, chapter shortcuts, the current-chapter marker, the reading view, the optional panels opening and closing, focus moving to the current beat, the embedded illustration, and the embedded font. Printing from inside a single beat still produced the complete essay. The layout reflows without horizontal overflow at a 360-pixel-wide document and composes into two columns on a wide screen.
 
-Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, contrast measurement, reduced-motion behaviour with actual scene motion, and anything about the finished prose or artwork.
+Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, contrast measurement, and anything about the finished prose.
+
+## What the artwork package checked, and how
+
+Checked on 9 October 2026, after the drawings were added. `npm run check` covers the drawing system
+itself: every figure in every expression, every composition at every figure count in both settled
+states, the absence of any external reference or lettering inside a drawing, the anchors that place
+each name above a head, byte-identical output on a second render, and the coverage map against all
+87 storyboard beats. The build refuses an output whose drawings reach outside it.
+
+Visual checking was done by rasterising the generated SVG and looking at the result: every figure in
+every expression, every composition in both settled states, and then the frames of the built page
+with each nametag drawn at its real anchor at a 480-pixel and a 300-pixel frame width. That is what
+caught labels colliding with artwork, a figure standing beside a slope rather than on it, a load
+drawn over a head, a resting figure that read as a standing one, and a figure left hovering where
+its platform had been drawn in the wrong layer.
+
+The rasteriser was a throwaway written for this check, in a scratch directory outside the
+repository; it is not committed and nothing depends on it. It supports only the subset of SVG this
+project generates — lines, polylines, rectangles, circles, and `M`/`L`/`Q` paths under
+translate/scale/rotate transforms — and it renders no text, no dashes, and no CSS, so nametags were
+drawn into it as boxes at their real anchors, sized from the stylesheet's own clamp, and dashed
+outlines appear solid. It shows the geometry. It does not show the page.
+
+**No browser was available in this environment.** The entrance animation, the reduced-motion
+override, the container query that sizes label type, and the print rules were verified as rules in
+the built stylesheet and as state in the markup, not as rendered behaviour. Confirming them in a
+real phone and desktop browser — including that rapid Next/Back settles every drawing correctly —
+remains open, and belongs with the reader and release checks below.
 
 ## Scenarios for the finished essay
 

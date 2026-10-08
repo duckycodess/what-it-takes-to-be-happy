@@ -12,6 +12,7 @@
  */
 
 import { SOURCE_EVIDENCE_LEVELS } from '../content/schema.js';
+import { renderSceneArt } from '../art/index.js';
 
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
@@ -49,22 +50,63 @@ ${detail}
 </li>`;
 }
 
-function renderVisual(scene, castById) {
-  const nametags = scene.visual.cast
-    .map((appearance) => {
-      const character = castById.get(appearance.characterId);
-      const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
-      return `<li class="figure-cast"><span class="nametag">${esc(character.displayName)}</span><span class="expression">${esc(expression.label)}</span></li>`;
+const percent = (value) => `${(Math.round(value * 100) / 100).toFixed(2)}%`;
+
+/** The name and state of one figure, as browser text rather than lettering. */
+function renderFigureLabel(character, expression, anchor) {
+  const position = anchor ? ` style="--art-x:${percent(anchor.x)};--art-y:${percent(anchor.y)}"` : '';
+  return `<li class="art-label" data-role="${esc(character.role)}"${position}><span class="nametag">${esc(character.displayName)}</span><span class="expression">${esc(expression.label)}</span></li>`;
+}
+
+/**
+ * One authored drawing: a scene's, or the landing's.
+ *
+ * The illustration is inline SVG generated during the build, so it carries no
+ * request, no font, and no external reference, and the single offline file owns
+ * every line of it. Names sit above the heads as HTML text positioned over the
+ * drawing: they stay selectable, they scale with the reader's own type size,
+ * and they are never baked into the artwork.
+ *
+ * Everything drawn is named by the content document — the composition, the
+ * state it settles into, who is in it, and what each of them is feeling. There
+ * is no illustration in this file, including on the landing: an opening that
+ * chose its own cast would be inventing one.
+ *
+ * A beat may have no composition yet. That too is declared in the content
+ * document rather than guessed at here, and the figures and the written
+ * description carry it exactly as they do in print.
+ */
+function renderVisual(visual, castById, className) {
+  const appearances = visual.cast.map((appearance) => {
+    const character = castById.get(appearance.characterId);
+    const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
+    return { character, expression };
+  });
+
+  const drawing = visual.artId
+    ? renderSceneArt({
+      artId: visual.artId,
+      artState: visual.artState,
+      figures: appearances.map(({ character, expression }) => ({ figure: character.artId, expression: expression.artId })),
     })
+    : null;
+
+  const labels = appearances
+    .map(({ character, expression }, index) => renderFigureLabel(character, expression, drawing?.anchors[index]))
     .join('\n');
+
+  const frame = [
+    `<div class="scene-visual-frame" data-art="${esc(visual.artId ?? 'none')}" data-art-state="${esc(visual.artState ?? 'described')}">`,
+    drawing ? drawing.svg : '',
+    labels ? `<ul class="art-labels" aria-label="Who is in this drawing">\n${labels}\n</ul>` : '',
+    '</div>',
+  ].filter(Boolean).join('\n');
 
   // The description lives in the caption rather than an aria-label, so the
   // nametags stay real text and nothing is announced twice.
-  return `<figure class="scene-visual">
-<div class="scene-visual-frame">
-${nametags ? `<ul class="figure-cast-list">\n${nametags}\n</ul>` : ''}
-</div>
-<figcaption>${esc(scene.visual.description)}</figcaption>
+  return `<figure class="${className}">
+${frame}
+<figcaption>${esc(visual.description)}</figcaption>
 </figure>`;
 }
 
@@ -123,7 +165,7 @@ ${scene.sourceIds.map((id) => renderSourceReference(sourceById.get(id))).join('\
 
   return `<li class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}" tabindex="-1">
 <h3 class="scene-title">${esc(scene.title)}</h3>
-${renderVisual(scene, castById)}
+${renderVisual(scene.visual, castById, 'scene-visual')}
 <div class="narration">
 ${paragraphs(scene.narration)}
 </div>
@@ -153,15 +195,15 @@ ${scenes}
 </section>`;
 }
 
-function renderLanding(content, options, firstSceneId) {
+function renderLanding(content, options, firstSceneId, castById) {
   const members = content.cast.filter((character) => character.role === 'member');
   const names = members.map((member) => `<li class="nametag">${esc(member.displayName)}</li>`).join('\n');
 
-  const illustration = options.illustration
-    ? `<figure class="landing-art">
-<img src="${esc(options.illustration.url)}" alt="${esc(options.illustration.alt)}" width="${options.illustration.width}" height="${options.illustration.height}">
-<figcaption>${esc(options.illustration.caption)}</figcaption>
-</figure>`
+  // The opening illustration is authored like any other: which figures stand
+  // around the question, and what each of them is feeling, are content
+  // decisions, not something this renderer picks.
+  const illustration = content.project.visual
+    ? renderVisual(content.project.visual, castById, 'landing-art')
     : '';
 
   const readingTime = content.project.readingTimeEstimate
@@ -255,6 +297,20 @@ export function renderDocument(content, options) {
     ? `<p class="colophon-font">${esc(options.fontNotice)}</p>`
     : '';
 
+  // Where the drawings came from. The sheet is a flattened raster study, so it
+  // is provenance rather than production artwork: every figure in the essay is
+  // drawn from the scalable parts in `src/art/`, and the contributors'
+  // appearances in both are provisional stand-ins rather than likenesses.
+  const conceptSheet = options.illustration
+    ? `<details class="concept-sheet">
+<summary>The concept sheet these drawings came from</summary>
+<figure>
+<img src="${esc(options.illustration.url)}" alt="${esc(options.illustration.alt)}" width="${options.illustration.width}" height="${options.illustration.height}">
+<figcaption>${esc(options.illustration.caption)}</figcaption>
+</figure>
+</details>`
+    : '';
+
   // The bundled font's licence requires its notice to travel with every copy
   // of the font, so it is part of the document rather than a neighbouring file.
   const fontLicence = options.fontLicense
@@ -279,7 +335,7 @@ ${head}
 <a class="skip-link" href="#essay">Skip to the essay</a>
 ${renderDraftNotice(content.status)}
 <main id="essay">
-${renderLanding(content, options, orderedSceneIds[0])}
+${renderLanding(content, options, orderedSceneIds[0], context.castById)}
 ${renderChapterNav(content)}
 <div class="essay-body" data-essay>
 ${content.chapters.map((chapter) => renderChapter(chapter, context)).join('\n')}
@@ -291,6 +347,7 @@ ${renderBeatControls(orderedSceneIds.length)}
 <footer class="colophon">
 <p>${esc(content.project.title)} &mdash; original illustrated essay by ${content.cast.filter((character) => character.role === 'member').map((member) => esc(member.displayName)).join(', ')}.</p>
 ${fontNotice}
+${conceptSheet}
 ${fontLicence}
 </footer>
 ${script}

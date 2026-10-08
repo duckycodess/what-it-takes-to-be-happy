@@ -26,16 +26,37 @@ The target is the reference's opening-page stickmen: large white rounded heads, 
 
 The edit removed Bob's hair tufts so the generic friend is distinct from TJ. The final image was inspected for consistent identities, the six expressions, readable names above heads, and the intended simple style. This is a concept sheet, not a finished animation or a separated production sprite library. Its lettering illustrates placement; the website will render names, dialogue, and headings as selectable browser text. It does not supply the website's Futura Handwritten font.
 
+## What is built now
+
+The production drawing system exists and is described in [the drawing system](art-system.md). In
+short: eight original figures, seven drawable expressions, nine postures, and sixteen explanatory
+compositions, all authored as geometry in [`src/art/`](../src/art/) and generated into the markup as
+inline SVG. The renderer places names above heads as browser text, the build refuses any drawing
+that reaches outside the document or carries its own lettering, and the single offline file contains
+every line of every drawing.
+
+Thirty-four of the storyboard's 87 beats are mapped to a composition today;
+[`src/art/storyboard-map.js`](../src/art/storyboard-map.js) records what each of the other 53 would
+need, and a test fails if a beat is missing from that record. The concept sheet below is where the
+identities came from, and it is still packaged into both outputs — in the colophon, labelled as the
+provisional study it is.
+
+The steps below are the route that was followed, and the route to follow for anything added next.
+
 ## From drawings to moving scenes
 
 1. **Establish the look.** Start with the generated sheet and refine specific appearance details as member feedback arrives. Keep each member recognizable across emotions. Preserve prompts and versioned selected outputs in the repository.
 2. **Build one representative scene.** For example, introduce a fictional friend enjoying basketball, then reveal how available time or an obligation changes the situation. Use the audited storyboard to choose the actual claim and scene. The prose carries the argument; the drawing makes its relationships visible.
-3. **Prepare reusable parts.** Rebuild the chosen simple line art as scalable components where useful: head, face, body, arms, legs, and scene props. SVG is a suitable browser format for these shapes. Codex can author the SVG directly. Generated PNG concepts do not automatically become editable rigs or consistent animation frames.
-4. **Animate the explanation.** Use expression swaps, small limb rotations, pose changes, movement, fades, or prop reveals tied to the current beat. Begin with browser CSS or Web Animations for simple transitions. Anime.js is an optional open-source helper if coordinated timelines warrant it. Next/Back changes the story state; essential reading never waits for an animation to finish.
+3. **Prepare reusable parts.** Rebuild the chosen simple line art as scalable components where useful: head, face, body, arms, legs, and scene props. SVG is a suitable browser format for these shapes. Codex can author the SVG directly. Generated PNG concepts do not automatically become editable rigs or consistent animation frames. *Done:* `src/art/figures.js` holds the identities, faces, and postures as separate axes; `src/art/compositions.js` holds the scene motifs and their props.
+4. **Animate the explanation.** Use expression swaps, small limb rotations, pose changes, movement, fades, or prop reveals tied to the current beat. Begin with browser CSS or Web Animations for simple transitions. Anime.js is an optional open-source helper if coordinated timelines warrant it. Next/Back changes the story state; essential reading never waits for an animation to finish. *Done, and deliberately small:* a composition's condition layer is already settled in the markup, and one CSS entrance fades it in when a beat becomes current. No library was needed, and because the animation settles into the state the markup already has, rapid Next/Back cannot leave a drawing half-explained. Reduced motion removes the entrance and keeps the drawing.
 5. **Reuse and expand.** Extend the cast and scene vocabulary across the six shared questions. Some beats change one scene; others introduce a new composition. Static poses and descriptions retain the same meaning when motion is reduced.
 6. **Package both outputs.** Commit production assets locally and include them in both Vercel's static output and the offline HTML. The reader does not call an image generator, connector, or remote design tool at runtime.
 
-The first animated scene, reusable component library, and complete scene set remain work in [the existing art ticket](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/4). Creating this concept sheet does not complete that ticket.
+The reusable component library and the explanatory scene vocabulary are now built; the complete
+scene set is not, and the gap is recorded beat by beat rather than estimated. Creating the concept
+sheet did not complete [the art ticket](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/4),
+and neither does this: integrating the storyboard's prose with these drawings is the integration
+package's work.
 
 The owner subsequently requested ongoing generated-art support while the website is built autonomously. Workers can submit requests in [art-requests.json](art-requests.json); this chat checks every 15 minutes and supplies isolated asset branches for workers to incorporate. See [the autonomous build handoff](autonomous-build.md).
 
@@ -44,11 +65,11 @@ The owner subsequently requested ongoing generated-art support while the website
 | Tool | Plain-language role | Project position |
 | --- | --- | --- |
 | Built-in image generation | Draws character sheets and scene concepts from our descriptions; can revise selected images | Chosen authoring starting point; already available |
-| SVG authored by Codex | Describes clean scalable drawing parts that the website can move and reuse | Recommended production option for this simple line art |
+| SVG authored by Codex | Describes clean scalable drawing parts that the website can move and reuse | **In use.** The whole production system is authored SVG geometry in `src/art/`, inlined at build time |
 | [Inkscape](https://inkscape.org/) | Free, open-source drawing editor for manually adjusting SVG shapes | Optional behind-the-scenes editor; no user learning requirement |
-| Browser CSS / Web Animations | Moves, rotates, fades, and reveals drawing parts | Start here for simple motion |
-| [Anime.js](https://github.com/juliangarnier/anime) | MIT-licensed library for coordinating browser and SVG animations | Optional when scene timing needs more than simple transitions |
-| [Rough.js](https://github.com/rough-stuff/rough) | MIT-licensed library that draws sketch-like shapes in SVG or Canvas | Optional for compatible scenery; does not generate consistent characters |
+| Browser CSS / Web Animations | Moves, rotates, fades, and reveals drawing parts | **In use.** One CSS entrance for a condition layer that is already settled in the markup |
+| [Anime.js](https://github.com/juliangarnier/anime) | MIT-licensed library for coordinating browser and SVG animations | Not installed. The one transition the scenes need did not warrant a dependency on the offline file's critical path |
+| [Rough.js](https://github.com/rough-stuff/rough) | MIT-licensed library that draws sketch-like shapes in SVG or Canvas | Not installed, for the same reason. The sketch quality comes from the authored line work |
 
 Image generation is an available authoring service, not an open-source library. Open-source drawing and animation tools can support the website without requiring every authoring step to be open source. No new library or editor has been installed or selected as a mandatory dependency. Record actual versions and license notices when dependencies are added.
 
@@ -73,3 +94,6 @@ Discovery surfaced optional Figma, Runway, Higgsfield, and Adobe Express integra
 - Preserve transparent backgrounds when generating production cutouts; the first contact sheet intentionally has a white background.
 - Keep assets and font available offline. Add a library only when its role and required license notice are recorded.
 - Keep concepts separate from integrated production assets; document what has actually been generated, drawn, animated, and tested.
+- Record provisional likenesses as provisional wherever they are shown. The contributors' drawn
+  appearances came from a generated study and are stand-ins, not approved portraits; the colophon
+  says so to the reader and [the cast registry](cast.md) says so to whoever edits next.
