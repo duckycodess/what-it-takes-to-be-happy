@@ -29,6 +29,35 @@ Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against 
 
 A note on how the narrow width is measured: a desktop browser window will not go below roughly 500 CSS pixels, so `--window-size=360` silently lays the page out at about 490. The narrow-width tests therefore load the page in a frame of the requested width, which does give it that layout viewport. An earlier pass that missed this reported a phone width it had not actually tested.
 
+## What the artwork package checked, and how
+
+
+Checked on 9 October 2026, after the drawings were added. `npm run check` covers the drawing system
+itself: every figure in every expression, every composition at every figure count in both settled
+states, the absence of any external reference or lettering inside a drawing, the anchors that place
+each name above a head, byte-identical output on a second render, and the coverage map against all
+87 storyboard beats. The build refuses an output whose drawings reach outside it.
+
+Visual checking was done by rasterising the generated SVG and looking at the result: every figure in
+every expression, every composition in both settled states, and then the frames of the built page
+with each nametag drawn at its real anchor at a 480-pixel and a 300-pixel frame width. That is what
+caught labels colliding with artwork, a figure standing beside a slope rather than on it, a load
+drawn over a head, a resting figure that read as a standing one, and a figure left hovering where
+its platform had been drawn in the wrong layer.
+
+The rasteriser was a throwaway written for this check, in a scratch directory outside the
+repository; it is not committed and nothing depends on it. It supports only the subset of SVG this
+project generates — lines, polylines, rectangles, circles, and `M`/`L`/`Q` paths under
+translate/scale/rotate transforms — and it renders no text, no dashes, and no CSS, so nametags were
+drawn into it as boxes at their real anchors, sized from the stylesheet's own clamp, and dashed
+outlines appear solid. It shows the geometry. It does not show the page.
+
+The artwork package had no browser in its environment, so the entrance animation, the reduced-motion
+override, the container query that sizes label type, and the print rules were verified there as
+rules in the stylesheet and as state in the markup rather than as rendered behaviour. The reader
+package does have one, and the browser suite now covers them; what it covers and what it still does
+not is below.
+
 ### Not checked, and by what
 
 - **A real phone and a real desktop browser.** Headless Chrome at a 320-pixel layout viewport is not a device: it says nothing about touch accuracy, a software keyboard, an address bar that grows and shrinks, or how the page feels in the hand.

@@ -95,3 +95,11 @@ export const CONCEPT_STATUSES = ['planned', 'drafted'];
 
 /** Reader surfaces that an interaction can attach to. */
 export const INTERACTION_SURFACES = ['scene-detail', 'source-detail'];
+
+/**
+ * Which layers of a scene's drawing are settled on screen: `situation` is the
+ * scene as it first appears, `revealed` adds the condition layer that explains
+ * it. The artwork package owns the list; the contract only names it, so a
+ * content document and a drawing cannot drift apart silently.
+ */
+export { ART_STATES } from '../art/index.js';

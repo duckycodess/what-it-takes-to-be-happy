@@ -100,6 +100,7 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 | --- | --- |
 | `content/content.json` | The single content document. See [the content contract](content-contract.md). |
 | `src/content/` | Schema constants, the validator, and the loader. |
+| `src/art/` | The original drawings: figures, expressions, postures, scene compositions, and the storyboard coverage map. See [the drawing system](art-system.md). |
 | `src/runtime/` | The shared renderer, the stylesheet, and the browser script. |
 | `src/build/` | Asset declarations, data-URI inlining, the output audits, and the build. |
 | `src/tools/` | The validation command and the local preview server. |
@@ -148,11 +149,32 @@ A source's `reviewStatus` is the level the audit actually reached: read in full,
 
 The bundled font's licence is rendered into the document rather than left beside it, because the offline file is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
 
+### Illustration, as built
+
+The artwork package filled in the illustration side of this contract. The drawings are authored
+geometry generated into the markup as inline SVG, so a scene costs the offline file no request and
+no asset; a scene names its composition and its settled state by identifier, and content validation
+refuses a document that asks for a drawing the artwork cannot produce. Names above heads are browser
+text positioned over the drawing, never lettering inside it. A composition's condition layer is in
+the markup and settled by default, and the one CSS entrance animates a drawing that is already
+correct — which is what makes rapid Next/Back and reduced motion safe rather than special cases.
+[The drawing system](art-system.md) is the full account, including the 33 of 87 storyboard beats
+that have a motif and the 54 that are still carried by their written description.
+
 ### What is still open
 
-Final prose, finished artwork, and scene motion are still open. The committed illustration is temporary and exists to prove binary packaging works end to end.
+Final prose, the complete scene set, and the reader's finished visual design are all still open. The
+committed concept sheet is provenance for the drawings rather than production artwork.
 
-The project typeface is open for a reason worth recording rather than rediscovering. Futura Handwritten is named first in the CSS stack and is **not bundled**: its redistribution could not be established on 9 October 2026. The author's note grants broad permission to use it, but the archive carries no licence file, the font's own `name` table carries no licence record or licence URL, and dafont states that the label above its download button is only an indication. Broad permission to use a font is not permission to redistribute the file, and this project's offline deliverable embeds the bytes in a document handed to other people. The finding, and what would unblock it, are in [`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is browser text, so nothing in the argument depends on the face.
+The project typeface is open for a reason worth recording rather than rediscovering. Futura
+Handwritten is named first in the CSS stack and is **not bundled**: its redistribution could not be
+established on 9 October 2026. The author's note grants broad permission to use it, but the archive
+carries no licence file, the font's own `name` table carries no licence record or licence URL, and
+dafont states that the label above its download button is only an indication. Broad permission to
+use a font is not permission to redistribute the file, and this project's offline deliverable embeds
+the bytes in a document handed to other people. The finding, and what would unblock it, are in
+[`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is
+browser text, so nothing in the argument depends on the face.
 
 ### How the reader is tested
 

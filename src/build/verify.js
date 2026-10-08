@@ -88,6 +88,9 @@ export function auditContentCoverage(html, content) {
 
   requireText('project-question', content.project.question);
   requireText('project-summary', content.project.summary);
+  // The landing's drawing has a text alternative like every other drawing, and
+  // an output that dropped it would leave the opening unexplained.
+  if (content.project.visual) requireText('landing-visual-description', content.project.visual.description);
   if (!content.status.final) requireText('draft-notice', content.status.notice);
 
   for (const chapter of content.chapters) {
@@ -131,6 +134,49 @@ export function auditContentCoverage(html, content) {
           message: 'Authoring provenance reached the output. The product shows citations and context, not editorial workflow.',
         });
       }
+    }
+  }
+
+  return problems;
+}
+
+/**
+ * Patterns that would make an inline drawing depend on something outside the
+ * document, or put lettering inside the artwork where it cannot be selected,
+ * searched, translated, or resized by the reader.
+ */
+const ARTWORK_RULES = [
+  [/<image\b/i, 'An <image> element would embed or fetch a raster file inside the drawing.'],
+  [/<use\b/i, 'A <use> element depends on an element identifier, which collides as soon as the same drawing appears twice.'],
+  [/<foreignObject\b/i, 'A <foreignObject> puts HTML inside the drawing instead of beside it.'],
+  [/<text\b/i, 'Lettering belongs in the page as browser text, never inside the artwork.'],
+  [/<(style|script)\b/i, 'A drawing must not carry its own stylesheet or script.'],
+  [/\bxlink:href\s*=/i, 'An xlink:href reaches outside the element that draws it.'],
+  [/\bhref\s*=/i, 'A drawing must not link anywhere; its explanation is the text beside it.'],
+  [/\bid\s*=/i, 'An element identifier inside a drawing collides when the same drawing is used twice.'],
+  [/\bfont-family\s*[:=]/i, 'A drawing must not depend on a font being available.'],
+  [/url\s*\(/i, 'A drawing must not reference another resource.'],
+];
+
+/**
+ * Checks every inline drawing in an output.
+ *
+ * The artwork is generated into the markup rather than linked, which is what
+ * lets one HTML file carry the whole illustrated essay. These rules are what
+ * keep that true, and what keep every name and word in the essay real browser
+ * text rather than lettering baked into a picture.
+ *
+ * @param {string} html
+ * @returns {Array<{kind: string, value: string, message: string}>}
+ */
+export function auditInlineArtwork(html) {
+  const problems = [];
+  const drawings = [...html.matchAll(/<svg\b[\s\S]*?<\/svg>/gi)].map((match) => match[0]);
+
+  for (const drawing of drawings) {
+    for (const [pattern, message] of ARTWORK_RULES) {
+      const found = drawing.match(pattern);
+      if (found) problems.push({ kind: 'artwork', value: found[0], message });
     }
   }
 

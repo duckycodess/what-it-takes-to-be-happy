@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
 
 import { buildOutputs, auditOutputs } from '../src/build/build.js';
-import { auditOfflineHtml, auditBundledLicence } from '../src/build/verify.js';
+import { auditOfflineHtml, auditBundledLicence, auditInlineArtwork } from '../src/build/verify.js';
 import { createPreviewServer } from '../src/tools/preview.js';
 import { loadValidContent, repoRoot } from './helpers.js';
 
@@ -92,6 +92,73 @@ test('an output that drops essential content fails the build instead of shipping
   const narration = content.scenes[0].narration[0];
   const broken = { ...outputs, hosted: outputs.hosted.replace(narration, '') };
   assert.throws(() => auditOutputs(broken, content), /does not carry the complete content/);
+});
+
+test('the single offline file carries every drawing, with nothing left to fetch', async () => {
+  const content = loadValidContent();
+  const { hosted, offline } = await buildOutputs(content);
+
+  const count = (html) => (html.match(/<svg class="scene-art"/g) ?? []).length;
+  const drawn = content.scenes.filter((scene) => scene.visual.artId !== null).length;
+  const landing = content.project.visual.artId ? 1 : 0;
+  assert.equal(count(offline), drawn + landing, 'every drawn beat, plus the landing when it has a drawing');
+  assert.equal(count(offline), count(hosted), 'the offline file draws exactly what the hosted page draws');
+
+  assert.deepEqual(auditInlineArtwork(offline), []);
+  assert.deepEqual(auditOfflineHtml(offline), []);
+
+  // The artwork is markup, not a packaged file: it costs the offline file no
+  // request and no asset, which is the whole reason it is drawn this way.
+  assert.ok(!/<img[^>]*scene-art/.test(offline));
+});
+
+test('a drawing that reached outside itself would fail the build rather than ship', async () => {
+  const content = loadValidContent();
+  const outputs = await buildOutputs(content);
+  const broken = {
+    ...outputs,
+    hosted: outputs.hosted.replace('<svg class="scene-art"', '<svg class="scene-art"><image href="https://example.org/art.png"/>'),
+  };
+  assert.throws(() => auditOutputs(broken, content), /reaches outside itself or carries its own lettering/);
+});
+
+test('the drawing is settled in the markup, and motion is only an entrance on top of it', async () => {
+  const { offline } = await buildOutputs(loadValidContent());
+  const styles = offline.slice(offline.indexOf('<style>'), offline.indexOf('</style>'));
+
+  // Nothing hides the condition layer by default, so a scriptless browser, the
+  // print route, and the offline file all show the finished explanation.
+  assert.ok(!/\[data-art-layer=.reveal.\]\s*\{[^}]*(display:\s*none|opacity:\s*0)/.test(styles));
+
+  // The entrance runs only for the beat a reader is actually on, which is also
+  // why Next and Back cannot strand it: the state it settles into is the state
+  // the markup already has.
+  assert.match(styles, /@keyframes art-reveal/);
+  assert.match(styles, /\.scene\[data-current\] \[data-art-layer='reveal'\]\s*\{\s*animation: art-reveal/);
+
+  // Reduced motion keeps the same drawing and drops the movement.
+  const reduced = styles.slice(styles.indexOf('@media (prefers-reduced-motion: reduce)'));
+  assert.match(reduced, /\[data-art-layer='reveal'\][\s\S]*?animation: none !important/);
+  assert.match(reduced, /opacity: 1 !important/);
+
+  // Print does not depend on an event or a view state either.
+  const print = styles.slice(styles.indexOf('@media print'));
+  assert.match(print, /\[data-art-layer='reveal'\][\s\S]*?opacity: 1 !important/);
+});
+
+test('names over a drawing reflow instead of shrinking with it', async () => {
+  const { offline } = await buildOutputs(loadValidContent());
+  const styles = offline.slice(offline.indexOf('<style>'), offline.indexOf('</style>'));
+
+  // The frame is the measuring context, so label type is sized against the
+  // drawing's own width rather than the window's.
+  assert.match(styles, /\.scene-visual-frame\s*\{[^}]*container-type: inline-size/);
+  assert.match(styles, /\.art-label\s*\{[^}]*font-size: clamp\(/);
+  assert.match(styles, /@container \(max-width: [\d.]+rem\)/);
+
+  // A name is positioned from the drawing's own anchor and sits above the head.
+  assert.match(styles, /\.art-label\s*\{[^}]*left: var\(--art-x/);
+  assert.match(styles, /\.art-label\s*\{[^}]*transform: translate\(-50%, -100%\)/);
 });
 
 test('building twice from the same commit produces byte-identical output', () => {

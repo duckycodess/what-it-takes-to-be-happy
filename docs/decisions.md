@@ -64,6 +64,18 @@ The foundation package made these choices, all reversible:
 | Checks | Node's built-in test runner, plus `node --check` over every source file | No linter, formatter, or type checker is configured; this is the honest substitute. |
 | Fallback font | DejaVu Sans, committed with its licence | A temporary stand-in that proves a real font embeds in both outputs. Not the project typeface. |
 
+The artwork package then made these, equally reversible:
+
+| Choice | Made | Reason |
+| --- | --- | --- |
+| Drawing format | Authored SVG geometry, generated into the markup | A scene costs the offline file no request and no asset, and the same motif can appear in twenty beats without colliding with itself. |
+| Animation | One CSS entrance over a layer that is already settled in the markup | Print, no scripting, and reduced motion all need the finished drawing anyway; a timeline library would have earned nothing and cost the offline file a dependency. |
+| Expression vocabulary | The six editorial states, plus `uncertainty` as a seventh *drawable* state | The brief asks the drawings to carry not-knowing, and `reflection` is settled consideration. The storyboard's six-state vocabulary is unchanged. |
+| Scene coverage | Reusable motifs chosen per beat, with declared fallbacks | 33 of 87 beats have a drawing; the rest say what one would have to show. A map claiming 87 bespoke illustrations would be false. |
+| Concept sheet | Kept, moved into the colophon as provenance | It is a flattened study, not production art; it belongs beside the credits rather than on the landing. |
+| Landing illustration | Authored in the content document, like every other drawing | The opening is where a reader could most easily be told that happiness is one feeling; who stands around the question is an editorial decision, not a renderer's. |
+| Layer model | A revealed state only ever adds to its situation | One description stays true of a drawing whether or not the layer has animated in, and a beat that removes something is the same drawing in the other state. |
+
 Actual commands are in the [README](../README.md) and [architecture](architecture.md); the hosting settings are in [delivery](delivery.md).
 
 The source audit for the editorial package was carried out on 9 October 2026. Every retained source now has an
