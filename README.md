@@ -59,6 +59,16 @@ npm run check           # validate, then test, then build
 
 The build fails if either output loses essential content, if authoring provenance leaks into the product, or if the offline file references anything it does not carry. `dist/` is generated and git-ignored.
 
+## Reading it
+
+Both outputs open on the question, with Begin, the contributors' names, and the chapter list. From there a reader moves beat by beat with Next and Back or the arrow keys, revisits any chapter from its first beat, opens optional panels without losing their place, and can switch to the continuous view that reads the whole essay straight through. Every beat, every chapter, and every source entry has a web address, so a reader can be sent to one and the browser's Back button walks their moves in reverse — including from the offline file opened off a disk.
+
+The register is reachable from the landing, from the chapter list in any view, and from every citation beside a beat; each citation keeps the evidence level and the limitation in place rather than hiding them behind the link. With scripting unavailable, in print, and in the continuous view, the whole essay is simply there, which is the same document in each case.
+
+Futura Handwritten is named first in the stylesheet but is **not bundled**: its redistribution could not be established, and the finding is recorded in [`assets/fonts/README.md`](assets/fonts/README.md). Readers who do not have it installed get the bundled DejaVu Sans. All lettering is browser text.
+
+`npm test` includes a browser suite that drives the real `dist/offline.html` in headless Chrome through a `file://` URL. It needs no packages and no configuration, finds a browser through `CHROME_PATH` or the usual locations, and skips with a stated reason when none is installed. [Verification](docs/verification.md) records what actually ran.
+
 ## Editing the essay
 
 All of the writing lives in [`content/content.json`](content/content.json), described field by field in [the content contract](docs/content-contract.md). Chapters, beats, cast, sources, concepts, and optional panels are addressed by stable identifiers, so a later note can rewrite, reorder, or move a beat without touching anything around it. Run `npm run validate` after any edit; it reports each problem with its exact location.

@@ -2,13 +2,45 @@
 
 These are concrete acceptance scenarios for the finished essay. Avoid tests that merely mirror rendering code.
 
-## What the foundation already checks
+## What the automated suite already checks
 
-`npm run check` runs the content validation, the automated suite, and the build. The suite covers the contract rules against a deliberately broken fixture, reordering beats by stable identifier, the renderer's coverage of essential content, the absence of authoring provenance in any output, the packaging audits, build determinism, and the preview server. The build itself refuses to write an output that drops essential content or an offline file that depends on anything it does not carry.
+`npm run check` runs the content validation, the automated suite, and the build. The build itself refuses to write an output that drops essential content or an offline file that depends on anything it does not carry.
 
-Checked by hand on 9 October 2026 against `dist/offline.html` opened through a `file://` URL in headless Chrome with name resolution disabled and the proxy pointed at a dead port: the landing, Begin, Next, Back, arrow keys, chapter shortcuts, the current-chapter marker, the reading view, the optional panels opening and closing, focus moving to the current beat, the embedded illustration, and the embedded font. Printing from inside a single beat still produced the complete essay. The layout reflows without horizontal overflow at a 360-pixel-wide document and composes into two columns on a wide screen.
+| Suite | What it covers |
+| --- | --- |
+| `test/validate.test.js`, `test/reorder.test.js`, `test/register.test.js` | Contract rules against a deliberately broken fixture, reordering beats by stable identifier, and the content document agreeing with the source register. |
+| `test/render.test.js`, `test/build.test.js`, `test/cli.test.js` | Essential-content coverage, no authoring provenance in any output, the packaging audits, build determinism, and the preview server. |
+| `test/reader.test.js` | The reader's journeys: authored order, both boundaries, chapter revisiting, deep links to a beat, a chapter, and a source, the browser Back button with and without the History API, focus on every move, optional panels keeping the reader's own choices, and print opening them and handing the choices back. |
+| `test/browser.test.js` | The same journeys in real Chrome against the real `dist/offline.html` through a `file://` URL, plus the questions only a browser can answer. Skips with a stated reason where no browser is installed. |
+| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, and the focus ring. |
+| `test/dom.test.js` | The test harness itself, so the reader suite cannot pass on a harness that answers wrongly. |
 
-Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, contrast measurement, reduced-motion behaviour with actual scene motion, and anything about the finished prose or artwork.
+### Checked in a real browser
+
+Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against `dist/offline.html` opened through a `file://` URL with nothing served. All five browser tests ran; none skipped.
+
+- The landing shows the landing. Begin, Next, Back, the two disabled boundaries, chapter shortcuts, and the continuous view all behave, and the beat lands at the top of the window on every arrival rather than below the banner and the chapter list.
+- Focus moves to the beat and is **painted**: `outline-style: solid` with a non-zero width on the focused beat. Back, Next, and the view switch all measure at least 44 CSS pixels tall.
+- Clicking a disclosure keeps focus on its own summary, leaves the beat where it was, and leaves Next available. A panel the reader opened stays open across both view switches while an untouched one still follows the view.
+- A source beside a beat reaches its register entry; the entry is focused and on screen; the return control brings the reader back to the beat they left.
+- `history.back()` works on a local file and restores how the reader was reading as well as where they were.
+- No horizontal overflow at a 320-pixel layout viewport, measured on the landing, on each of the nine beats in turn, and in the continuous view with the register open. A wide window puts the illustration beside the prose and the chapter list into two columns.
+- With `--force-prefers-reduced-motion`, the browser reported the preference and the beat was simply present, with the visual description in text.
+
+A note on how the narrow width is measured: a desktop browser window will not go below roughly 500 CSS pixels, so `--window-size=360` silently lays the page out at about 490. The narrow-width tests therefore load the page in a frame of the requested width, which does give it that layout viewport. An earlier pass that missed this reported a phone width it had not actually tested.
+
+### Not checked, and by what
+
+- **A real phone and a real desktop browser.** Headless Chrome at a 320-pixel layout viewport is not a device: it says nothing about touch accuracy, a software keyboard, an address bar that grows and shrinks, or how the page feels in the hand.
+- **A screen reader.** The structure is there — one accessible name per beat, no competing live region, semantic controls, a `summary` that keeps its focus — but no assistive technology has read it. "Announced once" is an argument from the markup, not an observation.
+- **Print, on paper or in a print preview.** Print is covered by the stylesheet structure test and by the `beforeprint` behaviour test. Neither is a rendered page. Headless Chrome cannot emulate print media without a DevTools connection, which is not available from WSL to a Windows browser.
+- **Reduced motion with actual scene motion**, because there is no scene motion yet.
+- **Contrast as perceived**, rather than computed. The ratios are measured from the declared tokens; nothing has been checked against a display or a low-vision reader.
+- Anything about the finished prose or artwork. The content document is still an explicitly non-final fixture.
+
+`node ~/.claude/skills/impeccable/scripts/detect.mjs` over the three runtime files reports two warnings, both pre-existing and both deliberate: the left rule on a dialogue line and the left rule on a "keep in mind" callout. Both are ordinary essay typography — a quotation rule and a callout rule — rather than the card accent the heuristic is looking for.
+
+No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every source file instead.
 
 ## Scenarios for the finished essay
 

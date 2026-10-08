@@ -55,24 +55,31 @@
      and every print. */
 
   var panels = allDetails.map(function (element) {
-    return { element: element, chosen: null };
+    return { element: element, chosen: null, applied: element.open };
   });
-  var settingPanels = false;
 
+  /*
+   * A `toggle` event does not say who caused it, and it is queued rather than
+   * fired during the assignment, so a flag held across `element.open = x`
+   * would already be down by the time the event arrived and every view switch
+   * would be mistaken for a reader's choice. Comparing the panel's state
+   * against the last value this script wrote does not depend on timing: if
+   * they differ, something other than this script moved it.
+   */
   panels.forEach(function (panel) {
     panel.element.addEventListener('toggle', function () {
-      if (settingPanels) return;
+      if (panel.element.open === panel.applied) return;
       panel.chosen = panel.element.open;
+      panel.applied = panel.element.open;
     });
   });
 
   function writePanels(decide) {
-    settingPanels = true;
     panels.forEach(function (panel) {
       var wanted = decide(panel);
+      panel.applied = wanted;
       if (panel.element.open !== wanted) panel.element.open = wanted;
     });
-    settingPanels = false;
   }
 
   function applyPanelsForView(nextView) {
@@ -153,24 +160,32 @@
   /**
    * Records the fragment for the current state.
    *
-   * `history.pushState` is tried first so Back returns to the previous beat
-   * rather than leaving the essay. It is wrapped because a file:// document
-   * is exactly where a browser may refuse it with a SecurityError, and the
-   * offline file is opened that way by design; assigning `location.hash`
-   * still works there and still gives the reader a usable Back.
+   * `history.pushState` is tried first, for two reasons: Back returns to the
+   * previous beat rather than leaving the essay, and the entry can carry how
+   * the reader was reading, so Back out of the register restores the beats
+   * rather than leaving them in the continuous view. It is wrapped because a
+   * file:// document is exactly where a browser may refuse it with a
+   * SecurityError, and the offline file is opened that way by design;
+   * assigning `location.hash` still works there and still gives the reader a
+   * usable Back, with the view inferred from the fragment instead.
    */
   function writeFragment(id, replace) {
-    if (appliedFragment === id) return;
+    var samePlace = appliedFragment === id;
     appliedFragment = id;
     var target = '#' + encodeURIComponent(id);
     try {
       if (window.history && window.history.pushState) {
-        window.history[replace ? 'replaceState' : 'pushState'](null, '', target);
+        // The same place read a different way updates the entry instead of
+        // adding one, so switching views does not make Back stutter on the
+        // same fragment — and so Back restores the view as well as the place.
+        if (samePlace || replace) window.history.replaceState({ view: view }, '', target);
+        else window.history.pushState({ view: view }, '', target);
         return;
       }
     } catch (error) {
       /* Falls through to the fragment assignment below. */
     }
+    if (samePlace) return;
     try {
       window.location.hash = target;
     } catch (error) {
@@ -273,14 +288,13 @@
     current = Math.min(Math.max(index, 0), last);
     setView('beat');
     offerReturnToBeats(true);
-    if (settings.focus === false) {
-      scrollToElement(scenes[current]);
-    } else {
-      // Focus first without letting the browser scroll to it, then start the
-      // beat at the top of the page the way a presented slide would.
-      scenes[current].focus({ preventScroll: true });
-      window.scrollTo(0, 0);
-    }
+    // Every arrival at a beat puts that beat at the top of the window. The
+    // page is taller than the beat — the draft notice and the chapter list
+    // sit above it — so scrolling to the document's top would land a reader
+    // on the banner instead of on the beat they asked for, whether they
+    // pressed Next or followed a link.
+    if (settings.focus !== false) scenes[current].focus({ preventScroll: true });
+    scrollToElement(scenes[current]);
     if (settings.record !== false) writeFragment(scenes[current].getAttribute('data-scene'), settings.replace);
   }
 
@@ -308,10 +322,15 @@
   /**
    * Applies whatever the fragment currently asks for.
    *
-   * A reader already in the continuous view who follows a beat fragment —
-   * pressing Back, say — stays in the continuous view and is taken to that
-   * beat within it. How they are reading is their choice, and a fragment
-   * says where to go, not how to read.
+   * A reader already in the continuous view who follows a beat fragment
+   * stays in the continuous view and is taken to that beat within it. How
+   * they are reading is their choice, and a fragment says where to go, not
+   * how to read.
+   *
+   * `settings.view` overrides that: it is the view a history entry recorded,
+   * which is what Back should restore. Without one — an entry written by
+   * assigning the fragment, or a link a reader was sent — the current view
+   * is kept.
    */
   function applyFragment(options) {
     var settings = options || {};
@@ -319,6 +338,7 @@
     var id = readFragment();
     appliedFragment = id;
     var requested = resolve(id);
+    var wanted = settings.view || view;
 
     if (!requested) {
       setView('landing');
@@ -330,7 +350,7 @@
       showRegister(requested.sourceId, { record: false, focus: focus });
       return;
     }
-    if (view === 'reading') {
+    if (wanted === 'reading') {
       current = Math.min(Math.max(requested.index, 0), last);
       applySceneState();
       showReading({ record: false, focus: focus });
@@ -429,9 +449,10 @@
      Both events, because which one fires depends on whether `pushState` was
      available. Either way the handler is idempotent. */
 
-  function onNavigated() {
+  function onNavigated(event) {
     if (readFragment() === appliedFragment) return;
-    applyFragment();
+    var state = event && event.state;
+    applyFragment({ view: state && state.view });
   }
 
   window.addEventListener('hashchange', onNavigated);

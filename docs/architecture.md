@@ -128,15 +128,37 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 
 The build refuses to publish an output that drops essential content, and refuses an offline file that references anything it does not carry. External source destinations stay as ordinary links: offline, their labels, roles, and limitations are all still readable, and only following the link needs a connection.
 
+### The implemented reader
+
+The reader package filled in the behaviour this document described. Three decisions carry most of it.
+
+**The fragment is the state.** Every move writes one and every fragment resolves: a beat identifier to that beat, a chapter identifier to that chapter's first beat, `sources` or a single source identifier to the register in the continuous view. `hashchange` and `popstate` apply whatever the fragment says, so deep links, chapter revisiting, and the browser's Back button are one mechanism rather than three. `history.pushState` is tried first and the entry carries the view, so Back restores how the reader was reading as well as where they were; a browser that refuses `pushState` — which a `file://` document is exactly where to expect — falls back to assigning `location.hash` and infers the view from the fragment instead. Switching view replaces the current entry rather than adding one: how you read is not a place.
+
+**A move is announced once.** Focus moves to the newly selected beat, which carries `aria-labelledby` pointing at its own title. Nothing else is a live region, so the move is reported once rather than twice. The progress line next to the controls is plain text: position, the chapter it sits in, and a sentence at each end, because a disabled button is easy to miss and does not say why it is disabled. The view switch changes its label and carries no `aria-pressed`, for the same reason — both would read as "Back to the beats, pressed".
+
+**The view decides only what the reader has not.** An optional panel remembers whether the reader opened or closed it; until they touch one it follows the view, collapsed between beats and open in the continuous view. Print opens every panel and then hands the choices back. The `toggle` event is queued rather than fired during the assignment, so the script compares each panel against the last value it wrote instead of holding a flag across the change.
+
+Everything else follows from the renderer putting the whole essay in the markup. Each register entry is anchored; each beat-side source reference keeps its evidence level and limitation in place *and* links the full entry; the chapter list, which stays on screen in every view, carries a Sources link. Arrow keys move between beats but never inside a summary, link, button, or field that owns them. Every arrival at a beat brings that beat to the top of the window, because the page is taller than one beat.
+
+Styling is one stylesheet with no fixed stage, since the finished artwork does not exist yet and the layout must not be built around its dimensions. Every selector that hides something in a view is answered by a print rule, and a test fails if a new one is not.
+
 ### Evidence levels reach the reader
 
 A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
 
 The bundled font's licence is rendered into the document rather than left beside it, because the offline file is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
 
-### What the foundation did not decide
+### What is still open
 
-Final prose, finished artwork, scene motion, the project typeface, and the reader's finished visual design are all still open. The committed font and the committed illustration are temporary and exist to prove binary packaging works end to end.
+Final prose, finished artwork, and scene motion are still open. The committed illustration is temporary and exists to prove binary packaging works end to end.
+
+The project typeface is open for a reason worth recording rather than rediscovering. Futura Handwritten is named first in the CSS stack and is **not bundled**: its redistribution could not be established on 9 October 2026. The author's note grants broad permission to use it, but the archive carries no licence file, the font's own `name` table carries no licence record or licence URL, and dafont states that the label above its download button is only an indication. Broad permission to use a font is not permission to redistribute the file, and this project's offline deliverable embeds the bytes in a document handed to other people. The finding, and what would unblock it, are in [`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is browser text, so nothing in the argument depends on the face.
+
+### How the reader is tested
+
+Two suites, because they answer different questions. `test/reader.test.js` runs the real browser script against the real rendered markup in a small DOM built for the purpose, and always runs. `test/browser.test.js` runs the same journeys in Chrome against the real `dist/offline.html` through a `file://` URL, and answers what the *stylesheet* does — what a view hides, whether a focus ring is painted, where focus goes when a native disclosure is clicked, whether a phone-width window scrolls sideways. It skips with a stated reason where no browser is installed, and [verification](verification.md) records which happened.
+
+Both harnesses are deliberately small and dependency-free: `test/support/dom.js` implements exactly the subset the browser script asks for and throws on anything outside it, and `test/support/chrome.js` drives Chrome through `--dump-dom` with no socket and no client library. `test/dom.test.js` pins down the first harness's own behaviour, because a reader suite is only worth as much as the harness under it.
 
 ## Handoffs that create real prerequisites
 
