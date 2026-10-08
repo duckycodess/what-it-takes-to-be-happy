@@ -27,8 +27,17 @@ const indexBy = (list) => new Map(list.map((entry) => [entry.id, entry]));
  * A source is shown with the evidence level the audit actually reached, and
  * what it supports is phrased against that level. A work that was never opened
  * shows no supported claim at all; it shows why the notes list it.
+ *
+ * The same block is used beside a beat and in the register. Only the register
+ * copy carries the identifier, because that is the one a fragment link points
+ * at and an element identifier may appear once. The beat copy therefore keeps
+ * the level and the limitation in place *and* offers the register link, so a
+ * reader never has to leave the beat to learn how far the work was checked.
+ *
+ * @param {object} source
+ * @param {{register?: boolean}} [options] `register` marks the anchored copy
  */
-function renderSourceReference(source) {
+function renderSourceReference(source, options = {}) {
   const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
 
   const claim = source.supportedClaim
@@ -42,14 +51,19 @@ function renderSourceReference(source) {
     `<p class="source-limit"><span class="label">Limitation</span> ${esc(source.limitation)}</p>`,
   ].filter(Boolean).join('\n');
 
-  return `<li class="source">
+  const anchor = options.register ? ` id="${esc(source.id)}" tabindex="-1"` : '';
+  const register = options.register
+    ? ''
+    : `\n<p class="source-more"><a href="#${esc(source.id)}" data-source-link="${esc(source.id)}">Full entry in the sources</a></p>`;
+
+  return `<li class="source"${anchor} data-source="${esc(source.id)}">
 <p class="source-head"><a href="${esc(source.url)}" rel="noreferrer">${esc(source.label)}</a> <span class="source-type">${esc(source.type)}</span></p>
 <p class="source-status" data-status="${esc(source.reviewStatus)}">${esc(level.label)}</p>
-${detail}
+${detail}${register}
 </li>`;
 }
 
-function renderVisual(scene, castById) {
+function renderVisual(scene, castById, artIsFinal) {
   const nametags = scene.visual.cast
     .map((appearance) => {
       const character = castById.get(appearance.characterId);
@@ -58,10 +72,17 @@ function renderVisual(scene, castById) {
     })
     .join('\n');
 
+  // The frame holds a name and a stated feeling per figure and nothing else
+  // until the drawing exists. Saying so is the honest thing to put in an empty
+  // frame: a reader should not have to guess whether the art failed to load.
+  const pending = artIsFinal
+    ? ''
+    : '\n<p class="scene-visual-pending">The original drawing for this beat is not made yet. The figures below are named slots, and the caption carries what the finished panel will show.</p>';
+
   // The description lives in the caption rather than an aria-label, so the
   // nametags stay real text and nothing is announced twice.
   return `<figure class="scene-visual">
-<div class="scene-visual-frame">
+<div class="scene-visual-frame">${pending}
 ${nametags ? `<ul class="figure-cast-list">\n${nametags}\n</ul>` : ''}
 </div>
 <figcaption>${esc(scene.visual.description)}</figcaption>
@@ -84,10 +105,17 @@ function renderDialogue(scene, castById) {
 }
 
 function renderDetail(detail, sourceById) {
+  // Each panel links the sources it leans on, so a reader following the extra
+  // reasoning can reach the audited entry without hunting for the label.
   const sources = detail.sourceIds
-    .map((id) => `<li>${esc(sourceById.get(id).label)}</li>`)
+    .map((id) => {
+      const source = sourceById.get(id);
+      return `<li><a href="#${esc(source.id)}" data-source-link="${esc(source.id)}">${esc(source.label)}</a></li>`;
+    })
     .join('\n');
-  return `<details class="detail" open>
+  // `open` in the markup is the contract, not a default the script restores:
+  // print, a scriptless browser, and the continuous view all read it in place.
+  return `<details class="detail" id="${esc(detail.id)}" data-detail="${esc(detail.id)}" open>
 <summary>${esc(detail.title)}</summary>
 <div class="detail-body">
 ${paragraphs(detail.body)}
@@ -97,7 +125,7 @@ ${sources ? `<ul class="detail-sources">\n${sources}\n</ul>` : ''}
 }
 
 function renderScene(scene, context, position) {
-  const { castById, sourceById, conceptById, detailById } = context;
+  const { castById, sourceById, conceptById, detailById, artIsFinal } = context;
 
   const limitations = scene.limitations.length
     ? `<aside class="limitations" aria-label="Limitations">
@@ -121,9 +149,13 @@ ${scene.sourceIds.map((id) => renderSourceReference(sourceById.get(id))).join('\
 
   const details = scene.detailIds.map((id) => renderDetail(detailById.get(id), sourceById)).join('\n');
 
-  return `<li class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}" tabindex="-1">
-<h3 class="scene-title">${esc(scene.title)}</h3>
-${renderVisual(scene, castById)}
+  // `aria-labelledby` gives the beat an accessible name, so moving focus here
+  // announces the beat's own title. That is the only announcement of a move:
+  // the progress line deliberately carries no live region, which would repeat
+  // the same change a second time.
+  return `<li class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}" tabindex="-1" aria-labelledby="${esc(scene.id)}-title">
+<h3 class="scene-title" id="${esc(scene.id)}-title">${esc(scene.title)}</h3>
+${renderVisual(scene, castById, artIsFinal)}
 <div class="narration">
 ${paragraphs(scene.narration)}
 </div>
@@ -176,6 +208,7 @@ ${names}
 </ul>
 ${illustration}
 <p class="landing-actions"><a class="button begin" href="#${esc(firstSceneId)}" data-begin>Begin</a></p>
+<p class="landing-sources"><a href="#sources" data-sources-link>Sources, and how far each one was checked</a></p>
 ${readingTime}
 </section>`;
 }
@@ -188,34 +221,51 @@ function renderDraftNotice(status) {
 </aside>`;
 }
 
+/**
+ * The chapter list stays on screen in every view, so it is also where the
+ * register is reachable from inside a beat. The sources link sits outside the
+ * ordered list on purpose: the register is not a seventh chapter.
+ */
 function renderChapterNav(content) {
   const items = content.chapters
-    .map((chapter) => `<li><a href="#${esc(chapter.sceneIds[0])}" data-chapter-link="${esc(chapter.id)}">${esc(chapter.title)}</a></li>`)
+    .map((chapter, index) =>
+      `<li><a href="#${esc(chapter.id)}" data-chapter-link="${esc(chapter.id)}"><span class="chapter-number">${index + 1}</span> ${esc(chapter.title)}</a></li>`)
     .join('\n');
-  return `<nav class="chapter-nav" id="chapters" aria-label="Chapters">
+  return `<nav class="chapter-nav" id="chapters" aria-label="Chapters and sources">
 <p class="label" id="chapter-nav-label">Chapters</p>
 <ol aria-labelledby="chapter-nav-label">
 ${items}
 </ol>
+<p class="nav-aside"><a href="#sources" data-sources-link>Sources</a></p>
 </nav>`;
 }
 
 function renderSourceRegister(content) {
   if (content.sources.length === 0) return '';
-  return `<section class="source-register" id="sources" aria-labelledby="sources-title">
+  return `<section class="source-register" id="sources" tabindex="-1" aria-labelledby="sources-title">
 <h2 id="sources-title">Sources</h2>
 <p>Each source shows how far it was actually checked &mdash; read in full, abstract only, publisher or catalogue description only, or not opened at all &mdash; and what that material supports is phrased against that level. Opening a destination needs a connection; everything else here reads offline.</p>
 <ul class="source-list">
-${content.sources.map((source) => renderSourceReference(source)).join('\n')}
+${content.sources.map((source) => renderSourceReference(source, { register: true })).join('\n')}
 </ul>
+<p class="register-return js-only"><button type="button" data-return-to-beats>Back to where I was reading</button></p>
 </section>`;
 }
 
+/**
+ * Progress and the two boundaries are plain text next to the buttons rather
+ * than a live region: focus already moves to the newly selected beat and
+ * announces its title, and a live region here would say the same move twice.
+ */
 function renderBeatControls(totalScenes) {
   return `<nav class="beat-controls js-only" aria-label="Move through the essay">
-<button type="button" data-back>Back</button>
-<p class="beat-position" aria-live="polite"><span data-position-current>1</span> of ${totalScenes}</p>
-<button type="button" data-next>Next</button>
+<button type="button" data-back aria-label="Back to the previous beat">Back</button>
+<p class="beat-position">
+<span class="beat-count">Beat <span data-position-current>1</span> of ${totalScenes}</span>
+<span class="beat-where" data-position-where></span>
+<span class="beat-boundary" data-position-boundary></span>
+</p>
+<button type="button" data-next aria-label="On to the next beat">Next</button>
 </nav>`;
 }
 
@@ -237,6 +287,9 @@ export function renderDocument(content, options) {
     detailById: indexBy(content.details),
     sceneById: indexBy(content.scenes),
     positions: new Map(),
+    // No finished scene artwork exists while the document is non-final, so
+    // every empty frame says so rather than looking like a loading failure.
+    artIsFinal: content.status.final,
   };
 
   // Reading order is the chapters' declared scene order, never array position.
@@ -287,7 +340,7 @@ ${content.chapters.map((chapter) => renderChapter(chapter, context)).join('\n')}
 ${renderSourceRegister(content)}
 </main>
 ${renderBeatControls(orderedSceneIds.length)}
-<p class="view-switch js-only"><button type="button" data-view-toggle aria-pressed="false">Read the whole thing</button></p>
+<p class="view-switch js-only"><button type="button" data-view-toggle>Read the whole thing</button></p>
 <footer class="colophon">
 <p>${esc(content.project.title)} &mdash; original illustrated essay by ${content.cast.filter((character) => character.role === 'member').map((member) => esc(member.displayName)).join(', ')}.</p>
 ${fontNotice}
