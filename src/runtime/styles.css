@@ -1,0 +1,556 @@
+/*
+ * Foundation styles.
+ *
+ * Deliberately small: this proves the layout, the three views, keyboard focus,
+ * and print behave, and leaves the finished reader design to the reader
+ * package. __FONT_URL__ is replaced at build time with a relative path for the
+ * hosted output and with a data URI for the offline file.
+ */
+
+@font-face {
+  font-family: 'Bundled Fallback';
+  src: url(__FONT_URL__) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --ink: #1f1b17;
+  --ink-soft: #5c5146;
+  --paper: #fdfbf7;
+  --rule: #d9cfc0;
+  --accent: #9c4420;
+  --highlight: #fdf2d8;
+  --measure: 34rem;
+  --gap: 1.25rem;
+  --body: 'Futura Handwritten', 'Bundled Fallback', ui-sans-serif, system-ui, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 100%;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0 1rem 7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+body > * {
+  width: 100%;
+  max-width: 48rem;
+}
+
+p {
+  margin: 0 0 0.85em;
+  max-width: var(--measure);
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  margin: 0 0 0.4em;
+  text-wrap: balance;
+}
+
+h1 { font-size: clamp(2rem, 7vw, 3.25rem); }
+h2 { font-size: clamp(1.4rem, 4.5vw, 2rem); }
+h3 { font-size: clamp(1.1rem, 3.5vw, 1.35rem); }
+
+a {
+  color: var(--accent);
+}
+
+.label {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 0.2em;
+}
+
+/* --- Focus and skip link ------------------------------------------------ */
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--paper);
+  padding: 0.6rem 1rem;
+  border: 2px solid var(--ink);
+  z-index: 10;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+/* --- Controls ----------------------------------------------------------- */
+
+button,
+.button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 0.55rem 1.4rem;
+  min-height: 2.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+button[disabled] {
+  color: var(--ink-soft);
+  border-color: var(--rule);
+  cursor: default;
+}
+
+.button.begin {
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 1.1rem;
+  padding: 0.7rem 2.2rem;
+}
+
+/* Everything in a `.js-only` element does nothing without scripting, so it is
+   hidden until the browser script announces itself. */
+.js-only { display: none; }
+html.js .js-only { display: block; }
+
+/* --- Draft notice ------------------------------------------------------- */
+
+.draft-notice {
+  border: 2px dashed var(--accent);
+  background: var(--highlight);
+  padding: 0.9rem 1rem;
+  margin: 1rem 0 0;
+}
+
+.draft-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8rem;
+  color: var(--accent);
+  margin-bottom: 0.3em;
+}
+
+.draft-notice p:last-child { margin-bottom: 0; }
+
+/* --- Landing ------------------------------------------------------------ */
+
+.landing {
+  padding: 2.5rem 0 1rem;
+  text-align: center;
+}
+
+.landing p,
+.landing ul { margin-left: auto; margin-right: auto; }
+
+.landing-summary { font-size: 1.1rem; }
+
+.landing-cast {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+  padding: 0;
+  margin: 1rem auto;
+}
+
+.landing-art { margin: 1.5rem 0; }
+
+.landing-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 2px solid var(--rule);
+  background: #fff;
+}
+
+figcaption {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  margin-top: 0.5rem;
+}
+
+.landing-actions { margin: 1.5rem 0 0.5rem; }
+
+.reading-time {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+/* --- Chapter navigation ------------------------------------------------- */
+
+.chapter-nav {
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 1rem 0;
+  margin: 1.5rem 0;
+}
+
+.chapter-nav ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.chapter-nav a {
+  display: block;
+  padding: 0.4rem 0.2rem;
+  color: var(--ink);
+  text-decoration-color: var(--rule);
+}
+
+.chapter-nav a[aria-current='true'] {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* --- Chapters and beats ------------------------------------------------- */
+
+.chapter { margin: 0 0 3rem; }
+
+.chapter-head { margin-bottom: 1.25rem; }
+
+.chapter-connection {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+.scenes {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.scene {
+  padding: 1.25rem 0 1.75rem;
+  border-top: 1px solid var(--rule);
+}
+
+.scene:focus { outline: none; }
+
+.scene-visual { margin: 0 0 1.25rem; }
+
+.scene-visual-frame {
+  border: 2px dashed var(--rule);
+  background: #fff;
+  min-height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.figure-cast-list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+.figure-cast {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.nametag {
+  display: inline-block;
+  border: 2px solid var(--ink);
+  border-radius: 0.3rem;
+  padding: 0.1rem 0.6rem;
+  font-weight: 700;
+  background: var(--paper);
+}
+
+.expression {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+/* --- Dialogue ----------------------------------------------------------- */
+
+.dialogue {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.line {
+  border-left: 3px solid var(--rule);
+  padding-left: 0.9rem;
+}
+
+.line-speaker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3em;
+}
+
+.line-kind {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.line-text { margin-bottom: 0; }
+
+/* --- Limitations, concepts, details, sources ---------------------------- */
+
+.concepts { font-size: 0.95rem; color: var(--ink-soft); }
+
+.limitations {
+  background: var(--highlight);
+  border-left: 4px solid var(--accent);
+  padding: 0.8rem 1rem;
+  margin: 0 0 1rem;
+}
+
+.limitations p:last-child { margin-bottom: 0; }
+
+.detail {
+  border: 1px solid var(--rule);
+  padding: 0.5rem 0.9rem;
+  margin: 0 0 1rem;
+}
+
+/* The default disclosure marker is kept: it is what tells a reader the panel
+   can be collapsed while moving beat by beat. */
+.detail > summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 0.5rem 0;
+  min-height: 2.25rem;
+}
+
+.detail-body { padding-top: 0.5rem; }
+.detail-body p:last-child { margin-bottom: 0; }
+
+.detail-sources {
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  padding-left: 1.1rem;
+}
+
+.source-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.source {
+  border-top: 1px solid var(--rule);
+  padding-top: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.source p { margin-bottom: 0.35em; }
+
+.source-head { font-weight: 700; }
+
+.source-type,
+.source-status {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-weight: 400;
+}
+
+/* Levels that need the reader's care are marked; a full read is not. */
+.source-status[data-status='unreviewed'],
+.source-status[data-status='not-accessed'],
+.source-status[data-status='verified-locator'],
+.source-status[data-status='verified-abstract'] { color: var(--accent); }
+
+.source-basis,
+.source-citation { color: var(--ink-soft); }
+
+.source-limit .label { margin-right: 0.3em; }
+
+.source-register { margin: 2rem 0; }
+
+/* --- Beat controls and view switch -------------------------------------- */
+
+.beat-controls {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--paper);
+  border-top: 2px solid var(--ink);
+  padding: 0.6rem 1rem;
+  max-width: none;
+}
+
+html.js .beat-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.beat-position {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  min-width: 5rem;
+  text-align: center;
+}
+
+.view-switch { margin: 1rem 0 0; }
+
+html.js .view-switch { display: block; }
+
+.licence {
+  margin-top: 0.75rem;
+}
+
+.licence > summary {
+  cursor: pointer;
+  padding: 0.4rem 0;
+  min-height: 2.25rem;
+}
+
+.licence-text {
+  white-space: pre-wrap;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.colophon {
+  border-top: 1px solid var(--rule);
+  margin-top: 2rem;
+  padding-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+/* --- View states --------------------------------------------------------
+   Without scripting no state attribute is ever set, so the document stays in
+   its complete continuous form. That is also the print and offline fallback. */
+
+html.js[data-view='landing'] .essay-body,
+html.js[data-view='landing'] .source-register,
+html.js[data-view='landing'] .beat-controls { display: none; }
+
+html.js[data-view='beat'] .landing { display: none; }
+html.js[data-view='beat'] .chapter:not([data-current]) { display: none; }
+html.js[data-view='beat'] .scene:not([data-current]) { display: none; }
+html.js[data-view='beat'] .source-register { display: none; }
+html.js[data-view='beat'] .chapter-opening,
+html.js[data-view='beat'] .chapter-closing { display: none; }
+html.js[data-view='beat'] .chapter[data-show-opening] .chapter-opening,
+html.js[data-view='beat'] .chapter[data-show-closing] .chapter-closing { display: block; }
+
+html.js[data-view='reading'] .beat-controls { display: none; }
+html.js[data-view='reading'] .landing { display: none; }
+
+/* No entrance animation here on purpose. A beat must be readable the instant
+   it is shown; scene motion belongs to the illustrations, where a reduced-motion
+   reader still gets the same explanation from the text and the description. */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* --- Wider screens ------------------------------------------------------ */
+
+@media (min-width: 52rem) {
+  body { padding: 0 2rem 7rem; }
+  body > * { max-width: 56rem; }
+  .chapter-nav ol { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem 1.5rem; }
+  .scene {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+  .scene > .scene-title { grid-column: 1 / -1; }
+  .scene > .scene-visual { grid-column: 2; grid-row: 2; position: sticky; top: 1.5rem; }
+  .scene > :not(.scene-title):not(.scene-visual) { grid-column: 1; }
+  .landing-art img { max-width: 40rem; margin: 0 auto; }
+}
+
+/* --- Print --------------------------------------------------------------
+   Print always carries the complete argument, whichever view is on screen. */
+
+@media print {
+  html, body { background: #fff; color: #000; }
+  body { padding: 0; display: block; max-width: none; }
+  body > * { max-width: none; }
+
+  .skip-link,
+  .beat-controls,
+  .view-switch,
+  .chapter-nav,
+  .landing-actions,
+  .reading-time { display: none !important; }
+
+  html.js[data-view] .landing,
+  html.js[data-view] .essay-body,
+  html.js[data-view] .source-register,
+  html.js[data-view] .chapter,
+  html.js[data-view] .scene,
+  html.js[data-view] .chapter-opening,
+  html.js[data-view] .chapter-closing { display: block !important; animation: none !important; }
+
+  .scene { display: block !important; page-break-inside: avoid; break-inside: avoid; }
+  .chapter { page-break-before: auto; }
+
+  /* Optional panels print open whether or not anything ran before printing.
+     The browser script also opens them on `beforeprint`, but print must not
+     depend on an event firing: a collapsed panel would silently drop content
+     from the printed argument. */
+  details > summary { list-style: none; }
+  details::details-content { content-visibility: visible; block-size: auto; }
+  details:not([open]) > *:not(summary) { display: block; }
+
+  .landing-art img { max-width: 12cm; }
+  a { color: #000; }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "what-it-takes-to-be-happy",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static illustrated essay foundation: content contract, validator, shared renderer, hosted and offline packaging.",
+  "license": "UNLICENSED",
+  "type": "module",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "validate": "node src/tools/validate.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "build": "node src/build/build.js",
+    "export:offline": "node src/build/build.js --only=offline",
+    "preview": "node src/tools/preview.js",
+    "check": "npm run validate && npm test && npm run build"
+  }
+}

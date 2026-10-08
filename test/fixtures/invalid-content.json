@@ -1,0 +1,233 @@
+{
+  "schema": "happiness-essay-content/v1",
+  "status": { "final": false, "label": "Broken fixture", "notice": "   " },
+  "project": {
+    "title": "Broken fixture",
+    "question": "What does it take to be happy?",
+    "summary": "Deliberately invalid document used to prove the validator reports real problems.",
+    "readingTimeEstimate": null
+  },
+  "chapters": [
+    {
+      "id": "ch-one",
+      "title": "First",
+      "question": "First?",
+      "opening": "Opens.",
+      "sceneIds": ["sc-a", "sc-missing", "sc-a"]
+    },
+    {
+      "id": "ch-two",
+      "title": "Second",
+      "question": "Second?",
+      "opening": "Opens.",
+      "closing": "Closes.",
+      "sceneIds": ["sc-b"]
+    },
+    {
+      "id": "ch-one",
+      "title": "Duplicate identifier",
+      "question": "Duplicate?",
+      "opening": "Opens.",
+      "closing": "Closes.",
+      "sceneIds": ["sc-c"]
+    }
+  ],
+  "scenes": [
+    {
+      "id": "sc-a",
+      "chapterId": "ch-one",
+      "title": "Empty essential scene",
+      "narration": ["   "],
+      "dialogue": [
+        {
+          "id": "dl-invented",
+          "speakerId": "cast-nobody",
+          "text": "A position attributed to a contributor with nothing recording that they hold it.",
+          "stance": "member-endorsed",
+          "sourceIds": ["S-missing"],
+          "provenanceId": null
+        }
+      ],
+      "visual": {
+        "description": "Describes the drawing.",
+        "cast": [{ "characterId": "cast-tj", "expressionId": "ex-smug" }]
+      },
+      "conceptIds": [],
+      "sourceIds": ["S-missing"],
+      "limitations": [],
+      "detailIds": [],
+      "interactionIds": ["in-hidden-detail"],
+      "narraton": ["A misspelled field that would otherwise vanish silently."]
+    },
+    {
+      "id": "sc-b",
+      "chapterId": "ch-one",
+      "title": "Ordered under a chapter it does not declare",
+      "narration": ["Reads on the main path."],
+      "dialogue": [],
+      "visual": { "description": "Describes the drawing.", "cast": [] },
+      "conceptIds": [],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": ["dt-shared"],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-c",
+      "chapterId": "ch-one",
+      "title": "Also claims the shared detail",
+      "narration": ["Reads on the main path."],
+      "dialogue": [],
+      "visual": { "description": "Describes the drawing.", "cast": [] },
+      "conceptIds": ["cn-planned-but-written"],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": ["dt-shared"],
+      "interactionIds": []
+    },
+    {
+      "id": "sc-orphan",
+      "chapterId": "ch-two",
+      "title": "Never listed in any chapter order",
+      "narration": ["Reads on the main path, but no reader reaches it."],
+      "dialogue": [],
+      "visual": { "description": "Describes the drawing.", "cast": [] },
+      "conceptIds": [],
+      "sourceIds": [],
+      "limitations": [],
+      "detailIds": [],
+      "interactionIds": []
+    }
+  ],
+  "cast": [
+    {
+      "id": "cast tj",
+      "role": "member",
+      "displayName": "TJ",
+      "appearance": "Original stickman.",
+      "expressions": [
+        { "id": "ex-joy", "label": "Joy" },
+        { "id": "ex-joy", "label": "Joy again" }
+      ]
+    },
+    {
+      "id": "cast-bob",
+      "role": "acquaintance",
+      "displayName": "Bob",
+      "appearance": "Original stickman.",
+      "expressions": [{ "id": "ex-joy", "label": "Joy" }]
+    }
+  ],
+  "sources": [
+    {
+      "id": "S-claiming",
+      "label": "Unaudited source carrying an evidence record",
+      "url": "https://example.org/unaudited",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "unreviewed",
+      "evidenceBasis": "Read in full, supposedly.",
+      "citation": "Someone (2020). A citation written before anyone opened the work.",
+      "supportedClaim": "A claim nobody has checked."
+    },
+    {
+      "id": "S-abstract-empty",
+      "label": "Abstract-level source with nothing recorded",
+      "url": "https://example.org/abstract",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "verified-abstract",
+      "evidenceBasis": null,
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "S-unopened-claiming",
+      "label": "Unopened source asserting what it supports",
+      "url": "https://example.org/unopened",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "not-accessed",
+      "evidenceBasis": "Not opened; the publisher refused access.",
+      "citation": "Someone Else (2019). A work nobody could open.",
+      "supportedClaim": "A claim drawn from a work that was never read."
+    },
+    {
+      "id": "S-bad-status",
+      "label": "Source with an invented evidence level",
+      "url": "https://example.org/status",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "looked-at-the-abstract",
+      "evidenceBasis": null,
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "S-bad-url",
+      "label": "Source pointing at something a reader cannot open",
+      "url": "www.example.org/no-scheme",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "unreviewed",
+      "evidenceBasis": null,
+      "citation": null,
+      "supportedClaim": null
+    }
+  ],
+  "concepts": [
+    {
+      "id": "cn-planned-but-written",
+      "name": "Planned concept carrying text",
+      "status": "planned",
+      "explanation": "An explanation that status says does not exist.",
+      "application": null,
+      "question": null,
+      "sourceIds": []
+    }
+  ],
+  "details": [
+    {
+      "id": "dt-shared",
+      "title": "Detail claimed by two scenes",
+      "body": ["Longer supporting text."],
+      "sourceIds": []
+    },
+    {
+      "id": "dt-unused",
+      "title": "Detail no scene references",
+      "body": ["Longer supporting text."],
+      "sourceIds": []
+    },
+    {
+      "id": "dt-hidden",
+      "title": "Detail reachable only through an optional reveal",
+      "body": ["Longer supporting text."],
+      "sourceIds": []
+    }
+  ],
+  "interactions": [
+    {
+      "id": "in-hidden-detail",
+      "surface": "scene-detail",
+      "purpose": "Reveals a detail the scene does not carry statically.",
+      "trigger": "Activating the control.",
+      "keyboard": "",
+      "staticEquivalent": "",
+      "detailId": "dt-hidden"
+    }
+  ],
+  "provenance": [
+    {
+      "id": "pv-dangling",
+      "appliesTo": "sc-deleted-last-week",
+      "note": "Authoring record pointing at something that no longer exists.",
+      "sourceNote": "docs/notes/example.md"
+    }
+  ]
+}

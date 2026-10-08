@@ -41,7 +41,7 @@ Choose the concrete storage format during implementation. It must express these 
 | Chapter | Stable identifier, title/question, ordered scene identifiers, opening and closing connections |
 | Scene | Stable identifier, chapter, essential narrative text, optional dialogue, character/visual state, relevant concept/source identifiers, visible limitations, optional supplementary content |
 | Dialogue | Speaker identifier, text, whether it is a member-endorsed position or a fictional friend's illustrative line, relevant source identifiers |
-| Source | Stable identifier, label, original URL, verified bibliographic detail, supported claim, limitations, review status |
+| Source | Stable identifier, label, original URL, the evidence level actually reached, what was opened and read, bibliographic detail, supported claim, limitations |
 | Character | Stable identifier, member/friend role, displayed name, original appearance, available expressions |
 | Interaction | Explanatory purpose, optional trigger/state, supplemental output, keyboard/touch behavior, static readable equivalent |
 | Provenance | Source note or delta location supporting a member position or content change |
@@ -83,6 +83,60 @@ Vercel serves the static hosted output. The offline deliverable is a single HTML
 Runtime module loading, runtime fetching of content, remote fonts, or remote illustration dependencies must not break offline reading. A service worker is not a substitute for a file that opens directly. External reference destinations can need internet; their labels, claim context, and necessary source details remain readable offline.
 
 Do not invent build commands now. The foundation implementation must document the actual local preview, validation, hosted packaging, and offline export commands it introduces.
+
+## The implemented foundation
+
+The foundation package filled in the implementation choices this document left open. What follows records what exists, not what is planned.
+
+### Tooling, and why it is this small
+
+Node 24 with **no dependencies at all**. The committed `package-lock.json` contains no packages, tests use Node's built-in runner, and the build uses only `node:fs`, `node:path`, `node:crypto`, and `node:http`.
+
+The reasoning is the offline requirement. A framework or bundler would put a toolchain between the authored content and a file that has to open from a local disk with no network, and every dependency added to that path is another way for the submission artifact to break on the night it is due. A static essay with one page, one stylesheet, and one browser script does not need one. Nothing here prevents a later package from adding a dependency if it earns its place; the decision is only that the foundation did not need one.
+
+Consequences worth knowing: there is no linter, formatter, or type checker configured, so `npm test` runs Node's own parser over every source file instead. The browser script is a classic script rather than an ES module, because module loading is blocked for `file://` documents.
+
+| Path | Role |
+| --- | --- |
+| `content/content.json` | The single content document. See [the content contract](content-contract.md). |
+| `src/content/` | Schema constants, the validator, and the loader. |
+| `src/runtime/` | The shared renderer, the stylesheet, and the browser script. |
+| `src/build/` | Asset declarations, data-URI inlining, the output audits, and the build. |
+| `src/tools/` | The validation command and the local preview server. |
+| `test/` | Contract, renderer, packaging, and preview checks, plus a deliberately broken fixture. |
+
+### Commands
+
+| Command | What it does |
+| --- | --- |
+| `npm run validate` | Checks `content/content.json` against the contract. Exits nonzero with located errors. |
+| `npm test` | Runs every check: contract rules, stable-identifier reordering, rendering, packaging, determinism, and the preview server. |
+| `npm run build` | Validates, renders, audits, and writes `dist/`. |
+| `npm run export:offline` | Writes only `dist/offline.html`. |
+| `npm run preview` | Serves `dist/` at `http://localhost:4173`. |
+| `npm run check` | `validate`, then `test`, then `build`. |
+
+`dist/` is generated and git-ignored. The exact hosting settings are in [delivery](delivery.md).
+
+### One render, three outputs
+
+`src/runtime/render.js` renders the **entire** essay into the markup — every chapter, every beat, every optional panel — and the browser script only decides what is on screen. That single decision is what makes the rest hold together:
+
+- Print carries the complete argument whichever view is open, and optional panels are reopened before printing.
+- A browser with scripting unavailable shows the continuous reading view, which is the same thing the print route needs.
+- The hosted page and the offline file differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical.
+
+The build refuses to publish an output that drops essential content, and refuses an offline file that references anything it does not carry. External source destinations stay as ordinary links: offline, their labels, roles, and limitations are all still readable, and only following the link needs a connection.
+
+### Evidence levels reach the reader
+
+A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
+
+The bundled font's licence is rendered into the document rather than left beside it, because the offline file is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
+
+### What the foundation did not decide
+
+Final prose, finished artwork, scene motion, the project typeface, and the reader's finished visual design are all still open. The committed font and the committed illustration are temporary and exist to prove binary packaging works end to end.
 
 ## Handoffs that create real prerequisites
 
