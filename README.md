@@ -4,7 +4,7 @@ An independently readable illustrated essay for a SOC SCI midterm, created by TJ
 
 The visual and presentation reference is [Nicky Case's The Evolution of Trust](https://ncase.me/trust/). This project uses its presentation rhythm and handwritten aesthetic as inspiration, with original artwork and an original argument about happiness.
 
-**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented, and an initial character concept sheet has been generated. Application implementation, animated production assets, and deployment are future work. Tickets are unqueued by default.
+**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented, and an initial character concept sheet has been generated. On 9 October the owner authorized autonomous implementation of the six build packages, automatic merging after verification, and generated-art support from this chat. Application and release progress is tracked on the issues; new unrelated tickets remain unqueued by default.
 
 ## Read first
 
@@ -17,6 +17,7 @@ The visual and presentation reference is [Nicky Case's The Evolution of Trust](h
 | [Research register](docs/research.md) | Current source pool, intended claim roles, limitations, audit status |
 | [Art direction](docs/art-direction.md) | Original characters, emotions, typography, meaningful scene changes |
 | [Asset workflow](docs/asset-workflow.md) | Built-in generation, first character sheet, drawing parts, animation, optional tools |
+| [Autonomous build](docs/autonomous-build.md) | Owner authorization, reviewed merges, issue labels, art requests, local supervision |
 | [Notes and future updates](docs/notes/README.md) | Imported notes and how to contribute a delta |
 | [Delivery](docs/delivery.md) | Vercel hosting and the offline submission file |
 | [Verification](docs/verification.md) | Narrative, navigation, accessibility, offline, and release checks |
@@ -41,7 +42,7 @@ There are no application commands yet. The implementation foundation ticket will
 
 ## Work tracking
 
-Start with the [project index](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/1), [work plan](docs/work-plan.md), and [GitHub issues](https://github.com/duckycodess/what-it-takes-to-be-happy/issues). Six implementation packages have canonical contracts and verified classification labels. All remain unqueued. The installed Agent Flow front door publishes tickets; exact `agent:ready` separately authorizes autonomous implementation.
+Start with the [project index](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/1), [work plan](docs/work-plan.md), and [GitHub issues](https://github.com/duckycodess/what-it-takes-to-be-happy/issues). Six implementation packages have canonical contracts and verified classification labels. The owner's overnight-build request authorizes those six; the index stays unqueued. The installed Agent Flow front door publishes tickets; exact `agent:ready` records implementation authorization.
 
 ## Source material
 

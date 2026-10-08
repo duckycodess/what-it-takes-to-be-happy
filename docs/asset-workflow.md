@@ -37,6 +37,8 @@ The edit removed Bob's hair tufts so the generic friend is distinct from TJ. The
 
 The first animated scene, reusable component library, and complete scene set remain work in [the existing art ticket](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/4). Creating this concept sheet does not complete that ticket.
 
+The owner subsequently requested ongoing generated-art support while the website is built autonomously. Workers can submit requests in [art-requests.json](art-requests.json); this chat checks every 15 minutes and supplies isolated asset branches for workers to incorporate. See [the autonomous build handoff](autonomous-build.md).
+
 ## Tools and their roles
 
 | Tool | Plain-language role | Project position |

@@ -20,3 +20,11 @@ Read `docs/brief.md`, `docs/decisions.md`, and the relevant architecture/content
 - Future note updates belong in `docs/notes/` and must be reconciled into the story and source register. Do not reintroduce the superseded fixed neighborhood route or arbitrary word/scene limits.
 - No application stack has been selected. Choose the smallest implementation that satisfies `docs/architecture.md`; do not add backend features to this static essay without a new requirement.
 - Current checkout contains documentation, workflow setup, and initial character concepts. Read `docs/asset-workflow.md` before producing illustrations or motion. No application build, lint, or test commands exist yet; document real commands when implementation adds them.
+
+## Authorized autonomous build
+
+The owner requested overnight autonomous implementation and automatic merging on 9 October 2026. Read `docs/autonomous-build.md`. Choose routine reversible details without waiting for owner input; keep all work within the confirmed website brief. The dispatcher merges reviewed, verified PRs into `main`; never bypass its checks or manufacture exact-commit review evidence.
+
+Every new GitHub issue needs meaningful classification labels through the canonical `$ticket` publisher, with `classification_verified` checked. Use `bug`, `documentation`, `enhancement`, and `accessibility` according to scope; `agent:*` labels alone do not classify work. Preserve existing labels and contracts. Unrelated discoveries remain unqueued.
+
+For additional generated art, add a request to `docs/art-requests.json` on the issue branch. This chat supplies built-in generation through isolated `codex/art-<id>` asset branches; the requesting worker incorporates the asset commit and reviews its own final commit. Continue independent work while waiting. Do not require the owner to learn Inkscape or provide a generation key.

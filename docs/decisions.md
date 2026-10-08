@@ -33,6 +33,10 @@ The user confirmed the shared brief and subsequently requested repository creati
 | Notes | Repository deltas will expand contributions | Reconcile them into the story rather than append an unrelated tail |
 | Hosting | Vercel | Keep the offline website submission file too |
 | Work tracking | Publish agreed work through the ticket front door | Ordinary tickets remain unqueued |
+| Autonomous build | Owner authorized the six implementation packages on 9 October | Routine reversible choices proceed within the confirmed brief |
+| PR completion | Automatic dispatcher merge after verified checks and independent review | Keep exact-commit review and dependency gates |
+| New issue labels | Relevant classification labels are mandatory and verified | Workflow labels do not replace issue type |
+| Art support | This chat polls project requests and supplies built-in-generated assets | Isolated asset branches preserve active worker ownership |
 
 ## Superseded proposals
 

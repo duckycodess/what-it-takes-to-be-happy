@@ -1,6 +1,6 @@
 # Work plan
 
-Repository/documentation setup is complete when the seed documents and source snapshots are pushed. The work below is application/editorial implementation, tracked through one unqueued parent index and six canonical child tickets. Future notes are inputs, not a reason to block all current work.
+Repository/documentation setup is complete when the seed documents and source snapshots are pushed. The work below is application/editorial implementation, tracked through one unqueued parent index and six canonical child tickets. On 9 October the owner authorized autonomous implementation of those six packages. Future notes are inputs, not a reason to block all current work.
 
 ## Packages
 
@@ -27,9 +27,9 @@ Only these evidenced same-repository edges belong in canonical TicketSpecs/Beads
 
 ## Publication state
 
-The [asset workflow](asset-workflow.md) and [first generated character sheet](../assets/concepts/stickman-character-sheet-v1.png) provide an initial visual seed for P4. Reusable production parts, scene animation, static descriptions, and narrative-specific scene assets still remain in that package. Built-in generation was directly requested in conversation; ticket queue state has not changed.
+The [asset workflow](asset-workflow.md) and [first generated character sheet](../assets/concepts/stickman-character-sheet-v1.png) provide an initial visual seed for P4. Reusable production parts, scene animation, static descriptions, and narrative-specific scene assets still remain in that package. This chat supplies additional generated-art requests as described in [autonomous build](autonomous-build.md).
 
-All tickets are unqueued. Exact `agent:ready` is reserved for a later explicit authorization. Registration alone does not start implementation, and the parent index is not an implementation task.
+The original publication left all tickets unqueued. The owner's 9 October overnight-build request separately authorizes #2–#7; the canonical publisher applies exact `agent:ready` for that batch. The parent index remains unqueued. Registration alone does not start implementation; live issue and dispatcher states show whether a package is queued, waiting on a prerequisite, running, or complete.
 
 ## Issue index
 

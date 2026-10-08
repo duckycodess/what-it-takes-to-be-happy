@@ -4,7 +4,9 @@ Vercel is the agreed hosting target. A self-contained website file remains the s
 
 ## Current state
 
-The repository currently contains documentation and workflow setup. There is no application build, Vercel project linkage, deployed website, or generated offline file yet. The delivery ticket owns those outputs after the integrated essay exists.
+The repository currently contains documentation, workflow setup, and an initial character concept. There is no application build, Vercel project linkage, deployed website, or generated offline file yet. The delivery ticket owns those outputs after the integrated essay exists.
+
+On 9 October 2026, connected Vercel reads verified authenticated personal account `duckycodess`. No teams or existing project matching `what-it-takes-to-be-happy` were returned. The owner has authorized this website's Vercel delivery. Once the foundation's actual build/output settings exist, the supervising Codex chat can provision the intended project through that connection, then verify preview and production against the reviewed complete essay. These observations do not claim that a deployment already exists.
 
 ## Vercel path
 
