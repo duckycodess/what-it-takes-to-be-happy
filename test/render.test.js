@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { renderDocument, esc } from '../src/runtime/render.js';
-import { auditContentCoverage, auditOfflineHtml } from '../src/build/verify.js';
+import { auditContentCoverage, auditOfflineHtml, auditBundledLicence } from '../src/build/verify.js';
+import { SOURCE_EVIDENCE_LEVELS } from '../src/content/schema.js';
 import { loadValidContent, byId } from './helpers.js';
 
 const render = (content, overrides = {}) =>
@@ -11,6 +12,7 @@ const render = (content, overrides = {}) =>
     stylesheetUrl: 'styles.css',
     scriptUrl: 'reader.js',
     fontNotice: 'Bundled fallback font.',
+    fontLicense: 'Permission is hereby granted to the fictional holder of this test licence.\n',
     illustration: { url: 'art.png', alt: 'Concept sheet.', caption: 'Provisional.', width: 10, height: 10 },
     ...overrides,
   });
@@ -155,4 +157,63 @@ test('leaked authoring provenance is reported rather than shipped', () => {
   const html = `${render(content)}<p>${esc(content.provenance[0].note)}</p>`;
   const problems = auditContentCoverage(html, content);
   assert.deepEqual(problems.map((problem) => problem.kind), ['provenance-leak']);
+});
+
+test('each source is shown at the evidence level it actually reached', () => {
+  const content = loadValidContent();
+  const html = render(content);
+
+  for (const source of content.sources) {
+    const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
+    assert.ok(html.includes(`data-status="${source.reviewStatus}">${esc(level.label)}</p>`), `${source.id} should show "${level.label}"`);
+
+    if (source.supportedClaim) {
+      // The claim is phrased against what was read, so an abstract or a
+      // publisher description is never presented as a passage from the work.
+      assert.ok(html.includes(`<span class="label">${esc(level.claimLabel)}</span> ${esc(source.supportedClaim)}`), `${source.id} should attribute its claim to ${level.claimLabel}`);
+    } else {
+      assert.ok(html.includes(esc(source.intendedRole)), `${source.id} should still say why the notes list it`);
+    }
+    assert.ok(html.includes(esc(source.limitation)), `${source.id} should keep its limitation visible`);
+  }
+});
+
+test('an unopened source shows no supported claim anywhere in the output', () => {
+  const content = loadValidContent();
+  const html = render(content);
+  const unopened = content.sources.filter((source) => !SOURCE_EVIDENCE_LEVELS[source.reviewStatus].requiresSupportedClaim);
+  assert.ok(unopened.length > 0, 'the fixture should include a source that could not be opened');
+
+  for (const source of unopened) {
+    assert.ok(
+      html.includes(`<span class="label">Listed in the notes for</span> ${esc(source.intendedRole)}`),
+      `${source.id} should say why the notes list it instead of claiming support`,
+    );
+    // Every block rendered for this source must be free of a supports line.
+    const blocks = [...html.matchAll(/<li class="source">[\s\S]*?<\/li>/g)]
+      .map((match) => match[0])
+      .filter((block) => block.includes(esc(source.url)));
+    assert.ok(blocks.length > 0, `${source.id} should appear in the output`);
+    for (const block of blocks) {
+      assert.ok(!block.includes('class="source-claim"'), `${source.id} must not show a supported claim`);
+    }
+  }
+});
+
+test('an abstract-level reading is never shown as a passage-level one', () => {
+  const content = loadValidContent();
+  const html = render(content);
+  const abstract = content.sources.find((source) => source.reviewStatus === 'verified-abstract');
+  const claimIndex = html.indexOf(esc(abstract.supportedClaim));
+  assert.ok(claimIndex > 0);
+  const preceding = html.slice(Math.max(0, claimIndex - 200), claimIndex);
+  assert.match(preceding, /The abstract supports/);
+  assert.ok(!/The passage read supports<\/span>\s*$/.test(preceding));
+});
+
+test('the bundled font licence travels inside the document', () => {
+  const content = loadValidContent();
+  const licence = 'Permission is hereby granted to the fictional holder of this test licence.\n';
+  assert.deepEqual(auditBundledLicence(render(content), licence), []);
+  assert.equal(auditBundledLicence('<p>no licence here</p>', licence).length, 1);
 });

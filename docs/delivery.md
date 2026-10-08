@@ -34,7 +34,7 @@ The build is deterministic — nothing records a timestamp, a random value, or a
 | `dist/assets/illustrations/` | Committed artwork. |
 | `dist/offline.html` | The self-contained submission file. Everything is embedded; it opens straight from disk. |
 
-`dist/offline.html` is currently about 4.3 MB, almost all of it the embedded concept illustration and the fallback font in base64. Watch that number as real artwork is added: scalable line art should shrink it, and the release ticket should record the final size.
+`dist/offline.html` is currently about 4.35 MB, almost all of it the embedded concept illustration and the fallback font in base64. The font's licence text is embedded in the document too, as that licence requires of every copy of the font. Watch that number as real artwork is added: scalable line art should shrink it, and the release ticket should record the final size.
 
 On 9 October 2026, connected Vercel reads verified authenticated personal account `duckycodess`. No teams or existing project matching `what-it-takes-to-be-happy` were returned. The owner has authorized this website's Vercel delivery. Once the foundation's actual build/output settings exist, the supervising Codex chat can provision the intended project through that connection, then verify preview and production against the reviewed complete essay. These observations do not claim that a deployment already exists.
 

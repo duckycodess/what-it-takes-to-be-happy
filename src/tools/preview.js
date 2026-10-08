@@ -81,7 +81,9 @@ async function main() {
   }
 
   const port = readPort();
-  createPreviewServer().listen(port, () => {
+  // Loopback only: this is a developer convenience, not something to expose on
+  // the local network.
+  createPreviewServer().listen(port, '127.0.0.1', () => {
     console.log(`Preview of dist/ at http://localhost:${port}`);
     console.log('The offline submission file is dist/offline.html; open that one directly from disk.');
   });

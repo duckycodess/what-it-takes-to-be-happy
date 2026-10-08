@@ -12,6 +12,8 @@ import {
   ID_PATTERN,
   DIALOGUE_STANCES,
   SOURCE_REVIEW_STATUSES,
+  SOURCE_EVIDENCE_LEVELS,
+  SOURCE_URL_PATTERN,
   CAST_ROLES,
   CONCEPT_STATUSES,
   INTERACTION_SURFACES,
@@ -28,7 +30,7 @@ const FIELDS = {
   dialogue: ['id', 'speakerId', 'text', 'stance', 'sourceIds', 'provenanceId'],
   castMember: ['id', 'role', 'displayName', 'appearance', 'expressions'],
   expression: ['id', 'label'],
-  source: ['id', 'label', 'url', 'type', 'intendedRole', 'limitation', 'reviewStatus', 'citation', 'supportedClaim'],
+  source: ['id', 'label', 'url', 'type', 'intendedRole', 'limitation', 'reviewStatus', 'evidenceBasis', 'citation', 'supportedClaim'],
   concept: ['id', 'name', 'status', 'explanation', 'application', 'question', 'sourceIds'],
   detail: ['id', 'title', 'body', 'sourceIds'],
   interaction: ['id', 'surface', 'purpose', 'trigger', 'keyboard', 'staticEquivalent', 'detailId'],
@@ -268,27 +270,38 @@ function validateSources(bag, doc) {
     const path = `sources[${index}]`;
     if (!checkObject(bag, source, path, FIELDS.source)) return;
     checkString(bag, source.label, `${path}.label`);
-    checkString(bag, source.url, `${path}.url`);
     checkString(bag, source.type, `${path}.type`);
     checkString(bag, source.intendedRole, `${path}.intendedRole`);
     checkString(bag, source.limitation, `${path}.limitation`);
-    checkEnum(bag, source.reviewStatus, `${path}.reviewStatus`, SOURCE_REVIEW_STATUSES);
 
-    // A source may only assert a bibliographic citation and a supported claim
-    // once it has actually been read at passage level. This keeps unaudited
-    // imports from hardening into published evidence.
-    if (source.reviewStatus === 'verified') {
-      checkString(bag, source.citation, `${path}.citation`, {
-        label: `${path}.citation (required once reviewStatus is "verified")`,
-      });
-      checkString(bag, source.supportedClaim, `${path}.supportedClaim`, {
-        label: `${path}.supportedClaim (required once reviewStatus is "verified")`,
-      });
-    } else if (SOURCE_REVIEW_STATUSES.includes(source.reviewStatus)) {
-      for (const field of ['citation', 'supportedClaim']) {
-        if (source[field] !== null && source[field] !== undefined) {
-          bag.add(`${path}.${field}`, 'UNVERIFIED_SOURCE_CLAIM', `${path}.${field} must be null while reviewStatus is ${JSON.stringify(source.reviewStatus)}. Record the audited claim only after the passage has been read.`);
-        }
+    // A citation needs a destination a reader can actually follow.
+    if (checkString(bag, source.url, `${path}.url`) && !SOURCE_URL_PATTERN.test(source.url)) {
+      bag.add(`${path}.url`, 'INVALID_SOURCE_URL', `A source destination must be an http:// or https:// address. Found ${JSON.stringify(source.url)}.`);
+    }
+
+    if (!checkEnum(bag, source.reviewStatus, `${path}.reviewStatus`, SOURCE_REVIEW_STATUSES)) return;
+
+    // What a source may assert depends on what was actually opened. An
+    // unopened work supports nothing; a publisher's description or an abstract
+    // supports only what it itself states, which the reader is told.
+    const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
+    const required = [
+      ['citation', level.requiresRecord],
+      ['evidenceBasis', level.requiresRecord],
+      ['supportedClaim', level.requiresSupportedClaim],
+    ];
+
+    for (const [field, isRequired] of required) {
+      if (isRequired) {
+        checkString(bag, source[field], `${path}.${field}`, {
+          label: `${path}.${field} (required at evidence level "${source.reviewStatus}")`,
+        });
+      } else if (source[field] !== null && source[field] !== undefined) {
+        const code = field === 'supportedClaim' ? 'UNSUPPORTED_SOURCE_CLAIM' : 'UNVERIFIED_SOURCE_RECORD';
+        const why = field === 'supportedClaim'
+          ? `Nothing inside this work was read at evidence level ${JSON.stringify(source.reviewStatus)}, so it supports no claim. Raise the level once a passage is read, or move the material into the limitation.`
+          : `Record this only once something has actually been opened; the evidence level is ${JSON.stringify(source.reviewStatus)}.`;
+        bag.add(`${path}.${field}`, code, `${path}.${field} must be null. ${why}`);
       }
     }
   });

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { validateContent } from '../src/content/validate.js';
+import { SOURCE_EVIDENCE_LEVELS, SOURCE_REVIEW_STATUSES } from '../src/content/schema.js';
 import { loadValidContent, readJson, clone, byId, codes, codesAt } from './helpers.js';
 
 test('the authored content document satisfies the contract', () => {
@@ -17,20 +18,47 @@ test('the shipped content document is explicitly marked non-final', () => {
   assert.equal(doc.project.readingTimeEstimate, null, 'a reading time may only be recorded once real prose can be measured');
 });
 
-test('the fixture states no contributor position and no audited claim', () => {
+test('the fixture states no contributor position and no undrafted concept treatment', () => {
   const doc = loadValidContent();
   for (const scene of doc.scenes) {
     for (const line of scene.dialogue) {
       assert.equal(line.stance, 'fictional-illustration', `${line.id} would attribute a position to a contributor`);
     }
   }
-  for (const source of doc.sources) {
-    assert.equal(source.reviewStatus, 'unreviewed');
-    assert.equal(source.citation, null);
-    assert.equal(source.supportedClaim, null);
-  }
   for (const concept of doc.concepts) {
     assert.equal(concept.status, 'planned');
+  }
+});
+
+test('no source claims more than the evidence level it reached', () => {
+  const doc = loadValidContent();
+  for (const source of doc.sources) {
+    const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
+    assert.ok(level, `${source.id} has an unknown evidence level`);
+    if (level.requiresSupportedClaim) {
+      assert.match(source.supportedClaim, /\S/, `${source.id} should state what it supports`);
+    } else {
+      assert.equal(source.supportedClaim, null, `${source.id} was not read, so it may not support a claim`);
+    }
+  }
+
+  // The fixture is the only place the contract is exercised end to end, so it
+  // carries one source at each level that the audit actually produced.
+  const levels = new Set(doc.sources.map((source) => source.reviewStatus));
+  for (const level of ['verified-full', 'verified-abstract', 'verified-locator', 'not-accessed']) {
+    assert.ok(levels.has(level), `the fixture should exercise the ${level} evidence level`);
+  }
+});
+
+test('every evidence level is fully defined', () => {
+  for (const status of SOURCE_REVIEW_STATUSES) {
+    const level = SOURCE_EVIDENCE_LEVELS[status];
+    assert.match(level.label, /\S/, `${status} needs a reader-visible label`);
+    assert.equal(typeof level.requiresRecord, 'boolean');
+    assert.equal(typeof level.requiresSupportedClaim, 'boolean');
+    // A level that demands a claim must also say what that claim rests on.
+    assert.equal(level.requiresSupportedClaim, typeof level.claimLabel === 'string', `${status} claim label disagrees with its rule`);
+    if (level.requiresSupportedClaim) assert.ok(level.requiresRecord, `${status} cannot support a claim without a record`);
   }
 });
 
@@ -52,7 +80,9 @@ test('a deliberately broken document reports every located problem at once', () 
     'SCENE_CLAIMED_TWICE',
     'SCENE_CHAPTER_MISMATCH',
     'UNSUPPORTED_MEMBER_POSITION',
-    'UNVERIFIED_SOURCE_CLAIM',
+    'UNSUPPORTED_SOURCE_CLAIM',
+    'UNVERIFIED_SOURCE_RECORD',
+    'INVALID_SOURCE_URL',
     'UNDRAFTED_CONCEPT_TEXT',
     'INTERACTION_DETAIL_NOT_IN_SCENE',
     'ENTRY_CLAIMED_TWICE',
@@ -142,18 +172,42 @@ test('an optional reveal may not be the only route to its detail', () => {
   assert.ok(codes(errors).includes('INTERACTION_DETAIL_NOT_IN_SCENE'));
 });
 
-test('a source may record a citation and a supported claim only once it is verified', () => {
+test('a work that was never opened may not state what it supports', () => {
   const doc = loadValidContent();
-  const source = byId(doc.sources, 'R02');
-  source.supportedClaim = 'A claim written before the paper was read.';
-  assert.ok(codes(validateContent(clone(doc)).errors).includes('UNVERIFIED_SOURCE_CLAIM'));
+  byId(doc.sources, 'R11').supportedClaim = 'A claim drawn from a thread nobody could open.';
+  assert.ok(codes(validateContent(doc).errors).includes('UNSUPPORTED_SOURCE_CLAIM'));
+});
 
-  const verified = clone(doc);
-  const verifiedSource = byId(verified.sources, 'R02');
-  verifiedSource.reviewStatus = 'verified';
-  verifiedSource.citation = 'Example citation recorded after reading the passage.';
-  verifiedSource.supportedClaim = 'The exact statement the passage supports.';
-  assert.deepEqual(validateContent(verified).errors, []);
+test('an unreviewed source may not carry an evidence record', () => {
+  const doc = loadValidContent();
+  const source = byId(doc.sources, 'R17');
+  source.reviewStatus = 'unreviewed';
+  const reported = codesAt(validateContent(doc).errors, 'sources[5].evidenceBasis');
+  assert.ok(reported.includes('UNVERIFIED_SOURCE_RECORD'), `got ${reported.join(', ')}`);
+});
+
+test('raising a source to a level it cannot support is reported', () => {
+  const doc = loadValidContent();
+  // A locator record promoted to a full read still has nothing from inside the
+  // work; dropping the evidence basis is what the validator can see.
+  const source = byId(doc.sources, 'R15');
+  source.reviewStatus = 'verified-full';
+  source.evidenceBasis = null;
+  const { errors } = validateContent(doc);
+  assert.ok(errors.some((error) => error.code === 'NOT_A_STRING' && error.path.endsWith('.evidenceBasis')));
+});
+
+test('a source destination must be a web address a reader can open', () => {
+  for (const url of ['www.example.org/x', 'docs/research.md', 'javascript:alert(1)', 'file:///etc/passwd']) {
+    const doc = loadValidContent();
+    byId(doc.sources, 'R01').url = url;
+    const reported = codesAt(validateContent(doc).errors, 'sources[0].url');
+    assert.ok(reported.includes('INVALID_SOURCE_URL'), `${url} should be rejected, got ${reported.join(', ')}`);
+  }
+
+  const doc = loadValidContent();
+  byId(doc.sources, 'R01').url = 'http://example.org/a-plain-http-destination';
+  assert.deepEqual(validateContent(doc).errors, []);
 });
 
 test('a misspelled field is reported instead of being ignored', () => {

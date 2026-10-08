@@ -14,7 +14,7 @@ import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
 
 import { buildOutputs, auditOutputs } from '../src/build/build.js';
-import { auditOfflineHtml } from '../src/build/verify.js';
+import { auditOfflineHtml, auditBundledLicence } from '../src/build/verify.js';
 import { createPreviewServer } from '../src/tools/preview.js';
 import { loadValidContent, repoRoot } from './helpers.js';
 
@@ -58,6 +58,20 @@ test('the offline file embeds the font and the illustration rather than fetching
   assert.match(offline, /@font-face[\s\S]{0,200}url\(data:font\/ttf;base64,/);
   assert.match(offline, /<img src="data:image\/png;base64,/);
   assert.ok(offline.length > 1_000_000, 'the embedded binaries should dominate the file size');
+});
+
+test('both outputs carry the complete font licence', async () => {
+  const { hosted, offline, fontLicense } = await buildOutputs(loadValidContent());
+  assert.match(fontLicense, /Bitstream Vera/, 'the committed licence file should be the real one');
+  assert.deepEqual(auditBundledLicence(offline, fontLicense), [], 'the single offline file is a copy of the font and must carry its notice');
+  assert.deepEqual(auditBundledLicence(hosted, fontLicense), []);
+});
+
+test('optional panels print open without depending on a beforeprint handler', async () => {
+  const { offline } = await buildOutputs(loadValidContent());
+  const print = offline.slice(offline.indexOf('@media print'));
+  assert.match(print, /details::details-content/, 'modern engines need the details content made visible for print');
+  assert.match(print, /details:not\(\[open\]\) > \*:not\(summary\)/, 'older engines need the fallback rule');
 });
 
 test('the hosted page and the offline file read identically', async () => {

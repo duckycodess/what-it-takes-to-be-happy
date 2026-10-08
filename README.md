@@ -63,6 +63,8 @@ The build fails if either output loses essential content, if authoring provenanc
 
 All of the writing lives in [`content/content.json`](content/content.json), described field by field in [the content contract](docs/content-contract.md). Chapters, beats, cast, sources, concepts, and optional panels are addressed by stable identifiers, so a later note can rewrite, reorder, or move a beat without touching anything around it. Run `npm run validate` after any edit; it reports each problem with its exact location.
 
+Each source carries the evidence level the audit actually reached — read in full, abstract only, publisher or catalogue description only, or not opened — and the contract refuses to let a source claim more than its level supports. The reader shows that level beside every citation, and a test fails if the content document and [the register](docs/research.md) drift apart.
+
 The content document in the repository today is a **non-final fixture**. Every beat is a structural stand-in and no line states a position held by TJ, Koj, or Vier. [The storyboard](docs/storyboard.md) holds the authored prose; wiring it into the content document belongs to the integration package.
 
 ## Contributing

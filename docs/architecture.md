@@ -41,7 +41,7 @@ Choose the concrete storage format during implementation. It must express these 
 | Chapter | Stable identifier, title/question, ordered scene identifiers, opening and closing connections |
 | Scene | Stable identifier, chapter, essential narrative text, optional dialogue, character/visual state, relevant concept/source identifiers, visible limitations, optional supplementary content |
 | Dialogue | Speaker identifier, text, whether it is a member-endorsed position or a fictional friend's illustrative line, relevant source identifiers |
-| Source | Stable identifier, label, original URL, verified bibliographic detail, supported claim, limitations, review status |
+| Source | Stable identifier, label, original URL, the evidence level actually reached, what was opened and read, bibliographic detail, supported claim, limitations |
 | Character | Stable identifier, member/friend role, displayed name, original appearance, available expressions |
 | Interaction | Explanatory purpose, optional trigger/state, supplemental output, keyboard/touch behavior, static readable equivalent |
 | Provenance | Source note or delta location supporting a member position or content change |
@@ -127,6 +127,12 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 - The hosted page and the offline file differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical.
 
 The build refuses to publish an output that drops essential content, and refuses an offline file that references anything it does not carry. External source destinations stay as ordinary links: offline, their labels, roles, and limitations are all still readable, and only following the link needs a connection.
+
+### Evidence levels reach the reader
+
+A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
+
+The bundled font's licence is rendered into the document rather than left beside it, because the offline file is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
 
 ### What the foundation did not decide
 

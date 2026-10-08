@@ -10,7 +10,7 @@ Run `npm run validate` after every edit. It prints a located, named error for ea
 
 `content/content.json` is a **non-final fixture**. It exists so the foundation could be built, validated, rendered, packaged, and checked before the essay is written. Every chapter connection, scene, dialogue line, and illustration note in it is a structural stand-in, `status.final` is `false`, and the reader shows that notice to anyone who opens the page. The storyboard package writes the real chapters; the integration package replaces the fixture scenes.
 
-Nothing in the fixture states a position held by TJ, Koj, or Vier, and no source in it carries an audited claim. Those are contract rules, not fixture habits — see *Member positions* and *Sources* below.
+Nothing in the fixture states a position held by TJ, Koj, or Vier, and no source in it claims more than the audit actually established. Those are contract rules, not fixture habits — see *Member positions* and *Evidence levels* below. The sources in the fixture are the real audited ones from [the register](research.md), carried at one of each evidence level.
 
 ## Document shape
 
@@ -112,17 +112,34 @@ Expression identifiers are scoped to their character, so every figure can have a
 
 | Field | Type | Meaning |
 | --- | --- | --- |
-| `id` | identifier | Keeps the `R01`…`R30` identifiers from the [source register](research.md). |
+| `id` | identifier | Keeps the `R01`…`R32` identifiers from the [source register](research.md). |
 | `label` | string | How the source is named to readers. |
-| `url` | string | The original destination. |
+| `url` | string | The original destination. Must be an `http://` or `https://` address. |
 | `type` | string | Primary text, research, gray literature, external personal accounts, and so on. |
-| `intendedRole` | string | What the notes expect this source to support. Not a claim that it does. |
+| `intendedRole` | string | Why the notes list this source. Not a claim that it supports anything. |
 | `limitation` | string | The caveat that travels with the source. |
-| `reviewStatus` | `unreviewed`, `in-review`, `verified` | How far the passage-level audit has gone. |
-| `citation` | string or `null` | Verified bibliographic detail. |
-| `supportedClaim` | string or `null` | The exact statement the read passage supports. |
+| `reviewStatus` | an evidence level, below | How far the source was actually checked. |
+| `evidenceBasis` | string or `null` | What was actually opened and read, and when. |
+| `citation` | string or `null` | Bibliographic detail. |
+| `supportedClaim` | string or `null` | What the material that was read supports. |
 
-`citation` and `supportedClaim` **must** be `null` unless `reviewStatus` is `verified`, and **must** be filled once it is. An unaudited import therefore cannot harden into published evidence by accident.
+#### Evidence levels
+
+These are the levels the [source audit](research.md) recorded. The distinctions are the point: a publisher's description of a book is not a passage from it, and an abstract establishes only what the abstract itself states.
+
+| `reviewStatus` | What it means | `evidenceBasis` + `citation` | `supportedClaim` | Shown to the reader as |
+| --- | --- | --- | --- | --- |
+| `unreviewed` | Nothing has been opened yet. | must be `null` | must be `null` | Not checked yet |
+| `not-accessed` | The work could not be opened. | required | must be `null` | Could not be opened |
+| `verified-locator` | Only a publisher, catalogue, or index page was read. | required | required | Publisher or catalogue description only |
+| `verified-abstract` | Only the authors' own abstract was read. | required | required | Abstract only |
+| `verified-full` | The relevant passage was read in the full work. | required | required | Read in full |
+
+A source at `unreviewed` or `not-accessed` **cannot** state a `supportedClaim`: nothing inside the work was read, so it supports nothing. The validator rejects one.
+
+The three `verified-*` levels all state what they support, and the reader is told what that claim rests on. The renderer prefixes it with "The passage read supports", "The abstract supports", or "The publisher's description supports" according to the level, so a description-level or abstract-level reading can never be presented as a passage-level one. Where there is no supported claim, the reader is shown `intendedRole` instead, prefixed with "Listed in the notes for".
+
+Keep `reviewStatus` and `url` in step with [the register](research.md); a test compares the two and fails if they drift apart.
 
 ### `concepts[]`
 
@@ -188,7 +205,7 @@ Nothing in the contract refers to an array position. Reading order comes from `c
 | Insert a beat | Add the scene with a new `id`, then list that `id` where it belongs in `sceneIds`. |
 | Remove a beat | Delete the scene and its `sceneIds` entry, plus any detail, interaction, or provenance record that only it used. |
 | Add a contributor's position | Add the provenance record first, then the dialogue line pointing at it. |
-| Finish auditing a source | Set `reviewStatus` to `verified` and record `citation` and `supportedClaim`. |
+| Record a source audit | Set `reviewStatus` to the level actually reached, then record `evidenceBasis` and `citation`, and `supportedClaim` if the level allows one. |
 | Draft a concept's treatment | Set `status` to `drafted` and write all three of `explanation`, `application`, `question`. |
 
 Keep an existing identifier pointing at the same thing. If a source is replaced by a different work, add a new identifier rather than repointing the old one.
@@ -213,7 +230,9 @@ Keep an existing identifier pointing at the same thing. If a source is replaced 
 | `SCENE_CHAPTER_MISMATCH` | A scene's `chapterId` disagrees with the chapter that orders it. |
 | `UNKNOWN_EXPRESSION` | A scene asks a character for an expression it does not have. |
 | `UNSUPPORTED_MEMBER_POSITION` | A `member-endorsed` line has no provenance record. |
-| `UNVERIFIED_SOURCE_CLAIM` | An unaudited source records a citation or a supported claim. |
+| `INVALID_SOURCE_URL` | A source destination is not an `http://` or `https://` address. |
+| `UNSUPPORTED_SOURCE_CLAIM` | A source states what it supports at an evidence level where nothing inside the work was read. |
+| `UNVERIFIED_SOURCE_RECORD` | An `unreviewed` source records a citation or an evidence basis. |
 | `UNDRAFTED_CONCEPT_TEXT` | A `planned` concept carries treatment text. |
 | `INTERACTION_DETAIL_NOT_IN_SCENE` | An optional reveal is the only route to its detail. |
 | `UNUSED_ENTRY`, `ENTRY_CLAIMED_TWICE` | A detail or interaction is referenced by no scene, or by several. |

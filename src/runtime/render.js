@@ -11,6 +11,8 @@
  * `provenance` is authoring material and is deliberately never read here.
  */
 
+import { SOURCE_EVIDENCE_LEVELS } from '../content/schema.js';
+
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
 /** Escapes text for element content and for double-quoted attributes alike. */
@@ -21,23 +23,28 @@ const paragraphs = (lines, className) =>
 
 const indexBy = (list) => new Map(list.map((entry) => [entry.id, entry]));
 
-const REVIEW_LABELS = {
-  unreviewed: 'Not yet checked at passage level',
-  'in-review': 'Being checked at passage level',
-  verified: 'Checked at passage level',
-};
-
+/**
+ * A source is shown with the evidence level the audit actually reached, and
+ * what it supports is phrased against that level. A work that was never opened
+ * shows no supported claim at all; it shows why the notes list it.
+ */
 function renderSourceReference(source) {
+  const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
+
+  const claim = source.supportedClaim
+    ? `<p class="source-claim"><span class="label">${esc(level.claimLabel)}</span> ${esc(source.supportedClaim)}</p>`
+    : `<p class="source-role"><span class="label">Listed in the notes for</span> ${esc(source.intendedRole)}</p>`;
+
   const detail = [
-    `<p class="source-role">${esc(source.intendedRole)}</p>`,
-    source.supportedClaim ? `<p class="source-claim">Supports: ${esc(source.supportedClaim)}</p>` : '',
-    `<p class="source-limit"><span class="label">Limitation</span> ${esc(source.limitation)}</p>`,
     source.citation ? `<p class="source-citation">${esc(source.citation)}</p>` : '',
+    source.evidenceBasis ? `<p class="source-basis"><span class="label">What was read</span> ${esc(source.evidenceBasis)}</p>` : '',
+    claim,
+    `<p class="source-limit"><span class="label">Limitation</span> ${esc(source.limitation)}</p>`,
   ].filter(Boolean).join('\n');
 
   return `<li class="source">
 <p class="source-head"><a href="${esc(source.url)}" rel="noreferrer">${esc(source.label)}</a> <span class="source-type">${esc(source.type)}</span></p>
-<p class="source-status" data-status="${esc(source.reviewStatus)}">${esc(REVIEW_LABELS[source.reviewStatus] ?? source.reviewStatus)}</p>
+<p class="source-status" data-status="${esc(source.reviewStatus)}">${esc(level.label)}</p>
 ${detail}
 </li>`;
 }
@@ -197,7 +204,7 @@ function renderSourceRegister(content) {
   if (content.sources.length === 0) return '';
   return `<section class="source-register" id="sources" aria-labelledby="sources-title">
 <h2 id="sources-title">Sources</h2>
-<p>Every source keeps the label, destination, intended role, and limitation recorded for it. Opening a destination needs a connection; everything else here reads offline.</p>
+<p>Each source shows how far it was actually checked &mdash; read in full, abstract only, publisher or catalogue description only, or not opened at all &mdash; and what that material supports is phrased against that level. Opening a destination needs a connection; everything else here reads offline.</p>
 <ul class="source-list">
 ${content.sources.map((source) => renderSourceReference(source)).join('\n')}
 </ul>
@@ -248,6 +255,15 @@ export function renderDocument(content, options) {
     ? `<p class="colophon-font">${esc(options.fontNotice)}</p>`
     : '';
 
+  // The bundled font's licence requires its notice to travel with every copy
+  // of the font, so it is part of the document rather than a neighbouring file.
+  const fontLicence = options.fontLicense
+    ? `<details class="licence">
+<summary>Bundled font licence</summary>
+<pre class="licence-text">${esc(options.fontLicense.trimEnd())}</pre>
+</details>`
+    : '';
+
   return `<!doctype html>
 <html lang="en" data-mode="${esc(options.mode)}">
 <head>
@@ -275,6 +291,7 @@ ${renderBeatControls(orderedSceneIds.length)}
 <footer class="colophon">
 <p>${esc(content.project.title)} &mdash; original illustrated essay by ${content.cast.filter((character) => character.role === 'member').map((member) => esc(member.displayName)).join(', ')}.</p>
 ${fontNotice}
+${fontLicence}
 </footer>
 ${script}
 </body>

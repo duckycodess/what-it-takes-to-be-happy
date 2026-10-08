@@ -397,7 +397,14 @@ figcaption {
   font-weight: 400;
 }
 
-.source-status[data-status='unreviewed'] { color: var(--accent); }
+/* Levels that need the reader's care are marked; a full read is not. */
+.source-status[data-status='unreviewed'],
+.source-status[data-status='not-accessed'],
+.source-status[data-status='verified-locator'],
+.source-status[data-status='verified-abstract'] { color: var(--accent); }
+
+.source-basis,
+.source-citation { color: var(--ink-soft); }
 
 .source-limit .label { margin-right: 0.3em; }
 
@@ -434,6 +441,24 @@ html.js .beat-controls {
 .view-switch { margin: 1rem 0 0; }
 
 html.js .view-switch { display: block; }
+
+.licence {
+  margin-top: 0.75rem;
+}
+
+.licence > summary {
+  cursor: pointer;
+  padding: 0.4rem 0;
+  min-height: 2.25rem;
+}
+
+.licence-text {
+  white-space: pre-wrap;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  margin: 0;
+}
 
 .colophon {
   border-top: 1px solid var(--rule);
@@ -517,7 +542,15 @@ html.js[data-view='reading'] .landing { display: none; }
 
   .scene { display: block !important; page-break-inside: avoid; break-inside: avoid; }
   .chapter { page-break-before: auto; }
-  .detail[open] > .detail-body { display: block; }
+
+  /* Optional panels print open whether or not anything ran before printing.
+     The browser script also opens them on `beforeprint`, but print must not
+     depend on an event firing: a collapsed panel would silently drop content
+     from the printed argument. */
+  details > summary { list-style: none; }
+  details::details-content { content-visibility: visible; block-size: auto; }
+  details:not([open]) > *:not(summary) { display: block; }
+
   .landing-art img { max-width: 12cm; }
   a { color: #000; }
 }

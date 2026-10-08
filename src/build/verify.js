@@ -137,6 +137,24 @@ export function auditContentCoverage(html, content) {
   return problems;
 }
 
+/**
+ * The bundled font's licence requires its permission notice to be included in
+ * every copy of the font software. The offline file is one such copy and has no
+ * neighbouring files, so the notice has to be inside the document itself.
+ *
+ * @param {string} html
+ * @param {string} licenceText
+ * @returns {Array<{kind: string, value: string, message: string}>}
+ */
+export function auditBundledLicence(html, licenceText) {
+  if (html.includes(esc(licenceText.trimEnd()))) return [];
+  return [{
+    kind: 'font-licence',
+    value: 'bundled font licence',
+    message: 'The complete font licence text must be embedded in the document, because the licence requires its notice to travel with every copy of the font.',
+  }];
+}
+
 /** Formats audit problems for a build failure message. */
 export const formatProblems = (problems) =>
   problems.map((problem) => `  [${problem.kind}] ${problem.value}\n    ${problem.message}`).join('\n');

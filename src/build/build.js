@@ -19,7 +19,7 @@ import { formatErrors } from '../content/validate.js';
 import { renderDocument } from '../runtime/render.js';
 import { FONT, FONT_LICENSE, ILLUSTRATION, FONT_URL_TOKEN } from './assets.js';
 import { toDataUri, withFontUrl } from './inline.js';
-import { auditOfflineHtml, auditContentCoverage, formatProblems } from './verify.js';
+import { auditOfflineHtml, auditContentCoverage, auditBundledLicence, formatProblems } from './verify.js';
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const DIST = join(repoRoot, 'dist');
@@ -45,15 +45,17 @@ function fail(label, problems) {
  * to disk and can compare the two documents directly.
  */
 export async function buildOutputs(content) {
-  const [css, script, fontBytes, illustrationBytes] = await Promise.all([
+  const [css, script, fontBytes, fontLicense, illustrationBytes] = await Promise.all([
     readText(STYLESHEET),
     readText(READER_SCRIPT),
     read(FONT.source),
+    readText(FONT_LICENSE.source),
     read(ILLUSTRATION.source),
   ]);
 
   const shared = {
     fontNotice: FONT.notice,
+    fontLicense,
     illustration: {
       width: ILLUSTRATION.width,
       height: ILLUSTRATION.height,
@@ -82,7 +84,7 @@ export async function buildOutputs(content) {
     illustration: { ...shared.illustration, url: toDataUri(illustrationBytes, ILLUSTRATION.mediaType) },
   });
 
-  return { hosted, hostedCss, script, offline, fontBytes, illustrationBytes };
+  return { hosted, hostedCss, script, offline, fontBytes, fontLicense, illustrationBytes };
 }
 
 /** Every check the build refuses to publish without. */
@@ -93,6 +95,9 @@ export function auditOutputs(outputs, content) {
   for (const [label, html] of [['dist/index.html', outputs.hosted], ['dist/offline.html', outputs.offline]]) {
     const coverage = auditContentCoverage(html, content);
     if (coverage.length > 0) fail(`${label} does not carry the complete content`, coverage);
+
+    const licence = auditBundledLicence(html, outputs.fontLicense);
+    if (licence.length > 0) fail(`${label} does not carry the bundled font licence`, licence);
   }
 }
 
@@ -126,7 +131,7 @@ async function main() {
     written.push(await write(join(DIST, 'styles.css'), outputs.hostedCss));
     written.push(await write(join(DIST, 'reader.js'), outputs.script));
     written.push(await write(join(DIST, FONT.published), outputs.fontBytes));
-    written.push(await write(join(DIST, FONT_LICENSE.published), await read(FONT_LICENSE.source)));
+    written.push(await write(join(DIST, FONT_LICENSE.published), outputs.fontLicense));
     written.push(await write(join(DIST, ILLUSTRATION.published), outputs.illustrationBytes));
   }
   written.push(await write(join(DIST, 'offline.html'), outputs.offline));

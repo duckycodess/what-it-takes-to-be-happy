@@ -121,34 +121,61 @@
   "sources": [
     {
       "id": "S-claiming",
-      "label": "Unaudited source asserting a claim",
+      "label": "Unaudited source carrying an evidence record",
       "url": "https://example.org/unaudited",
       "type": "Research",
       "intendedRole": "Listed role.",
       "limitation": "Listed limitation.",
       "reviewStatus": "unreviewed",
-      "citation": "Someone (2020). A citation written before anyone read the paper.",
+      "evidenceBasis": "Read in full, supposedly.",
+      "citation": "Someone (2020). A citation written before anyone opened the work.",
       "supportedClaim": "A claim nobody has checked."
     },
     {
-      "id": "S-verified-empty",
-      "label": "Verified source with nothing recorded",
-      "url": "https://example.org/verified",
+      "id": "S-abstract-empty",
+      "label": "Abstract-level source with nothing recorded",
+      "url": "https://example.org/abstract",
       "type": "Research",
       "intendedRole": "Listed role.",
       "limitation": "Listed limitation.",
-      "reviewStatus": "verified",
+      "reviewStatus": "verified-abstract",
+      "evidenceBasis": null,
       "citation": null,
       "supportedClaim": null
     },
     {
+      "id": "S-unopened-claiming",
+      "label": "Unopened source asserting what it supports",
+      "url": "https://example.org/unopened",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "not-accessed",
+      "evidenceBasis": "Not opened; the publisher refused access.",
+      "citation": "Someone Else (2019). A work nobody could open.",
+      "supportedClaim": "A claim drawn from a work that was never read."
+    },
+    {
       "id": "S-bad-status",
-      "label": "Source with an invented review status",
+      "label": "Source with an invented evidence level",
       "url": "https://example.org/status",
       "type": "Research",
       "intendedRole": "Listed role.",
       "limitation": "Listed limitation.",
       "reviewStatus": "looked-at-the-abstract",
+      "evidenceBasis": null,
+      "citation": null,
+      "supportedClaim": null
+    },
+    {
+      "id": "S-bad-url",
+      "label": "Source pointing at something a reader cannot open",
+      "url": "www.example.org/no-scheme",
+      "type": "Research",
+      "intendedRole": "Listed role.",
+      "limitation": "Listed limitation.",
+      "reviewStatus": "unreviewed",
+      "evidenceBasis": null,
       "citation": null,
       "supportedClaim": null
     }
