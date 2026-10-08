@@ -19,4 +19,4 @@ Read `docs/brief.md`, `docs/decisions.md`, and the relevant architecture/content
 - Support phones, desktop, chapter revisiting, a complete reading/print view, a self-contained offline website file, and Vercel hosting.
 - Future note updates belong in `docs/notes/` and must be reconciled into the story and source register. Do not reintroduce the superseded fixed neighborhood route or arbitrary word/scene limits.
 - No application stack has been selected. Choose the smallest implementation that satisfies `docs/architecture.md`; do not add backend features to this static essay without a new requirement.
-- Current checkout contains documentation and workflow setup only. No application build, lint, or test commands exist yet; document real commands when implementation adds them.
+- Current checkout contains documentation, workflow setup, and initial character concepts. Read `docs/asset-workflow.md` before producing illustrations or motion. No application build, lint, or test commands exist yet; document real commands when implementation adds them.

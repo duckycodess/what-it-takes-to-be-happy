@@ -4,7 +4,7 @@ An independently readable illustrated essay for a SOC SCI midterm, created by TJ
 
 The visual and presentation reference is [Nicky Case's The Evolution of Trust](https://ncase.me/trust/). This project uses its presentation rhythm and handwritten aesthetic as inspiration, with original artwork and an original argument about happiness.
 
-**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented. Application implementation and deployment are future work. Tickets are unqueued by default.
+**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented, and an initial character concept sheet has been generated. Application implementation, animated production assets, and deployment are future work. Tickets are unqueued by default.
 
 ## Read first
 
@@ -16,6 +16,7 @@ The visual and presentation reference is [Nicky Case's The Evolution of Trust](h
 | [Content plan](docs/content-plan.md) | Six shared questions, perspectives, conceptual lenses, coverage |
 | [Research register](docs/research.md) | Current source pool, intended claim roles, limitations, audit status |
 | [Art direction](docs/art-direction.md) | Original characters, emotions, typography, meaningful scene changes |
+| [Asset workflow](docs/asset-workflow.md) | Built-in generation, first character sheet, drawing parts, animation, optional tools |
 | [Notes and future updates](docs/notes/README.md) | Imported notes and how to contribute a delta |
 | [Delivery](docs/delivery.md) | Vercel hosting and the offline submission file |
 | [Verification](docs/verification.md) | Narrative, navigation, accessibility, offline, and release checks |

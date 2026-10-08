@@ -27,6 +27,8 @@ Only these evidenced same-repository edges belong in canonical TicketSpecs/Beads
 
 ## Publication state
 
+The [asset workflow](asset-workflow.md) and [first generated character sheet](../assets/concepts/stickman-character-sheet-v1.png) provide an initial visual seed for P4. Reusable production parts, scene animation, static descriptions, and narrative-specific scene assets still remain in that package. Built-in generation was directly requested in conversation; ticket queue state has not changed.
+
 All tickets are unqueued. Exact `agent:ready` is reserved for a later explicit authorization. Registration alone does not start implementation, and the parent index is not an implementation task.
 
 ## Issue index

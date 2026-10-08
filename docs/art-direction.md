@@ -4,6 +4,8 @@
 
 Use [The Evolution of Trust](https://ncase.me/trust/) as the presentation and typographic reference: expressive stickman line art, a clean background, strong centered opening typography, and illustrations that change alongside an explanation. Create original characters, poses, compositions, scene assets, and prose.
 
+The user explicitly wants a close match to that drawing style. Start from the opening-page figures: large white rounded heads, tiny dot or curved eyes, compact tapered bodies, short legs, sparse arms, and slightly imperfect charcoal outlines. Use restrained pink cheeks or other emphasis when useful. Avoid turning the cast into detailed human illustrations.
+
 The reference source [defines Futura Handwritten](https://github.com/ncase/trust/blob/gh-pages/css/slides.css). Its [font page](https://www.dafont.com/futurahandwritten.font) identifies Billy Snyder and permits use; record asset provenance when the font is added. The [reference repository](https://github.com/ncase/trust) identifies Nicky Case's work as CC0 and lists third-party resources separately. Original drawings remain the agreed choice.
 
 ## Cast and emotional vocabulary
@@ -13,6 +15,8 @@ The reference source [defines Futura Handwritten](https://github.com/ncase/trust
 - Use expressions and posture for curiosity, joy, fatigue, frustration, sadness, uncertainty, connection, and relief. These can coexist or change across beats.
 - Do not reduce a member to one philosophical position or one permanent emotion. Each may reflect, qualify, or reconsider.
 - Keep names and dialogue legible text rather than baked into an image.
+
+An [initial generated character sheet](../assets/concepts/stickman-character-sheet-v1.png) now explores TJ, Koj, Vier, and fictional friend Bob across six emotions. Its avatar details are provisional; the sheet is a visual concept rather than an approved likeness or production rig. Names are baked into this review sheet only. See [the asset workflow and exact prompts](asset-workflow.md) for generation, production preparation, animation, and provenance.
 
 ## Landing
 
@@ -32,7 +36,7 @@ Some beats reuse the scene and change expression, props, or framing. Others need
 
 ## Layout, motion, and readability
 
-Use clear dark linework, a clean light background, and restrained emphasis appropriate to the reference. Exact color tokens, transition effects, and asset tools are implementation choices.
+Use clear dark linework, a clean light background, and restrained emphasis appropriate to the reference. Built-in image generation is the chosen concept-art starting point. Exact color tokens, transition effects, and production editing tools remain implementation choices; the user does not need to learn Inkscape.
 
 On desktop, compose text and illustration together. On phones, rearrange them with readable names and controls. Avoid shrinking a desktop stage into a tiny image. Maintain legibility for substantial prose in the chosen handwritten typography.
 

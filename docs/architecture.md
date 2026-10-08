@@ -66,6 +66,10 @@ Scenes may reuse the same setting to reveal another condition or replace the com
 
 Scalable line art is a suitable implementation option; no asset format is mandated. Text and names should remain readable as text. Supply an equivalent description for meaning conveyed visually. Reduced-motion/static presentation must preserve the explanation even when animation is disabled.
 
+The [asset workflow](asset-workflow.md) starts with built-in image generation for concepts, then prepares reusable browser drawing parts and expression states. The first PNG character sheet is authoring input, not a separated animation library. SVG components are a suitable production option. Simple CSS/Web Animations can move or reveal them; Anime.js is optional if coordinated timelines need a helper. Rough.js is optional for sketch-like scenery. No library has been installed yet.
+
+Image generation, drawing editors, and any future MCP connector run during authoring. The deployed and offline reader consumes committed assets and local state only. Motion must cancel or settle to the selected scene's correct state when Next/Back changes the beat, and reduced motion must show the same explanatory state without an animated transition. Keep generated lettering out of production labels and dialogue.
+
 ## Responsive and accessible presentation
 
 Desktop may place narrative and illustration side by side or within a wide stage. Phones rearrange them into a readable layout. Do not lock readability to the reference site's fixed dimensions.

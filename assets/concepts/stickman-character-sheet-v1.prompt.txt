@@ -1,0 +1,12 @@
+Use case: stylized-concept.
+Asset type: first character and expression concept sheet for an illustrated website called What Does It Take to Be Happy?
+
+Primary request: create original stickman characters in the very simple hand-drawn visual style of Nicky Case's The Evolution of Trust, especially the tiny round-headed characters on its opening page. Match that style closely: slightly wobbly charcoal-gray outlines, huge nearly circular white heads, tiny dot or curved-line eyes, exceptionally simple mouths, compact white tapered bodies, short stubby legs, minimal stick arms, flat color, and lots of white space. Warm, expressive, deliberately uncomplicated web illustration.
+
+Scene/backdrop: clean pure white contact sheet. Four rows of six full-body characters, evenly spaced, with comfortable margins and all figures fully visible. Every row repeats one consistent original character identity in six emotions. Row 1 is TJ; row 2 is Koj; row 3 is Vier; row 4 is our fictional friend Bob. Keep identity variation subtle and original through slightly different head contours and tiny hair tufts, with no gender or personality stereotypes. These designs are provisional avatars, not portraits of the real contributors.
+
+Expressions, left to right in every row: joy, curiosity, sadness, frustration, fatigue, calm reflection. Communicate these through simple eyelids, brows, mouths and posture. Joy may use curved happy eyes and soft pink cheek dots. Sadness is gentle and dignified. Frustration has knitted brows. Fatigue droops. Reflection feels attentive and quiet. Each row must show all six emotions; no character gets one permanent mood.
+
+Text (verbatim): place the corresponding name directly above EACH character's head: "TJ", "Koj", "Vier", or "Bob". Small informal handwritten lettering, dark gray, very legible. One small emotion heading above each column, exactly: "Joy", "Curious", "Sad", "Frustrated", "Tired", "Reflective". No other text.
+
+Style constraints: closest to the opening-page stickmen of The Evolution of Trust, not realistic people, not detailed cartoon humans. Keep heads large and bodies tiny. Original silhouettes, poses and expressions; no tracing or reuse of the reference's named game characters. No hats, game machinery, payoff grids, network diagrams, UI buttons, background scenery, gradients, 3D shading, paper texture, shadows, watermarks, or decorative frame. Consistent clean flat line art; high-resolution wide contact sheet.

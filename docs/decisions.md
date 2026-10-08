@@ -24,6 +24,9 @@ The user confirmed the shared brief and subsequently requested repository creati
 | Navigation | Next/Back, chapter revisiting, full reading/print view | All views preserve the complete argument |
 | Devices | Desktop and phones | Reflow rather than shrink |
 | Art | Original stickman drawings in the reference style | Reference assets are not the project's character library |
+| Asset creation | Built-in image generation for the first character sheets and concepts | The user requested it directly; close visual match to Trust's style |
+| Drawing tools | Codex handles asset production; Inkscape is optional | No requirement for the user to learn a drawing editor or install a connector |
+| Motion workflow | Reusable drawing parts and expressions, animated in the browser | A PNG concept sheet does not itself provide an animation rig |
 | Typography | Futura Handwritten reference typography | Preserve readable long-form text on both layouts |
 | Opening | Working question title, emotional stickmen, everyday snapshots, different readings | Opening does not dictate every chapter's method |
 | Ending | Concrete changes at several scales plus unresolved questions | Explain tradeoffs and avoid guaranteed-happiness claims |
@@ -42,6 +45,6 @@ The user confirmed the shared brief and subsequently requested repository creati
 
 ## Implementation discretion
 
-Framework, bundler, storage format, and asset-authoring tools have not been mandated. Choose them to meet the static hosted/offline outputs, accessibility, editable content, and original artwork requirements. The current repository has no application scaffold. Record meaningful implementation decisions and actual commands when that work is performed.
+Framework, bundler, storage format, and production editing tools have not been mandated. Built-in image generation is the chosen starting point for visual concepts. SVG components, browser motion, Anime.js, and Rough.js are production options described in [the asset workflow](asset-workflow.md), not installed dependencies. Choose actual tooling to meet the static hosted/offline outputs, accessibility, editable content, and original artwork requirements. The current repository has no application scaffold. Record meaningful implementation decisions and actual commands when that work is performed.
 
 Source claims are currently collected from group notes. They still require passage-level verification before becoming final published assertions; see [the research register](research.md).
