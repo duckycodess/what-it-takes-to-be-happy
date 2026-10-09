@@ -149,7 +149,9 @@ Styling is one stylesheet with no fixed stage, since the finished artwork does n
 
 A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
 
-The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it. Serving a font from the hosted site is redistribution too; the project typeface may not be shipped until its own applicable permission and required notice are recorded, which is [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)'s work.
+The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
+
+The project typeface is handled differently, because its permission is different. Futura Handwritten is used under the author's own note granting use, which is not a named licence and is not a grant to redistribute the file. So it is **served** by the hosted site from this origin and is **never embedded** in an output handed to someone else. One stylesheet carries both faces, with everything that depends on the project typeface inside a marked region the hosted output keeps and the offline file drops; a build check fails the offline output if the font's bytes, a URL pointing at it, or even its family name survive into it. Each output credits the fonts it actually carries and no others, which is also a build check — a credit for a face a reader is not looking at would be a false statement about the page.
 
 ### Illustration, as built
 
@@ -168,19 +170,18 @@ that have a motif and the 54 that are still carried by their written description
 Final prose, the complete scene set, and the reader's finished visual design are all still open. The
 committed concept sheet is provenance for the drawings rather than production artwork.
 
-The project typeface is open for a reason worth recording rather than rediscovering. Futura
-Handwritten is named first in the CSS stack and is **not loaded**: its redistribution could not be
-established on 9 October 2026. The author's note grants broad permission to use it, but the archive
-carries no licence file, the font's own `name` table carries no licence record or licence URL, and
-dafont states that the label above its download button is only an indication. Broad permission to
-use a font is not permission to redistribute the file, and a hosted site serves the bytes to every
-visitor. The finding, and what would unblock it, are in
+The project typeface is settled. Futura Handwritten is served by the hosted site and sets the whole
+essay; the committed DejaVu Sans stands behind it and draws the one character on this content it has
+no glyph for. The distinction that governs where it may appear — permission to use a face is not
+permission to pass the file on — and everything that was checked to establish it, are in
 [`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is
 browser text, so nothing in the argument depends on the face.
 
 ### How the reader is tested
 
-Two suites, because they answer different questions. `test/reader.test.js` runs the real browser script against the real rendered markup in a small DOM built for the purpose, and always runs. `test/browser.test.js` runs the same journeys in Chrome against the real `dist/offline.html` through a `file://` URL, and answers what the *stylesheet* does — what a view hides, whether a focus ring is painted, where focus goes when a native disclosure is clicked, whether a phone-width window scrolls sideways. It skips with a stated reason where no browser is installed, and [verification](verification.md) records which happened.
+Two suites, because they answer different questions. `test/reader.test.js` runs the real browser script against the real rendered markup in a small DOM built for the purpose, and always runs. `test/browser.test.js` runs the same journeys in Chrome and answers what the *stylesheet* does — what a view hides, whether a focus ring is painted, where focus goes when a native disclosure is clicked, whether a phone-width window scrolls sideways. It skips with a stated reason where no browser is installed, and [verification](verification.md) records which happened.
+
+The journeys are driven against `dist/offline.html`, because one file is the cheapest thing a browser can open without a server and it is the same renderer. The typography is driven against the hosted build instead — `index.html` with its stylesheet, script, and both fonts written beside it at the paths it links them at — because a webfont the browser never had to fetch proves nothing. That suite checks the loaded `FontFace`, that what the page draws measures as the project typeface rather than the fallback, and that withholding the font file alone makes the page fall back, which is what rules out a `local()` lookup standing in for the file whose provenance is recorded. Serving the same tree over HTTP would be closer still; a Windows browser driven from WSL cannot reach a loopback port inside it, so what a real HTTP response carries is checked against the preview server in `test/build.test.js`. `test/fonts.test.js` pins each font file's size and digest and checks, against both `cmap` tables, that every character the essay prints is one a packaged face can draw.
 
 Both harnesses are deliberately small and dependency-free: `test/support/dom.js` implements exactly the subset the browser script asks for and throws on anything outside it, and `test/support/chrome.js` drives Chrome through `--dump-dom` with no socket and no client library. `test/dom.test.js` pins down the first harness's own behaviour, because a reader suite is only worth as much as the harness under it.
 

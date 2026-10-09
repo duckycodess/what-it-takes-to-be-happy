@@ -40,6 +40,28 @@ under it was real work. Three kinds of reference to it survive, meaning three di
 - **Imported notes.** [`docs/notes/`](notes/README.md) records what the members and the assignment
   actually said at the time. Those snapshots are evidence and are never rewritten.
 
+### Settled since the amendment
+
+- **Futura Handwritten is loaded, and the permission behind it was read.** The basis is the author's
+  own note on [his font page](https://www.dafont.com/futurahandwritten.font) — *"Feel free to use
+  this font for anything you want"* — which the owner accepted on 9 October 2026 as the basis for
+  this website's use of the face. The file was taken from that page's own download link and its
+  archive, size, and digest are recorded in
+  [`assets/fonts/README.md`](../assets/fonts/README.md). Billy Snyder is credited in the colophon of
+  every hosted page, although his note says credit is not required.
+
+  Three things this is **not**, each checked rather than assumed: it is not CC0, OFL, or any other
+  named public licence; it does not derive from Nicky Case's separate CC0 declaration, which covers
+  his own work and lists this font as a third-party resource; and dafont's "100% Free" label is not
+  a licence, by dafont's own FAQ. Nor does retiring the offline file create any additional right.
+
+  What follows from that, and is enforced by the build: the face is **served by this site** from its
+  own origin, and is **never embedded** in a file handed to someone else.
+  `auditProjectFontIsHostedOnly` fails the build if the offline output carries the font's bytes, a
+  URL pointing at it, or even its family name. The bundled DejaVu Sans, which *is* licensed for
+  redistribution, remains behind it on the hosted page and is the only face the offline file carries.
+  Owned by [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5).
+
 ### Still open, and owned elsewhere
 
 - **The build still writes `dist/offline.html`.** As of this amendment `npm run build` emits it into
@@ -47,17 +69,6 @@ under it was real work. Three kinds of reference to it survive, meaning three di
   output, and ensuring no production page offers a download link to it, is a code change owned by
   [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7). It has not happened yet,
   and this documentation amendment did not change any application code.
-- **Futura Handwritten is not loaded yet.** [`src/runtime/styles.css`](../src/runtime/styles.css)
-  names it first in the stack and currently falls through to the committed DejaVu Sans fallback.
-  Verifying the font author's actual applicable permission and implementing real web typography is
-  owned by [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5).
-- **Font permission is unverified.** [The font page](https://www.dafont.com/futurahandwritten.font)
-  identifies Billy Snyder as the author and is the primary permission to read and record. The
-  reference project's CC0 declaration covers Nicky Case's own work and says nothing about this font;
-  the two must not be conflated. Retiring the offline file removes one copy of the font software from
-  distribution, but it does not establish a web-embedding grant: serving the face from the hosted
-  site is still redistribution, and still needs actual applicable permission plus whatever notice
-  that permission requires. Do not assert a grant nobody has read.
 - **How the hosted essay reaches the class is unresolved.** [The instruction
   snapshot](notes/2026-10-08-instructions.md) asks for a digital file in the class Google Drive
   midterm folder, and nobody in this repository can withdraw that requirement. Retiring the offline

@@ -46,11 +46,11 @@ The build is deterministic — nothing records a timestamp, a random value, or a
 | --- | --- |
 | `dist/index.html` | The hosted page. Links `styles.css`, `reader.js`, and the asset files so a browser can cache them. |
 | `dist/styles.css`, `dist/reader.js` | The shared stylesheet and browser script. |
-| `dist/assets/fonts/` | The bundled fallback font and its licence text. |
+| `dist/assets/fonts/` | The project typeface, the bundled fallback font, and the fallback's licence text. |
 | `dist/assets/illustrations/` | Committed artwork. |
 | `dist/offline.html` | The single self-contained file. **No longer a deliverable**, and the build still writes it into the publish directory; see below. |
 
-`dist/offline.html` is currently about 4.39 MB, almost all of it the embedded concept illustration and the fallback font in base64. Since the 9 October amendment it is retained tooling: the packaging audits that produce it also prove the hosted page's resources are all committed and accounted for, which is worth keeping cheaply. It is not submitted, its size is not a release concern, and hosted/offline parity is not an acceptance criterion.
+`dist/offline.html` is currently about 3.4 MB, almost all of it the embedded concept illustration and the fallback font in base64. It carries the fallback and no other face: the project typeface is served by the hosted site under a grant to use it, which is not a grant to hand the file to someone else, and the build fails if a trace of it reaches that output. Since the 9 October amendment it is retained tooling: the packaging audits that produce it also prove the hosted page's resources are all committed and accounted for, which is worth keeping cheaply. It is not submitted, its size is not a release concern, and hosted/offline parity is not an acceptance criterion.
 
 Taking it out of the published `dist/` — and making sure no production page offers a download link to it — is a code change owned by [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7). **It has not been made.** `npm run build` on the current revision still writes `dist/offline.html` and still prints it as the offline submission file. That line is now wrong, and correcting it belongs with the same code change.
 
@@ -68,7 +68,7 @@ Before release, verify the intended Vercel account/team, project, commit, and en
 
 The hosted page must be self-sufficient against its own committed resources: the project font, the artwork, the stylesheet, and the browser script are served from the deployment, not from a third party, and no essential text waits on a runtime fetch of Google Docs, a font service, an image host, or scene data. External source destinations stay ordinary links; their labels, claim context, and limitations are readable without following them.
 
-Serving a font is redistribution. The project typeface may not be deployed until its actual applicable permission and required notice are recorded — [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)'s work, and not yet done.
+The project typeface is Futura Handwritten by Billy Snyder, served from this origin under the author's own note on [his font page](https://www.dafont.com/futurahandwritten.font): "Feel free to use this font for anything you want." The record — source, archive checksums, and the three things that were checked and are *not* true of it — is in [`assets/fonts/README.md`](../assets/fonts/README.md), and the credit the author says is not required appears in the colophon of every hosted page. It is not a named public licence, so the face is served by this site and never embedded in a file handed to someone else.
 
 Commands:
 
@@ -92,11 +92,11 @@ Complete this for the reviewed, integrated essay, not for a fixture. Offline sub
 - The exact commit the release was built from, and the checks that passed on it.
 - The actual preview URL, and the actual production URL, each recorded verbatim rather than described.
 - Both URLs confirmed to serve that exact commit.
-- The project typeface, the artwork, the stylesheet, and the browser script all actually loading on the deployed page — observed, not inferred from the build.
+- The project typeface, the artwork, the stylesheet, and the browser script all actually loading on the deployed page — observed on the deployment, not inferred from the build. The build and the browser suite check that the font loads and sets the page from a local copy of the hosted tree; that is not the same as watching it arrive over the deployment's own network.
 - Reading and navigation exercised on a real phone and a real desktop browser: Begin, Next, Back, the first and last boundaries, chapter shortcuts, and the optional panels.
 - The full reading view and the printed output, each carrying the complete argument.
 - Every source's evidence level, limitation, and caveat visible on the deployed page.
-- Any remaining limitation, stated plainly — an unverified font permission, an unchecked device, or an unresolved submission route is a limitation, not a footnote.
+- Any remaining limitation, stated plainly — an unchecked device or an unresolved submission route is a limitation, not a footnote.
 
 Until every line above is real, the site is not released. A preview of the foundation is not the essay.
 

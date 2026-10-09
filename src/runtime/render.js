@@ -324,6 +324,7 @@ function renderBeatControls(totalScenes) {
  * @param {{url?: string, source?: string}} options.script browser script
  * @param {object} [options.illustration] landing artwork resource
  * @param {string} options.inlineStyles CSS text when embedding rather than linking
+ * @param {string[]} [options.fontNotices] one credit per font this output carries
  * @param {'hosted'|'offline'} options.mode
  * @returns {string} a complete HTML document
  */
@@ -349,9 +350,12 @@ export function renderDocument(content, options) {
     ? `<script>\n${options.inlineScript}\n</script>`
     : `<script src="${esc(options.scriptUrl)}" defer></script>`;
 
-  const fontNotice = options.fontNotice
-    ? `<p class="colophon-font">${esc(options.fontNotice)}</p>`
-    : '';
+  // One paragraph per font this output actually carries. The hosted page
+  // credits the project typeface and the fallback behind it; the offline file
+  // carries only the fallback and says only that.
+  const fontNotices = (options.fontNotices ?? [])
+    .map((notice) => `<p class="colophon-font">${esc(notice)}</p>`)
+    .join('\n');
 
   // Where the drawings came from. The sheet is a flattened raster study, so it
   // is provenance rather than production artwork: every figure in the essay is
@@ -402,7 +406,7 @@ ${renderBeatControls(orderedSceneIds.length)}
 <p class="view-switch js-only"><button type="button" data-view-toggle>Read the whole thing</button></p>
 <footer class="colophon">
 <p>${esc(content.project.title)} &mdash; original illustrated essay by ${content.cast.filter((character) => character.role === 'member').map((member) => esc(member.displayName)).join(', ')}.</p>
-${fontNotice}
+${fontNotices}
 ${conceptSheet}
 ${fontLicence}
 </footer>

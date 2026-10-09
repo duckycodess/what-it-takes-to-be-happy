@@ -1,9 +1,14 @@
 /*
  * Reader styles.
  *
- * One stylesheet for every output. __FONT_URL__ is replaced at build time with
- * a relative path for the hosted output and with a data URI for the offline
- * file.
+ * One stylesheet for every output. Each `@font-face` below carries a
+ * placeholder where its `url()` belongs, and the build replaces it with a
+ * relative path for the hosted output or with a data URI for the offline file.
+ * The placeholders are written only inside those rules, never in prose like
+ * this: the substitution is textual, and a second mention would embed a second
+ * copy of the font. The region between `hosted-only:start` and
+ * `hosted-only:end` is kept by the hosted output and removed from the offline
+ * file, which carries the bundled fallback and nothing else.
  *
  * Two rules hold the rest together. Nothing is positioned against a fixed
  * stage, because the finished artwork does not exist yet and the layout must
@@ -12,6 +17,8 @@
  * choice about the screen, never about what the argument contains.
  */
 
+/* The fallback. Packaged into every output, so it is always there to answer
+   for a character the face above it cannot draw. */
 @font-face {
   font-family: 'Bundled Fallback';
   src: url(__FONT_URL__) format('truetype');
@@ -32,13 +39,56 @@
   --accent: #9c4420;
   --highlight: #fdf2d8;
   --measure: 34rem;
+  --body-line-height: 1.6;
   --gap: 1.25rem;
-  /* Futura Handwritten is the agreed reference face and is named first so a
-     reader who already has it installed gets it. It is not bundled: no
-     redistribution permission could be verified upstream. See
-     assets/fonts/README.md. 'Bundled Fallback' is the packaged DejaVu Sans. */
-  --body: 'Futura Handwritten', 'Bundled Fallback', ui-sans-serif, system-ui, sans-serif;
+  /* The stack without the project typeface, and the measure and leading drawn
+     for it. The hosted output puts the project face in front of this and
+     retunes both numbers; the offline file, which does not carry that face,
+     keeps what is here. 'Bundled Fallback' is the packaged DejaVu Sans. See
+     assets/fonts/README.md. */
+  --body: 'Bundled Fallback', ui-sans-serif, system-ui, sans-serif;
 }
+
+/* hosted-only:start */
+/* The project typeface, served from this site's own origin.
+
+   `src` is a URL and nothing else: no `local()`. A reader with some other
+   font of this name installed would otherwise be shown it instead of the one
+   whose provenance and permission this project actually recorded, and a test
+   could not tell the two apart. Provenance and the author's permission are in
+   assets/fonts/README.md; the credit is in the essay's colophon.
+
+   `font-display: swap` means the prose is readable in the fallback from the
+   first paint and reflows once when the face arrives. */
+@font-face {
+  font-family: 'Futura Handwritten';
+  src: url(__PROJECT_FONT_URL__) format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Everything set in var(--body) moves to the project typeface together:
+     prose, dialogue, headings, and the names above the figures. The bundled
+     fallback stays behind it for the characters Futura Handwritten has no
+     glyph for — the en dash, on this content. */
+  --body: 'Futura Handwritten', 'Bundled Fallback', ui-sans-serif, system-ui, sans-serif;
+
+  /* Both numbers below are the same design tuned to a different face, measured
+     in Chrome at 16px rather than guessed.
+
+     A 62-character sentence sets 453px in Futura Handwritten and 497px in the
+     fallback — 8.9% narrower. The 34rem column that held about 68 characters
+     would hold about 74 of them, past a comfortable line. 31rem puts the
+     measure back where the layout was drawn. */
+  --measure: 31rem;
+  /* Futura Handwritten's x-height is 8px at 16px against the fallback's 9px,
+     so 1.6em of leading is 3.2 x-heights here where the page was read at 2.8.
+     1.5 closes most of that without crowding the descenders, which are long. */
+  --body-line-height: 1.5;
+}
+/* hosted-only:end */
 
 *,
 *::before,
@@ -51,7 +101,7 @@ html {
   color: var(--ink);
   font-family: var(--body);
   font-size: 100%;
-  line-height: 1.6;
+  line-height: var(--body-line-height);
   -webkit-text-size-adjust: 100%;
 }
 

@@ -13,13 +13,14 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 | `test/validate.test.js`, `test/reorder.test.js`, `test/register.test.js` | Contract rules against a deliberately broken fixture, reordering beats by stable identifier, and the content document agreeing with the source register. |
 | `test/render.test.js`, `test/build.test.js`, `test/cli.test.js` | Essential-content coverage, no authoring provenance in any output, the packaging audits, build determinism, and the preview server. |
 | `test/reader.test.js` | The reader's journeys: authored order, both boundaries, chapter revisiting, deep links to a beat, a chapter, and a source, the browser Back button with and without the History API, focus on every move, optional panels keeping the reader's own choices, and print opening them and handing the choices back. |
-| `test/browser.test.js` | The same journeys in real Chrome against the real `dist/offline.html` through a `file://` URL, plus the questions only a browser can answer. Skips with a stated reason where no browser is installed. |
-| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, and the focus ring. |
+| `test/browser.test.js` | The same journeys in real Chrome against the real `dist/offline.html`, plus the questions only a browser can answer, plus the typography against the real hosted build with its stylesheet, script, and both fonts linked beside it. Skips with a stated reason where no browser is installed. |
+| `test/fonts.test.js` | Each committed font file's size and SHA-256, and — read from both `cmap` tables — that every character the essay prints is one a packaged face can draw. |
+| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, the focus ring; and that nothing depending on the project typeface sits outside the region the offline file drops. |
 | `test/dom.test.js` | The test harness itself, so the reader suite cannot pass on a harness that answers wrongly. |
 
 ### Checked in a real browser
 
-Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against `dist/offline.html` opened through a `file://` URL with nothing served. All seven browser tests ran; none skipped.
+Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL. The reader's journeys ran against `dist/offline.html` opened through a `file://` URL with nothing served; the typography ran against the hosted build with its linked files beside it. All eleven browser tests ran; none skipped.
 
 - The landing shows the landing. Begin, Next, Back, the two disabled boundaries, chapter shortcuts, and the continuous view all behave, and the beat lands at the top of the window on every arrival rather than below the banner and the chapter list.
 - Focus moves to the beat and is **painted**: `outline-style: solid` with a non-zero width on the focused beat. Back, Next, and the view switch all measure at least 44 CSS pixels tall.
@@ -31,11 +32,23 @@ Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against 
 - Every beat draws what the content document says it draws: an inline SVG where a composition is named, the "not made yet" notice only where none is, and in both cases the written description underneath. Every figure's name is HTML text outside the SVG, inside the frame, and above its anchor, checked on all nine beats at phone width.
 - With `--force-prefers-reduced-motion`, the browser reported the preference, the condition layer's `animation-name` computed to `none`, and its opacity was already 1 — the explanation the entrance would have animated into is simply there.
 
+#### The project typeface, loaded
+
+- The browser fetched `assets/fonts/FuturaHandwritten.ttf` and parsed it: one `FontFace` for `Futura Handwritten`, `status: "loaded"`, `display: "swap"`, and `document.fonts.check` true.
+- The page is drawn with it, not merely told to use it. The same 62-character sentence measures 453 CSS pixels in the project typeface and 497 in the bundled fallback, and what the document inherits measures 453.
+- Withholding the font file, and changing nothing else, makes the same face report `status: "error"`, and the page then measures at the fallback's width and stays readable. That is what rules out a `local()` lookup quietly standing in for the file whose provenance is recorded.
+- The en dash is drawn, at the fallback's width, because the project typeface has no glyph for it. Which character that is comes from reading both `cmap` tables in `test/fonts.test.js`, not from the browser.
+- At a true 320-pixel layout viewport with the real face loaded: no horizontal overflow on the landing or on any of the nine beats, every long paragraph inside the window, and every name above a figure drawn and inside the window.
+- At 1440 pixels in the continuous view: the widest line of body prose is 496 CSS pixels and holds about 68 characters, body prose computes to 16 CSS pixels, and leading computes to 1.5. Left at the fallback's 34rem the same line would hold about 75, which is what the retuned measure exists to prevent.
+- Both fonts are served byte for byte by the preview server over real HTTP, as `font/ttf`, at the paths the stylesheet asks for.
+
+A note on what the hosted-tree run is and is not: the files are written to a directory and opened through `file://`, not served. Chrome fetches the font over a real request either way, which is what the questions above need, but it is not the deployment's own network. A Windows browser driven from WSL cannot reach a loopback port inside it — both `127.0.0.1` and the WSL interface address time out — so serving the tree to it was not available here.
+
 A note on how the narrow width is measured: a desktop browser window will not go below roughly 500 CSS pixels, so `--window-size=360` silently lays the page out at about 490. The narrow-width tests therefore load the page in a frame of the requested width, which does give it that layout viewport. An earlier pass that missed this reported a phone width it had not actually tested.
 
 That the browser suite drives `dist/offline.html` is a convenience, not a requirement: it is the same renderer the hosted page uses, in one file a browser can open without a server. The `file://` condition is not asked of anything now.
 
-Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, the project typeface actually loading, and anything about the finished prose.
+Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, the typeface arriving over the deployment's own network, and anything about the finished prose.
 
 ## What the artwork package checked, and how
 
