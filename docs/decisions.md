@@ -2,6 +2,77 @@
 
 The user confirmed the shared brief and subsequently requested repository creation, documentation, canonical tickets, and Vercel as the hosting target. These decisions override earlier proposals in the imported Website ideas tab.
 
+> **The 9 October 2026 owner amendment below is canonical.** It changes what this project delivers.
+> Read it before the table.
+
+## Owner amendment — 9 October 2026
+
+Late on 9 October 2026 the owner changed the delivery brief directly: *"For font, we continue with
+our agreed front. We discontinue offline html and prioritize the website itself."* "Front" is the
+agreed Futura Handwritten typography. Where any other document in this repository still describes
+the delivery differently, this section governs and that document is out of date.
+
+| Amended | Now | Before the amendment |
+| --- | --- | --- |
+| Deliverable | The hosted Vercel website **is** the deliverable | A hosted site *and* a self-contained offline HTML submission file |
+| Offline HTML | Discontinued. Not a submission artifact, not a release gate, not an acceptance criterion | `dist/offline.html` was the submission artifact and a release gate |
+| Typography | Futura Handwritten, retained, and to be implemented as real web typography | Futura Handwritten (unchanged by the amendment) |
+
+What the amendment does **not** change: the original Trust-style artwork, names above heads as
+browser text, phone and desktop layouts that reflow rather than shrink, chapter revisiting, the
+complete reading and print view, and every visible finding, caveat, and limitation. Nothing
+editorial is retired here, and no substitute typeface is accepted.
+
+### Older offline references, and what each one now means
+
+Offline reading was a real requirement for most of this repository's history, and the work done
+under it was real work. Three kinds of reference to it survive, meaning three different things:
+
+- **Historical implementation evidence.** The network-disabled `file://` checks recorded in
+  [delivery](delivery.md) and [verification](verification.md), and the batches described in
+  [the foundation plan](foundation-plan.md), record checks that actually ran on 9 October 2026
+  against the non-final fixture. They stay as written. They say what was tested then; they are not
+  a gate anything must still pass.
+- **Retained tooling.** `npm run export:offline` still exists and still works, and the single-file
+  packaging tests and the deliberately broken fixture still run. They are kept because they exercise
+  real inlining and completeness rules cheaply, not because a submission file is owed. Removing
+  working test infrastructure to erase the history is not part of this amendment.
+- **Imported notes.** [`docs/notes/`](notes/README.md) records what the members and the assignment
+  actually said at the time. Those snapshots are evidence and are never rewritten.
+
+### Still open, and owned elsewhere
+
+- **The build still writes `dist/offline.html`.** As of this amendment `npm run build` emits it into
+  the publish directory and prints it as the offline submission file. Dropping it from the published
+  output, and ensuring no production page offers a download link to it, is a code change owned by
+  [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7). It has not happened yet,
+  and this documentation amendment did not change any application code.
+- **Futura Handwritten is not loaded yet.** [`src/runtime/styles.css`](../src/runtime/styles.css)
+  names it first in the stack and currently falls through to the committed DejaVu Sans fallback.
+  Verifying the font author's actual applicable permission and implementing real web typography is
+  owned by [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5).
+- **Font permission is unverified.** [The font page](https://www.dafont.com/futurahandwritten.font)
+  identifies Billy Snyder as the author and is the primary permission to read and record. The
+  reference project's CC0 declaration covers Nicky Case's own work and says nothing about this font;
+  the two must not be conflated. Retiring the offline file removes one copy of the font software from
+  distribution, but it does not establish a web-embedding grant: serving the face from the hosted
+  site is still redistribution, and still needs actual applicable permission plus whatever notice
+  that permission requires. Do not assert a grant nobody has read.
+- **How the hosted essay reaches the class is unresolved.** [The instruction
+  snapshot](notes/2026-10-08-instructions.md) asks for a digital file in the class Google Drive
+  midterm folder, and nobody in this repository can withdraw that requirement. Retiring the offline
+  file removes the artifact that answered it. Whether the group submits a link, a printed or exported
+  copy, or something else is the owner's and the class's decision; no Drive upload is in scope here.
+
+This amendment is recorded as [#12](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/12)
+and amends [#1](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/1),
+[#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5),
+[#6](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/6), and
+[#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) without rewriting their
+canonical ticket text; [the work plan](work-plan.md) names the clauses it supersedes.
+
+## Confirmed choices
+
 | Area | Confirmed choice | Reason or boundary |
 | --- | --- | --- |
 | Form | Independently readable illustrated website | No live narrator is required |
@@ -27,11 +98,11 @@ The user confirmed the shared brief and subsequently requested repository creati
 | Asset creation | Built-in image generation for the first character sheets and concepts | The user requested it directly; close visual match to Trust's style |
 | Drawing tools | Codex handles asset production; Inkscape is optional | No requirement for the user to learn a drawing editor or install a connector |
 | Motion workflow | Reusable drawing parts and expressions, animated in the browser | A PNG concept sheet does not itself provide an animation rig |
-| Typography | Futura Handwritten reference typography | Preserve readable long-form text on both layouts |
+| Typography | Futura Handwritten reference typography | Retained by the amendment above; preserve readable long-form text on both layouts |
 | Opening | Working question title, emotional stickmen, everyday snapshots, different readings | Opening does not dictate every chapter's method |
 | Ending | Concrete changes at several scales plus unresolved questions | Explain tradeoffs and avoid guaranteed-happiness claims |
 | Notes | Repository deltas will expand contributions | Reconcile them into the story rather than append an unrelated tail |
-| Hosting | Vercel | Keep the offline website submission file too |
+| Hosting | Vercel | The hosted site is the deliverable; the offline file is discontinued by the amendment above |
 | Work tracking | Publish agreed work through the ticket front door | Ordinary tickets remain unqueued |
 | Autonomous build | Owner authorized the six implementation packages on 9 October | Routine reversible choices proceed within the confirmed brief |
 | PR completion | Automatic dispatcher merge after verified checks and independent review | Keep exact-commit review and dependency gates |
@@ -46,6 +117,9 @@ The user confirmed the shared brief and subsequently requested repository creati
 - Treating a third member's contribution as pending: Vier's notes are already present.
 - Long prose restricted to a different typeface simply because the older map proposal preferred it.
 - One opening assumption or one explanatory method governing the whole story.
+- A self-contained offline HTML file as a submission deliverable, and offline/hosted parity as a
+  release gate. Retired by the 9 October owner amendment above; the export command and the
+  packaging tests are retained as tooling.
 
 ## Implementation discretion
 
@@ -63,6 +137,10 @@ The foundation package made these choices, all reversible:
 | Browser script | A classic script, not an ES module | Module loading is blocked for `file://` documents. |
 | Checks | Node's built-in test runner, plus `node --check` over every source file | No linter, formatter, or type checker is configured; this is the honest substitute. |
 | Fallback font | DejaVu Sans, committed with its licence | A temporary stand-in that proves a real font embeds in both outputs. Not the project typeface. |
+
+Several of those rows were argued from the offline requirement, which the amendment above
+retires. The choices still stand on their own: no dependency has since earned its place, and a
+static essay with one page, one stylesheet, and one script still does not need a toolchain.
 
 The artwork package then made these, equally reversible:
 

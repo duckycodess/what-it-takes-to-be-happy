@@ -2,6 +2,8 @@
 
 Confirmed after the design interview on 8 October 2026. Working title: **What Does It Take to Be Happy?** Content can expand as further group notes arrive.
 
+> **Amended on 9 October 2026.** The hosted Vercel website is now the deliverable and the self-contained offline HTML file is discontinued; the agreed Futura Handwritten typography is retained. [The owner amendment in the decisions record](decisions.md#owner-amendment--9-october-2026) is canonical, and this page reflects it below.
+
 ## Purpose and audience
 
 Create a substantial, independently readable website answering the midterm question: what happiness means, what constitutes it, whether it is achievable in present society, and what changes could enable it. The instructor should be able to assess the complete argument without a spoken presentation. General readers should also be able to follow it.
@@ -43,12 +45,12 @@ Source: [Instructions tab](https://docs.google.com/document/d/1NL3B3DEtVc3QeblkB
 - Include personal ideas, observations, contextualization, examination of assumptions, and published research. Gray literature may add perspectives but cannot be the only evidence.
 - Identify sources; no prescribed citation style is required.
 - Grading criteria are depth/thoroughness, clear logical argumentation, inward reflection about conclusions, and use of class concepts.
-- Submit a digital file to the class Google Drive midterm folder, with member names included in the file or filename.
+- The instruction snapshot asks for a digital file in the class Google Drive midterm folder, with member names included in the file or filename. **This requirement is unresolved.** The 9 October amendment discontinued the offline HTML file that was going to answer it, and nobody in this project can withdraw an instructor's requirement. How the group hands in a hosted website — a link, an exported copy, or something else — is the owner's and the class's decision. No Drive upload is in this repository's scope.
 - Deadline: **9 October 2026, 11:59 PM**. The instruction text does not state a timezone; project planning uses Asia/Manila.
 
 ## Delivery and evolving contributions
 
-Vercel is the agreed hosting target. Keep a self-contained offline website file for submission; hosting does not replace that deliverable. Both outputs should come from the same authored content.
+Vercel is the agreed hosting target and, since the 9 October amendment, the hosted site is the deliverable. The self-contained offline website file is discontinued: it is no longer a submission artifact and no longer a release gate. The build still emits one and the packaging tests still exercise it; both are retained tooling, and [the decisions record](decisions.md#still-open-and-owned-elsewhere) says who owns removing it from the published output.
 
 Research is shared group material. Any avatar can draw on research another member found, provided citations remain attached to original sources and the spoken position matches what that member endorses. Future repo deltas can change or expand scenes without rebuilding the whole narrative architecture.
 
