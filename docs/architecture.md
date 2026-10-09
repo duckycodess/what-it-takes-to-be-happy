@@ -2,9 +2,11 @@
 
 Status: implementation-neutral architecture for the confirmed experience. This document defines behavior, boundaries, and future work; it does not select or scaffold a framework.
 
+> **Amended on 9 October 2026.** The hosted Vercel output is the deliverable; the self-contained offline HTML file is discontinued. [The owner amendment](decisions.md#owner-amendment--9-october-2026) is canonical. The offline path is still described here because the code still produces it and the packaging rules it imposes are still what keeps the hosted page self-sufficient — but nothing below is a release gate any more.
+
 ## Overall shape
 
-The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel and for a self-contained offline HTML submission. Both outputs consume the same content and renderer. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.
+The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel. The build also still emits a self-contained offline HTML file from the same content and renderer; since the 9 October amendment that file is retained tooling rather than a deliverable. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.
 
 ```mermaid
 flowchart LR
@@ -13,7 +15,7 @@ flowchart LR
   A[Original character and scene assets] --> P[Shared reader and scene renderer]
   C --> P
   P --> H[Vercel static output]
-  P --> O[Self-contained offline HTML]
+  P --> O[Self-contained offline HTML: retained tooling, not a deliverable]
   P --> T[Continuous reading and print view]
 ```
 
@@ -28,7 +30,7 @@ flowchart LR
 | Reader | Landing, Begin, Next/Back, chapter navigation, reading mode, focus and presentation state |
 | Scene renderer | Draw/reuse/replace scenes, synchronize explanatory changes with the visible argument |
 | Detail surfaces | Optional sources, extra examples, and supplementary thoughts without hiding essential content |
-| Packaging | Generate hosted files and an offline HTML file from the same authored material |
+| Packaging | Generate the hosted files from the authored material, and the retained single-file output from the same render |
 
 There is no current requirement for accounts, a database, a live feed, voting, a happiness score, or a complex simulation. Do not introduce them to satisfy static presentation needs.
 
@@ -68,7 +70,7 @@ Scalable line art is a suitable implementation option; no asset format is mandat
 
 The [asset workflow](asset-workflow.md) starts with built-in image generation for concepts, then prepares reusable browser drawing parts and expression states. The first PNG character sheet is authoring input, not a separated animation library. SVG components are a suitable production option. Simple CSS/Web Animations can move or reveal them; Anime.js is optional if coordinated timelines need a helper. Rough.js is optional for sketch-like scenery. No library has been installed yet.
 
-Image generation, drawing editors, and any future MCP connector run during authoring. The deployed and offline reader consumes committed assets and local state only. Motion must cancel or settle to the selected scene's correct state when Next/Back changes the beat, and reduced motion must show the same explanatory state without an animated transition. Keep generated lettering out of production labels and dialogue.
+Image generation, drawing editors, and any future MCP connector run during authoring. The deployed reader consumes committed assets and local state only. Motion must cancel or settle to the selected scene's correct state when Next/Back changes the beat, and reduced motion must show the same explanatory state without an animated transition. Keep generated lettering out of production labels and dialogue.
 
 ## Responsive and accessible presentation
 
@@ -76,13 +78,13 @@ Desktop may place narrative and illustration side by side or within a wide stage
 
 Use semantic controls, visible keyboard focus, a sensible reading order, legible contrast, text alternatives, and labels above member avatars. Source/detail surfaces should be keyboard reachable and dismissible. Full reading mode provides a direct text route through the complete argument.
 
-## Hosted and offline packaging
+## Hosted packaging
 
-Vercel serves the static hosted output. The offline deliverable is a single HTML file containing the required prose, references, styles, scripts, font, and illustrations. It must open through a normal local-file browser URL with network disabled.
+Vercel serves the static hosted output, and that is the deliverable. The hosted page must carry the complete argument with its own committed resources: no runtime fetching of content, no remote font, no remote illustration dependency, and no third-party request that a reader's network can fail. External reference destinations are ordinary links and may need internet; their labels, claim context, and necessary source details stay readable without following them.
 
-Runtime module loading, runtime fetching of content, remote fonts, or remote illustration dependencies must not break offline reading. A service worker is not a substitute for a file that opens directly. External reference destinations can need internet; their labels, claim context, and necessary source details remain readable offline.
+The build also still writes a single self-contained HTML file containing the same prose, references, styles, scripts, font, and illustrations. The 9 October amendment discontinued it as a deliverable: it is not a submission artifact, hosted/offline parity is not an acceptance criterion, and opening it from `file://` with networking disabled is not a release check. It is retained because the rules it enforces — every required resource committed, inlined, and accounted for — are the same rules that keep the hosted page self-sufficient, and because the packaging tests that assert them are cheap. Removing it from the published `dist/` is owned by [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) and has not been done.
 
-Do not invent build commands now. The foundation implementation must document the actual local preview, validation, hosted packaging, and offline export commands it introduces.
+The foundation implementation documents the actual local preview, validation, hosted packaging, and export commands below.
 
 ## The implemented foundation
 
@@ -92,7 +94,7 @@ The foundation package filled in the implementation choices this document left o
 
 Node 24 with **no dependencies at all**. The committed `package-lock.json` contains no packages, tests use Node's built-in runner, and the build uses only `node:fs`, `node:path`, `node:crypto`, and `node:http`.
 
-The reasoning is the offline requirement. A framework or bundler would put a toolchain between the authored content and a file that has to open from a local disk with no network, and every dependency added to that path is another way for the submission artifact to break on the night it is due. A static essay with one page, one stylesheet, and one browser script does not need one. Nothing here prevents a later package from adding a dependency if it earns its place; the decision is only that the foundation did not need one.
+The reasoning was the offline requirement, which the 9 October amendment has since retired. A framework or bundler would put a toolchain between the authored content and a file that has to open from a local disk with no network, and every dependency added to that path is another way for the artifact to break on the night it is due. The conclusion survives its premise: nothing has since earned a dependency, and the hosted page still has to carry its own font and artwork. A static essay with one page, one stylesheet, and one browser script does not need one. Nothing here prevents a later package from adding a dependency if it earns its place; the decision is only that the foundation did not need one.
 
 Consequences worth knowing: there is no linter, formatter, or type checker configured, so `npm test` runs Node's own parser over every source file instead. The browser script is a classic script rather than an ES module, because module loading is blocked for `file://` documents.
 
@@ -113,7 +115,7 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 | `npm run validate` | Checks `content/content.json` against the contract. Exits nonzero with located errors. |
 | `npm test` | Runs every check: contract rules, stable-identifier reordering, rendering, packaging, determinism, and the preview server. |
 | `npm run build` | Validates, renders, audits, and writes `dist/`. |
-| `npm run export:offline` | Writes only `dist/offline.html`. |
+| `npm run export:offline` | Writes only `dist/offline.html`. Retained tooling; the file is no longer a deliverable. |
 | `npm run preview` | Serves `dist/` at `http://localhost:4173`. |
 | `npm run check` | `validate`, then `test`, then `build`. |
 
@@ -125,9 +127,9 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 
 - Print carries the complete argument whichever view is open, and optional panels are reopened before printing.
 - A browser with scripting unavailable shows the continuous reading view, which is the same thing the print route needs.
-- The hosted page and the offline file differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical.
+- The hosted page and the single-file output differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical. That check now guards the renderer against dropping content in one path, not a parity requirement between two deliverables.
 
-The build refuses to publish an output that drops essential content, and refuses an offline file that references anything it does not carry. External source destinations stay as ordinary links: offline, their labels, roles, and limitations are all still readable, and only following the link needs a connection.
+The build refuses to publish an output that drops essential content, and refuses a single-file output that references anything it does not carry. External source destinations stay as ordinary links: their labels, roles, and limitations are readable without following them, and only following the link needs a connection.
 
 ### The implemented reader
 
@@ -147,12 +149,12 @@ Styling is one stylesheet with no fixed stage, since the finished artwork does n
 
 A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
 
-The bundled font's licence is rendered into the document rather than left beside it, because the offline file is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
+The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it. Serving a font from the hosted site is redistribution too; the project typeface may not be shipped until its own applicable permission and required notice are recorded, which is [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)'s work.
 
 ### Illustration, as built
 
 The artwork package filled in the illustration side of this contract. The drawings are authored
-geometry generated into the markup as inline SVG, so a scene costs the offline file no request and
+geometry generated into the markup as inline SVG, so a scene costs the page no request and
 no asset; a scene names its composition and its settled state by identifier, and content validation
 refuses a document that asks for a drawing the artwork cannot produce. Names above heads are browser
 text positioned over the drawing, never lettering inside it. A composition's condition layer is in
@@ -167,12 +169,12 @@ Final prose, the complete scene set, and the reader's finished visual design are
 committed concept sheet is provenance for the drawings rather than production artwork.
 
 The project typeface is open for a reason worth recording rather than rediscovering. Futura
-Handwritten is named first in the CSS stack and is **not bundled**: its redistribution could not be
+Handwritten is named first in the CSS stack and is **not loaded**: its redistribution could not be
 established on 9 October 2026. The author's note grants broad permission to use it, but the archive
 carries no licence file, the font's own `name` table carries no licence record or licence URL, and
 dafont states that the label above its download button is only an indication. Broad permission to
-use a font is not permission to redistribute the file, and this project's offline deliverable embeds
-the bytes in a document handed to other people. The finding, and what would unblock it, are in
+use a font is not permission to redistribute the file, and a hosted site serves the bytes to every
+visitor. The finding, and what would unblock it, are in
 [`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is
 browser text, so nothing in the argument depends on the face.
 
@@ -184,4 +186,4 @@ Both harnesses are deliberately small and dependency-free: `test/support/dom.js`
 
 ## Handoffs that create real prerequisites
 
-The reader depends on the foundation's content/runtime interfaces. Final narrative integration depends on an audited storyboard, a working reader, and original scene assets. Hosted/offline release verification depends on the integrated complete essay. Editorial work and original asset development can begin alongside the foundation using these documented contracts.
+The reader depends on the foundation's content/runtime interfaces. Final narrative integration depends on an audited storyboard, a working reader, and original scene assets. Hosted release verification depends on the integrated complete essay. Editorial work and original asset development can begin alongside the foundation using these documented contracts.

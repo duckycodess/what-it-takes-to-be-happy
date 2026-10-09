@@ -1,6 +1,6 @@
 # Content contract
 
-The essay's chapters, scenes, cast, sources, concepts, optional detail, interactions, and authoring provenance live in one JSON document: [`content/content.json`](../content/content.json). The hosted site, the continuous reading and print view, and the offline file are all generated from that single document.
+The essay's chapters, scenes, cast, sources, concepts, optional detail, interactions, and authoring provenance live in one JSON document: [`content/content.json`](../content/content.json). The hosted site, the continuous reading and print view, and the retained single-file output are all generated from that single document. Since [the 9 October amendment](decisions.md#owner-amendment--9-october-2026) the hosted site is the deliverable; the contract below is unchanged by that, because one document still feeds every output.
 
 Schema identifier: `happiness-essay-content/v1`. The machine definition is [`src/content/schema.js`](../src/content/schema.js) and [`src/content/validate.js`](../src/content/validate.js). This page is the editor's version of the same rules; changing one without the other is a contract break.
 
@@ -193,7 +193,7 @@ Each detail and each interaction belongs to exactly one scene, and an interactio
 | `note` | string | Why this content says what it says. |
 | `sourceNote` | string | The note or delta file that supports it. |
 
-**Provenance is authoring material and is never published.** It does not appear in the hosted page, the reading view, print output, or the offline file, and a build-time check fails if any of it leaks. Readers see citations and real context; they never see editorial workflow.
+**Provenance is authoring material and is never published.** It does not appear in the hosted page, the reading view, print output, or the single-file output, and a build-time check fails if any of it leaks. Readers see citations and real context; they never see editorial workflow.
 
 ## Member positions
 

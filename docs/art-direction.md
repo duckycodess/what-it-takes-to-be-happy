@@ -6,7 +6,9 @@ Use [The Evolution of Trust](https://ncase.me/trust/) as the presentation and ty
 
 The user explicitly wants a close match to that drawing style. Start from the opening-page figures: large white rounded heads, tiny dot or curved eyes, compact tapered bodies, short legs, sparse arms, and slightly imperfect charcoal outlines. Use restrained pink cheeks or other emphasis when useful. Avoid turning the cast into detailed human illustrations.
 
-The reference source [defines Futura Handwritten](https://github.com/ncase/trust/blob/gh-pages/css/slides.css). Its [font page](https://www.dafont.com/futurahandwritten.font) identifies Billy Snyder and permits use; record asset provenance when the font is added. The [reference repository](https://github.com/ncase/trust) identifies Nicky Case's work as CC0 and lists third-party resources separately. Original drawings remain the agreed choice.
+The reference source [defines Futura Handwritten](https://github.com/ncase/trust/blob/gh-pages/css/slides.css), and the 9 October owner amendment **retained it**: it is the project typeface, and no substitute face is accepted. It is not loaded yet — the stylesheet names it first and falls through to a temporary committed fallback.
+
+Its [font page](https://www.dafont.com/futurahandwritten.font) identifies Billy Snyder as the author, and that page is the primary permission to read and record before the font ships. The [reference repository](https://github.com/ncase/trust) declares Nicky Case's own work CC0 and lists third-party resources separately; **that declaration says nothing about this font, and the two must never be conflated.** Serving a webfont from the hosted site is redistribution, so it needs the author's actual applicable permission and whatever notice that permission requires. Do not assert a web-embedding grant that has not been read. Verifying the permission and implementing the real web typography is [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)'s work. Original drawings remain the agreed choice.
 
 ## Cast and emotional vocabulary
 

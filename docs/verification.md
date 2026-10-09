@@ -2,6 +2,8 @@
 
 These are concrete acceptance scenarios for the finished essay. Avoid tests that merely mirror rendering code.
 
+> **Amended on 9 October 2026.** The hosted site is the deliverable and the offline HTML file is discontinued, so **no offline check below is an acceptance gate**. Where offline work is recorded, it is a record of a check that ran. [The owner amendment](decisions.md#owner-amendment--9-october-2026) is canonical.
+
 ## What the automated suite already checks
 
 `npm run check` runs the content validation, the automated suite, and the build. The build itself refuses to write an output that drops essential content or an offline file that depends on anything it does not carry.
@@ -30,6 +32,10 @@ Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL, against 
 - With `--force-prefers-reduced-motion`, the browser reported the preference, the condition layer's `animation-name` computed to `none`, and its opacity was already 1 — the explanation the entrance would have animated into is simply there.
 
 A note on how the narrow width is measured: a desktop browser window will not go below roughly 500 CSS pixels, so `--window-size=360` silently lays the page out at about 490. The narrow-width tests therefore load the page in a frame of the requested width, which does give it that layout viewport. An earlier pass that missed this reported a phone width it had not actually tested.
+
+That the browser suite drives `dist/offline.html` is a convenience, not a requirement: it is the same renderer the hosted page uses, in one file a browser can open without a server. The `file://` condition is not asked of anything now.
+
+Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, the project typeface actually loading, and anything about the finished prose.
 
 ## What the artwork package checked, and how
 
@@ -82,7 +88,7 @@ No linter or type checker is configured, so none was run; `npm test` runs Node's
 - Check all six shared questions and all distinct current perspectives against the content plan and subsequent deltas.
 - Confirm the strongest relevant disagreements remain visible and the ending acknowledges unresolved questions.
 - Check personal reflection for Koj, TJ, and Vier against supplied or member-endorsed material; invented friends do not become member biography.
-- Inspect a source-backed claim in every chapter: its linked source supports that particular statement, the relevant limitation is visible, and the source label remains available offline.
+- Inspect a source-backed claim in every chapter: its linked source supports that particular statement, the relevant limitation is visible, and the source label is readable on the page without following the link.
 - Review income findings, local samples, anecdotal accounts, health-versus-happiness outcomes, and structural mechanisms for the limitations listed in the research register.
 - Concepts are explained, applied, and questioned rather than named as decoration.
 
@@ -93,6 +99,7 @@ No linter or type checker is configured, so none was run; `npm test` runs Node's
 - Opening and closing source/detail surfaces preserve the current scene and return focus to the triggering control.
 - Full reading and presentation modes contain the same essential prose, dialogue, findings, caveats, citations, and conclusion.
 - Print output contains the complete argument and usable source labels.
+- The project typeface, the artwork, the stylesheet, and the browser script all load on the deployed page.
 
 ## Artwork and accessibility
 
@@ -102,11 +109,16 @@ No linter or type checker is configured, so none was run; `npm test` runs Node's
 - With reduced motion or a static scene, the same point remains understandable through text and meaningful visual descriptions.
 - Text contrast, controls, labels, and alternate descriptions allow the essay to be read without depending on color or animation alone.
 
-## Offline and hosted outputs
+## Hosted release
 
-- Export the reviewed revision, disconnect networking, and open the HTML through a local-file browser URL in a clean browser session.
-- Exercise all six chapters, navigation, embedded typography/art, supplementary details, reading mode, and printing without essential network requests.
-- Compare hosted and offline outputs for the same content revision, complete conclusion, and sources.
-- Verify the Vercel preview and final production URL on phone and desktop. Record the intended team/project, environment, commit, and observed result.
+The release gate is the deployed site. [Delivery](delivery.md#hosted-release-checklist) holds the checklist; these are the scenarios behind it.
 
-Run focused automated contract/navigation checks and concrete manual visual/offline checks where appropriate. Broaden testing when failures or new changes justify it.
+- Deploy the reviewed revision, then confirm both the preview and the production URL serve that exact commit. Record the URLs verbatim.
+- Exercise all six chapters, navigation, typography and artwork, supplementary details, reading mode, and printing on the deployed site, on a real phone and a real desktop browser.
+- Confirm no essential text depends on a third-party request: the font, the artwork, the stylesheet, and the script come from the deployment itself.
+- Confirm every source's evidence level, limitation, and caveat is visible on the deployed page.
+- Record what is still limited. An unverified font permission, an untested device, or an unresolved submission route is a stated limitation, not an omission.
+
+Offline reading, network-disabled `file://` sessions, and hosted/offline parity are **not** gates. The packaging audits that the single-file output exercises still run under `npm test`, and they are useful there — they prove every required resource is committed and inlined — but no release waits on them.
+
+Run focused automated contract/navigation checks and concrete manual visual checks on the deployed site where appropriate. Broaden testing when failures or new changes justify it.
