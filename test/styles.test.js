@@ -18,6 +18,8 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { repoRoot } from './helpers.js';
+import { HOSTED_ONLY_CSS, PROJECT_FONT, FONT_URL_TOKEN, PROJECT_FONT_URL_TOKEN } from '../src/build/assets.js';
+import { withoutHostedOnly } from '../src/build/inline.js';
 
 const css = readFileSync(join(repoRoot, 'src/runtime/styles.css'), 'utf8');
 
@@ -197,4 +199,44 @@ test('every target the script focuses carries a ring without waiting for :focus-
   for (const target of ['.scene:focus', '.source-register:focus', '.source:focus']) {
     assert.ok(reset.includes(target), `${target} would print its focus ring`);
   }
+});
+
+test('everything that depends on the project typeface is inside the region the offline file drops', () => {
+  const start = css.indexOf(HOSTED_ONLY_CSS.start);
+  const end = css.indexOf(HOSTED_ONLY_CSS.end);
+  assert.ok(start > 0 && end > start, 'the stylesheet marks its hosted-only region');
+
+  const hostedOnly = css.slice(start, end);
+  const elsewhere = css.slice(0, start) + css.slice(end);
+
+  assert.ok(hostedOnly.includes(`'${PROJECT_FONT.family}'`), 'the project typeface is declared in there');
+  assert.ok(
+    !elsewhere.replace(/\/\*[\s\S]*?\*\//g, '').includes(PROJECT_FONT.family),
+    'and nowhere else, so stripping the region cannot leave a rule asking for a face that is not packaged',
+  );
+
+  // Both outputs must still have a font stack and a readable leading, so the
+  // region can only ever retune what is already declared outside it.
+  const base = rules(elsewhere).find((rule) => rule.selector === ':root');
+  assert.match(base.body, /--body:\s*'Bundled Fallback'/, 'the fallback stack stands on its own');
+  assert.match(base.body, /--body-line-height:/, 'and so does the leading it was drawn with');
+  assert.match(base.body, /--measure:/, 'and the measure');
+});
+
+test('the offline stylesheet is what is left when that region goes', () => {
+  const offlineCss = withoutHostedOnly(css, HOSTED_ONLY_CSS);
+
+  assert.ok(!offlineCss.includes(HOSTED_ONLY_CSS.start) && !offlineCss.includes(HOSTED_ONLY_CSS.end));
+  assert.ok(!offlineCss.includes(PROJECT_FONT_URL_TOKEN), 'with no placeholder left for a font it does not carry');
+  assert.ok(offlineCss.includes(FONT_URL_TOKEN), 'and the fallback still to be packaged');
+
+  // Nothing half-removed: the braces still balance and the last rule in the
+  // stylesheet is still the last rule in the stylesheet.
+  assert.equal(
+    (offlineCss.match(/\{/g) || []).length,
+    (offlineCss.match(/\}/g) || []).length,
+    'the braces balance',
+  );
+  assert.equal(offlineCss.trimEnd().endsWith('}'), true);
+  assert.throws(() => withoutHostedOnly(offlineCss, HOSTED_ONLY_CSS), /no longer marks its hosted-only region/);
 });

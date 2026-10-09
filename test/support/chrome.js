@@ -12,15 +12,22 @@
  * page, walks it the way a reader would, and leaves its findings in a
  * base64 attribute on the root element, which survives the dump unambiguously.
  *
+ * A page can be given the files it links to, which is how the hosted output
+ * is run here: index.html with its real stylesheet, script, and fonts beside
+ * it, so a question about a font the browser had to go and fetch has an
+ * answer. Serving the same tree over HTTP instead would be closer still, but
+ * a Windows browser driven from WSL cannot reach a loopback port inside it;
+ * what the preview server does over HTTP is covered in test/build.test.js.
+ *
  * Nothing here is required: `findChrome()` returns null when no browser is
  * installed, and the browser suite skips rather than failing. What actually
  * ran is recorded in docs/verification.md.
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 /** Explicit first, then the usual names, then where WSL finds Windows. */
 const CANDIDATES = [
@@ -70,18 +77,30 @@ function workspace(binary) {
  * @param {string} options.html a complete built document
  * @param {string} options.driver source for a classic script, run after the
  *   page's own script; it calls `probe.done(value)` when finished
+ * @param {Record<string, string|Buffer>} [options.files] resources the page
+ *   links to, by the path it links them at — a stylesheet, a script, a font.
+ *   The hosted output is a page plus linked files, and a question about a
+ *   linked font cannot be asked of a document that has none.
  * @param {string} [options.hash] a fragment, as a deep link would supply
  * @param {number} [options.width] layout width in CSS pixels
  * @param {number} [options.height] layout height in CSS pixels
  * @param {string[]} [options.flags] extra browser flags
  * @returns {{value: unknown, dom: string}}
  */
-export function runInChrome({ html, driver, hash = '', width = 360, height = 780, flags = [] }) {
+export function runInChrome({ html, driver, files = {}, hash = '', width = 360, height = 780, flags = [] }) {
   const binary = findChrome();
   if (!binary) throw new Error('No browser is installed; callers should have skipped.');
 
   const space = workspace(binary);
   const profile = join(space.directory, 'profile');
+
+  // The page is written as `page.html` at the root of the workspace, so a
+  // linked file goes in at exactly the path the page asks for.
+  for (const [path, data] of Object.entries(files)) {
+    const destination = join(space.directory, path);
+    mkdirSync(dirname(destination), { recursive: true });
+    writeFileSync(destination, data);
+  }
 
   // A desktop browser window will not go below roughly 500 CSS pixels wide,
   // so `--window-size=360` quietly lays the page out at ~490 and a phone
