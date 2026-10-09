@@ -42,7 +42,7 @@ The original publication left all tickets unqueued. The owner's 9 October overni
 | [#6](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/6) integration | Offline parity as an integration criterion | #6 owns the complete essay integration; the hosted page is what the integrated essay must be correct in |
 | [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) release | Offline export, network-disabled `file://` acceptance, and hosted/offline parity as release gates | #7 owns exact-revision hosted preview and production verification, and owns removing `dist/offline.html` from the published output and any production download link. That code change is **not yet made** — the current build still writes it |
 
-Everything the amendment leaves alone stays as written: the original Trust-style artwork, names above heads as browser text, phone and desktop reflow, chapter revisiting, the full reading and print view, and every visible finding and caveat. The canonical TicketSpec UUIDs, the human issue text, and the real Beads dependency edges are unchanged — no other issue was edited to record this.
+Everything the amendment leaves alone stays as written: the original Trust-style artwork, names above heads as browser text, phone and desktop reflow, chapter revisiting, the full reading and print view, and every visible finding and caveat. The canonical issue bodies, the TicketSpec UUIDs, and the real Beads dependency edges are unchanged; this amendment is recorded here rather than by rewriting any package's contract.
 
 ## Issue index
 
