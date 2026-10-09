@@ -4,15 +4,17 @@ An independently readable illustrated essay for a SOC SCI midterm, created by TJ
 
 The visual and presentation reference is [Nicky Case's The Evolution of Trust](https://ncase.me/trust/). This project uses its presentation rhythm and handwritten aesthetic as inspiration, with original artwork and an original argument about happiness.
 
-**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented; an initial character concept sheet has been generated; the editorial package is drafted — an 87-scene storyboard whose sources were audited on 9 October 2026: 13 verified in the full work, 11 at article-abstract level, 3 from a publisher's book description only, and 5 that could not be opened, with every scene touching a limited or unopened source saying so in its own reader-visible text; and the static foundation now builds. The original artwork is built too: eight figures, seven drawable expressions, and sixteen explanatory scene compositions, authored as SVG geometry and generated into both outputs, with names rendered above heads as browser text; 34 of the storyboard's 87 beats are mapped to a composition and the remaining 53 record what a drawing would have to show. The essay's chapters, beats, cast, and sources live in one validated content document that renders to a hosted page, a continuous reading and print view, and a self-contained offline file. The content document in the repository today is still an explicitly non-final fixture: the storyboard's prose and the artwork have not been wired into it yet. On 9 October the owner authorized autonomous implementation of the six build packages, automatic merging after verification, and generated-art support from this chat. Application and release progress is tracked on the issues; new unrelated tickets remain unqueued by default.
+> **The deliverable is the hosted website.** On 9 October 2026 the owner discontinued the self-contained offline HTML submission and kept the agreed Futura Handwritten typography. [The owner amendment](docs/decisions.md#owner-amendment--9-october-2026) is canonical; older offline references in these documents are historical evidence or retained tooling.
+
+**Current status:** the agreed brief, source notes, architecture, and implementation backlog are documented; an initial character concept sheet has been generated; the editorial package is drafted — an 87-scene storyboard whose sources were audited on 9 October 2026: 13 verified in the full work, 11 at article-abstract level, 3 from a publisher's book description only, and 5 that could not be opened, with every scene touching a limited or unopened source saying so in its own reader-visible text; and the static foundation now builds. The original artwork is built too: eight figures, seven drawable expressions, and sixteen explanatory scene compositions, authored as SVG geometry and generated into both outputs, with names rendered above heads as browser text; 34 of the storyboard's 87 beats are mapped to a composition and the remaining 53 record what a drawing would have to show. The essay's chapters, beats, cast, and sources live in one validated content document that renders to a hosted page, a continuous reading and print view, and the retained single-file output. The content document in the repository today is still an explicitly non-final fixture: the storyboard's prose and the artwork have not been wired into it yet. No final essay deployment exists; any Vercel preview is non-final foundation work. The project typeface is not loaded yet, and production builds are held until the reviewed complete essay passes its hosted release checks. On 9 October the owner authorized autonomous implementation of the six build packages, automatic merging after verification, and generated-art support from this chat, then amended the brief to hosted-only delivery. Application and release progress is tracked on the issues; new unrelated tickets remain unqueued by default.
 
 ## Read first
 
 | Document | Purpose |
 | --- | --- |
 | [Project brief](docs/brief.md) | Audience, thesis, agreed experience, assignment requirements |
-| [Decisions](docs/decisions.md) | Confirmed choices and superseded proposals |
-| [Architecture](docs/architecture.md) | Content contract, reader, illustration, citations, hosted/offline outputs, implemented tooling |
+| [Decisions](docs/decisions.md) | The canonical 9 October owner amendment, confirmed choices, and superseded proposals |
+| [Architecture](docs/architecture.md) | Content contract, reader, illustration, citations, hosted output, implemented tooling |
 | [Content contract](docs/content-contract.md) | Every field of `content/content.json`, the validation rules, and how editorial deltas map onto identifiers |
 | [Content plan](docs/content-plan.md) | Six shared questions, perspectives, conceptual lenses, coverage |
 | [Storyboard](docs/storyboard.md) | The authored main path: chapters, scenes, exact prose, dialogue, visible caveats, visual purpose |
@@ -24,8 +26,8 @@ The visual and presentation reference is [Nicky Case's The Evolution of Trust](h
 | [Drawing system](docs/art-system.md) | The original figures, expressions, postures, and scene compositions; how a scene asks for one; what is drawn and what is not |
 | [Autonomous build](docs/autonomous-build.md) | Owner authorization, reviewed merges, issue labels, art requests, local supervision |
 | [Notes and future updates](docs/notes/README.md) | Imported notes and how to contribute a delta |
-| [Delivery](docs/delivery.md) | Vercel hosting and the offline submission file |
-| [Verification](docs/verification.md) | Narrative, navigation, accessibility, offline, and release checks |
+| [Delivery](docs/delivery.md) | Vercel hosting, the recorded project settings, and the release checklist |
+| [Verification](docs/verification.md) | Narrative, navigation, accessibility, and hosted release checks |
 | [Work plan](docs/work-plan.md) | Implementation packages and evidenced prerequisites |
 
 ## Narrative questions
@@ -49,16 +51,16 @@ npm run validate        # check content/content.json against the contract
 npm test                # contract, renderer, packaging, and preview checks
 npm run build           # write dist/
 npm run preview         # serve dist/ at http://localhost:4173
-npm run export:offline  # write only dist/offline.html
+npm run export:offline  # write only dist/offline.html (retained tooling)
 npm run check           # validate, then test, then build
 ```
 
-`npm run build` produces two distributions of the same content:
+`npm run build` writes two outputs from the same content:
 
-- **`dist/`** — the hosted site. This is the directory a static host publishes.
-- **`dist/offline.html`** — one self-contained file. Open it directly from disk, with or without a network; the font, the artwork, the styles, and the script are all embedded. This is the submission artifact.
+- **`dist/`** — the hosted site. This is the directory Vercel publishes, and it is the deliverable.
+- **`dist/offline.html`** — one self-contained file with the font, the artwork, the styles, and the script embedded. The 9 October amendment **discontinued this as a deliverable**; it is kept because it exercises the inlining and completeness rules cheaply. The build still writes it into `dist/`, and taking it out of the published output is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s code change, not yet made.
 
-The build fails if either output loses essential content, if authoring provenance leaks into the product, or if the offline file references anything it does not carry. `dist/` is generated and git-ignored.
+The build fails if either output loses essential content, if authoring provenance leaks into the product, or if the single-file output references anything it does not carry. `dist/` is generated and git-ignored.
 
 ## Editing the essay
 

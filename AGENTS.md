@@ -11,15 +11,17 @@ Backend merge policy remains separate; onboarding does not launch, restart, or m
 
 Read `docs/brief.md`, `docs/decisions.md`, and the relevant architecture/content document before changing this project. The confirmed conversation brief takes precedence over superseded proposals in imported notes.
 
+**The owner amendment dated 9 October 2026 at the top of `docs/decisions.md` is canonical and governs delivery.** The hosted Vercel website is the deliverable; the self-contained offline HTML file is discontinued. Futura Handwritten is retained. Where an older document still asks for an offline submission, the amendment wins.
+
 - Build an independently readable illustrated essay about happiness, not a game or a traveler/map experience.
 - Preserve distinct perspectives, disagreements, meaningful caveats, and inward reflection. Do not compress the project into one universal definition of happiness.
 - Use original stickman artwork, emotional expression, and the agreed typography. Identify TJ, Koj, and Vier with names above their heads; fictional friends are illustrations, not evidence or invented member biographies.
 - Research is shared group material. Preserve source attribution and member-endorsed positions when redistributing dialogue or incorporating new notes.
 - Essential arguments, concepts, findings, and limitations belong in the main reading path. Supplemental interactions remain optional.
-- Support phones, desktop, chapter revisiting, a complete reading/print view, a self-contained offline website file, and Vercel hosting.
+- Support phones, desktop, chapter revisiting, and a complete reading/print view on the Vercel-hosted site. The offline website file is no longer a deliverable; `npm run export:offline` and the single-file packaging tests are retained tooling, not a release gate.
 - Future note updates belong in `docs/notes/` and must be reconciled into the story and source register. Do not reintroduce the superseded fixed neighborhood route or arbitrary word/scene limits.
 - No application stack has been selected. Choose the smallest implementation that satisfies `docs/architecture.md`; do not add backend features to this static essay without a new requirement.
-- Current checkout contains documentation, workflow setup, initial character concepts, the audited editorial storyboard (`docs/storyboard.md`, `docs/cast.md`, `docs/coverage.md`), and the static application foundation (`content/`, `src/`, `test/`). Read `docs/asset-workflow.md` before producing illustrations or motion. Real commands: `./tools/check-storyboard.sh` and `./tools/count-main-path.sh` for the editorial material, and `npm run validate`, `npm test`, `npm run build`, `npm run preview`, `npm run export:offline`, `npm run check` for the application. No linter or type checker is configured; `npm test` runs Node's parser over every source file instead.
+- Current checkout contains documentation, workflow setup, initial character concepts, the audited editorial storyboard (`docs/storyboard.md`, `docs/cast.md`, `docs/coverage.md`), and the static application foundation (`content/`, `src/`, `test/`). Read `docs/asset-workflow.md` before producing illustrations or motion. Real commands: `./tools/check-storyboard.sh` and `./tools/count-main-path.sh` for the editorial material, and `npm run validate`, `npm test`, `npm run build`, `npm run preview`, `npm run export:offline`, `npm run check` for the application. `npm run build` still writes `dist/offline.html`; removing it from the published output is issue #7's code change and has not been made. No linter or type checker is configured; `npm test` runs Node's parser over every source file instead.
 
 ## Authorized autonomous build
 

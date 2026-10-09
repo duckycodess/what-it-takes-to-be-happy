@@ -2,7 +2,9 @@
 
 ## Owner authorization
 
-On 9 October 2026, the owner requested autonomous website construction while sleeping, automatic merging of reviewed pull requests, correct classification labels on new issues, and built-in image generation when project art is requested. This authorizes the six existing implementation packages (#2–#7) within the confirmed brief, including the intended Vercel site and offline submission. The project index (#1) remains an unqueued index.
+On 9 October 2026, the owner requested autonomous website construction while sleeping, automatic merging of reviewed pull requests, correct classification labels on new issues, and built-in image generation when project art is requested. This authorizes the six existing implementation packages (#2–#7) within the confirmed brief. The project index (#1) remains an unqueued index.
+
+Later the same day the owner amended the brief: the hosted Vercel site is the deliverable, the self-contained offline HTML submission is discontinued, and the agreed Futura Handwritten typography is retained. [The amendment](decisions.md#owner-amendment--9-october-2026) is canonical and [the work plan](work-plan.md#owner-amendment--issue-12) names the clauses it supersedes in #1 and #5–#7. The authorization above is unchanged; only the deliverable moved.
 
 Choose ordinary, reversible implementation details without waiting for the owner. Preserve the agreed story, original Trust-style art, shared research, and full visible argument. Report missing access or evidence accurately; do not invent citations, member opinions, test results, or deployments.
 
@@ -58,6 +60,6 @@ Workers should continue independent work while awaiting a requested image. They 
 
 The chat heartbeat inspects website issues, pull requests, dispatcher jobs, and scoped reports; handles art requests; and resolves routine integration problems within the approved work. It attaches implementation PRs to this chat when they appear. It preserves worker ownership and does not blindly restart failed jobs or alter unrelated repository registrations.
 
-The implementation workers prepare and verify the site and offline file. Codex can use the connected Vercel tools for the approved project's preview and production delivery when the application settings and reviewed outputs are known. Keep the complete Vercel/offline acceptance requirements in #7; a missing account permission or an untested URL is an explicit remaining blocker. Uploading to the class Drive folder is still a separate request.
+The implementation workers prepare and verify the hosted site. Codex can use the connected Vercel tools for the approved project's preview and production delivery when the application settings and reviewed outputs are known; [delivery](delivery.md) records the account, team, project, and build settings reported by supervision, and the production hold that stays in force until the reviewed complete essay passes the hosted release checks. Keep the complete hosted acceptance requirements in #7; a missing account permission, an unverified font permission, or an untested URL is an explicit remaining blocker, and a foundation preview is not a released essay. How the hosted essay is submitted to the class is unresolved and is not something a worker decides; no Drive upload is in scope.
 
 This is local execution. The computer must remain awake, connected, and running Codex/WSL. Usage limits, unavailable credentials, failed verification, and resource pressure can delay completion; the workflow reports those states accurately rather than promising a finished site by a particular hour.
