@@ -138,9 +138,11 @@ The foundation package made these choices, all reversible:
 | Checks | Node's built-in test runner, plus `node --check` over every source file | No linter, formatter, or type checker is configured; this is the honest substitute. |
 | Fallback font | DejaVu Sans, committed with its licence | A temporary stand-in that proves a real font embeds in both outputs. Not the project typeface. |
 
-Several of those rows were argued from the offline requirement, which the amendment above
-retires. The choices still stand on their own: no dependency has since earned its place, and a
-static essay with one page, one stylesheet, and one script still does not need a toolchain.
+Several rows in this section and the next were argued from the offline requirement, which the
+amendment above retires. They record why each choice was made at the time and are left as written.
+The choices themselves still stand on their own: no dependency has since earned its place, a static
+essay with one page, one stylesheet, and one script still does not need a toolchain, and inline
+artwork still costs the hosted page no request.
 
 The artwork package then made these, equally reversible:
 

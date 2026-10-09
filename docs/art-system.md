@@ -4,8 +4,8 @@ How the essay's illustrations are made, what a scene can ask for, and what is no
 
 The artwork is authored geometry in [`src/art/`](../src/art/), generated into the markup at build
 time as inline SVG. There is no image file to fetch, no drawing library, no font inside a picture,
-and no generation service anywhere near the reader: the hosted page and the single offline file
-contain every line of every drawing. See [the asset workflow](asset-workflow.md) for where the
+and no generation service anywhere near the reader: every output contains every line of every
+drawing, so the hosted page needs no request to show one. See [the asset workflow](asset-workflow.md) for where the
 designs came from and [art direction](art-direction.md) for the look they follow.
 
 ## What this is, and what it is not
@@ -210,7 +210,7 @@ any other essential text.
 ## Motion
 
 The settled state is what the markup contains. The condition layer is already there, already
-visible, in print, in a browser with no scripting, in the offline file, and for a reader who has
+visible, in print, in a browser with no scripting, in every output, and for a reader who has
 asked for reduced motion.
 
 The stylesheet adds one entrance: when a beat is the current one, its condition layer fades and
@@ -239,7 +239,7 @@ same motif can appear in twenty beats of one document without colliding with its
 
 The concept sheet is a flattened raster study. It supplied the look, not the parts: no crop of it is
 used as a sprite, and it is not an animation rig. The build still embeds it, which is also what
-proves a real binary survives into the offline file.
+proves a real binary survives the packaging path.
 
 ## Changing the artwork
 
