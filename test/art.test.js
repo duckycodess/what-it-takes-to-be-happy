@@ -372,6 +372,32 @@ test('a mapped beat fits the composition it was given, cast and all', () => {
   }
 });
 
+test('the coverage map and the content document name the same drawing for every beat', () => {
+  // Two files say what a beat is drawn with: this map, which the storyboard
+  // owns, and `content/content.json`, which the website is built from. Nothing
+  // compared them, so one could be changed without the other and the map would
+  // go on describing a drawing no reader sees.
+  const content = loadValidContent();
+  const scenes = new Map(content.scenes.map((scene) => [scene.id, scene]));
+
+  assert.deepEqual(
+    [...scenes.keys()].sort(),
+    Object.keys(STORYBOARD_ART).sort(),
+    'the content document and the coverage map disagree about which beats exist',
+  );
+
+  for (const [id, entry] of Object.entries(STORYBOARD_ART)) {
+    const { visual } = scenes.get(id);
+    assert.equal(visual.artId, entry.art, `${id} is drawn with ${visual.artId} but the map says ${entry.art}`);
+    assert.equal(visual.artState, entry.state, `${id} settles into ${visual.artState} but the map says ${entry.state}`);
+    assert.equal(visual.artAbsence, entry.absence, `${id} declares ${visual.artAbsence} but the map says ${entry.absence}`);
+  }
+
+  // And the landing, which is not a storyboard beat, still asks the artwork
+  // package for something it can draw.
+  assert.ok(COMPOSITIONS[content.project.visual.artId], 'the landing names a composition that does not exist');
+});
+
 test('the coverage map is honest about how much is drawn and how much is not', () => {
   const coverage = storyboardCoverage();
   assert.equal(coverage.total, 87);

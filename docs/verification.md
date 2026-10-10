@@ -116,7 +116,8 @@ Headless Chrome 154 on Windows, driven from WSL, against the built `dist/`:
 
 - **The landing**, at 1280 pixels: the question in Futura Handwritten, the summary, the three
   contributors' nametags, the opening drawing with TJ, Koj, Vier and Bob, and Bob labelled
-  *fictional illustration* under his name rather than given a nametag.
+  named without a nametag and listed under the drawing as an invented figure. *(Recorded before the
+  label work below; the mark moved under the drawing on 10 October.)*
 - **Beats at desktop width** (`s010`, `s064`): the drawing beside the prose, the caveat in its own
   callout, the concepts line, the spoken line attributed by nametag.
 - **A beat at a true 360-pixel layout viewport** (`s058`, inside a frame of that width, because a
@@ -137,6 +138,59 @@ Headless Chrome 154 on Windows, driven from WSL, against the built `dist/`:
   the figure it belonged to. The cap now applies to the whole figure, and
   `test/styles.test.js` fails if it is moved back onto the drawing alone. This was invisible to
   every earlier check, because no earlier check rendered the print rules.
+
+### Every beat, looked at
+
+Added on 10 October 2026, after review found that the artwork claim above was wider than the
+evidence behind it. The earlier pass had rendered each **composition** once, at its minimum figure
+count, which is not what any particular beat shows.
+
+So all 87 beats were looked at as a reader meets them. Each beat's rendered `<figure>` — the
+drawing, the names, the invented-figures line and the caption — was taken out of the built
+`dist/index.html`, laid into ten contact sheets of nine at 380 pixels each, rasterised in headless
+Chrome, and read. That covers every composition at a figure count and settled state a real beat
+gives it, because every composition is used by at least one beat.
+
+**It found eight faults that no assertion had caught**, all now fixed:
+
+| Beat | What was wrong |
+| --- | --- |
+| `s017` | The description put Bob in the first panel; the drawing puts TJ there, because the cast order is the storyboard's. |
+| `s022` | The description put TJ on the platform the ranking is done from; the drawing puts Vier there. |
+| `s030` | The description made Vier the figure inside the measured frame; the drawing puts Bob there. |
+| `s037` | With one figure, the row centred it **behind** the screen, which is the one place in that composition nobody can stand. |
+| `s054` | The description called the middle figure tense; the figure drawn tense is the one at the end. |
+| `s009`, `s028`, `s067` | A nametag overlapped the artwork underneath it: the middle dial, the first bar of the chart, and the lower row of blocks. |
+| `s004`, `s014` | The middle figure's nametag sat inside the framed moment the beat is about. |
+
+**What this did not cover:** a composition at a figure count no beat asks for. Several accept a
+wider range than the essay uses. Those counts are covered by the automated checks — every
+composition at every count for self-containment, anchors inside the frame, the condition layer
+adding rather than redrawing, and nobody standing on scenery only that layer draws — and by nobody
+looking at them.
+
+### Names, and where they go
+
+Review also measured something no check had: label boxes. Eight labels on `s086` ran through each
+other by up to 48 pixels, and `s068`, `s072` and `s078` were doing the same more quietly — 16
+overlapping pairs at a 360-pixel layout and 17 at 1280. The words "fictional illustration" under a
+name were 6.7 pixels tall on a phone, which is not a statement anybody can read, and being longer
+than any name they were also most of the reason labels collided.
+
+Both are fixed, and measured rather than argued:
+
+- Whether a figure is invented is now said **under** the drawing, at body size, as "Invented
+  figures: Bob, Nessa, Marco". A contributor still gets the boxed nametag and an invented figure
+  still does not, so the distinction over the drawing survives; the words that explain it are now
+  somewhere they fit.
+- The renderer decides per drawing whether names fit above the heads, from the composition's own
+  anchors and a measured label-width budget. Five beats of 87 move their names into a row under the
+  drawing instead, in the order the figures stand in; the other 72 keep them over heads. The list
+  is ordered left to right in the DOM too, which is the only association a reader who cannot see
+  the drawing has.
+- `test/browser.test.js` now walks **all 87 beats at a true 360-pixel layout and at 1280** and
+  fails on any pair of label boxes that overlap at either. It measured 0 pairs at both widths after
+  the change, and it also fails if the crowded beats stop being the ones that move.
 
 ### Read, rather than measured
 
@@ -159,8 +213,9 @@ Headless Chrome 154 on Windows, driven from WSL, against the built `dist/`:
 
 - **A real phone and a real desktop browser.** Unchanged from below: a 360-pixel frame in headless
   Chrome is not a device.
-- **A screen reader.** Unchanged. The fictional-illustration mark is ordinary text in the document
-  rather than an attribute, which is what makes the claim arguable, but nothing has read it aloud.
+- **A screen reader.** Unchanged. The invented-figures line and the names are ordinary text in the
+  document rather than attributes, and the name list is in left-to-right order so the sequence a
+  screen reader hears is the sequence a sighted reader sees — but nothing has read any of it aloud.
 - **A paginated print page, looked at.** The PDF renders — 145 pages — but nothing in this
   environment can rasterise it: `pdftoppm` is not installed and headless Chrome will not display a
   PDF to screenshot. So the page breaks, the widow and orphan behaviour, and where a drawing falls

@@ -94,11 +94,26 @@ test('an invented figure is named without a contributor\'s nametag, and said to 
   assert.ok(friends.length > 0);
 
   for (const friend of friends) {
-    assert.ok(
-      html.includes(`<span class="figure-name">${esc(friend.displayName)}</span><span class="fiction-note">fictional illustration</span>`),
-      `${friend.displayName} is drawn but not marked as an illustration`,
-    );
+    assert.ok(html.includes(`<span class="figure-name">${esc(friend.displayName)}</span>`), `${friend.displayName} is drawn but never named`);
     assert.ok(!html.includes(`<span class="nametag">${esc(friend.displayName)}</span>`), `${friend.displayName} carries a contributor's nametag`);
+  }
+
+  // That they are invented is stated under the drawing, in body text, on
+  // every beat they appear in. Over a head it was unreadably small and was
+  // what pushed labels into each other on a crowded beat.
+  for (const scene of content.scenes) {
+    const invented = scene.visual.cast
+      .map((entry) => byId(content.cast, entry.characterId))
+      .filter((character) => character.role === 'friend');
+    const beat = sceneHtml(html, scene.id);
+    if (invented.length === 0) {
+      assert.ok(!beat.includes('figure-fiction'), `${scene.id} has no invented figure and should not say it has`);
+      continue;
+    }
+    assert.ok(
+      beat.includes(`<p class="figure-fiction"><span class="label">Invented figures</span> ${invented.map((character) => esc(character.displayName)).join(', ')}</p>`),
+      `${scene.id} draws ${invented.map((character) => character.displayName).join(', ')} without saying they are invented`,
+    );
   }
 
   // And a contributor is marked the other way, in the same place.
@@ -381,7 +396,7 @@ test('the landing drawing is authored content, not a choice the renderer makes',
     // said to be invented, which is a different label on purpose.
     const name = character.role === 'member'
       ? `<span class="nametag">${esc(character.displayName)}</span>`
-      : `<span class="figure-name">${esc(character.displayName)}</span><span class="fiction-note">fictional illustration</span>`;
+      : `<span class="figure-name">${esc(character.displayName)}</span>`;
     assert.ok(landing.includes(`${name}<span class="expression">${esc(expression.label)}</span>`));
     assert.ok(landing.includes(`data-figure="${character.artId}" data-expression="${expression.artId}"`));
   }

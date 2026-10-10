@@ -573,6 +573,14 @@ function validateSceneArt(bag, visual, visualPath, final) {
     } else if (final && artAbsence === 'pending') {
       bag.add(`${visualPath}.artAbsence`, 'PENDING_ART_IN_FINAL_CONTENT', `${visualPath}.artAbsence is "pending", which finished content may not contain. Draw the beat, or declare it "text-only" if it is deliberately not an illustrated situation.`);
     }
+
+    // A text-only beat is rendered without a frame at all, so a cast listed on
+    // one would be named nowhere: the document would say somebody is in a
+    // drawing the reader is never shown. A beat whose art is merely pending
+    // still has its frame and still names them.
+    if (artAbsence === 'text-only' && Array.isArray(visual.cast) && visual.cast.length > 0) {
+      bag.add(`${visualPath}.cast`, 'TEXT_ONLY_CAST', `${visualPath} is declared text-only, which is rendered with no frame and no names, so it may not place ${visual.cast.length} figure(s). Draw the beat, or move who is in it into the description.`);
+    }
     return;
   }
 

@@ -123,8 +123,8 @@
         "description": "Describes the drawing.",
         "artId": null,
         "artState": null,
-        "artAbsence": "pending",
-        "cast": []
+        "artAbsence": "text-only",
+        "cast": [{ "characterId": "cast-bob", "expressionId": "ex-joy" }]
       },
       "conceptIds": [],
       "sourceIds": [],

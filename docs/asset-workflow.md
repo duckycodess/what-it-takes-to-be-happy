@@ -56,10 +56,19 @@ The steps below are the route that was followed, and the route to follow for any
 6. **Package the hosted output.** Commit production assets locally and include them in Vercel's static output; the retained single-file output gets them from the same render. The reader does not call an image generator, connector, or remote design tool at runtime.
 
 The reusable component library, the explanatory scene vocabulary, and the scene set are now built,
-and what each beat is drawn with is recorded beat by beat rather than estimated. The drawings were
-checked by rasterising the generated SVG in a real browser and looking at every composition at the
-figure counts the beats actually give it; what that caught is recorded in
-[verification](verification.md).
+and what each beat is drawn with is recorded beat by beat rather than estimated.
+
+**What has actually been looked at**, as opposed to checked by assertion: all 87 beats, as the
+reader meets them. Each beat's rendered figure — the drawing, the names over or under it, the
+invented-figures line, and the caption — was taken out of the built page, laid out in contact
+sheets, rasterised in Chrome, and read. That is every composition at the figure count and settled
+state at least one real beat gives it, because every composition is used by a beat.
+
+**What has not:** a composition at a figure count no beat asks for. Several accept a range wider
+than the essay uses, and those counts are covered by the automated checks — self-containment,
+name anchors inside the frame, the condition layer adding rather than redrawing, nobody standing on
+scenery only that layer draws — rather than by anyone looking at them. What the looking caught, and
+what it did not cover, is recorded in [verification](verification.md).
 
 The owner subsequently requested ongoing generated-art support while the website is built autonomously. Workers can submit requests in [art-requests.json](art-requests.json); this chat checks every 15 minutes and supplies isolated asset branches for workers to incorporate. See [the autonomous build handoff](autonomous-build.md).
 

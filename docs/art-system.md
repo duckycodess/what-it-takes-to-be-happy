@@ -243,7 +243,7 @@ any other essential text.
 
 ```html
 <figure class="scene-visual">
-  <div class="scene-visual-frame" data-art="art-invitation-conditions" data-art-state="revealed">
+  <div class="scene-visual-frame" data-art="art-invitation-conditions" data-art-state="revealed" data-labels="over">
     <svg class="scene-art" viewBox="0 0 480 300" aria-hidden="true"> … </svg>
     <ul class="art-labels">
       <li class="art-label" data-role="member" style="--art-x:31.25%;--art-y:43.87%">
@@ -251,14 +251,26 @@ any other essential text.
       </li>
     </ul>
   </div>
+  <p class="figure-fiction"><span class="label">Invented figures</span> Bob, Nessa</p>
   <figcaption>The invitation still floats above the line …</figcaption>
 </figure>
 ```
+
+A crowded beat is the same markup with `data-labels="list"`, the `--art-x`/`--art-y` positions
+dropped, and the labels in left-to-right order.
 
 - **Names are browser text**, positioned over the drawing from an anchor the composition computed
   above that figure's head. They stay selectable, searchable, and translatable, they grow with the
   reader's own type size, and no drawing contains lettering — a build check rejects `<text>` inside
   any drawing.
+- **Where they go is measured, not assumed.** The renderer compares the composition's anchors
+  against a label-width budget taken from real measurements, and where a pair would collide or run
+  off the edge it moves the whole set into a row under the drawing, ordered left to right. The
+  frame says which it did, in `data-labels`. A browser test measures every label box on every beat
+  at a phone width and a desktop width and fails on any overlap.
+- **Which figures are invented is said under the drawing**, at reading size, rather than beside a
+  name where it was six and a half pixels tall on a phone. The nametag still marks a contributor
+  and its absence still marks an invented figure.
 - The drawing is `aria-hidden`; the caption is the description, so nothing is announced twice.
 - On a narrow frame the state word is removed from sight but kept in the document, because the
   names would otherwise collide; the caption states the same thing for every reader.
@@ -321,9 +333,9 @@ explanation.
   merely `pending`.
 - The contributors' appearances are provisional and have not been approved by the people they
   represent.
-- `art-figure-row` can place eight figures, and eight labels across one frame is tight: on a narrow
-  screen the state words are hidden and only the names and the fictional-illustration marks remain.
-  No other composition places more than five.
+- `art-figure-row` can place eight figures, and eight labels across one frame does not fit at all.
+  The renderer measures that from the anchors and moves the whole set into a row under the drawing
+  instead; five beats of 87 are laid out that way. No other composition places more than five.
 - `art-split-face` draws the second half of a face at fixed offsets from the figure's own head, so
   it lines up only where the scene gives that figure a state the head does not tilt in. `joy` and
   `frustration` are the two, and `s042` uses `joy`.

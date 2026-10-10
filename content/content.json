@@ -1020,7 +1020,7 @@
         }
       ],
       "visual": {
-        "description": "Two courts of the same size. In the first, Bob plays mid-step with the other players far off at the edges and turned away. In the second, the same play, with two more figures come close and turned in, and a line of contact drawn between them.",
+        "description": "Two courts of the same size. In the first, TJ plays mid-step with the other players far off at the edges and turned away. In the second, Bob is mid-game with two of them come close and turned in, and a line of contact drawn between them.",
         "artId": "art-same-game-two-ways",
         "artState": "revealed",
         "artAbsence": null,
@@ -1266,7 +1266,7 @@
         }
       ],
       "visual": {
-        "description": "The same balance, with TJ standing tense on the platform beside it and Vier leaning in from the other side. An arrow runs from the platform to the pans. The figure doing the ranking is drawn the same size as the balance it is ranking with.",
+        "description": "The same balance, with TJ standing tense on the ground beside it and Vier up on the platform the ranking is done from, leaning in. An arrow runs from the platform to the pans. The figure doing the ranking is drawn the same size as the balance it is ranking with.",
         "artId": "art-balance",
         "artState": "revealed",
         "artAbsence": null,
@@ -1686,7 +1686,7 @@
         }
       ],
       "visual": {
-        "description": "Two panels. In the first, Vier is small and sitting on the ground with something in front of him, considering. In the second he is taller and a measured rectangle has been drawn around him, with ticks along its edges, and Bob stands laughing nearby. Neither of them is looking at the frame.",
+        "description": "Two panels. In the first, Vier is small and sitting on the ground with something in front of him, considering. In the second, Bob stands laughing and a measured rectangle has been drawn around him, with ticks along its edges. Neither of them is looking at the frame.",
         "artId": "art-grown-into-a-frame",
         "artState": "revealed",
         "artAbsence": null,
@@ -2024,7 +2024,7 @@
         }
       ],
       "visual": {
-        "description": "A single screen stands between two figures. A faint line of contact runs through it to somebody on the other side; inside the same screen, a ladder of rungs sorts people, with one marker above the rest and an arrow running up to it. TJ is beside it, laughing.",
+        "description": "A single screen stands in the middle of the frame with TJ beside it, laughing. A faint line of contact runs through the screen to somebody on the other side; inside the same screen, a ladder of rungs sorts people, with one marker above the rest and an arrow running up to it.",
         "artId": "art-one-screen-two-things",
         "artState": "revealed",
         "artAbsence": null,
@@ -2906,7 +2906,7 @@
         }
       ],
       "visual": {
-        "description": "The same three figures and the same unclosed outline, with Koj in the middle now tense and pressed inward: two arrows push in from either side and the line above him bends in over his head.",
+        "description": "The same three figures and the same unclosed outline, with Koj tense at one end. The figure in the middle is now pressed inward: two arrows push in from either side and the line above him bends in over his head.",
         "artId": "art-overlapping-selves",
         "artState": "revealed",
         "artAbsence": null,
@@ -4667,7 +4667,7 @@
         }
       ],
       "visual": {
-        "description": "All eight figures stand in a loose line facing out of the frame: TJ, Koj and Vier with their names above their heads, and Bob, Nessa, Dino, Ivy and Marco named beside them and marked as the invented illustrations they are. Their expressions are not matched.",
+        "description": "All eight figures stand in a loose line facing out of the frame. There are too many of them to name over their heads without the names running into each other, so all eight are named in a row under the drawing, in the order they stand: TJ, Koj and Vier, and the five invented figures, Bob, Nessa, Dino, Ivy and Marco. Their expressions are not matched.",
         "artId": "art-figure-row",
         "artState": "situation",
         "artAbsence": null,

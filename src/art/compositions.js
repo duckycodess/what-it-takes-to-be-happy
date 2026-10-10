@@ -176,13 +176,13 @@ const CATALOGUE = [
     settled: 'A framed ordinary moment sits in the middle, with a path running from it to each figure and a different shape at the end of each.',
     minFigures: 1,
     maxFigures: 3,
-    slots: (count) => row(count, { scale: 0.66, spread: 300 }),
+    slots: (count) => row(count, { scale: 0.62, spread: 300 }),
     base: ({ slots, figures }) => [
       ground(),
-      rect(196, 96, 88, 62, { ...MEDIUM, fill: '#ffffff' }),
-      circle(230, 126, 11, MEDIUM),
-      line(250, 138, 268, 138, MEDIUM),
-      curve([214, 150], [206, 158], [214, 166], THIN),
+      rect(196, 58, 88, 58, { ...MEDIUM, fill: '#ffffff' }),
+      circle(228, 84, 10, MEDIUM),
+      line(246, 96, 268, 96, MEDIUM),
+      curve([212, 98], [204, 104], [212, 110], THIN),
       placeAll(slots, figures),
     ].join(''),
     reveal: ({ slots }) => {
@@ -197,7 +197,7 @@ const CATALOGUE = [
           const shapeX = slot.x + (slot.x < 240 ? -44 : 44);
           const shapeY = labelAnchor(slot).y + 44;
           return [
-            path(`M ${toward},127 Q ${(toward + shapeX) / 2},${(127 + shapeY) / 2 - 20} ${shapeX},${shapeY}`, FAINT),
+            path(`M ${toward},87 Q ${(toward + shapeX) / 2},${(87 + shapeY) / 2 - 20} ${shapeX},${shapeY}`, FAINT),
             ends[index % ends.length](shapeX, shapeY),
           ].join('');
         })
@@ -362,7 +362,11 @@ const CATALOGUE = [
     settled: 'A line of contact runs through the screen to someone else. Inside the same screen, a ladder of rungs sorts people, with one marker above the rest.',
     minFigures: 1,
     maxFigures: 2,
-    slots: (count) => row(count, { scale: 0.7, spread: 300, flips: [false, true] }).slice(0, Math.max(count, 1)),
+    // With one figure the row would centre it behind the screen, which is the
+    // one place in this composition nobody can stand.
+    slots: (count) => (count <= 1
+      ? [{ x: 100, y: VIEW.ground, scale: 0.7, pose: 'stand' }]
+      : row(count, { scale: 0.7, spread: 300, flips: [false, true] })),
     base: ({ slots, figures }) => [
       ground(),
       rect(186, 110, 108, 94, { ...MEDIUM, fill: '#ffffff' }),
@@ -586,13 +590,13 @@ const CATALOGUE = [
     slots: (count) => row(count, { scale: 0.6, spread: 160, centre: 240 }),
     base: ({ slots, figures }) => {
       const dial = (cx, angle) => {
-        const radius = 44;
-        const point = [cx + radius * Math.cos(angle), 118 + radius * Math.sin(angle)];
+        const radius = 40;
+        const point = [cx + radius * Math.cos(angle), 104 + radius * Math.sin(angle)];
         return [
-          curve([cx - 48, 118], [cx, 54], [cx + 48, 118], MEDIUM),
-          line(cx - 48, 118, cx + 48, 118, MEDIUM),
-          line(cx, 118, point[0], point[1], MEDIUM),
-          circle(cx, 118, 5, SOLID),
+          curve([cx - 44, 104], [cx, 44], [cx + 44, 104], MEDIUM),
+          line(cx - 44, 104, cx + 44, 104, MEDIUM),
+          line(cx, 104, point[0], point[1], MEDIUM),
+          circle(cx, 104, 5, SOLID),
         ].join('');
       };
       return [
@@ -794,7 +798,7 @@ const CATALOGUE = [
     settled: 'A five-tier pyramid stands on the left with a cross drawn through it. On the right, five bars are each partly filled, to different levels, all at once.',
     minFigures: 1,
     maxFigures: 1,
-    slots: () => [{ x: 240, y: VIEW.ground, scale: 0.56, pose: 'stand' }],
+    slots: () => [{ x: 226, y: VIEW.ground, scale: 0.56, pose: 'stand' }],
     base: ({ slots, figures }) => {
       // Tier lines follow the triangle's own sides, so no rule sticks out of it.
       const tiers = [1, 2, 3, 4].map((step) => {
@@ -803,13 +807,13 @@ const CATALOGUE = [
         return polyline([[120 - half, y], [120 + half, y]], MEDIUM);
       });
       const bars = [0, 1, 2, 3, 4].map((index) => {
-        const x = 266 + index * 36;
+        const x = 278 + index * 36;
         const fill = [92, 64, 46, 36, 12][index];
         return `${rect(x, 110, 24, 112, MEDIUM)}${rect(x, 222 - fill, 24, fill, { ...MEDIUM, 'stroke-dasharray': '4 4' })}`;
       });
       return [
         line(42, 222, 198, 222, THICK),
-        line(258, 222, 452, 222, THICK),
+        line(270, 222, 456, 222, THICK),
         polyline([[120, 90], [42, 222]], MEDIUM),
         polyline([[120, 90], [198, 222]], MEDIUM),
         ...tiers,
@@ -1393,17 +1397,17 @@ const CATALOGUE = [
       const strip = (y, cells) => cells.map((x) => rect(x, y, 30, 22, { ...MEDIUM, fill: '#ffffff' })).join('');
       return [
         ground(),
-        strip(72, [96, 130, 164, 232, 266, 300]),
-        rect(198, 72, 30, 22, FAINT),
-        strip(130, [96, 130, 164, 198, 232, 266, 300]),
-        line(80, 68, 80, 98, THIN),
-        line(80, 126, 80, 156, THIN),
+        strip(56, [96, 130, 164, 232, 266, 300]),
+        rect(198, 56, 30, 22, FAINT),
+        strip(104, [96, 130, 164, 198, 232, 266, 300]),
+        line(80, 52, 80, 82, THIN),
+        line(80, 100, 80, 130, THIN),
         placeAll(slots, figures),
       ].join('');
     },
     reveal: () => [
-      arrow(348, 86, 348, 126),
-      line(336, 130, 360, 130, THIN),
+      arrow(348, 70, 348, 100),
+      line(336, 104, 360, 104, THIN),
     ].join(''),
   },
   {

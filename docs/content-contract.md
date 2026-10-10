@@ -72,7 +72,7 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `id` | identifier | Stable beat identifier. |
 | `chapterId` | identifier | The owning chapter. Must agree with the chapter that lists this scene. |
 | `title` | string | Short beat title, used in the reading view and as a heading. |
-| `narration` | string[] | **Essential** narrative paragraphs. At least one must be non-empty. |
+| `narration` | string[] | Narrator paragraphs. May be empty on a beat carried by dialogue alone; sixteen are. |
 | `dialogue` | object[] | Optional spoken lines (see below). |
 | `mainPath` | object[] | The order the beat's essential blocks are read in (see below). |
 | `visual` | object | `description` plus `cast` appearances (see below). |
@@ -102,10 +102,10 @@ Citations, concepts, and optional panels are not in `mainPath`. They follow the 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `description` | string | What the illustration shows. This doubles as the text alternative and as the reduced-motion equivalent, so it is never optional. |
-| `artId` | identifier or `null` | The composition the beat is drawn with, from [the drawing system](art-system.md). `null` declares that this beat has no drawing yet. |
+| `artId` | identifier or `null` | The composition the beat is drawn with, from [the drawing system](art-system.md). `null` declares that this beat has no drawing, and `artAbsence` says which kind of no. |
 | `artState` | `situation`, `revealed`, or `null` | Which layers are settled: the situation alone, or the situation with the condition layer that explains it. `null` when `artId` is `null`. |
 | `artAbsence` | `pending`, `text-only`, or `null` | Why this beat has no drawing. `null` when `artId` is set; required otherwise. |
-| `cast[].characterId` | identifier | Who appears. |
+| `cast[].characterId` | identifier | Who appears. A `text-only` beat places nobody, because it is rendered with no frame and no names. |
 | `cast[].expressionId` | identifier | Which of that character's own expressions they wear. |
 
 The scene's cast order is the order the composition places figures in, so moving a name up the list
@@ -235,7 +235,9 @@ A dialogue line marked `member-endorsed` speaks for TJ, Koj, or Vier. Such a lin
 
 Lines marked `fictional-illustration` are spoken by invented figures such as Bob. They make a situation concrete. They are not evidence, not population data, and not any contributor's biography.
 
-The same boundary is drawn in the illustration. A contributor's name is rendered as a **nametag** above their head. An invented friend is named too — a reader has to be able to follow Bob from beat to beat — but without that nametag and with "fictional illustration" beside the name. The distinction is the box and the words, never a colour, so it survives print, a monochrome screen, and a screen reader.
+The same boundary is drawn in the illustration. A contributor's name is rendered as a **nametag**: a boxed name. An invented friend is named too — a reader has to be able to follow Bob from beat to beat — but without that box, and the beat says plainly underneath the drawing which of the figures in it were invented. The distinction is the box and those words, never a colour, so it survives print, a monochrome screen, and a screen reader.
+
+Where the names sit is the renderer's decision, not the document's. A name sits above its own head wherever the drawing has room; on a crowded beat the whole set moves into a row under the drawing, in the order the figures stand in, because two names on top of each other are worse than a row. Five of the 87 beats are laid out that way, and a browser test measures every label box on every beat at a phone width and a desktop one.
 
 Research is shared group material: any avatar may draw on a source another member found, as long as the citation stays attached to the source and the spoken position matches what that member endorses.
 
@@ -289,6 +291,7 @@ Keep an existing identifier pointing at the same thing. If a source is replaced 
 | `ART_STATE_UNAVAILABLE` | A scene asks a composition for a condition layer it does not have, or declares a state for a beat that has no drawing. |
 | `ART_ABSENCE_UNDECLARED`, `ART_ABSENCE_DECLARED` | A beat with no drawing does not say why, or a beat with one records a reason for not having one. |
 | `PENDING_ART_IN_FINAL_CONTENT` | Finished content still carries a beat whose drawing has not been made. |
+| `TEXT_ONLY_CAST` | A beat declared text-only places figures, which it would never show. |
 | `ART_FIGURE_COUNT` | A scene gives a composition more or fewer figures than it can place. |
 | `UNSUPPORTED_MEMBER_POSITION` | A `member-endorsed` line has no provenance record. |
 | `INVALID_SOURCE_URL` | A source destination is not an `http://` or `https://` address. |

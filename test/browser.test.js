@@ -476,14 +476,17 @@ test('the drawings are drawn, with the names above the heads and inside the fram
             hasSvg: !!svg,
             svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
             pendingNotice: !!probe.q('.scene-visual-pending', frame),
+            placement: frame.getAttribute('data-labels'),
+            inventedLine: probe.q('.figure-fiction', scene) ? probe.q('.figure-fiction', scene).textContent : '',
+            inventedType: probe.q('.figure-fiction', scene) ? probe.style(probe.q('.figure-fiction', scene), 'fontSize') : null,
             labels: probe.all('.art-label', frame).map(function (label) {
               var box = label.getBoundingClientRect();
               var head = box.bottom;
               return {
                 name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
-                marked: label.getAttribute('data-role') === 'member'
-                  ? !!probe.q('.nametag', label)
-                  : !!probe.q('.fiction-note', label),
+                role: label.getAttribute('data-role'),
+                boxed: !!probe.q('.nametag', label),
+                left: box.left, right: box.right, top: box.top, bottom: box.bottom,
                 insideFrame: box.left >= frameBox.left - 1 && box.right <= frameBox.right + 1,
                 aboveItsAnchor: head <= frameBox.bottom + 1,
                 baked: label.closest('svg') !== null,
@@ -514,12 +517,92 @@ test('the drawings are drawn, with the names above the heads and inside the fram
     // beats where the answer is nobody: eleven are the narrator alone.
     const placed = content.scenes.find((scene) => scene.id === beat.scene).visual.cast.length;
     assert.equal(beat.labels.length, placed, `${beat.scene} should name exactly the figures it places`);
+    // Which figures were made up is said under the drawing at reading size,
+    // where there is room for the words, rather than over a head where there
+    // is not. A beat with no invented figure in it says nothing.
+    const friends = content.scenes.find((scene) => scene.id === beat.scene).visual.cast
+      .map((entry) => content.cast.find((character) => character.id === entry.characterId))
+      .filter((character) => character.role === 'friend');
+    if (friends.length === 0) {
+      assert.equal(beat.inventedLine, '', `${beat.scene} has no invented figure and should not say it has`);
+    } else {
+      for (const friend of friends) {
+        assert.ok(beat.inventedLine.includes(friend.displayName), `${beat.scene} draws ${friend.displayName} without saying they are invented`);
+      }
+      assert.ok(parseFloat(beat.inventedType) >= 14, `${beat.scene} says so at ${beat.inventedType}, which is too small to read`);
+    }
+
     for (const label of beat.labels) {
       assert.equal(label.baked, false, `${beat.scene}: "${label.name}" is inside the SVG; names are browser text`);
       assert.equal(label.insideFrame, true, `${beat.scene}: "${label.name}" hangs outside the frame at phone width`);
-      assert.equal(label.marked, true, `${beat.scene}: "${label.name}" is neither a contributor's nametag nor marked as a fictional illustration`);
+      assert.equal(label.boxed, label.role === 'member', `${beat.scene}: "${label.name}" does not keep the contributor/invented distinction`);
       assert.equal(label.aboveItsAnchor, true, `${beat.scene}: "${label.name}" sits below the drawing`);
     }
+  }
+});
+
+/** Every label box on every beat, at one layout width. */
+function labelBoxes(width) {
+  const { value } = runInChrome({
+    html: offline,
+    width,
+    height: 900,
+    driver: `
+      var report = { beats: [] };
+      probe.step(function () { probe.q('[data-begin]').click(); });
+      ${ORDER.map(() => `probe
+        .step(function () {
+          var scene = probe.q('[data-scene][data-current]');
+          var frame = scene.querySelector('.scene-visual-frame');
+          report.beats.push({
+            scene: probe.sceneId(),
+            placement: frame ? frame.getAttribute('data-labels') : 'none',
+            labels: frame ? probe.all('.art-label', frame).map(function (label) {
+              var box = label.getBoundingClientRect();
+              var name = probe.q('.nametag', label) || probe.q('.figure-name', label);
+              return { name: name.textContent, left: box.left, right: box.right, top: box.top, bottom: box.bottom };
+            }) : [],
+          });
+        })
+        .step(function () { var next = probe.q('[data-next]'); if (!next.disabled) next.click(); });`).join('\n')}
+      probe.run(function () { probe.done(report); });`,
+  });
+  return value.beats;
+}
+
+const overlaps = (a, b) =>
+  Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0
+  && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0;
+
+test('no two names sit on top of each other, on any beat, at either width', { skip }, () => {
+  // A name over a head is only useful if a reader can tell which head it
+  // belongs to. Before this check, eight labels on the closing beat ran
+  // through each other by up to 48 pixels, and three other beats were doing
+  // the same more quietly. The renderer now moves a crowded beat's names into
+  // a row under the drawing; this is what says whether that worked, on all 87
+  // beats, at a true phone layout and at a desktop one.
+  for (const width of [360, 1280]) {
+    const beats = labelBoxes(width);
+    assert.equal(beats.length, ORDER.length);
+
+    for (const beat of beats) {
+      for (let i = 0; i < beat.labels.length; i += 1) {
+        for (let j = i + 1; j < beat.labels.length; j += 1) {
+          const [a, b] = [beat.labels[i], beat.labels[j]];
+          assert.ok(
+            !overlaps(a, b),
+            `${beat.scene} at ${width}px: "${a.name}" and "${b.name}" overlap by ${Math.round(Math.min(a.right, b.right) - Math.max(a.left, b.left))}px`,
+          );
+        }
+      }
+    }
+
+    // And the crowded beats are the ones that moved, rather than every beat
+    // quietly giving up on names over heads.
+    const listed = beats.filter((beat) => beat.placement === 'list').map((beat) => beat.scene);
+    const over = beats.filter((beat) => beat.placement === 'over');
+    assert.ok(over.length > 60, `only ${over.length} beats still name their figures over their heads`);
+    assert.deepEqual(listed, ['s068', 's072', 's078', 's080', 's086'], 'the beats that lay their names out underneath');
   }
 });
 

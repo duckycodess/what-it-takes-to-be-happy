@@ -116,6 +116,7 @@ test('a deliberately broken document reports every located problem at once', () 
     'MAIN_PATH_INCOMPLETE',
     'INVALID_CHAPTER_NUMBER',
     'DUPLICATE_CHAPTER_NUMBER',
+    'TEXT_ONLY_CAST',
   ]) {
     assert.ok(reported.has(code), `expected the broken fixture to report ${code}`);
   }
@@ -263,7 +264,35 @@ test('a beat may name a drawing or declare that it has none, and nothing else', 
   fallback.artId = null;
   fallback.artState = null;
   fallback.artAbsence = 'text-only';
+  fallback.cast = [];
   assert.deepEqual(validateContent(undrawn).errors, []);
+});
+
+test('a text-only beat may not place figures it will never show', () => {
+  // Text-only renders no frame at all, so the names have nowhere to go. A
+  // document that listed a cast there would be saying somebody is in a drawing
+  // the reader is never shown.
+  const doc = loadValidContent();
+  const visual = byId(doc.scenes, 's002').visual;
+  visual.artId = null;
+  visual.artState = null;
+  visual.artAbsence = 'text-only';
+  const index = doc.scenes.findIndex((scene) => scene.id === 's002');
+  assert.ok(codesAt(validateContent(doc).errors, `scenes[${index}].visual.cast`).includes('TEXT_ONLY_CAST'));
+
+  // The beat that is actually text-only in the essay places nobody.
+  const published = loadValidContent();
+  assert.deepEqual(byId(published.scenes, 's087').visual.cast, []);
+
+  // A beat whose drawing is only pending keeps its frame and its names.
+  const pending = loadValidContent();
+  pending.status.final = false;
+  pending.status.notice = 'A draft, with one beat still to be drawn.';
+  const waiting = byId(pending.scenes, 's002').visual;
+  waiting.artId = null;
+  waiting.artState = null;
+  waiting.artAbsence = 'pending';
+  assert.deepEqual(validateContent(pending).errors, []);
 });
 
 test('an undrawn beat has to say which kind of undrawn it is', () => {

@@ -72,17 +72,66 @@ const percent = (value) => `${(Math.round(value * 100) / 100).toFixed(2)}%`;
  * A contributor gets a nametag: the boxed name above the head that says this
  * drawing stands for a person who wrote something here. An invented friend
  * gets their name too — a reader has to be able to follow Bob from beat to
- * beat — but not that nametag, and with "fictional illustration" beside it, so
- * no drawing in this essay can be mistaken for a member's biography or for
- * somebody's evidence.
+ * beat — but not that nametag.
+ *
+ * That the friend is invented is said under the drawing instead of beside the
+ * name. Set over a head it was six and a half pixels tall on a phone, which is
+ * not a statement anybody can read, and the phrase is longer than any name, so
+ * it was also what pushed labels into each other on a crowded beat. Under the
+ * drawing it is ordinary body text, in every view and in print.
  */
-function renderFigureLabel(character, expression, anchor) {
-  const position = anchor ? ` style="--art-x:${percent(anchor.x)};--art-y:${percent(anchor.y)}"` : '';
+function renderFigureLabel(character, expression, anchor, placement) {
+  const position = placement === 'over' && anchor
+    ? ` style="--art-x:${percent(anchor.x)};--art-y:${percent(anchor.y)}"`
+    : '';
   const name = character.role === 'member'
     ? `<span class="nametag">${esc(character.displayName)}</span>`
-    : `<span class="figure-name">${esc(character.displayName)}</span><span class="fiction-note">fictional illustration</span>`;
+    : `<span class="figure-name">${esc(character.displayName)}</span>`;
   return `<li class="art-label" data-role="${esc(character.role)}"${position}>${name}<span class="expression">${esc(expression.label)}</span></li>`;
 }
+
+/* --------------------------------------------------------------------------
+ * Where the names go.
+ *
+ * A name sits above its own head wherever there is room for it. On a crowded
+ * drawing there is not: eight figures across one frame put labels through each
+ * other, which a reader meets as two names on top of one another rather than
+ * as a layout decision. So the drawing is asked, before anything is written,
+ * whether the labels fit — and if any pair would collide or run off the edge,
+ * the whole set moves into a row under the drawing, in the order the figures
+ * stand in. All of them move together: half over and half under would read as
+ * a mistake.
+ *
+ * The budget is one measured number. A label is at most 12.4% of its frame's
+ * width — measured in Chrome across every label in the essay, at a 360-pixel
+ * phone layout and at a 1280-pixel desktop one, where the type is at the floor
+ * and the ceiling of its clamp. 16% is that with room to spare, and the
+ * browser suite measures the real boxes afterwards rather than trusting it.
+ * ----------------------------------------------------------------------- */
+
+/** The widest a label gets, as a share of the frame it is positioned in. */
+const LABEL_WIDTH_SHARE = 16;
+
+/**
+ * @param {Array<{x: number, y: number}>} anchors the composition's own anchors
+ * @returns {'over'|'list'} whether names can sit above the heads
+ */
+function labelPlacement(anchors) {
+  // A drawing with nobody in it has no names to place. Eleven beats are the
+  // narrator alone, and saying "list" about them would be a claim about a
+  // layout that does not exist.
+  if (anchors.length === 0) return 'none';
+  if (anchors.length === 1) return edgesFit(anchors[0]) ? 'over' : 'list';
+  const ordered = [...anchors].sort((a, b) => a.x - b.x);
+  if (!ordered.every(edgesFit)) return 'list';
+  for (let index = 1; index < ordered.length; index += 1) {
+    if (ordered[index].x - ordered[index - 1].x < LABEL_WIDTH_SHARE) return 'list';
+  }
+  return 'over';
+}
+
+/** A label is centred on its anchor, so it needs half its width either side. */
+const edgesFit = (anchor) => anchor.x - LABEL_WIDTH_SHARE / 2 >= 0 && anchor.x + LABEL_WIDTH_SHARE / 2 <= 100;
 
 /**
  * One authored drawing: a scene's, or the landing's.
@@ -125,9 +174,30 @@ function renderVisual(visual, castById, className) {
     })
     : null;
 
-  const labels = appearances
-    .map(({ character, expression }, index) => renderFigureLabel(character, expression, drawing?.anchors[index]))
+  // The anchors are the drawing's own, so the decision is made from the same
+  // geometry the figures were placed with rather than from a figure count.
+  const placement = drawing ? labelPlacement(drawing.anchors) : 'list';
+  const placed = appearances.map(({ character, expression }, index) => ({
+    character,
+    expression,
+    anchor: drawing?.anchors[index] ?? null,
+  }));
+  // The names are listed in the order the figures stand in, left to right,
+  // rather than in the order the cast happens to be written in. That is the
+  // order a sighted reader meets them in, and it is the only association a
+  // reader who cannot see the drawing has, so both get the same one. Three
+  // compositions place their slots out of left-to-right order.
+  const ordered = drawing ? [...placed].sort((a, b) => a.anchor.x - b.anchor.x) : placed;
+  const labels = ordered
+    .map(({ character, expression, anchor }) => renderFigureLabel(character, expression, anchor, placement))
     .join('\n');
+
+  // Which of these figures are invented is said in full-size text under the
+  // drawing, where there is always room for it.
+  const invented = appearances.filter(({ character }) => character.role === 'friend');
+  const fiction = invented.length === 0
+    ? ''
+    : `<p class="figure-fiction"><span class="label">Invented figures</span> ${invented.map(({ character }) => esc(character.displayName)).join(', ')}</p>`;
 
   // A frame with no composition is an empty box, and a reader should not have
   // to guess whether a drawing failed to load. It says so instead. This is a
@@ -139,10 +209,12 @@ function renderVisual(visual, castById, className) {
     : '<p class="scene-visual-pending">The drawing for this beat is not made yet. The figures below are named slots, and the description under the frame carries what the finished panel will show.</p>';
 
   const frame = [
-    `<div class="scene-visual-frame" data-art="${esc(visual.artId ?? 'none')}" data-art-state="${esc(visual.artState ?? 'described')}">`,
+    `<div class="scene-visual-frame" data-art="${esc(visual.artId ?? 'none')}" data-art-state="${esc(visual.artState ?? 'described')}" data-labels="${placement}">`,
     drawing ? drawing.svg : '',
     pending,
-    labels ? `<ul class="art-labels" aria-label="Who is in this drawing">\n${labels}\n</ul>` : '',
+    labels
+      ? `<ul class="art-labels" aria-label="Who is in this drawing, from left to right">\n${labels}\n</ul>`
+      : '',
     '</div>',
   ].filter(Boolean).join('\n');
 
@@ -150,7 +222,7 @@ function renderVisual(visual, castById, className) {
   // nametags stay real text and nothing is announced twice.
   return `<figure class="${className}">
 ${frame}
-<figcaption>${esc(visual.description)}</figcaption>
+${fiction}<figcaption>${esc(visual.description)}</figcaption>
 </figure>`;
 }
 
