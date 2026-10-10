@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-mixed-day-v1",
+  "requesting_issue": 15,
+  "request_origin": "Owner-approved redesign art-plan A02, prepared on the authorized overnight run",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-mixed-day-v1",
+  "scene": "s089",
+  "purpose": "Fictional Bob seated beside an open notebook in a frameless scene",
+  "status": "provider_inspected",
+  "generation_status": "provider_inspected",
+  "approval_status": "pending_owner_review",
+  "implementation_ready": false,
+  "selected_image": {
+    "path": "bob-notebook.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "sha256": "0d069bbcf29fee04537ae43c659b55c80f1a1739163a0d2ed4b6866013eeb19b"
+  },
+  "method": "Built-in image generation with targeted built-in identity and transparency edits",
+  "reference": {
+    "role": "Character identity reference; no lettering reused",
+    "path": "assets/concepts/stickman-character-sheet-v1.png",
+    "sha256": "ffb60fd660fe36ceb6d83fa74437850ebaa2803b6e2039f83208ad696b6dd8bc",
+    "additional_style_reference": {
+      "path": "assets/generated/rewrite-opening-v1/opening.png",
+      "sha256": "87d5173c5e69915b82ec83948cfe73928527449f4a47173b9888654991b89004"
+    }
+  },
+  "generation": {
+    "prompt": "generation-prompt.txt",
+    "prompt_sha256": "5d414857c09ebf818523e63923c9aca0ffe5518f1882d6344e8a2892c8dd5214",
+    "output": "bob-notebook.png",
+    "output_sha256": "0d069bbcf29fee04537ae43c659b55c80f1a1739163a0d2ed4b6866013eeb19b"
+  },
+  "cast": [
+    {
+      "name": "Bob",
+      "fictional": true,
+      "position": "center",
+      "identity": "smooth hairless round head",
+      "expression": "tired, thoughtful, small neutral mouth"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "Bob",
+        "x_fraction": 0.5
+      }
+    ],
+    "name_y_fraction_desktop": 0.02,
+    "name_y_fraction_phone": 0.01,
+    "prop_anchors": [
+      {
+        "name": "open notebook",
+        "x_fraction": 0.62,
+        "y_fraction": 0.84
+      }
+    ]
+  },
+  "alt": "Bob sits tired beside an open notebook.",
+  "motion": "none",
+  "inspection": {
+    "checked_at_utc": "2026-10-11T08:45:00Z",
+    "record": "inspection.json",
+    "rendering": "Provider inspected selected RGBA output composited on cream page color #fdfbf7",
+    "visual_findings": [
+      "Single complete fictional figure beside an open blank notebook",
+      "Smooth hairless head; no crown tuft",
+      "Small neutral mouth and tired brows; no text, frame or extra figures",
+      "No visible diffuse backdrop on cream composite; alpha transparency present"
+    ],
+    "limitations": [
+      "Not yet owner-reviewed",
+      "No browser layout, responsive anchor, or hosted-site validation",
+      "Generation ancestry began with an earlier authorized image-generation result; earlier prompt was not retained in the available handoff context"
+    ]
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": false,
+    "instruction": "Requesting worker must consume this asset commit and review its final pushed implementation head. Owner review remains pending."
+  }
+}
