@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-phone-comparison-v1",
+  "ref": "A09b",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-phone-comparison-v1",
+  "purpose": "Second “Comparison” state of scene s105 “One phone, different uses”: the same phone and pose turned to comparison instead; framing must stay close to A09a so the optional control swaps states instantaneously.",
+  "description": "Same TJ identity and phone pose, now thoughtful and slightly tense; no second person, status symbols, numeric counts or assumed diagnosis. Preserve framing close to A09a for an instantaneous state swap.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "eb1d1ddd68dff75d3652a503072094339861824bb85e62a8f0f9de3ad2e040a1"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.32,
+        "y_fraction": 0.15
+      }
+    ],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "TJ looks tense while looking at his phone.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "dd2d2504cc39c3e36364a40c7959ed4e0a7e281d8410d3c2f3832ac331e3579b",
+    "alt": "TJ looks tense while looking at his phone."
+  },
+  "derived_from_asset": "rewrite-phone-connection-v1"
+}
