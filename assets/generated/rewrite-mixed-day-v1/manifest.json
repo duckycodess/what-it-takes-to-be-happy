@@ -1,89 +1,63 @@
 {
   "schema_version": 1,
   "id": "rewrite-mixed-day-v1",
+  "ref": "A02",
   "requesting_issue": 15,
-  "request_origin": "Owner-approved redesign art-plan A02, prepared on the authorized overnight run",
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
   "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
   "asset_branch": "codex/art-rewrite-mixed-day-v1",
-  "scene": "s089",
-  "purpose": "Fictional Bob seated beside an open notebook in a frameless scene",
-  "status": "provider_inspected",
-  "generation_status": "provider_inspected",
-  "approval_status": "pending_owner_review",
-  "implementation_ready": false,
+  "purpose": "Scenes s091 “One bad day” and s092 “Two different questions” (single): an illustrative difficult day that lets the essay separate a passing mood from a life going well.",
+  "description": "Fictional Bob seated beside an open, unlettered notebook. Tired eyebrows, small neutral mouth, relaxed shoulders; the task looks demanding without a despairing or triumphant verdict. One intact figure.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "aa18a2ecb0354b02eefd5284555348bdf8b444424e5017798209c354c2473c59"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "Bob sits tired beside an open notebook.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
   "selected_image": {
-    "path": "bob-notebook.png",
+    "path": "scene.png",
     "width": 1536,
     "height": 1024,
     "format": "PNG",
     "mode": "RGBA",
     "transparent_background": true,
-    "sha256": "0d069bbcf29fee04537ae43c659b55c80f1a1739163a0d2ed4b6866013eeb19b"
-  },
-  "method": "Built-in image generation with targeted built-in identity and transparency edits",
-  "reference": {
-    "role": "Character identity reference; no lettering reused",
-    "path": "assets/concepts/stickman-character-sheet-v1.png",
-    "sha256": "ffb60fd660fe36ceb6d83fa74437850ebaa2803b6e2039f83208ad696b6dd8bc",
-    "additional_style_reference": {
-      "path": "assets/generated/rewrite-opening-v1/opening.png",
-      "sha256": "87d5173c5e69915b82ec83948cfe73928527449f4a47173b9888654991b89004"
-    }
-  },
-  "generation": {
-    "prompt": "generation-prompt.txt",
-    "prompt_sha256": "5d414857c09ebf818523e63923c9aca0ffe5518f1882d6344e8a2892c8dd5214",
-    "output": "bob-notebook.png",
-    "output_sha256": "0d069bbcf29fee04537ae43c659b55c80f1a1739163a0d2ed4b6866013eeb19b"
-  },
-  "cast": [
-    {
-      "name": "Bob",
-      "fictional": true,
-      "position": "center",
-      "identity": "smooth hairless round head",
-      "expression": "tired, thoughtful, small neutral mouth"
-    }
-  ],
-  "browser_text": {
-    "embedded_names_or_dialogue": false,
-    "name_anchors": [
-      {
-        "name": "Bob",
-        "x_fraction": 0.5
-      }
+    "alpha_extrema": [
+      0,
+      254
     ],
-    "name_y_fraction_desktop": 0.02,
-    "name_y_fraction_phone": 0.01,
-    "prop_anchors": [
-      {
-        "name": "open notebook",
-        "x_fraction": 0.62,
-        "y_fraction": 0.84
-      }
-    ]
-  },
-  "alt": "Bob sits tired beside an open notebook.",
-  "motion": "none",
-  "inspection": {
-    "checked_at_utc": "2026-10-11T08:45:00Z",
-    "record": "inspection.json",
-    "rendering": "Provider inspected selected RGBA output composited on cream page color #fdfbf7",
-    "visual_findings": [
-      "Single complete fictional figure beside an open blank notebook",
-      "Smooth hairless head; no crown tuft",
-      "Small neutral mouth and tired brows; no text, frame or extra figures",
-      "No visible diffuse backdrop on cream composite; alpha transparency present"
-    ],
-    "limitations": [
-      "Not yet owner-reviewed",
-      "No browser layout, responsive anchor, or hosted-site validation",
-      "Generation ancestry began with an earlier authorized image-generation result; earlier prompt was not retained in the available handoff context"
-    ]
-  },
-  "handoff": {
-    "asset_only": true,
-    "integration_authorized": false,
-    "instruction": "Requesting worker must consume this asset commit and review its final pushed implementation head. Owner review remains pending."
+    "transparent_corners": true,
+    "sha256": "65205e77fb42fc78ab0d2610174c416761a64620e206ba63c2d5aac275ecc91d",
+    "alt": "Bob sits tired beside an open notebook."
   }
 }
