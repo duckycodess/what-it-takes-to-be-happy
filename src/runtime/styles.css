@@ -881,10 +881,14 @@ html.js[data-view='reading'] .landing { display: none; }
   details::details-content { content-visibility: visible; block-size: auto; }
   details:not([open]) > *:not(summary) { display: block; }
 
-  .scene-visual-frame { border-color: #000; break-inside: avoid; }
-  .scene-art { max-width: 12cm; }
-  .landing-art { max-width: 12cm; }
+  /* The width cap belongs to the whole figure, not to the drawing inside it.
+     A name sits above a head at a percentage of the frame, so capping the
+     drawing alone would leave the frame the width of the page and every name
+     drifting away from the figure it belongs to. */
+  .scene-visual,
+  .landing-art,
   .concept-sheet img { max-width: 12cm; }
+  .scene-visual-frame { border-color: #000; break-inside: avoid; }
 
   /* A printed page has no beats, so the condition layer must simply be there. */
   [data-art-layer='reveal'] { animation: none !important; opacity: 1 !important; transform: none !important; }

@@ -14,5 +14,5 @@
 
 ## 3. Integration evidence
 
-- [ ] 3.1 Run `./tools/check-storyboard.sh`, `./tools/count-main-path.sh`, `npm run check`, `openspec validate integrate-six-chapter-essay --strict`; verify all pass or record honest blockers.
-- [ ] 3.2 Inspect final prose/art at narrow and wide viewport, keyboard navigation, reduced motion, and print via structure/beforeprint tests (record if rendered print unavailable); audit representative source-backed beats across chapters and the ending. Record measured outcomes and environmental caveats in `docs/verification.md`.
+- [x] 3.1 Run `./tools/check-storyboard.sh`, `./tools/count-main-path.sh`, `npm run check`, `openspec validate integrate-six-chapter-essay --strict`; verify all pass or record honest blockers.
+- [x] 3.2 Inspect final prose/art at narrow and wide viewport, keyboard navigation, reduced motion, and print via structure/beforeprint tests (record if rendered print unavailable); audit representative source-backed beats across chapters and the ending. Record measured outcomes and environmental caveats in `docs/verification.md`.

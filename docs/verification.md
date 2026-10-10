@@ -17,6 +17,9 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 | `test/fonts.test.js` | Each committed font file's size and SHA-256, and — read from both `cmap` tables — that every character the essay prints is one a packaged face can draw. |
 | `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, the focus ring; and that nothing depending on the project typeface sits outside the region the offline file drops. |
 | `test/dom.test.js` | The test harness itself, so the reader suite cannot pass on a harness that answers wrongly. |
+| `test/transfer.test.js` | The content document against `docs/storyboard.md`: every beat identifier and chapter order, every main-path paragraph, line and caveat in the authored order, every cast placement and expression, every source citation, and that the two documented differences — the landing split and the fourteen authored bridges — are the only ones. |
+| `test/coverage.test.js` | The content document against `docs/coverage.md` and `docs/research.md`: the beats each assignment part is answered at, every lens explained/applied/questioned and attached to a beat, the spoken-line distribution per chapter, where each invented figure is drawn and that none of them speaks, the evidence-level rollup, and that a work nobody could open is introduced with a visible caveat. |
+| `test/measure.test.js` | The landing's reading estimate against a recount of the published main path, and that no source is reachable only from inside an optional panel. |
 
 ### Checked in a real browser
 
@@ -87,11 +90,84 @@ not is below.
 - **Rapid Next and Back against a running entrance animation**, on a real machine. The stylesheet animates only opacity and transform on a layer that is already in its settled state, and reduced motion is measured as computed style above, but nobody has hammered the controls in a browser and watched what happens.
 - **Contrast as perceived**, rather than computed. The ratios are measured from the declared tokens; nothing has been checked against a display or a low-vision reader.
 - **The container query that hides a state word on a narrow frame**, as experienced rather than as a rule: the labels were measured for position and containment, not read aloud.
-- Anything about the finished prose. The content document is still an explicitly non-final fixture.
+- Anything about the finished prose. *(Superseded: the content document is now the finished essay, and what was checked about it is recorded above.)*
 
 `node ~/.claude/skills/impeccable/scripts/detect.mjs` over the runtime files reports two warnings, both pre-existing and both deliberate: the left rule on a dialogue line and the left rule on a "keep in mind" callout. Both are ordinary essay typography — a quotation rule and a callout rule — rather than the card accent the heuristic is looking for.
 
 No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every source file instead.
+
+## What the integration package checked, and how
+
+Checked on 10 October 2026, after the storyboard's prose and the drawings were wired into the
+content document. Everything below was run in this working environment; what could not be run here
+is named at the end rather than left out.
+
+### Automated
+
+`npm run check` passes: 193 tests, 0 failures, **0 skipped** — Chrome is installed here, so the whole
+browser suite ran rather than skipping. `./tools/check-storyboard.sh` passes all 21 editorial
+checks. `./tools/count-main-path.sh` reports the storyboard corpus at 8,627 words and
+`--published` reports the website's at 8,992, which is the 36 to 45 minutes the landing states.
+`openspec validate integrate-six-chapter-essay --strict` reports the change valid.
+
+### Looked at, in a real browser
+
+Headless Chrome 154 on Windows, driven from WSL, against the built `dist/`:
+
+- **The landing**, at 1280 pixels: the question in Futura Handwritten, the summary, the three
+  contributors' nametags, the opening drawing with TJ, Koj, Vier and Bob, and Bob labelled
+  *fictional illustration* under his name rather than given a nametag.
+- **Beats at desktop width** (`s010`, `s064`): the drawing beside the prose, the caveat in its own
+  callout, the concepts line, the spoken line attributed by nametag.
+- **A beat at a true 360-pixel layout viewport** (`s058`, inside a frame of that width, because a
+  desktop window will not go below about 500): the drawing above the prose, both labels inside the
+  frame, the state word hidden by the container query while the fictional-illustration mark stays
+  visible, the Taglish in TJ's line intact, and the progress line reading
+  "Beat 58 of 87 / Chapter 5 of 6: Who has room for happiness?".
+- **The scriptless route**, by removing the script from a copy of the built page: the continuous
+  reading view, the measured estimate ("About 36 to 45 minutes to read."), and the chapter list
+  showing *Opening* without a number and the six questions numbered 1 to 6.
+- **The print rules, rendered**. Chrome printed the page to PDF with the print stylesheet applied:
+  145 pages. To look at what those rules do, the print block was rewritten to `@media all` in a
+  copy of the built stylesheet and the result was opened on screen.
+
+  **That is how a real print fault was found.** `.scene-art { max-width: 12cm }` capped the drawing
+  but not the frame around it, so on paper the frame stretched to the width of the page while the
+  drawing stayed 12cm — and every name, positioned at a percentage of the frame, drifted away from
+  the figure it belonged to. The cap now applies to the whole figure, and
+  `test/styles.test.js` fails if it is moved back onto the drawing alone. This was invisible to
+  every earlier check, because no earlier check rendered the print rules.
+
+### Read, rather than measured
+
+- Every beat's prose was transferred by comparison rather than by hand, and `test/transfer.test.js`
+  is that comparison. The quoted punctuation came through intact, including the em dashes and the
+  `∼` inside Kahneman and Deaton's own wording at `s061`; `test/fonts.test.js` now records those
+  two characters, and the en dash, as the three the bundled fallback draws because the project
+  typeface has no glyph for them.
+- One source-backed beat was read in each chapter against its rendered source block — `s008`,
+  `s027`, `s039`, `s050`, `s069`, `s080`. Each shows its evidence level in words ("Read in full",
+  "Abstract only", "Could not be opened"), phrases what it supports against that level, and carries
+  its limitation on the page without following the link. `s039` cites a thread nobody could open and
+  shows "Listed in the notes for" rather than a supported claim.
+- The ending was read in place: `s083` (four tensions, unresolved), `s084` (each member's own
+  remaining question), `s085` (the afternoon with its conditions still visible), `s086` (the closing
+  question, unanswered) and `s087`, which is the source note and is the one beat with no drawing —
+  no frame, no "not made yet" notice, just the text and the register under it.
+
+### Not checked here, and by what
+
+- **A real phone and a real desktop browser.** Unchanged from below: a 360-pixel frame in headless
+  Chrome is not a device.
+- **A screen reader.** Unchanged. The fictional-illustration mark is ordinary text in the document
+  rather than an attribute, which is what makes the claim arguable, but nothing has read it aloud.
+- **A paginated print page, looked at.** The PDF renders — 145 pages — but nothing in this
+  environment can rasterise it: `pdftoppm` is not installed and headless Chrome will not display a
+  PDF to screenshot. So the page breaks, the widow and orphan behaviour, and where a drawing falls
+  relative to its caption on paper are **unverified**. What was verified is what the print rules do
+  to the layout, by applying them on screen.
+- **The deployment.** Nothing here has been served over the deployment's own network, and no
+  production build exists. That is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s.
 
 ## Scenarios for the finished essay
 
