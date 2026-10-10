@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-campus-space-v1",
+  "ref": "A17",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-campus-space-v1",
+  "purpose": "Scenes s124 “Make room on campus” and s127 “Test a proposal before claiming success” (single): the fictional shared space our proposal asks for, with no real location named and no success marks.",
+  "description": "Fictional proposed shared space: bench, modest shade and two students spending time together, with clear unobstructed space alongside seating. No actual campus landmark, commercial branding or success indicators.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "849b4723a5d1533372891e8c5fe53233d86efb1c49a40fdc5860eb3369893f49"
+    },
+    {
+      "path": "identity-edit-prompt.txt",
+      "sha256": "ba355b2bed6a7780e8ab3c550591dfe440561825118cc6d72df845dc30f51e9c"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "Two fictional students spend time in a shaded shared seating area.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "6e39ff362a73e0812250eaef90f2e8cfc698a607ddbb09b6641b32840d47a0f8",
+    "alt": "Two fictional students spend time in a shaded shared seating area."
+  },
+  "unselected_source_generation": {
+    "path": "source-generation.png",
+    "sha256": "6fac3bfc6a7865c9042a07f81a429b662ecb379dd6d33a5c5a2b0ca8d89d6a31",
+    "reason": "Initial member identity drift corrected by the recorded built-in edit; use selected scene.png only"
+  }
+}

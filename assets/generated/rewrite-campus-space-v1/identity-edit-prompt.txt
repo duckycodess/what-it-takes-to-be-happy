@@ -1,0 +1,4 @@
+Use case: precise-object-edit
+Edit the supplied proposed seating-area illustration.
+Change ONLY hair: remove ALL hair tufts from BOTH seated students and close each head outline into a smooth bald round contour. These are fictional students, not TJ or Koj, so neither can have TJ's three curved strands or Koj's curl.
+Preserve the two faces, poses, bodies, hands, feet, bench, shade canopy and poles, exact positions, colors, canvas and genuine alpha background. Removing hair must leave transparent space outside smooth heads, never a white patch. Add no lettering, labels, marks, objects, glow, shadow or background.
