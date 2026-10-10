@@ -2,14 +2,15 @@
   "name": "what-it-takes-to-be-happy",
   "version": "0.1.0",
   "private": true,
-  "description": "Static illustrated essay foundation: content contract, validator, shared renderer, hosted and offline packaging.",
+  "description": "Static illustrated essay: the approved scene script transferred into one content document, a shared renderer, the hosted website and a retained single-file export.",
   "license": "UNLICENSED",
   "type": "module",
   "engines": {
     "node": "24.x"
   },
   "scripts": {
-    "validate": "node src/tools/validate.js",
+    "validate": "node src/tools/transfer.js --check && node src/tools/validate.js",
+    "content:transfer": "node src/tools/transfer.js",
     "test": "node --test \"test/**/*.test.js\"",
     "build": "node src/build/build.js",
     "export:offline": "node src/build/build.js --only=offline",

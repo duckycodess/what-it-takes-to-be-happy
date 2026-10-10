@@ -5,123 +5,77 @@
  * values, and identifier rules. `validate.js` enforces them; `docs/content-
  * contract.md` documents them for editors. Changing a value here is a contract
  * change and must be reflected in both.
+ *
+ * The contract describes a document transferred from the approved scene
+ * script, not an editable manuscript. Nothing here asks for a field a
+ * renderer would have to write prose to fill: the old mandatory chapter
+ * question, project summary, reading-time estimate, chapter bridges and
+ * disclosure-panel bodies are gone, because the approved script contains no
+ * such copy and inventing it is exactly what this rewrite removed.
  */
 
-export const SCHEMA_ID = 'happiness-essay-content/v1';
+export { SCHEMA_ID, LAYOUTS, SPEAKERS, CHAPTER_ANCHORS, APPROVED_SCRIPT } from './transfer.js';
 
 /** Every registry stored in a content document, in document order. */
-export const REGISTRIES = [
-  'chapters',
-  'scenes',
-  'cast',
-  'sources',
-  'concepts',
-  'details',
-  'interactions',
-  'provenance',
-];
-
-/**
- * Registries the reader may publish. `provenance` records why a member
- * position or an editorial change exists; it is authoring material and never
- * reaches hosted, offline, or print output.
- */
-export const AUTHORING_ONLY_REGISTRIES = ['provenance'];
+export const REGISTRIES = ['chapters', 'scenes', 'assets'];
 
 /** Stable identifiers: ASCII alphanumerics in hyphen-separated groups. */
 export const ID_PATTERN = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/;
 
-/** Who a line of dialogue speaks for. */
-export const DIALOGUE_STANCES = ['member-endorsed', 'fictional-illustration'];
+/** A scene identifier keeps its historical `s088`–`s132` meaning. */
+export const SCENE_ID_PATTERN = /^s\d{3}$/;
 
-/**
- * How far a source was actually checked, using the evidence levels the source
- * audit recorded in docs/research.md. The distinctions matter: a publisher's
- * description of a book is not a passage from it, and an abstract establishes
- * only what the abstract states.
- *
- * - `requiresRecord` — the source must name its bibliographic detail and what
- *   was actually opened.
- * - `requiresSupportedClaim` — the source must state what the material read
- *   supports. Where it is false, stating one is rejected: nothing inside the
- *   work was read.
- * - `claimLabel` — how the reader is told what that claim rests on, so an
- *   abstract-level or description-level reading is never shown as more.
- */
-export const SOURCE_EVIDENCE_LEVELS = {
-  unreviewed: {
-    label: 'Not checked yet',
-    requiresRecord: false,
-    requiresSupportedClaim: false,
-    claimLabel: null,
-  },
-  'not-accessed': {
-    label: 'Could not be opened',
-    requiresRecord: true,
-    requiresSupportedClaim: false,
-    claimLabel: null,
-  },
-  'verified-locator': {
-    label: 'Publisher or catalogue description only',
-    requiresRecord: true,
-    requiresSupportedClaim: true,
-    claimLabel: "The publisher's description supports",
-  },
-  'verified-abstract': {
-    label: 'Abstract only',
-    requiresRecord: true,
-    requiresSupportedClaim: true,
-    claimLabel: 'The abstract supports',
-  },
-  'verified-full': {
-    label: 'Read in full',
-    requiresRecord: true,
-    requiresSupportedClaim: true,
-    claimLabel: 'The passage read supports',
-  },
-};
+/** A chapter identifier is its number. */
+export const CHAPTER_ID_PATTERN = /^c[1-8]$/;
 
-/** The accepted values of a source's `reviewStatus`. */
-export const SOURCE_REVIEW_STATUSES = Object.keys(SOURCE_EVIDENCE_LEVELS);
+/** An art reference as the approved brief table writes it. */
+export const ASSET_REF_PATTERN = /^A\d{2}[ab]?$/;
+
+/** A generated asset's folder name under `assets/generated/`. */
+export const ASSET_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** The two kinds of block on the main reading path. */
+export const BLOCK_KINDS = ['narration', 'dialogue'];
 
 /** A source must be reachable over the web; nothing else is a citable destination. */
 export const SOURCE_URL_PATTERN = /^https?:\/\/[^\s]+$/;
 
-/** A cast entry is one of the three contributors or an invented friend. */
-export const CAST_ROLES = ['member', 'friend'];
-
-/** Whether a concept has authored explanation/application/criticism text yet. */
-export const CONCEPT_STATUSES = ['planned', 'drafted'];
-
-/** Reader surfaces that an interaction can attach to. */
-export const INTERACTION_SURFACES = ['scene-detail', 'source-detail'];
-
 /**
- * The three kinds of essential block a beat can put on the main reading path.
+ * How far a source was actually checked, in the audit's own vocabulary.
  *
- * A scene stores them in three arrays, because they are three different things
- * with three different presentations. The order a reader meets them is a
- * separate editorial fact: twenty beats answer before the narrator explains,
- * and five state a caveat before the line it qualifies. `scenes[].mainPath`
- * records that order as references into these arrays, so the text itself is
- * never duplicated and a renderer cannot quietly impose an order of its own.
+ * The distinctions matter and are carried to the reader as the access note the
+ * approved register already writes: a publisher's description of a book is not
+ * a passage from it, and an abstract establishes only what the abstract
+ * states. The label is what the Sources & Credits page shows beside an entry.
  */
-export const MAIN_PATH_KINDS = ['narration', 'dialogue', 'limitations'];
+export const SOURCE_AUDIT_STATUSES = {
+  'verified-full': { label: 'Read in full' },
+  'verified-abstract': { label: 'Abstract only' },
+  'verified-locator': { label: 'Publisher or catalogue description only' },
+};
 
-/**
- * Why a beat has no drawing.
- *
- * `pending` means one is intended and has not been made; final content may not
- * contain it. `text-only` means the beat is deliberately not an illustrated
- * situation — the source register handoff is one — and the reader should see
- * no frame at all rather than an empty one.
- */
-export const ART_ABSENCE_REASONS = ['pending', 'text-only'];
+/** The accepted values of a source's `auditStatus`. */
+export const SOURCE_AUDIT_LEVELS = Object.keys(SOURCE_AUDIT_STATUSES);
 
-/**
- * Which layers of a scene's drawing are settled on screen: `situation` is the
- * scene as it first appears, `revealed` adds the condition layer that explains
- * it. The artwork package owns the list; the contract only names it, so a
- * content document and a drawing cannot drift apart silently.
- */
-export { ART_STATES } from '../art/index.js';
+/** An R identifier from the project's own research register. */
+export const SOURCE_ID_PATTERN = /^R\d{2}$/;
+
+/** The two manifest generations a delivered asset can have been inspected in. */
+export const MANIFEST_GENERATIONS = ['a01', 'a02-a18'];
+
+/** The two kinds of browser label anchored over a drawing. */
+export const LABEL_KINDS = ['name', 'prop'];
+
+/** The interface strings every output must carry, exactly as approved. */
+export const INTERFACE_KEYS = [
+  'title', 'begin', 'sources', 'chapters', 'continuous', 'scene',
+  'print', 'skip', 'back', 'next', 'readAgain', 'backToReading',
+];
+
+/** The reader-facing blocks of the Sources & Credits page. */
+export const SOURCES_PAGE_KEYS = ['title', 'intro', 'classNote', 'credits', 'methodNote', 'returnLabel', 'sources'];
+
+/** How many scenes and chapters the approved argument has. */
+export const SCENE_COUNT = 45;
+export const CHAPTER_COUNT = 8;
+export const SOURCE_COUNT = 26;

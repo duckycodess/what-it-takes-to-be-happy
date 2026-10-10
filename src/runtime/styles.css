@@ -107,9 +107,9 @@ html {
 
 body {
   margin: 0;
-  /* The foot of the page clears the fixed beat bar, which is three short
-     lines tall at its worst and must never cover the end of a beat. */
-  padding: 0 1rem 9.5rem;
+  /* The foot of the page clears the fixed control bar, which is two short
+     lines tall at its worst and must never cover the end of a scene. */
+  padding: 0 1rem 8rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -125,72 +125,50 @@ p {
   max-width: var(--measure);
 }
 
-/* A source label, a citation, or a destination can be one long unbroken run.
-   Breaking inside such a word is worse than a ragged edge but far better than
-   a page that scrolls sideways on a phone, so it is allowed only as a last
-   resort, after normal wrapping has failed. */
+/* A citation or a destination can be one long unbroken run. Breaking inside
+   such a word is worse than a ragged edge but far better than a page that
+   scrolls sideways on a phone, so it is allowed only as a last resort. */
 p,
 li,
 h1,
 h2,
-h3,
-summary {
+h3 {
   overflow-wrap: break-word;
-}
-
-.source-head a,
-.source-citation,
-.licence-text {
-  overflow-wrap: anywhere;
 }
 
 h1,
 h2,
 h3 {
+  font-weight: 400;
   line-height: 1.2;
-  margin: 0 0 0.4em;
-  text-wrap: balance;
+  max-width: var(--measure);
 }
 
-h1 { font-size: clamp(2rem, 7vw, 3.25rem); }
-h2 { font-size: clamp(1.4rem, 4.5vw, 2rem); }
-h3 { font-size: clamp(1.1rem, 3.5vw, 1.35rem); }
+h1 {
+  font-size: clamp(1.9rem, 1.4rem + 2.2vw, 2.9rem);
+  margin: 0 0 1rem;
+}
+
+h2,
+h3 {
+  font-size: clamp(1.25rem, 1.1rem + 0.8vw, 1.6rem);
+  margin: 0 0 0.7em;
+}
 
 a {
   color: var(--accent);
 }
 
-.label {
-  display: inline-block;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  margin: 0 0 0.2em;
-}
-
-/* --- Focus and skip link ------------------------------------------------ */
-
+/* A focus ring a reader can actually see, on every interactive thing, and
+   never removed by a rule below. */
 :focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
 
-/* These are focus targets the script moves to; they are never tabbed to.
-   `:focus-visible` is the browser's guess about whether a ring is wanted, and
-   for a programmatic move after a pointer click the guess is "no" — which
-   would leave a reader who just jumped chapters, or followed a citation into
-   the register, with no idea where they landed. They get the ring on plain
-   `:focus`. The source entry is the one a citation link lands on, so it needs
-   it as much as the beat does. */
-.scene:focus,
-.source-register:focus,
-.source:focus {
-  outline: 3px solid var(--accent);
-  outline-offset: 6px;
+[tabindex="-1"]:focus {
+  outline: none;
 }
-
-.source:focus { outline-offset: 3px; }
 
 .skip-link {
   position: absolute;
@@ -198,8 +176,8 @@ a {
   top: 0;
   background: var(--paper);
   padding: 0.6rem 1rem;
-  border: 2px solid var(--ink);
-  z-index: 10;
+  border: 2px solid var(--accent);
+  z-index: 3;
 }
 
 .skip-link:focus {
@@ -207,701 +185,420 @@ a {
   top: 0.5rem;
 }
 
-/* --- Controls ----------------------------------------------------------- */
+/* Anything that only works with a script is not shown to a reader who has
+   none; with one, the script's own state decides. */
+html:not(.js) .js-only {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Buttons and controls
+   ----------------------------------------------------------------------- */
 
 button,
 .button {
   font: inherit;
   color: var(--ink);
   background: var(--paper);
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  padding: 0.55rem 1.4rem;
-  min-height: 2.75rem;
+  border: 1.5px solid var(--rule-strong);
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.9rem;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   text-decoration: none;
-}
-
-button[disabled] {
-  color: var(--ink-soft);
-  border-color: var(--rule);
-  cursor: default;
-}
-
-.button.begin {
-  background: var(--ink);
-  color: var(--paper);
-  font-size: 1.1rem;
-  padding: 0.7rem 2.2rem;
-}
-
-/* Everything in a `.js-only` element does nothing without scripting, so it is
-   hidden until the browser script announces itself. */
-.js-only { display: none; }
-html.js .js-only { display: block; }
-/* `hidden` has to keep working on an element the rule above revealed; the UA
-   stylesheet's own [hidden] rule is less specific and would lose. */
-html.js .js-only[hidden] { display: none; }
-
-/* --- Draft notice ------------------------------------------------------- */
-
-.draft-notice {
-  border: 2px dashed var(--accent);
-  background: var(--highlight);
-  padding: 0.9rem 1rem;
-  margin: 1rem 0 0;
-}
-
-.draft-label {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 0.8rem;
-  color: var(--accent);
-  margin-bottom: 0.3em;
-}
-
-.draft-notice p:last-child { margin-bottom: 0; }
-
-/* --- Landing ------------------------------------------------------------ */
-
-.landing {
-  padding: 2.5rem 0 1rem;
-  text-align: center;
-}
-
-.landing p,
-.landing ul { margin-left: auto; margin-right: auto; }
-
-.landing-summary { font-size: 1.1rem; }
-
-.landing-cast {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-  padding: 0;
-  margin: 1rem auto;
-}
-
-.landing-art { margin: 1.5rem auto; max-width: 34rem; }
-
-figcaption {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  margin-top: 0.5rem;
-}
-
-.landing-actions { margin: 1.5rem 0 0.5rem; }
-
-.landing-sources { font-size: 0.95rem; }
-
-.landing-sources a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-}
-
-.reading-time {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-}
-
-/* --- Chapter navigation ------------------------------------------------- */
-
-.chapter-nav {
-  border-top: 1px solid var(--rule);
-  border-bottom: 1px solid var(--rule);
-  padding: 1rem 0;
-  margin: 1.5rem 0;
-}
-
-.chapter-nav ol {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 0.4rem;
-}
-
-/* A chapter shortcut is a touch target before it is a line of text, so it
-   keeps the same 2.75rem minimum height as every button. */
-.chapter-nav a {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  min-height: 2.75rem;
-  padding: 0.3rem 0.2rem;
-  color: var(--ink);
-  text-decoration-color: var(--rule-strong);
-}
-
-.chapter-number {
-  flex: none;
-  min-width: 1.6rem;
-  text-align: center;
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-  border: 1px solid var(--rule-strong);
-  border-radius: 999px;
-  padding: 0.05rem 0.1rem;
-}
-
-.chapter-nav a[aria-current='true'] {
-  color: var(--accent);
-  font-weight: 700;
-}
-
-.chapter-nav a[aria-current='true'] .chapter-number {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.nav-aside {
-  margin: 0.6rem 0 0;
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--rule);
-}
-
-.nav-aside a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-}
-
-/* --- Chapters and beats ------------------------------------------------- */
-
-.chapter { margin: 0 0 3rem; }
-
-.chapter-head { margin-bottom: 1.25rem; }
-
-.chapter-connection {
-  color: var(--ink-soft);
-  font-style: italic;
-}
-
-.scenes {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.scene {
-  padding: 1.25rem 0 1.75rem;
-  border-top: 1px solid var(--rule);
-}
-
-.scene-visual { margin: 0 0 1.25rem; }
-
-/* The frame is the positioning context for the nametags and the container the
-   label type scales against, so a drawing reads the same on a phone and on a
-   wide screen instead of being a shrunken copy of the desktop stage. */
-.scene-visual-frame {
-  position: relative;
-  container-type: inline-size;
-  border: 2px solid var(--rule);
-  background: #fff;
-}
-
-/* Inline SVG: no request, no font, nothing outside the document. `currentColor`
-   keeps the linework on the same ink as the text, including in print. */
-.scene-art {
-  display: block;
-  width: 100%;
-  height: auto;
-  color: var(--ink);
-}
-
-/* A beat with no drawing yet says so in the content document. It keeps the
-   earlier dashed frame and its row of names; the written description beneath
-   carries the beat, exactly as it does in print. The border is the only thing
-   marking this frame out, with nothing drawn inside it, so it takes the
-   stronger rule colour that clears 3:1 against the paper. */
-.scene-visual-frame[data-art='none'] {
-  border-style: dashed;
-  border-color: var(--rule-strong);
-  min-height: 7rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  padding: 1rem;
-}
-
-/* Only ever inside a frame with no composition. */
-.scene-visual-pending {
-  margin: 0;
-  max-width: var(--measure);
-  text-align: center;
-  font-size: 0.85rem;
-  color: var(--ink-soft);
-}
-
-.art-labels {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-/* A frame with no drawing, and a drawing too crowded to label over its heads,
-   both lay the names out as a row under the artwork instead. */
-.scene-visual-frame[data-art='none'] .art-labels,
-.scene-visual-frame[data-labels='list'] .art-labels {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  justify-content: center;
-  padding: 0.75rem 0.75rem 0.9rem;
-}
-
-/* Names are browser text sitting above each head, never lettering inside the
-   drawing: selectable, searchable, and able to grow with the reader's own type
-   size. The anchor comes from the composition that placed the figure. */
-.art-label {
-  position: absolute;
-  left: var(--art-x, 50%);
-  top: var(--art-y, 50%);
-  transform: translate(-50%, -100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.15em;
-  text-align: center;
-  white-space: nowrap;
-  line-height: 1.15;
-  font-size: clamp(0.58rem, 3.1cqw, 0.85rem);
-}
-
-.scene-visual-frame[data-art='none'] .art-label,
-.scene-visual-frame[data-labels='list'] .art-label {
-  position: static;
-  transform: none;
-  flex-direction: row;
-  align-items: baseline;
-  gap: 0.4em;
-  font-size: 1rem;
-}
-
-/* A beat that is deliberately not an illustrated situation has no frame at
-   all. What would have been the caption introduces the beat instead, so the
-   reader is never shown an empty box to interpret. */
-.scene-visual-note {
-  max-width: var(--measure);
-  margin: 0 0 1.25rem;
-  color: var(--ink-soft);
-  font-size: 0.95rem;
-}
-
-.art-label .nametag {
-  padding: 0.05em 0.5em;
-  font-size: 1em;
-}
-
-/* An invented friend is named so a reader can follow them from beat to beat,
-   but without the boxed nametag that marks a contributor. */
-.art-label .figure-name {
-  font-weight: 700;
-  font-size: 1em;
-}
-
-.art-label .expression { font-size: 0.75em; }
-
-/* Which figures in this drawing were made up, under it, at reading size. Over
-   a head the same words were six pixels tall on a phone and wider than any
-   name; here they are ordinary text in every view and on paper. */
-.figure-fiction {
-  max-width: var(--measure);
-  margin: 0.5rem 0 0;
-  font-size: 0.95rem;
-  color: var(--ink-soft);
-}
-
-/* On a narrow frame there is no room for a state word under every head without
-   the names colliding. The word is removed from sight, not from the document:
-   it stays available to a screen reader, and the caption under the drawing
-   states the same thing for everyone. */
-@container (max-width: 26rem) {
-  .scene-visual-frame[data-labels='over'] .art-label .expression {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
-  }
-}
-
-/* --- Scene motion --------------------------------------------------------
-   The condition layer is in the markup and settled by default, so print, a
-   scriptless browser, the offline file, and a reduced-motion reader all see the
-   finished explanation. The animation is an entrance for a drawing that is
-   already correct; Next and Back cannot leave it part-way, because the state it
-   settles into is the state it already had. */
-@keyframes art-reveal {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
-}
-
-html.js[data-view='beat'] .scene[data-current] [data-art-layer='reveal'] {
-  animation: art-reveal 600ms ease-out both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html.js[data-view='beat'] .scene[data-current] [data-art-layer='reveal'] {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-
-.nametag {
   display: inline-block;
-  border: 2px solid var(--ink);
-  border-radius: 0.3rem;
-  padding: 0.1rem 0.6rem;
-  font-weight: 700;
-  background: var(--paper);
 }
 
-.expression {
-  font-size: 0.8rem;
-  color: var(--ink-soft);
+.button.quiet {
+  border-color: var(--rule);
 }
 
-/* --- Dialogue ----------------------------------------------------------- */
-
-.dialogue {
-  list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
-  display: grid;
-  gap: 0.75rem;
-}
-
-.line {
-  border-left: 3px solid var(--rule);
-  padding-left: 0.9rem;
-}
-
-.line-speaker {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.3em;
-}
-
-.line-speaker .figure-name { font-weight: 700; }
-
-.line-kind {
-  font-size: 0.75rem;
-  color: var(--ink-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.line-text { margin-bottom: 0; }
-
-/* --- Limitations, concepts, details, sources ---------------------------- */
-
-.concepts { font-size: 0.95rem; color: var(--ink-soft); }
-
-.limitations {
+button[aria-pressed="true"] {
   background: var(--highlight);
-  border-left: 4px solid var(--accent);
-  padding: 0.8rem 1rem;
-  margin: 0 0 1rem;
+  border-color: var(--accent);
+  color: var(--ink);
 }
 
-.limitations p:last-child { margin-bottom: 0; }
-
-.detail {
-  border: 1px solid var(--rule);
-  padding: 0.5rem 0.9rem;
-  margin: 0 0 1rem;
-}
-
-/* The default disclosure marker is kept: it is what tells a reader the panel
-   can be collapsed while moving beat by beat. */
-.detail > summary {
-  cursor: pointer;
-  font-weight: 700;
-  padding: 0.5rem 0;
-  min-height: 2.25rem;
-}
-
-.detail-body { padding-top: 0.5rem; }
-.detail-body p:last-child { margin-bottom: 0; }
-
-.detail-sources {
-  font-size: 0.9rem;
-  color: var(--ink-soft);
-  padding-left: 1.1rem;
-}
-
-.source-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: grid;
-  gap: 1rem;
-}
-
-.source {
-  border-top: 1px solid var(--rule);
-  padding-top: 0.75rem;
-  font-size: 0.95rem;
-}
-
-.source p { margin-bottom: 0.35em; }
-
-.source-head { font-weight: 700; }
-
-.source-type,
-.source-status {
-  font-size: 0.8rem;
-  color: var(--ink-soft);
-  font-weight: 400;
-}
-
-/* Levels that need the reader's care are marked; a full read is not. */
-.source-status[data-status='unreviewed'],
-.source-status[data-status='not-accessed'],
-.source-status[data-status='verified-locator'],
-.source-status[data-status='verified-abstract'] { color: var(--accent); }
-
-.source-basis,
-.source-citation { color: var(--ink-soft); }
-
-.source-limit .label { margin-right: 0.3em; }
-
-.source-more { margin-bottom: 0; }
-
-.source-more a {
-  display: inline-flex;
-  align-items: center;
-  min-height: 2.75rem;
-  font-size: 0.9rem;
-}
-
-.detail-sources a { overflow-wrap: anywhere; }
-
-.source-register { margin: 2rem 0; }
-
-/* The entry a reader just followed a link to, so arriving at the register
-   does not drop them into an undifferentiated list. */
-.source:target {
-  background: var(--highlight);
-  box-shadow: 0 0 0 0.5rem var(--highlight);
-}
-
-.register-return { margin: 1.5rem 0 0; }
-
-/* --- Beat controls and view switch -------------------------------------- */
-
-.beat-controls {
+.reader-controls {
   position: fixed;
   left: 0;
   right: 0;
   bottom: 0;
-  background: var(--paper);
-  border-top: 2px solid var(--ink);
-  /* Keep the bar clear of a phone's home indicator or rounded corner. */
-  padding: 0.6rem max(1rem, env(safe-area-inset-left)) max(0.6rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-right));
+  z-index: 2;
   max-width: none;
-}
-
-html.js .beat-controls {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
   justify-content: center;
-  gap: 0.75rem;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  background: var(--paper);
+  border-top: 1.5px solid var(--rule-strong);
 }
 
-/* The progress line wraps; the two buttons never shrink below a thumb. */
-.beat-controls button { flex: none; }
-
-@media (max-width: 24rem) {
-  .beat-controls button { padding: 0.55rem 1rem; }
+.chapter-menu {
+  margin: 0 0 2rem;
+  padding: 0 0 1.2rem;
+  border-bottom: 1px solid var(--rule);
 }
 
-.beat-position {
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.35;
+.chapter-menu .label {
+  margin: 0 0 0.4em;
   color: var(--ink-soft);
-  min-width: 0;
-  flex: 1 1 auto;
-  text-align: center;
 }
 
-.beat-position > span { display: block; }
-
-.beat-count { font-weight: 700; }
-
-/* Empty between the two ends, so it takes no room in the middle of a read. */
-.beat-boundary:empty { display: none; }
-
-.beat-boundary { color: var(--accent); }
-
-.view-switch { margin: 1rem 0 0; }
-
-html.js .view-switch { display: block; }
-
-.concept-sheet,
-.licence {
-  margin-top: 0.75rem;
+.chapter-menu ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1.1rem;
 }
 
-.concept-sheet > summary {
-  cursor: pointer;
-  padding: 0.4rem 0;
-  min-height: 2.25rem;
+.chapter-menu a[aria-current] {
+  background: var(--highlight);
 }
 
-.concept-sheet img {
+/* --------------------------------------------------------------------------
+   Landing
+   ----------------------------------------------------------------------- */
+
+.landing {
+  padding: 2.5rem 0 1rem;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  max-width: none;
+  margin-top: 1.5rem;
+}
+
+/* --------------------------------------------------------------------------
+   Scenes
+   ----------------------------------------------------------------------- */
+
+.chapter {
+  margin: 0 0 2.5rem;
+}
+
+.chapter-title {
+  color: var(--ink-soft);
+  font-size: 1.05rem;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 0.3em;
+}
+
+.scene {
+  margin: 0 0 3rem;
+}
+
+.scene-title {
+  font-size: clamp(1.35rem, 1.15rem + 1vw, 1.8rem);
+}
+
+.narration {
+  margin-bottom: 1em;
+}
+
+/* A speaker's name is its own element above the line, so it is never read as
+   part of the sentence and never runs into it on a narrow screen. */
+.line {
+  margin: 0 0 1em;
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--rule);
+}
+
+.speaker {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 0.92em;
+}
+
+.citation {
+  font-size: 0.82em;
+  text-decoration: none;
+  padding: 0 0.1em;
+  white-space: nowrap;
+  vertical-align: 0.25em;
+}
+
+.citation:hover,
+.citation:focus-visible {
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   Artwork
+
+   No frame, no border and no fixed-height stage. Each drawing keeps the
+   proportions it was generated at; `width` and `height` on the image reserve
+   its box before the file arrives, so nothing jumps as the page loads.
+
+   Room is reserved above the image for the names, because a name anchored at
+   1% of the height sits almost entirely above the drawing. Nothing on this
+   path clips: the reserve is padding on the figure and no ancestor hides its
+   overflow.
+   ----------------------------------------------------------------------- */
+
+.art {
+  margin: 1.6rem 0 1.8rem;
+  max-width: none;
+  /* The reserve for anchored names, in the same units the labels are set in,
+     so a reader's larger type enlarges the room as well as the label. */
+  padding-top: 2.2em;
+}
+
+.art-views {
+  display: grid;
+  gap: 1rem 1.5rem;
+  align-items: end;
+}
+
+.art[data-layout="pair"] .art-views {
+  grid-template-columns: 1fr 1fr;
+  /* The drawings share one row and the labels share the next, so two cutouts
+     of different proportions meet along their bottoms instead of being
+     stretched or cropped to match. */
+  grid-template-rows: auto auto;
+}
+
+.art[data-layout="pair"] .art-view {
+  display: contents;
+}
+
+.art[data-layout="pair"] .art-anchor {
+  align-self: end;
+}
+
+.art-anchor {
+  position: relative;
+  display: block;
+}
+
+.art-anchor img {
   display: block;
   width: 100%;
   height: auto;
-  border: 2px solid var(--rule);
-  background: #fff;
 }
 
-.concept-sheet figure { margin: 0.5rem 0 0; }
-
-.licence > summary {
-  cursor: pointer;
-  padding: 0.4rem 0;
-  min-height: 2.25rem;
+.art-view-label {
+  margin: 0.3rem 0 0;
+  color: var(--ink-soft);
+  max-width: none;
 }
 
-.licence-text {
-  white-space: pre-wrap;
-  font-size: 0.75rem;
-  line-height: 1.5;
-  overflow-wrap: break-word;
-  margin: 0;
+/* A name or a prop label: browser text in the page's own face, positioned on
+   the fractions the asset was inspected at, sitting above its anchor. */
+.art-label {
+  position: absolute;
+  left: var(--x);
+  top: var(--y-desktop);
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+  font-size: 0.95rem;
+  line-height: 1.1;
+  padding: 0.05em 0.3em;
 }
 
-.colophon {
-  border-top: 1px solid var(--rule);
-  margin-top: 2rem;
-  padding-top: 1rem;
-  font-size: 0.85rem;
+.art-label[data-kind="prop"] {
   color: var(--ink-soft);
 }
 
-/* --- View states --------------------------------------------------------
-   Without scripting no state attribute is ever set, so the document stays in
-   its complete continuous form. That is also the print and offline fallback. */
+.art-control {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0;
+  max-width: none;
+}
 
-html.js[data-view='landing'] .essay-body,
-html.js[data-view='landing'] .source-register,
-html.js[data-view='landing'] .beat-controls { display: none; }
+/* In the scene view a comparison shows the state its control names. Both
+   drawings are in the markup either way; the continuous view, print and a
+   browser with no script show both, with their labels, in the authored
+   order. */
+html.js[data-view="beat"] .art-comparison[data-active="0"] .art-view[data-state="1"],
+html.js[data-view="beat"] .art-comparison[data-active="1"] .art-view[data-state="0"] {
+  display: none;
+}
 
-html.js[data-view='beat'] .landing { display: none; }
-html.js[data-view='beat'] .chapter:not([data-current]) { display: none; }
-html.js[data-view='beat'] .scene:not([data-current]) { display: none; }
-html.js[data-view='beat'] .source-register { display: none; }
-html.js[data-view='beat'] .chapter-opening,
-html.js[data-view='beat'] .chapter-closing { display: none; }
-html.js[data-view='beat'] .chapter[data-show-opening] .chapter-opening,
-html.js[data-view='beat'] .chapter[data-show-closing] .chapter-closing { display: block; }
+html.js[data-view="beat"] .art-comparison .art-view-label {
+  display: none;
+}
 
-html.js[data-view='reading'] .beat-controls { display: none; }
-html.js[data-view='reading'] .landing { display: none; }
+/* --------------------------------------------------------------------------
+   Sources & Credits
+   ----------------------------------------------------------------------- */
 
-/* No entrance animation here on purpose. A beat must be readable the instant
-   it is shown; scene motion belongs to the illustrations, where a reduced-motion
-   reader still gets the same explanation from the text and the description. */
+.sources {
+  padding: 2rem 0 1rem;
+}
+
+.source-list {
+  margin: 1.5rem 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: none;
+}
+
+.source {
+  margin: 0 0 1.3rem;
+  padding-left: 2.6rem;
+  position: relative;
+}
+
+.source-number {
+  position: absolute;
+  left: 0;
+  color: var(--ink-soft);
+}
+
+.source-head {
+  margin-bottom: 0.3em;
+}
+
+.source-note {
+  color: var(--ink-soft);
+  margin-bottom: 0;
+}
+
+.sources-return {
+  margin-top: 2rem;
+}
+
+/* --------------------------------------------------------------------------
+   Views
+
+   A view is a choice about the screen, never about what the argument
+   contains. Every rule that hides something here is answered in the print
+   block below.
+   ----------------------------------------------------------------------- */
+
+html.js[data-view="landing"] .essay-body,
+html.js[data-view="landing"] .chapter-menu {
+  display: none;
+}
+
+html.js[data-view="beat"] .landing,
+html.js[data-view="reading"] .landing {
+  display: none;
+}
+
+html.js[data-view="beat"] .scene:not([data-current]) {
+  display: none;
+}
+
+/* In the scene view a chapter heading belongs to the scene on screen. */
+html.js[data-view="beat"] .chapter-title {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   Phone
+   ----------------------------------------------------------------------- */
+
+@media (max-width: 38rem) {
+  .art-label {
+    top: var(--y-phone);
+    font-size: 0.85rem;
+  }
+
+  /* A pair stacks in its authored label order, each drawing with its own
+     label under it, rather than shrinking two cutouts into one row. */
+  .art[data-layout="pair"] .art-views {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+  }
+
+  .art[data-layout="pair"] .art-view {
+    display: block;
+  }
+
+  .reader-controls {
+    gap: 0.4rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  button,
+  .button {
+    padding: 0.4rem 0.7rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Motion
+
+   The artwork is still, and a comparison switches between two drawings that
+   are already drawn. There is no transition to shorten and no entrance to
+   suppress, so reduced motion and ordinary motion show the same page; the
+   declaration is here so that stays true of anything added later.
+   ----------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
-/* --- Wider screens ------------------------------------------------------ */
+/* --------------------------------------------------------------------------
+   Print
 
-@media (min-width: 52rem) {
-  body { padding: 0 2rem 8rem; }
-  body > * { max-width: 56rem; }
-  .chapter-nav ol { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.25rem 1.5rem; }
-  .scene {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    column-gap: 2.5rem;
-    align-items: start;
-  }
-  .scene > .scene-title { grid-column: 1 / -1; }
-  .scene > .scene-visual { grid-column: 2; grid-row: 2; position: sticky; top: 1.5rem; }
-  .scene > :not(.scene-title):not(.scene-visual) { grid-column: 1; }
-  .landing-art { max-width: 40rem; }
-}
-
-/* --- Print --------------------------------------------------------------
-   Print always carries the complete argument, whichever view is on screen. */
+   The complete argument, in scene order, with no control needed to reveal any
+   of it and no navigation printed.
+   ----------------------------------------------------------------------- */
 
 @media print {
-  html, body { background: #fff; color: #000; }
-  body { padding: 0; display: block; max-width: none; }
-  body > * { max-width: none; }
+  html,
+  body {
+    background: #fff;
+    color: #000;
+  }
 
-  /* Controls and shortcuts are screen apparatus; the register link is not a
-     source. Nothing here carries part of the argument. */
+  body {
+    padding: 0;
+    display: block;
+  }
+
+  .reader-controls,
   .skip-link,
-  .beat-controls,
-  .view-switch,
-  .chapter-nav,
-  .landing-actions,
-  .landing-sources,
-  .source-more,
-  .register-return,
-  .reading-time { display: none !important; }
+  .art-control,
+  .chapter-menu,
+  .sources-return {
+    display: none !important;
+  }
 
-  /* The answer to every view selector above. Each of these is something a
-     view hides on screen, and all of it belongs in the printed argument. */
+  /* Every view rule above, answered. Whatever the reader was looking at, the
+     printed pages carry all 45 scenes and both drawings of every comparison. */
   html.js[data-view] .landing,
   html.js[data-view] .essay-body,
-  html.js[data-view] .source-register,
-  html.js[data-view] .chapter,
+  html.js[data-view] .chapter-title,
   html.js[data-view] .scene,
-  html.js[data-view] .chapter-opening,
-  html.js[data-view] .chapter-closing { display: block !important; animation: none !important; }
+  html.js[data-view] .art-comparison .art-view,
+  html.js[data-view] .art-comparison .art-view-label {
+    display: revert !important;
+  }
 
-  /* A ring marks where a reader is looking; paper has no such reader. */
-  .scene:focus,
-  .source-register:focus,
-  .source:focus { outline: none; }
-  .source:target { background: transparent; box-shadow: none; }
+  .art[data-layout="pair"] .art-views {
+    grid-template-columns: 1fr 1fr;
+  }
 
-  .scene { display: block !important; page-break-inside: avoid; break-inside: avoid; }
-  .chapter { page-break-before: auto; }
+  .scene,
+  .art {
+    break-inside: avoid;
+  }
 
-  /* Optional panels print open whether or not anything ran before printing.
-     The browser script also opens them on `beforeprint`, but print must not
-     depend on an event firing: a collapsed panel would silently drop content
-     from the printed argument. */
-  details > summary { list-style: none; }
-  details::details-content { content-visibility: visible; block-size: auto; }
-  details:not([open]) > *:not(summary) { display: block; }
+  .chapter-title,
+  .scene-title {
+    break-after: avoid;
+  }
 
-  /* The width cap belongs to the whole figure, not to the drawing inside it.
-     A name sits above a head at a percentage of the frame, so capping the
-     drawing alone would leave the frame the width of the page and every name
-     drifting away from the figure it belongs to. */
-  .scene-visual,
-  .landing-art,
-  .concept-sheet img { max-width: 12cm; }
-  .scene-visual-frame { border-color: #000; break-inside: avoid; }
-
-  /* A printed page has no beats, so the condition layer must simply be there. */
-  [data-art-layer='reveal'] { animation: none !important; opacity: 1 !important; transform: none !important; }
-
-  a { color: #000; }
+  a {
+    color: #000;
+  }
 }

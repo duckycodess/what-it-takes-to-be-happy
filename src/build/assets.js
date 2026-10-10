@@ -3,8 +3,13 @@
  *
  * Two faces, with different rights and different jobs. The project typeface is
  * served by the hosted site as a linked file; the fallback is bundled under a
- * licence that permits redistribution anywhere, including inside the single
- * offline file. Replacing either one means editing this file and nothing else.
+ * licence that permits redistribution anywhere, including inside the retained
+ * single-file export. Replacing either one means editing this file and nothing
+ * else.
+ *
+ * The production artwork is not listed here. It is the inspected generated
+ * assets the content document names, each with its own manifest, checksum and
+ * approved alternative text, and the build reads them from there.
  *
  * Provenance, permission, and checksums for both are in assets/fonts/README.md.
  */
@@ -43,18 +48,6 @@ export const FALLBACK_FONT_LICENSE = {
   source: 'assets/fonts/DejaVuSans.LICENSE.txt',
   published: 'assets/fonts/DejaVuSans.LICENSE.txt',
   mediaType: 'text/plain; charset=utf-8',
-};
-
-/** The one original illustration committed so far. */
-export const ILLUSTRATION = {
-  source: 'assets/concepts/stickman-character-sheet-v1.png',
-  published: 'assets/illustrations/stickman-character-sheet-v1.png',
-  mediaType: 'image/png',
-  width: 1536,
-  height: 1024,
-  alt: 'Original stickman concept sheet: four simple figures drawn across six expressions each, from joy and curiosity to sadness, frustration, fatigue, and quiet reflection.',
-  caption:
-    'First concept sheet. The appearances are provisional, the lettering inside the image is a placement study, and the finished essay renders every name and line as text.',
 };
 
 /** Where the replaceable fallback-font URL appears in the stylesheet. */

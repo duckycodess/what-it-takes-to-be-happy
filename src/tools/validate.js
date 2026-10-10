@@ -20,10 +20,9 @@ let failed = false;
 for (const target of targets) {
   try {
     const doc = await loadContent(target);
-    const scenes = doc.scenes.length;
-    const chapters = doc.chapters.length;
-    const draft = doc.status.final ? 'final' : 'non-final';
-    console.log(`ok  ${target}: ${chapters} chapter(s), ${scenes} scene(s), ${doc.sources.length} source(s), marked ${draft}.`);
+    console.log(`ok  ${target}: ${doc.chapters.length} chapter(s), ${doc.scenes.length} scene(s), `
+      + `${doc.sourcesPage.sources.length} source(s), ${doc.assets.length} generated asset(s), `
+      + `${doc.measure.words} main-path words.`);
   } catch (error) {
     failed = true;
     if (!(error instanceof ContentError)) throw error;

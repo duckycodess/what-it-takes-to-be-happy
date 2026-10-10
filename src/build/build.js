@@ -2,8 +2,19 @@
 /**
  * Builds the essay's outputs from one validated content document.
  *
- *   npm run build            -> dist/index.html (+ linked assets) and dist/offline.html
+ *   npm run build            -> dist/ (the hosted website) and dist/offline.html
  *   npm run export:offline   -> dist/offline.html only
+ *
+ * The hosted website is the deliverable: `index.html`, the separate
+ * `sources.html`, the stylesheet, the script, the two fonts and the selected
+ * generated artwork as linked files. Linking the drawings rather than
+ * inlining them is deliberate — the 21 selected cutouts are 21.4 MB, and a
+ * phone should fetch the one it is looking at.
+ *
+ * `dist/offline.html` is retained tooling, not a release gate. It inlines
+ * every one of those images as base64 and is correspondingly enormous; the
+ * build reports its size rather than treating a threshold as evidence about
+ * the hosted site.
  *
  * The build is deterministic: nothing records a timestamp, a random value, or
  * a machine path, so the same commit always produces byte-identical output.
@@ -16,24 +27,25 @@ import { fileURLToPath } from 'node:url';
 
 import { loadContent, ContentError } from '../content/load.js';
 import { formatErrors } from '../content/validate.js';
-import { renderDocument } from '../runtime/render.js';
+import { renderEssay, renderSourcesPage, sourceAnchor } from '../runtime/render.js';
 import {
   PROJECT_FONT,
   FALLBACK_FONT,
   FALLBACK_FONT_LICENSE,
-  ILLUSTRATION,
   FONT_URL_TOKEN,
   PROJECT_FONT_URL_TOKEN,
   HOSTED_ONLY_CSS,
 } from './assets.js';
 import { toDataUri, withFontUrl, withoutHostedOnly } from './inline.js';
 import {
-  auditOfflineHtml,
+  auditSelfContainedHtml,
   auditContentCoverage,
+  auditSourcesCoverage,
+  auditArtwork,
+  auditBrowserText,
   auditBundledLicence,
   auditFontNotices,
   auditProjectFontIsHostedOnly,
-  auditInlineArtwork,
   formatProblems,
 } from './verify.js';
 
@@ -56,100 +68,124 @@ function fail(label, problems) {
   throw new Error(`${label}:\n${formatProblems(problems)}`);
 }
 
+/** Every selected image the content document actually uses. */
+export const selectedImages = (content) =>
+  content.assets.flatMap((asset) => asset.images.map((image) => image.path));
+
 /**
- * Renders both outputs in memory. Exported so tests can build without writing
- * to disk and can compare the two documents directly.
+ * Where a citation leads on the hosted site: the separate page, with the
+ * originating scene and reading mode in the query so returning can restore
+ * both, and the entry's own fragment so the reader lands on it.
+ */
+const hostedSourceHref = (number, sceneId) =>
+  `sources.html${sceneId ? `?from=${sceneId}&view=scene` : ''}#${sourceAnchor(number)}`;
+
+/**
+ * Renders every output in memory. Exported so tests can build without writing
+ * to disk and can compare the documents directly.
  */
 export async function buildOutputs(content) {
-  const [css, script, projectFontBytes, fontBytes, fontLicense, illustrationBytes] = await Promise.all([
+  const [css, script, projectFontBytes, fontBytes, fontLicense] = await Promise.all([
     readText(STYLESHEET),
     readText(READER_SCRIPT),
     read(PROJECT_FONT.source),
     read(FALLBACK_FONT.source),
     readText(FALLBACK_FONT_LICENSE.source),
-    read(ILLUSTRATION.source),
   ]);
 
-  const shared = {
-    fontLicense,
-    illustration: {
-      width: ILLUSTRATION.width,
-      height: ILLUSTRATION.height,
-      alt: ILLUSTRATION.alt,
-      caption: ILLUSTRATION.caption,
-    },
-  };
+  const artwork = new Map();
+  await Promise.all(selectedImages(content).map(async (path) => artwork.set(path, await read(path))));
 
-  // Hosted: ordinary linked files, so the browser can cache them between
-  // visits, and the only output the project typeface is served from.
+  // Hosted: ordinary linked files, so the browser caches them between visits,
+  // and the only output the project typeface is served from.
   const hostedCss = withFontUrl(
     withFontUrl(css, FONT_URL_TOKEN, FALLBACK_FONT.published),
     PROJECT_FONT_URL_TOKEN,
     PROJECT_FONT.published,
   );
-  const hosted = renderDocument(content, {
-    ...shared,
+  const hostedOptions = {
     mode: 'hosted',
-    fontNotices: [PROJECT_FONT.notice, FALLBACK_FONT.notice],
     stylesheetUrl: 'styles.css',
     scriptUrl: 'reader.js',
-    illustration: { ...shared.illustration, url: ILLUSTRATION.published },
-  });
+    sourcesHref: 'sources.html',
+    sourceHref: hostedSourceHref,
+  };
+  const hosted = renderEssay(content, hostedOptions);
+  const sources = renderSourcesPage(content, { ...hostedOptions, essayUrl: 'index.html' });
 
-  // Offline: one file that opens straight from disk with no network at all.
-  // The project typeface is not in it. Its permission covers this site using
-  // the face, not a copy of the file travelling inside a document handed to
-  // someone else, so the hosted-only region of the stylesheet leaves here and
-  // the bundled fallback sets everything.
+  // The single-file export: one document that opens straight from disk with
+  // no network at all. The project typeface is not in it. Its permission
+  // covers this site using the face, not a copy of the file travelling inside
+  // a document handed to someone else, so the hosted-only region of the
+  // stylesheet leaves here and the bundled fallback sets everything.
   const offlineCss = withFontUrl(
     withoutHostedOnly(css, HOSTED_ONLY_CSS),
     FONT_URL_TOKEN,
     toDataUri(fontBytes, FALLBACK_FONT.mediaType),
   );
-  const offline = renderDocument(content, {
-    ...shared,
+  const offline = renderEssay(content, {
     mode: 'offline',
-    fontNotices: [FALLBACK_FONT.noticeAlone],
     inlineStyles: offlineCss,
     inlineScript: script,
-    illustration: { ...shared.illustration, url: toDataUri(illustrationBytes, ILLUSTRATION.mediaType) },
+    inlineSources: true,
+    assetUrl: (path) => toDataUri(artwork.get(path), 'image/png'),
+    sourcesHref: '#sources',
+    sourceHref: (number) => `#${sourceAnchor(number)}`,
+    fontLicense,
+    fontNotice: FALLBACK_FONT.noticeAlone,
   });
 
-  return { hosted, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, illustrationBytes };
+  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork };
 }
 
 /** Every check the build refuses to publish without. */
 export function auditOutputs(outputs, content) {
-  const offlineProblems = auditOfflineHtml(outputs.offline);
-  if (offlineProblems.length > 0) fail('dist/offline.html depends on resources it does not carry', offlineProblems);
+  const essayOutputs = [
+    ['dist/index.html', outputs.hosted, {}],
+    ['dist/offline.html', outputs.offline, { inline: true }],
+  ];
+
+  for (const [label, html, options] of essayOutputs) {
+    const coverage = auditContentCoverage(html, content);
+    if (coverage.length > 0) fail(`${label} does not carry the complete approved argument`, coverage);
+
+    const art = auditArtwork(html, content, options);
+    if (art.length > 0) fail(`${label} does not present the inspected generated artwork correctly`, art);
+
+    const text = auditBrowserText(html, content);
+    if (text.length > 0) fail(`${label} does not render every name and label as browser text`, text);
+  }
+
+  const sourcesOutputs = [
+    ['dist/sources.html', outputs.sources],
+    ['dist/offline.html', outputs.offline],
+  ];
+  for (const [label, html] of sourcesOutputs) {
+    const problems = auditSourcesCoverage(html, content);
+    if (problems.length > 0) fail(`${label} does not carry the complete Sources & Credits page`, problems);
+  }
+
+  // The typeface credit is the owner-approved Sources & Credits copy, which
+  // names Billy Snyder and the grant it is used under; `auditSourcesCoverage`
+  // above is what requires it, and no renderer-written notice is added to the
+  // reader's page. The single-file export credits the only face it actually
+  // carries, which the approved copy does not mention because the website
+  // does not bundle it.
+  const credits = auditFontNotices(outputs.offline, [FALLBACK_FONT.noticeAlone]);
+  if (credits.length > 0) fail('dist/offline.html does not credit the font it bundles', credits);
+
+  const selfContained = auditSelfContainedHtml(outputs.offline);
+  if (selfContained.length > 0) fail('dist/offline.html depends on resources it does not carry', selfContained);
 
   const leaked = auditProjectFontIsHostedOnly(outputs.offline, outputs.projectFontBytes, PROJECT_FONT);
   if (leaked.length > 0) fail('dist/offline.html carries the project typeface, which is served by the hosted site only', leaked);
 
-  const outputsToCheck = [
-    ['dist/index.html', outputs.hosted, [PROJECT_FONT.notice, FALLBACK_FONT.notice]],
-    ['dist/offline.html', outputs.offline, [FALLBACK_FONT.noticeAlone]],
-  ];
-
-  for (const [label, html, notices] of outputsToCheck) {
-    const coverage = auditContentCoverage(html, content);
-    if (coverage.length > 0) fail(`${label} does not carry the complete content`, coverage);
-
-    const licence = auditBundledLicence(html, outputs.fontLicense);
-    if (licence.length > 0) fail(`${label} does not carry the bundled font licence`, licence);
-
-    // Each output credits the fonts it actually carries, and only those: a
-    // notice for a face that is not there would be a false statement about
-    // what the reader is looking at.
-    const credits = auditFontNotices(html, notices);
-    if (credits.length > 0) fail(`${label} does not credit every font it carries`, credits);
-
-    const artwork = auditInlineArtwork(html);
-    if (artwork.length > 0) fail(`${label} contains a drawing that reaches outside itself or carries its own lettering`, artwork);
-  }
+  const licence = auditBundledLicence(outputs.offline, outputs.fontLicense);
+  if (licence.length > 0) fail('dist/offline.html does not carry the bundled font licence', licence);
 }
 
 const sha = (data) => createHash('sha256').update(data).digest('hex').slice(0, 12);
+const mb = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 async function main() {
   const onlyOffline = process.argv.includes('--only=offline');
@@ -176,23 +212,31 @@ async function main() {
   const written = [];
   if (!onlyOffline) {
     written.push(await write(join(DIST, 'index.html'), outputs.hosted));
+    written.push(await write(join(DIST, 'sources.html'), outputs.sources));
     written.push(await write(join(DIST, 'styles.css'), outputs.hostedCss));
     written.push(await write(join(DIST, 'reader.js'), outputs.script));
     written.push(await write(join(DIST, PROJECT_FONT.published), outputs.projectFontBytes));
     written.push(await write(join(DIST, FALLBACK_FONT.published), outputs.fontBytes));
     written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
-    written.push(await write(join(DIST, ILLUSTRATION.published), outputs.illustrationBytes));
+    for (const [path, bytes] of outputs.artwork) written.push(await write(join(DIST, path), bytes));
   }
-  written.push(await write(join(DIST, 'offline.html'), outputs.offline));
+  const offlineFile = await write(join(DIST, 'offline.html'), outputs.offline);
+  written.push(offlineFile);
 
-  const draft = content.status.final ? 'final' : 'non-final';
-  console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} beat(s) from content/content.json (${draft}).`);
+  console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} scene(s) `
+    + `from content/content.json (${content.measure.words} main-path words).`);
   for (const file of written) {
-    console.log(`  ${relative(repoRoot, file.path).padEnd(48)} ${String(file.bytes).padStart(9)} bytes  sha256:${sha(await readFile(file.path))}`);
+    console.log(`  ${relative(repoRoot, file.path).padEnd(56)} ${String(file.bytes).padStart(10)} bytes  sha256:${sha(await readFile(file.path))}`);
   }
-  console.log(onlyOffline
-    ? 'Offline export only. Open dist/offline.html directly in a browser.'
-    : 'Hosted output is dist/ (publish directory). The offline submission file is dist/offline.html.');
+
+  const hostedBytes = written.filter((file) => file !== offlineFile).reduce((sum, file) => sum + file.bytes, 0);
+  if (!onlyOffline) {
+    const first = written.find((file) => file.path.endsWith('index.html'));
+    console.log(`Hosted output is dist/ (publish directory): ${mb(hostedBytes)} in total, of which the first `
+      + `page is ${first.bytes} bytes of HTML plus the one eagerly loaded illustration; the rest of the artwork is lazy.`);
+  }
+  console.log(`dist/offline.html is retained tooling, not a release gate: ${mb(offlineFile.bytes)} with every `
+    + 'drawing inlined as base64. The hosted site links those files instead.');
 }
 
 // Run only when invoked directly, so tests can import these functions.
