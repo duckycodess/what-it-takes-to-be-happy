@@ -1,4 +1,290 @@
 {
   "schema": "website-art-requests/v1",
-  "requests": []
+  "requests": [
+    {
+      "id": "rewrite-mixed-day-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scenes s091 “One bad day” and s092 “Two different questions” (single): an illustrative difficult day that lets the essay separate a passing mood from a life going well.",
+      "description": "Fictional Bob seated beside an open, unlettered notebook. Tired eyebrows, small neutral mouth, relaxed shoulders; the task looks demanding without a despairing or triumphant verdict. One intact figure.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A02",
+      "alt": "Bob sits tired beside an open notebook."
+    },
+    {
+      "id": "rewrite-chosen-study-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scenes s093 “Living well takes more than a mood” (single, after Koj's dialogue), s097 “Chosen challenge, forced hardship” (pair with A06, view label “Chosen effort”) and s100 “Who ranks pleasures?” (pair with A05, view label “Studying”): effort a person chooses, demanding and still worth it.",
+      "description": "Koj with the recognizable curl, compact seated body, open book and pencil. Concentrated eyebrows, slightly strained expression; no ecstatic smile, grades, labels or badges.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A03",
+      "alt": "Koj concentrates on an open book with a pencil in hand."
+    },
+    {
+      "id": "rewrite-agency-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scenes s094 “Having a say” and s108 “Choosing what to keep” (single, after Vier's dialogue): having a say over which demands to keep, without depicting a path or an idealized second self.",
+      "description": "Vier with angular tuft, thoughtful face, seated with a phone set down and a notebook nearby. One hand raised in a small questioning gesture; no pathways, arrows or idealized second self.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A04",
+      "alt": "Vier pauses beside a phone and notebook with a questioning expression."
+    },
+    {
+      "id": "rewrite-playing-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scenes s096 “A hobby can offer several things” (single) and s100 “Who ranks pleasures?” (pair with A03, view label “Playing”): a freely chosen hobby supplying competence, autonomy and relatedness at once.",
+      "description": "TJ and fictional Bob sit together with simple game controllers; relaxed expressive faces. One small unlettered screen off to the side, no game logo or generated UI. Preserve both full figures.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A05",
+      "alt": "TJ and Bob enjoy playing a game together."
+    },
+    {
+      "id": "rewrite-required-work-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s097 “Chosen challenge, forced hardship” (pair with A03, view label “Required work”): obligation a fictional person cannot refuse, never assigned to Koj.",
+      "description": "Fictional Bob, visibly tired, seated with an unlettered stack of task papers and a simple clock. No bill amounts, grades, employer or hardship assigned to a member.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A06",
+      "alt": "Bob looks tired beside a stack of tasks and a clock."
+    },
+    {
+      "id": "rewrite-rest-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s098 “Rest does not need to pay us back” (single, after TJ's dialogue): rest shown as worth having in itself, with no timer, reward or productivity framing.",
+      "description": "TJ with crown tuft reclining comfortably against a simple cushion; restful eyes, small content smile. No phone app, timer, productivity badge or “before/after” body.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A07",
+      "alt": "TJ rests comfortably against a cushion."
+    },
+    {
+      "id": "rewrite-expectations-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s103 “The expected life” (single): four expected milestones as separate blank props, leaving room for the browser labels “Grades”, “Career”, “Relationship” and “Income” beside the matching prop, with no sequence or score.",
+      "description": "Vier thoughtful at center; four separate small props around him: blank grade sheet, work bag, two-person keepsake silhouette, blank banknote. Plenty of blank space for the four browser labels specified in s103. No milestones route or scoring.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A08",
+      "alt": "Vier considers symbols of grades, work, relationships and income."
+    },
+    {
+      "id": "rewrite-phone-connection-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s104 “What does the purchase give me?” (single, after TJ's dialogue) and the default “Connection” state of scene s105 “One phone, different uses”: the same phone used to stay close to someone.",
+      "description": "TJ using a small phone with a warm smile; fictional Bob beside him, holding a phone and smiling back. No screen lettering, messages, notification counts or connection arrows. Two full figures.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A09a",
+      "alt": "TJ and Bob smile while using their phones to connect."
+    },
+    {
+      "id": "rewrite-phone-comparison-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Second “Comparison” state of scene s105 “One phone, different uses”: the same phone and pose turned to comparison instead; framing must stay close to A09a so the optional control swaps states instantaneously.",
+      "description": "Same TJ identity and phone pose, now thoughtful and slightly tense; no second person, status symbols, numeric counts or assumed diagnosis. Preserve framing close to A09a for an instantaneous state swap.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A09b",
+      "alt": "TJ looks tense while looking at his phone."
+    },
+    {
+      "id": "rewrite-cheer-pressure-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s106 “Pressure to be cheerful” (single): sadness that persists while a fictional friend urges cheer, with clear space for the browser dialogue “Cheer up!” beside the friend rather than over heads.",
+      "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text “Cheer up!” near friend, not over heads.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A10",
+      "alt": "Bob looks sad while a cheerful friend gestures toward him."
+    },
+    {
+      "id": "rewrite-joy-and-pressure-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s107 “Joy does not cancel the problem” (single): real enjoyment coexisting with unresolved demands, with neither read as the truer feeling.",
+      "description": "Fictional Bob seated with a plate of food and a phone placed aside. A restrained smile and worried brow coexist; a small stack of blank papers nearby indicates unresolved demands, not measured debt.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A11",
+      "alt": "Bob enjoys a meal while nearby tasks remain unresolved."
+    },
+    {
+      "id": "rewrite-shared-meal-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scenes s109 “Ordinary care” and s111 “Sharing a meal” (group): the three members eating together as ordinary care, with browser names reserved above their heads.",
+      "description": "TJ, Koj and Vier seated around a small low table with three simple plates. Friendly, calm expressions, full visible heads and compact bodies. No restaurant brand, purchase or depicted real event. Reserve browser names above heads.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A12",
+      "alt": "TJ, Koj and Vier share a meal around a small table."
+    },
+    {
+      "id": "rewrite-care-work-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s112 “Who keeps the relationship going?” (single): the unnoticed organizing work behind a shared meal, carried by a fictional person and never assigned to a member.",
+      "description": "One fictional organizer arranging plates while checking a blank phone. Focused rather than permanently unhappy; other guests need not appear. No gender-coded duty or inferred member household.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A13",
+      "alt": "A fictional organizer arranges plates while checking a schedule."
+    },
+    {
+      "id": "rewrite-solitude-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s113 “Boundaries belong in connection” (single): chosen solitude as part of connection rather than a picture of loneliness.",
+      "description": "Fictional Bob reading alone, relaxed posture and content face; one simple book. Empty surrounding space stays transparent, without loneliness symbols.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A14",
+      "alt": "Bob reads alone with a relaxed expression."
+    },
+    {
+      "id": "rewrite-time-available-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Default “Time available” state of scene s114 “The same invitation, different options”: the same fictional person with hours free to accept an invitation.",
+      "description": "Fictional Bob standing freely with a small basketball, smiling and ready to join. No literal calendar, text or estimated free hours.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A15a",
+      "alt": "Bob has time to join a game."
+    },
+    {
+      "id": "rewrite-time-claimed-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Second “Time claimed” state of scene s114 “The same invitation, different options”: the same identity with those hours already claimed by work and travel.",
+      "description": "Same Bob identity carrying a plain work bag, glancing at a clock, with a simple bus-stop post nearby. Tired expression; no employer, route map or fictional schedule data.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A15b",
+      "alt": "Bob carries a work bag beside a bus-stop post and clock."
+    },
+    {
+      "id": "rewrite-time-transfer-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s115 “Buying time moves the work” (pair, view labels “Time gained” then “Work performed”): bought time reappearing as someone else's labour; the pair layout needs two separately usable cutouts.",
+      "description": "Two fictional people in separate transparent groups: one resting, the other doing dishes. Distinguish through pose and browser labels, not a rich/poor caricature. Keep task tools fully visible. Supply separately usable cutouts for pair layout.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A16",
+      "alt": "First cutout: A fictional person rests. Second cutout: A fictional worker does the dishes."
+    },
+    {
+      "id": "rewrite-campus-space-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scenes s124 “Make room on campus” and s127 “Test a proposal before claiming success” (single): the fictional shared space our proposal asks for, with no real location named and no success marks.",
+      "description": "Fictional proposed shared space: bench, modest shade and two students spending time together, with clear unobstructed space alongside seating. No actual campus landmark, commercial branding or success indicators.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A17",
+      "alt": "Two fictional students spend time in a shaded shared seating area."
+    },
+    {
+      "id": "rewrite-space-work-v1",
+      "issue": 15,
+      "branch": "codex/issue-15",
+      "purpose": "Scene s126 “Who benefits, who pays?” (pair, view labels “Students using the space” then “Staff maintaining it”): the maintenance the proposal creates; the pair layout needs two separately usable cutouts.",
+      "description": "Pair cutouts: two fictional students at a shared table; a fictional staff member cleaning the same kind of table. Staff expression attentive, not automatically miserable. No implication of measured workload.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "requested",
+      "ref": "A18",
+      "alt": "First cutout: Two fictional students spend time at a shared table. Second cutout: A fictional staff member cleans a shared table."
+    }
+  ]
 }

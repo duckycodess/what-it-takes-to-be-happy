@@ -1,0 +1,8 @@
+# Tasks
+
+- [x] 1. Import immutable approved handoff and inspected A01 only, confirm SHA and source-map identities, document inventory of missing art, write 19 exact requests for A02–A18 into `docs/art-requests.json` on codex/issue-15 using the `docs/autonomous-build.md` request shape: `id` verbatim from art-plan, `issue: 15`, `branch: codex/issue-15`, `purpose` from scene use, exact `description`, `transparent_background`, `reference_assets`, `status: requested`; carry the approved `alt` as additional payload, not in place of description, and push preparatory commits to make the requests visible; no application integration yet.
+- [ ] 2. Receive and inspect all asset-only handoffs (exact prompts, dimensions, checksum, anchors, transparency and identity), consume into issue branch; essential integration waits here.
+- [ ] 3. Replace old content with exact 45-scene source and update validator/transfer/measure/build/art/coverage tests against approved Markdown, citations, provenance and asset integrity; rederive docs/coverage.md and tools/count-main-path.sh. Retire `src/art/` geometry and map; archive completed #6 OpenSpec change without losing history.
+- [ ] 4. Implement frameless responsive generated-art presentation, browser text names/dialogue, optional comparisons, still states and accessible navigation.
+- [ ] 5. Implement separate Sources & Credits, claim links and return-state behavior; retain continuous/scriptless/print and Futura Handwritten. Remove old landing subtitle/byline/reading-time and update architecture.md; preserve offline export solely as tooling.
+- [ ] 6. Update active docs, run validation/tests/build/browser inspection, review diff, push with approved authoring metadata; obtain exact-head independent review before signoff.
