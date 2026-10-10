@@ -1,0 +1,136 @@
+{
+  "desktop": {
+    "viewport": {
+      "width": 1262,
+      "height": 1004
+    },
+    "scrollWidth": 1262,
+    "scrollHeight": 1004,
+    "fontLoaded": true,
+    "fontFamily": "FuturaHandwritten, sans-serif",
+    "image": {
+      "loaded": true,
+      "x": 291,
+      "y": 204.984375,
+      "width": 680,
+      "height": 453.328125
+    },
+    "names": [
+      {
+        "name": "TJ",
+        "x": 402.125,
+        "y": 218.578125,
+        "width": 22.53125,
+        "height": 30
+      },
+      {
+        "name": "Koj",
+        "x": 611.53125,
+        "y": 218.578125,
+        "width": 38.9375,
+        "height": 30
+      },
+      {
+        "name": "Vier",
+        "x": 823.7890625,
+        "y": 218.578125,
+        "width": 49.609375,
+        "height": 30
+      }
+    ],
+    "copy": [
+      {
+        "field": "opening",
+        "text": "Imagine an ordinary afternoon with friends: a game, a few jokes, time to talk. Nothing gets finished. Nobody earns a grade.",
+        "x": 221,
+        "y": 117.796875,
+        "width": 780,
+        "height": 67.1875
+      },
+      {
+        "field": "dialogue",
+        "text": "Masaya lang tumawa with friends. Bakit kailangan may lesson or output pa?",
+        "x": 221,
+        "y": 698.3125,
+        "width": 480,
+        "height": 67.1875
+      },
+      {
+        "field": "closing",
+        "text": "TJ values that kind of joy. Koj puts more weight on living well. Vier asks whether he has a say in his life. Their answers overlap, but they do not mean the same thing by happiness.",
+        "x": 221,
+        "y": 787.5,
+        "width": 780,
+        "height": 100.78125
+      }
+    ],
+    "motion": "none"
+  },
+  "phone": {
+    "viewport": {
+      "width": 360,
+      "height": 1080
+    },
+    "scrollWidth": 360,
+    "scrollHeight": 1080,
+    "fontLoaded": true,
+    "fontFamily": "FuturaHandwritten, sans-serif",
+    "image": {
+      "loaded": true,
+      "x": 20,
+      "y": 262.25,
+      "width": 320,
+      "height": 213.328125
+    },
+    "names": [
+      {
+        "name": "TJ",
+        "x": 69.03125,
+        "y": 264.375,
+        "width": 17.125,
+        "height": 22.796875
+      },
+      {
+        "name": "Koj",
+        "x": 165.203125,
+        "y": 264.375,
+        "width": 29.59375,
+        "height": 22.796875
+      },
+      {
+        "name": "Vier",
+        "x": 263.5390625,
+        "y": 264.375,
+        "width": 37.703125,
+        "height": 22.796875
+      }
+    ],
+    "copy": [
+      {
+        "field": "opening",
+        "text": "Imagine an ordinary afternoon with friends: a game, a few jokes, time to talk. Nothing gets finished. Nobody earns a grade.",
+        "x": 20,
+        "y": 123,
+        "width": 320,
+        "height": 119.25
+      },
+      {
+        "field": "dialogue",
+        "text": "Masaya lang tumawa with friends. Bakit kailangan may lesson or output pa?",
+        "x": 20,
+        "y": 517.125,
+        "width": 320,
+        "height": 89.4375
+      },
+      {
+        "field": "closing",
+        "text": "TJ values that kind of joy. Koj puts more weight on living well. Vier asks whether he has a say in his life. Their answers overlap, but they do not mean the same thing by happiness.",
+        "x": 20,
+        "y": 628.5625,
+        "width": 320,
+        "height": 178.875
+      }
+    ],
+    "motion": "none"
+  }
+}
