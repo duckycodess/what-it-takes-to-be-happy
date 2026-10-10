@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-opening-v1",
+  "requesting_issue": 15,
+  "request_origin": "Owner-approved redesign flow and opening-sample review in this chat",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-opening-v1",
+  "scene": "s088",
+  "purpose": "Introduce ordinary enjoyment and three distinct member viewpoints without a framed illustration panel",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_sample_approved",
+  "owner_sample_approved_at_utc": "2026-10-10T15:33:54Z",
+  "implementation_ready": false,
+  "selected_image": {
+    "path": "opening.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "sha256": "87d5173c5e69915b82ec83948cfe73928527449f4a47173b9888654991b89004"
+  },
+  "method": "Built-in image generation followed by one targeted built-in transparency cleanup",
+  "reference": {
+    "role": "Original cast identity and visual-style reference; no reference lettering reused",
+    "path": "assets/concepts/stickman-character-sheet-v1.png",
+    "sha256": "ffb60fd660fe36ceb6d83fa74437850ebaa2803b6e2039f83208ad696b6dd8bc",
+    "likeness_status": "Provisional illustrated stand-ins, not approved portraits"
+  },
+  "generation": {
+    "prompt": "generation-prompt.txt",
+    "prompt_sha256": "c7d5eb26dc922f1750fc937e2686a390e379dded09e134bbda81a78552d528fa",
+    "output": "source-generation.png",
+    "output_sha256": "aa5b3d4f26d7e859d067db0c8480f46bf7bc52663bb3a71d901fa6ef12b2c000"
+  },
+  "cleanup": {
+    "prompt": "cleanup-prompt.txt",
+    "prompt_sha256": "eb9908debdafd34d7cead1802b34bfb586977e77a30d86fc4df6c8eb3b3b0164",
+    "target": "source-generation.png",
+    "output": "opening.png"
+  },
+  "cast": [
+    {
+      "name": "TJ",
+      "position": "left",
+      "identity": "small crown tuft",
+      "expression": "joy"
+    },
+    {
+      "name": "Koj",
+      "position": "center",
+      "identity": "curl",
+      "expression": "calm reflection"
+    },
+    {
+      "name": "Vier",
+      "position": "right",
+      "identity": "angular tuft",
+      "expression": "curiosity"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.18
+      },
+      {
+        "name": "Koj",
+        "x_fraction": 0.5
+      },
+      {
+        "name": "Vier",
+        "x_fraction": 0.82
+      }
+    ],
+    "name_y_fraction_desktop": 0.03,
+    "name_y_fraction_phone": 0.01
+  },
+  "alt": "TJ, Koj and Vier share a casual afternoon around a basketball; TJ smiles while Koj looks reflective and Vier looks curious.",
+  "motion": "none",
+  "inspection": {
+    "checked_at_utc": "2026-10-10T15:30:42Z",
+    "record": "browser-inspection.json",
+    "rendering": "Inspected selected image on #fdfbf7 with browser text and the existing Futura Handwritten font",
+    "desktop_layout_width": 1262,
+    "phone_layout_width": 360,
+    "font_loaded": true,
+    "no_horizontal_overflow": true,
+    "copy_order": "title, opening narration, image with browser names, TJ dialogue, closing narration",
+    "visual_findings": [
+      "Three recognizable identities; no lettering, frames or background rectangle in image",
+      "No visible surrounding glow on page background",
+      "Names remain above heads without overlapping faces at both inspected widths"
+    ],
+    "limitations": [
+      "Draft sample only; no deployed-site verification",
+      "Opening sample approved; complete essay and final integration remain unapproved",
+      "Phone check uses a real-browser 360px iframe, not a physical phone",
+      "No claim of full-site navigation, print pagination or screen-reader validation"
+    ]
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": false,
+    "instruction": "Do not integrate until the final Markdown and art are approved and issue #15 is explicitly queued. Incorporating worker must verify and independently review its final pushed head."
+  }
+}

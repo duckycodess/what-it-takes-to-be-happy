@@ -1,0 +1,6 @@
+Use case: background-extraction
+Edit target: the supplied opening illustration with TJ on left, Koj at center and Vier on right around one basketball.
+Change only the surrounding pixels and edge cleanup. Remove EVERY soft dark/gray halo, glow, cast shadow, haze, gradient, background smudge and stray artifact around or between the figures. Produce clean flat line-art cutouts on actual alpha transparency.
+Preserve the three character identities, relative positions, seated poses, facial expressions, head shapes, hair tufts, white head/body fills, charcoal linework and orange basketball. Keep white interiors fully opaque. Do not erase the white heads as if they were background.
+All pixels outside the actual character/ball silhouettes must be transparent apart from normal very narrow edge antialiasing. No diffuse shadow or glowing edge. No black matte, no white rectangle, no floor surface, no frame and no scene background.
+No added words, labels, speech bubbles, names, signatures or watermark. Do not redraw the characters in a different style or add any new subject. This asset must blend into cream webpage paper without a shaded patch around the figures.
