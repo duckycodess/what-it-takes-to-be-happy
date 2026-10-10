@@ -17,9 +17,25 @@ import { fileURLToPath } from 'node:url';
 import { loadContent, ContentError } from '../content/load.js';
 import { formatErrors } from '../content/validate.js';
 import { renderDocument } from '../runtime/render.js';
-import { FONT, FONT_LICENSE, ILLUSTRATION, FONT_URL_TOKEN } from './assets.js';
-import { toDataUri, withFontUrl } from './inline.js';
-import { auditOfflineHtml, auditContentCoverage, auditBundledLicence, auditInlineArtwork, formatProblems } from './verify.js';
+import {
+  PROJECT_FONT,
+  FALLBACK_FONT,
+  FALLBACK_FONT_LICENSE,
+  ILLUSTRATION,
+  FONT_URL_TOKEN,
+  PROJECT_FONT_URL_TOKEN,
+  HOSTED_ONLY_CSS,
+} from './assets.js';
+import { toDataUri, withFontUrl, withoutHostedOnly } from './inline.js';
+import {
+  auditOfflineHtml,
+  auditContentCoverage,
+  auditBundledLicence,
+  auditFontNotices,
+  auditProjectFontIsHostedOnly,
+  auditInlineArtwork,
+  formatProblems,
+} from './verify.js';
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const DIST = join(repoRoot, 'dist');
@@ -45,16 +61,16 @@ function fail(label, problems) {
  * to disk and can compare the two documents directly.
  */
 export async function buildOutputs(content) {
-  const [css, script, fontBytes, fontLicense, illustrationBytes] = await Promise.all([
+  const [css, script, projectFontBytes, fontBytes, fontLicense, illustrationBytes] = await Promise.all([
     readText(STYLESHEET),
     readText(READER_SCRIPT),
-    read(FONT.source),
-    readText(FONT_LICENSE.source),
+    read(PROJECT_FONT.source),
+    read(FALLBACK_FONT.source),
+    readText(FALLBACK_FONT_LICENSE.source),
     read(ILLUSTRATION.source),
   ]);
 
   const shared = {
-    fontNotice: FONT.notice,
     fontLicense,
     illustration: {
       width: ILLUSTRATION.width,
@@ -64,27 +80,42 @@ export async function buildOutputs(content) {
     },
   };
 
-  // Hosted: ordinary linked files, so the browser can cache them between visits.
-  const hostedCss = withFontUrl(css, FONT_URL_TOKEN, FONT.published);
+  // Hosted: ordinary linked files, so the browser can cache them between
+  // visits, and the only output the project typeface is served from.
+  const hostedCss = withFontUrl(
+    withFontUrl(css, FONT_URL_TOKEN, FALLBACK_FONT.published),
+    PROJECT_FONT_URL_TOKEN,
+    PROJECT_FONT.published,
+  );
   const hosted = renderDocument(content, {
     ...shared,
     mode: 'hosted',
+    fontNotices: [PROJECT_FONT.notice, FALLBACK_FONT.notice],
     stylesheetUrl: 'styles.css',
     scriptUrl: 'reader.js',
     illustration: { ...shared.illustration, url: ILLUSTRATION.published },
   });
 
   // Offline: one file that opens straight from disk with no network at all.
-  const offlineCss = withFontUrl(css, FONT_URL_TOKEN, toDataUri(fontBytes, FONT.mediaType));
+  // The project typeface is not in it. Its permission covers this site using
+  // the face, not a copy of the file travelling inside a document handed to
+  // someone else, so the hosted-only region of the stylesheet leaves here and
+  // the bundled fallback sets everything.
+  const offlineCss = withFontUrl(
+    withoutHostedOnly(css, HOSTED_ONLY_CSS),
+    FONT_URL_TOKEN,
+    toDataUri(fontBytes, FALLBACK_FONT.mediaType),
+  );
   const offline = renderDocument(content, {
     ...shared,
     mode: 'offline',
+    fontNotices: [FALLBACK_FONT.noticeAlone],
     inlineStyles: offlineCss,
     inlineScript: script,
     illustration: { ...shared.illustration, url: toDataUri(illustrationBytes, ILLUSTRATION.mediaType) },
   });
 
-  return { hosted, hostedCss, script, offline, fontBytes, fontLicense, illustrationBytes };
+  return { hosted, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, illustrationBytes };
 }
 
 /** Every check the build refuses to publish without. */
@@ -92,12 +123,26 @@ export function auditOutputs(outputs, content) {
   const offlineProblems = auditOfflineHtml(outputs.offline);
   if (offlineProblems.length > 0) fail('dist/offline.html depends on resources it does not carry', offlineProblems);
 
-  for (const [label, html] of [['dist/index.html', outputs.hosted], ['dist/offline.html', outputs.offline]]) {
+  const leaked = auditProjectFontIsHostedOnly(outputs.offline, outputs.projectFontBytes, PROJECT_FONT);
+  if (leaked.length > 0) fail('dist/offline.html carries the project typeface, which is served by the hosted site only', leaked);
+
+  const outputsToCheck = [
+    ['dist/index.html', outputs.hosted, [PROJECT_FONT.notice, FALLBACK_FONT.notice]],
+    ['dist/offline.html', outputs.offline, [FALLBACK_FONT.noticeAlone]],
+  ];
+
+  for (const [label, html, notices] of outputsToCheck) {
     const coverage = auditContentCoverage(html, content);
     if (coverage.length > 0) fail(`${label} does not carry the complete content`, coverage);
 
     const licence = auditBundledLicence(html, outputs.fontLicense);
     if (licence.length > 0) fail(`${label} does not carry the bundled font licence`, licence);
+
+    // Each output credits the fonts it actually carries, and only those: a
+    // notice for a face that is not there would be a false statement about
+    // what the reader is looking at.
+    const credits = auditFontNotices(html, notices);
+    if (credits.length > 0) fail(`${label} does not credit every font it carries`, credits);
 
     const artwork = auditInlineArtwork(html);
     if (artwork.length > 0) fail(`${label} contains a drawing that reaches outside itself or carries its own lettering`, artwork);
@@ -133,8 +178,9 @@ async function main() {
     written.push(await write(join(DIST, 'index.html'), outputs.hosted));
     written.push(await write(join(DIST, 'styles.css'), outputs.hostedCss));
     written.push(await write(join(DIST, 'reader.js'), outputs.script));
-    written.push(await write(join(DIST, FONT.published), outputs.fontBytes));
-    written.push(await write(join(DIST, FONT_LICENSE.published), outputs.fontLicense));
+    written.push(await write(join(DIST, PROJECT_FONT.published), outputs.projectFontBytes));
+    written.push(await write(join(DIST, FALLBACK_FONT.published), outputs.fontBytes));
+    written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
     written.push(await write(join(DIST, ILLUSTRATION.published), outputs.illustrationBytes));
   }
   written.push(await write(join(DIST, 'offline.html'), outputs.offline));

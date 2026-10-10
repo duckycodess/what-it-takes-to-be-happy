@@ -15,6 +15,7 @@ import { join, relative } from 'node:path';
 
 import { buildOutputs, auditOutputs } from '../src/build/build.js';
 import { auditOfflineHtml, auditBundledLicence, auditInlineArtwork } from '../src/build/verify.js';
+import { PROJECT_FONT, FALLBACK_FONT } from '../src/build/assets.js';
 import { createPreviewServer } from '../src/tools/preview.js';
 import { loadValidContent, repoRoot } from './helpers.js';
 
@@ -46,6 +47,12 @@ function visibleText(html) {
     .trim();
 }
 
+/** The colophon's font credits, which each output owes for its own fonts. */
+const fontCredits = (html) =>
+  [...html.matchAll(/<p class="colophon-font">([^<]*)<\/p>/g)].map((match) => match[1]);
+
+const withoutFontCredits = (html) => html.replace(/<p class="colophon-font">[^<]*<\/p>/g, '');
+
 test('the build produces outputs that pass every packaging check', async () => {
   const content = loadValidContent();
   const outputs = await buildOutputs(content);
@@ -54,10 +61,78 @@ test('the build produces outputs that pass every packaging check', async () => {
 });
 
 test('the offline file embeds the font and the illustration rather than fetching them', async () => {
-  const { offline } = await buildOutputs(loadValidContent());
+  const { offline, fontBytes } = await buildOutputs(loadValidContent());
   assert.match(offline, /@font-face[\s\S]{0,200}url\(data:font\/ttf;base64,/);
   assert.match(offline, /<img src="data:image\/png;base64,/);
   assert.ok(offline.length > 1_000_000, 'the embedded binaries should dominate the file size');
+
+  // Once. The substitution is textual, and the token used to be spelled out
+  // in the stylesheet's own header comment as well as in the rule, which put
+  // a second megabyte of base64 into every copy of this file.
+  const embedded = offline.split(fontBytes.toString('base64').slice(0, 512)).length - 1;
+  assert.equal(embedded, 1, 'the font is embedded exactly once');
+});
+
+test('the hosted page links the project typeface from this site, with no local lookup', async () => {
+  const { hostedCss } = await buildOutputs(loadValidContent());
+
+  const faces = [...hostedCss.matchAll(/@font-face\s*\{[^}]*\}/g)].map((match) => match[0]);
+  assert.equal(faces.length, 2, 'the hosted stylesheet declares the project typeface and the fallback');
+
+  const project = faces.find((face) => face.includes(`'${PROJECT_FONT.family}'`));
+  assert.ok(project, 'the project typeface is declared by name');
+  assert.match(project, new RegExp(`src:\\s*url\\(${PROJECT_FONT.published.replace(/[/.]/g, '\\$&')}\\)`));
+  assert.ok(!/local\s*\(/.test(project), 'a local() source would let a font of the same name stand in for the one recorded here');
+  assert.match(project, /font-display:\s*swap/, 'the prose stays readable while the face is fetched');
+
+  const fallback = faces.find((face) => face.includes(`'${FALLBACK_FONT.family}'`));
+  assert.ok(fallback, 'the fallback is still declared');
+  assert.match(fallback, new RegExp(`url\\(${FALLBACK_FONT.published.replace(/[/.]/g, '\\$&')}\\)`));
+
+  assert.match(hostedCss, /--body:\s*'Futura Handwritten',\s*'Bundled Fallback'/, 'and the stack puts one behind the other');
+});
+
+test('the offline file carries the fallback alone and no trace of the project typeface', async () => {
+  const { offline, projectFontBytes } = await buildOutputs(loadValidContent());
+
+  assert.ok(!offline.includes(projectFontBytes.toString('base64').slice(0, 512)), 'none of its bytes');
+  assert.ok(!offline.includes(PROJECT_FONT.published), 'no URL pointing at it');
+  assert.ok(!offline.includes(PROJECT_FONT.family), 'and not even its name, in a stack with no face for it');
+
+  const faces = [...offline.matchAll(/@font-face\s*\{[^}]*\}/g)];
+  assert.equal(faces.length, 1, 'one @font-face, which is the bundled fallback');
+  assert.match(faces[0][0], new RegExp(`font-family:\\s*'${FALLBACK_FONT.family}'`));
+});
+
+test('a build that would ship the project typeface offline fails instead', async () => {
+  const content = loadValidContent();
+  const outputs = await buildOutputs(content);
+
+  for (const [label, leak] of [
+    ['its bytes', outputs.projectFontBytes.toString('base64')],
+    ['a link to it', `<link rel="preload" href="${PROJECT_FONT.published}">`],
+    ['its name in a stack', `<style>:root{--body:'${PROJECT_FONT.family}'}</style>`],
+  ]) {
+    const broken = { ...outputs, offline: outputs.offline.replace('</head>', `<!--${leak}--></head>`) };
+    assert.throws(
+      () => auditOutputs(broken, content),
+      /carries the project typeface|depends on resources it does not carry/,
+      `${label} should stop the build`,
+    );
+  }
+});
+
+test('each output credits the fonts it actually carries, and only those', async () => {
+  const content = loadValidContent();
+  const outputs = await buildOutputs(content);
+
+  assert.ok(outputs.hosted.includes('Futura Handwritten by Billy Snyder'), 'the hosted page credits the author');
+  assert.ok(outputs.hosted.includes('Feel free to use this font for anything you want'), 'and quotes the permission it is served under');
+  assert.ok(outputs.hosted.includes('Bitstream Vera'), 'and still carries the fallback licence');
+  assert.ok(!outputs.offline.includes('Billy Snyder'), 'the offline file does not credit a font it does not carry');
+
+  const stripped = { ...outputs, hosted: outputs.hosted.replace(/<p class="colophon-font">[^<]*Billy Snyder[^<]*<\/p>/, '') };
+  assert.throws(() => auditOutputs(stripped, content), /does not credit every font it carries/);
 });
 
 test('both outputs carry the complete font licence', async () => {
@@ -74,9 +149,17 @@ test('optional panels print open without depending on a beforeprint handler', as
   assert.match(print, /details:not\(\[open\]\) > \*:not\(summary\)/, 'older engines need the fallback rule');
 });
 
-test('the hosted page and the offline file read identically', async () => {
+test('the hosted page and the offline file read identically apart from their font credits', async () => {
   const { hosted, offline } = await buildOutputs(loadValidContent());
-  assert.equal(visibleText(offline), visibleText(hosted));
+  assert.equal(visibleText(withoutFontCredits(offline)), visibleText(withoutFontCredits(hosted)));
+
+  // The one sanctioned difference, asserted rather than assumed: the outputs
+  // carry different fonts, so they owe different credits. Everything that is
+  // part of the argument is covered by the comparison above.
+  assert.deepEqual(fontCredits(hosted).length, 2, 'the hosted page credits the project typeface and the fallback');
+  assert.deepEqual(fontCredits(offline).length, 1, 'the offline file carries the fallback alone');
+  assert.match(fontCredits(hosted)[0], /Futura Handwritten by Billy Snyder/);
+  assert.ok(fontCredits(offline).every((credit) => !credit.includes('Futura')), 'the offline file must not credit a font it does not carry');
 });
 
 test('an output that reaches outside itself fails the build instead of shipping', async () => {
@@ -183,6 +266,7 @@ test('the offline export writes only the single file and leaves the hosted outpu
 
 test('the preview server serves the built site and refuses to escape it', async () => {
   runBuild();
+  const { hostedCss } = await buildOutputs(loadValidContent());
   const server = createPreviewServer();
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -197,9 +281,22 @@ test('the preview server serves the built site and refuses to escape it', async 
     assert.equal(styles.status, 200);
     assert.equal(styles.headers.get('content-type'), 'text/css; charset=utf-8');
 
-    const font = await fetch(`${base}/assets/fonts/DejaVuSans.ttf`);
-    assert.equal(font.status, 200);
-    assert.equal(font.headers.get('content-type'), 'font/ttf');
+    // What the browser is actually sent when the stylesheet asks for a face.
+    // The Chrome suite drives the same tree from disk, because a Windows
+    // browser driven from WSL cannot reach a port inside it; this is the half
+    // of the question that needs a real response over HTTP.
+    for (const asset of [PROJECT_FONT, FALLBACK_FONT]) {
+      const font = await fetch(`${base}/${asset.published}`);
+      assert.equal(font.status, 200, `${asset.published} is served`);
+      assert.equal(font.headers.get('content-type'), 'font/ttf');
+      const served = Buffer.from(await font.arrayBuffer());
+      assert.deepEqual(
+        createHash('sha256').update(served).digest('hex'),
+        createHash('sha256').update(readFileSync(join(repoRoot, asset.source))).digest('hex'),
+        `${asset.published} is served byte for byte`,
+      );
+    }
+    assert.ok(hostedCss.includes(PROJECT_FONT.published), 'and the stylesheet asks for it at that path');
 
     assert.equal((await fetch(`${base}/offline.html`)).status, 200);
     assert.equal((await fetch(`${base}/nothing-here`)).status, 404);

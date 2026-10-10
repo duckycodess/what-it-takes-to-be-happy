@@ -30,3 +30,9 @@ The owner requested overnight autonomous implementation and automatic merging on
 Every new GitHub issue needs meaningful classification labels through the canonical `$ticket` publisher, with `classification_verified` checked. Use `bug`, `documentation`, `enhancement`, and `accessibility` according to scope; `agent:*` labels alone do not classify work. Preserve existing labels and contracts. Unrelated discoveries remain unqueued.
 
 For additional generated art, add a request to `docs/art-requests.json` on the issue branch. This chat supplies built-in generation through isolated `codex/art-<id>` asset branches; the requesting worker incorporates the asset commit and reviews its own final commit. Continue independent work while waiting. Do not require the owner to learn Inkscape or provide a generation key.
+
+## Commit and PR authoring
+
+The owner requested this policy on 10 October 2026: do not add `Co-Authored-By` trailers, AI/tool attribution, generated-by footers, or assistant session links to commit messages or pull request titles/descriptions. Describe the work and its verification directly. Check both commit messages and the final PR text before publishing; `.claude/settings.json` also disables automatic attribution.
+
+Preserve font, artwork, research, dependency, and source provenance required by this project's existing guidance. This authoring preference does not remove source credits or review evidence and does not authorize rewriting published history during ordinary worker execution.

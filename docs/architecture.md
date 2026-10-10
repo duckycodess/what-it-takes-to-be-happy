@@ -131,11 +131,27 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 
 The build refuses to publish an output that drops essential content, and refuses a single-file output that references anything it does not carry. External source destinations stay as ordinary links: their labels, roles, and limitations are readable without following them, and only following the link needs a connection.
 
+### The implemented reader
+
+The reader package filled in the behaviour this document described. Three decisions carry most of it.
+
+**The fragment is the state.** Every move writes one and every fragment resolves: a beat identifier to that beat, a chapter identifier to that chapter's first beat, `sources` or a single source identifier to the register in the continuous view. `hashchange` and `popstate` apply whatever the fragment says, so deep links, chapter revisiting, and the browser's Back button are one mechanism rather than three. `history.pushState` is tried first and the entry carries the view, so Back restores how the reader was reading as well as where they were; a browser that refuses `pushState` — which a `file://` document is exactly where to expect — falls back to assigning `location.hash` and infers the view from the fragment instead. Switching view replaces the current entry rather than adding one: how you read is not a place. A fragment the script does not recognise is left alone after the first load: the document has landmarks of its own — the skip link's `#essay`, the chapter list's `#chapters` — and following one is a move within the page, not a reason to take the reader off their beat.
+
+**A move is announced once.** Focus moves to the newly selected beat, which carries `aria-labelledby` pointing at its own title. Nothing else is a live region, so the move is reported once rather than twice. The progress line next to the controls is plain text: position, the chapter it sits in, and a sentence at each end, because a disabled button is easy to miss and does not say why it is disabled. The view switch changes its label and carries no `aria-pressed`, for the same reason — both would read as "Back to the beats, pressed".
+
+**The view decides only what the reader has not.** An optional panel remembers whether the reader opened or closed it; until they touch one it follows the view, collapsed between beats and open in the continuous view. Print opens every panel and then hands the choices back. The `toggle` event is queued rather than fired during the assignment, so the script compares each panel against the last value it wrote instead of holding a flag across the change.
+
+Everything else follows from the renderer putting the whole essay in the markup. Each register entry is anchored; each beat-side source reference keeps its evidence level and limitation in place *and* links the full entry; the chapter list, which stays on screen in every view, carries a Sources link. Arrow keys move between beats but never inside a summary, link, button, or field that owns them. Every arrival at a beat brings that beat to the top of the window, because the page is taller than one beat.
+
+Styling is one stylesheet with no fixed stage, since the finished artwork does not exist yet and the layout must not be built around its dimensions. Every selector that hides something in a view is answered by a print rule, and a test fails if a new one is not.
+
 ### Evidence levels reach the reader
 
 A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
 
-The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it. Serving a font from the hosted site is redistribution too; the project typeface may not be shipped until its own applicable permission and required notice are recorded, which is [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)'s work.
+The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
+
+The project typeface is handled differently, because its permission is different. Futura Handwritten is used under the author's own note granting use, which is not a named licence and carries no licence text to travel with the file. Serving it is still sending it: the hosted page delivers the font to every reader's browser, so that use rests on the author's grant rather than on linking instead of embedding. What the build enforces is a narrower scope than the grant — the face is **served** by the hosted site from this origin and is **kept out** of an output that would circulate on its own. One stylesheet carries both faces, with everything that depends on the project typeface inside a marked region the hosted output keeps and the offline file drops; a build check fails the offline output if the font's bytes, a URL pointing at it, or even its family name survive into it. Each output credits the fonts it actually carries and no others, which is also a build check — a credit for a face a reader is not looking at would be a false statement about the page.
 
 ### Illustration, as built
 
@@ -151,10 +167,23 @@ that have a motif and the 54 that are still carried by their written description
 
 ### What is still open
 
-Final prose, the project typeface, the complete scene set, and the reader's finished visual design
-are all still open. The committed DejaVu Sans and the committed concept sheet are temporary and
-exist to prove binary packaging works end to end; the agreed Futura Handwritten is named first in
-the stylesheet's stack but is not loaded, and loading it needs verified permission.
+Final prose, the complete scene set, and the reader's finished visual design are all still open. The
+committed concept sheet is provenance for the drawings rather than production artwork.
+
+The project typeface is settled. Futura Handwritten is served by the hosted site and sets the whole
+essay; the committed DejaVu Sans stands behind it and draws the one character on this content it has
+no glyph for. The grant the hosted serving rests on, the reason the file is nonetheless kept to that
+one context, and everything that was checked, are in
+[`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is
+browser text, so nothing in the argument depends on the face.
+
+### How the reader is tested
+
+Two suites, because they answer different questions. `test/reader.test.js` runs the real browser script against the real rendered markup in a small DOM built for the purpose, and always runs. `test/browser.test.js` runs the same journeys in Chrome and answers what the *stylesheet* does — what a view hides, whether a focus ring is painted, where focus goes when a native disclosure is clicked, whether a phone-width window scrolls sideways. It skips with a stated reason where no browser is installed, and [verification](verification.md) records which happened.
+
+The journeys are driven against `dist/offline.html`, because one file is the cheapest thing a browser can open without a server and it is the same renderer. The typography is driven against the hosted build instead — `index.html` with its stylesheet, script, and both fonts written beside it at the paths it links them at — because a webfont the browser never had to fetch proves nothing. That suite checks the loaded `FontFace`, that what the page draws measures as the project typeface rather than the fallback, and that withholding the font file alone makes the page fall back, which is what rules out a `local()` lookup standing in for the file whose provenance is recorded. Serving the same tree over HTTP would be closer still; a Windows browser driven from WSL cannot reach a loopback port inside it, so what a real HTTP response carries is checked against the preview server in `test/build.test.js`. `test/fonts.test.js` pins each font file's size and digest and checks, against both `cmap` tables, that every character the essay prints is one a packaged face can draw.
+
+Both harnesses are deliberately small and dependency-free: `test/support/dom.js` implements exactly the subset the browser script asks for and throws on anything outside it, and `test/support/chrome.js` drives Chrome through `--dump-dom` with no socket and no client library. `test/dom.test.js` pins down the first harness's own behaviour, because a reader suite is only worth as much as the harness under it.
 
 ## Handoffs that create real prerequisites
 

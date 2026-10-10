@@ -201,6 +201,68 @@ export function auditBundledLicence(html, licenceText) {
   }];
 }
 
+/**
+ * Reports a font this output carries but does not credit.
+ *
+ * The two outputs carry different faces, so they owe different credits, and a
+ * notice naming a font that is not in the document would be as wrong as a
+ * missing one. Each output is checked against its own list.
+ *
+ * @param {string} html
+ * @param {string[]} notices the credits this output is required to carry
+ * @returns {Array<{kind: string, value: string, message: string}>}
+ */
+export function auditFontNotices(html, notices) {
+  return notices
+    .filter((notice) => !html.includes(esc(notice)))
+    .map((notice) => ({
+      kind: 'font-credit',
+      value: notice.slice(0, 60),
+      message: 'Every font an output carries must be credited in that output, with its author and the permission it is served under.',
+    }));
+}
+
+/**
+ * Reports any trace of the project typeface in the offline document.
+ *
+ * The permission recorded for Futura Handwritten is the author's own note
+ * granting use, which the owner accepted for this website. Serving the face is
+ * already sending it — the hosted page delivers the file to every reader's
+ * browser — so this check is not a line between distributing and not. It keeps
+ * the font inside the context the owner approved: a page served from this
+ * origin with the author credited, rather than a document that travels on its
+ * own with no record attached. So the offline file must contain neither the
+ * font's data nor a rule that would reach for it. The bytes are checked by
+ * their own base64, not by a filename, because a data URI has no filename to
+ * look for.
+ *
+ * @param {string} html the offline document
+ * @param {Buffer} fontBytes the project typeface
+ * @param {{family: string, published: string}} font
+ * @returns {Array<{kind: string, value: string, message: string}>}
+ */
+export function auditProjectFontIsHostedOnly(html, fontBytes, font) {
+  const problems = [];
+  const report = (kind, value, message) => problems.push({ kind, value, message });
+
+  // A base64 run long enough to be unmistakably this file and short enough to
+  // find quickly. Any embedding of the font contains it.
+  const signature = fontBytes.toString('base64').slice(0, 512);
+  if (html.includes(signature)) {
+    report('project-font-bytes', font.published, 'The offline file must not embed the project typeface; it is served by the hosted site only.');
+  }
+
+  if (html.includes(font.published)) {
+    report('project-font-url', font.published, 'The offline file must not point at the project typeface, which it cannot carry.');
+  }
+
+  if (html.includes(`'${font.family}'`) || html.includes(`"${font.family}"`)) {
+    report('project-font-family', font.family, 'The offline file must not name the project typeface in a font stack it has no face for.');
+  }
+
+  return problems;
+}
+
 /** Formats audit problems for a build failure message. */
 export const formatProblems = (problems) =>
   problems.map((problem) => `  [${problem.kind}] ${problem.value}\n    ${problem.message}`).join('\n');

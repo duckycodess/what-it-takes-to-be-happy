@@ -65,8 +65,17 @@ test('authoring provenance never reaches the output', () => {
 test('optional detail is open in the markup, so the reveal is never the only route', () => {
   const content = loadValidContent();
   const html = render(content);
-  const opened = [...html.matchAll(/<details class="detail" open>/g)];
-  assert.equal(opened.length, content.details.length);
+  const panels = [...html.matchAll(/<details class="detail"([^>]*)>/g)].map((match) => match[1]);
+
+  assert.equal(panels.length, content.details.length, 'every authored panel is rendered');
+  for (const attributes of panels) {
+    assert.match(attributes, /\bopen\b/, 'a panel that is collapsed in the markup would hide its text from print and from a scriptless browser');
+  }
+  // The identifier is what lets the browser script give a reader their own
+  // open-or-closed choice back after a view switch or a print.
+  for (const detail of content.details) {
+    assert.ok(html.includes(`data-detail="${detail.id}"`), `${detail.id} is not addressable`);
+  }
 });
 
 test('member names are rendered as selectable text, never baked into an image', () => {
@@ -190,7 +199,7 @@ test('an unopened source shows no supported claim anywhere in the output', () =>
       `${source.id} should say why the notes list it instead of claiming support`,
     );
     // Every block rendered for this source must be free of a supports line.
-    const blocks = [...html.matchAll(/<li class="source">[\s\S]*?<\/li>/g)]
+    const blocks = [...html.matchAll(/<li class="source"[^>]*>[\s\S]*?<\/li>/g)]
       .map((match) => match[0])
       .filter((block) => block.includes(esc(source.url)));
     assert.ok(blocks.length > 0, `${source.id} should appear in the output`);
