@@ -852,24 +852,28 @@ const CATALOGUE = [
     id: 'art-grown-into-a-frame',
     title: 'The frame that arrives later',
     purpose: 'Show an idea of a good life as something that was added rather than something anybody was born with: the same person, once without the frame and once inside it.',
-    settled: 'Two panels hold the same person. In the first they are small and playing with nothing drawn around them; in the second they are taller and a measured frame has been drawn around them, which they are not looking at.',
+    settled: 'Two panels. In the first, the beat\'s figures are small and sitting on the ground with something between them and nothing drawn around them. In the second, the first of them stands again, taller, inside a measured frame they are not looking at.',
     minFigures: 1,
     maxFigures: 2,
+    // Both named slots are in the first panel, because the second panel holds
+    // the same person again rather than a different one. Drawing two people
+    // and calling them one would be the motif saying something it does not do.
     slots: (count) => [
-      { x: 118, y: 224, scale: 0.42, pose: 'sit' },
-      { x: 344, y: 224, scale: 0.62, pose: 'stand' },
+      { x: 72, y: 224, scale: 0.42, pose: 'sit' },
+      { x: 160, y: 224, scale: 0.42, pose: 'sit' },
     ].slice(0, Math.max(count, 1)),
     base: ({ slots, figures }) => [
       ground(),
       panel(24, 76, 188, 148),
       panel(260, 76, 188, 148),
-      circle(156, 214, 9, MEDIUM),
+      circle(116, 214, 9, MEDIUM),
       placeAll(slots, figures),
+      placeFigure({ x: 354, y: 224, scale: 0.62, pose: 'stand' }, figures[0]),
     ].join(''),
     reveal: () => [
-      rect(288, 96, 112, 122, MEDIUM),
-      ...[316, 344, 372].map((x) => line(x, 96, x, 106, THIN)),
-      ...[126, 156, 186].map((y) => line(288, y, 298, y, THIN)),
+      rect(298, 96, 112, 122, MEDIUM),
+      ...[326, 354, 382].map((x) => line(x, 96, x, 106, THIN)),
+      ...[126, 156, 186].map((y) => line(298, y, 308, y, THIN)),
     ].join(''),
   },
   {
@@ -1247,15 +1251,18 @@ const CATALOGUE = [
     id: 'art-overlapping-selves',
     title: 'Selves whose outlines run into each other',
     purpose: 'Draw a self that does not begin bounded and then add other people: the outline over all three never closes around any one of them.',
-    settled: 'Three figures stand close together under one continuous open outline that runs over all of them without closing. Where the condition layer is on, the middle one is pressed inward by the shape it is inside.',
+    settled: 'Three figures stand close together under one continuous open outline that runs over all of them without closing. The beat\'s own first figure stands in the middle, and is the one the condition layer presses inward.',
     minFigures: 1,
     maxFigures: 3,
+    // The middle place is filled first. The figure pressed out of shape is the
+    // one the beat is about, so it has to be a figure the scene named rather
+    // than whichever one the cast list happens to put second.
     slots: (count) => {
-      const places = [150, 240, 330];
+      const places = [240, 150, 330];
       return places.slice(0, Math.max(count, 1)).map((x) => ({ x, y: VIEW.ground, scale: 0.7 }));
     },
     base: ({ slots, figures }) => {
-      const places = [150, 240, 330];
+      const places = [240, 150, 330];
       return [
         ground(),
         ...places.slice(slots.length).map((x, index) => anybody(x, VIEW.ground, 0.7, 'stand', index % 2 ? 'curiosity' : 'reflection')),

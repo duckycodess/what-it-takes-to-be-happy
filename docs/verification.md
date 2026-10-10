@@ -169,6 +169,43 @@ composition at every count for self-containment, anchors inside the frame, the c
 adding rather than redrawing, and nobody standing on scenery only that layer draws — and by nobody
 looking at them.
 
+### Where a drawing departs from the storyboard, and why
+
+Added on 10 October 2026, after review found three beats whose artwork says something other than the
+storyboard's **Visual purpose** and **Static description**. Correcting the reader-facing description
+had made the page honest about the pixels; it had not recorded that an editorial departure happened
+at all. Two of the three are now fixed in the drawing rather than in the wording.
+
+**Fixed, because the drawing attributed a feeling to the wrong named person.** `s054` presses one
+figure out of shape, and the storyboard gives `frustration` to Koj alone. The composition pressed
+its middle slot, and the cast order put Vier there — so the drawing showed Vier under pressure while
+the document named Koj as the tense one. `art-overlapping-selves` now fills the **middle place
+first**, so the figure pressed is the one the beat is about: Koj. `s053`, which uses the same motif
+in its other state, simply has its single named figure in the middle now, which reads at least as
+well.
+
+**Fixed, because the motif was claiming something it did not do.** `s030` is one person before and
+after an idea of a good life arrives, and both the composition's stated purpose and its settled
+description said "the same person" in both panels. Its two slots were one per panel, so with this
+beat's cast it drew Vier and then Bob — two people. The composition now puts **both named figures
+in the first panel**, playing, and draws the first of them again, grown, inside the frame in the
+second. That is what the motif always claimed.
+
+**Not fixed, and recorded instead.** `s017` is the one departure left in the essay, and it is
+deliberate:
+
+| What the storyboard's static description says | What the drawing does | Why |
+| --- | --- | --- |
+| "In the first, Bob plays alone with faceless figures… In the second, the same play with familiar faces around him" | TJ plays in the first court, Bob in the second, with the other players far off in one and close in the other | The beat's cast line is `tj` `bob`, in that order, and the composition gives one court to each. Putting Bob in both would mean either drawing TJ nowhere in his own beat, or reordering a cast line that is editorial source material and not ours to rewrite. The **visual purpose** — the same game with and without familiar figures — is carried by the two courts and the companions, which is what the composition actually holds still. |
+
+Six more beats name a figure in their storyboard static description that their own cast line does
+not place: `s015`, `s019`, `s020`, `s023`, `s024`, `s075`. In every one the sentence is recalling an
+earlier beat — Bob's afternoon, the instruments from `s010` — rather than saying that figure is in
+this frame. The cast line is the authority on who is drawn, and it is what `tools/check-storyboard.sh`
+enforces, so the drawings follow it and each beat's own description says who is actually there.
+`src/art/storyboard-map.js` was corrected where its note had picked up the looser wording: `s015`
+no longer says the instruments are turned on all three of us when the beat places one.
+
 ### Names, and where they go
 
 Review also measured something no check had: label boxes. Eight labels on `s086` ran through each

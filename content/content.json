@@ -1686,7 +1686,7 @@
         }
       ],
       "visual": {
-        "description": "Two panels. In the first, Vier is small and sitting on the ground with something in front of him, considering. In the second, Bob stands laughing and a measured rectangle has been drawn around him, with ticks along its edges. Neither of them is looking at the frame.",
+        "description": "Two panels. In the first, Vier and Bob are small and sitting on the ground with something between them, nothing drawn around them. In the second, Vier stands again, taller, and a measured rectangle has been drawn around him with ticks along its edges. He is not looking at it.",
         "artId": "art-grown-into-a-frame",
         "artState": "revealed",
         "artAbsence": null,
@@ -2906,7 +2906,7 @@
         }
       ],
       "visual": {
-        "description": "The same three figures and the same unclosed outline, with Koj tense at one end. The figure in the middle is now pressed inward: two arrows push in from either side and the line above him bends in over his head.",
+        "description": "The same three figures and the same unclosed outline. Koj, in the middle, is tense and pressed inward: two arrows push in from either side and the line above him bends in over his head.",
         "artId": "art-overlapping-selves",
         "artState": "revealed",
         "artAbsence": null,

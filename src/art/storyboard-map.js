@@ -47,11 +47,11 @@ export const STORYBOARD_ART = {
   s012: motif('art-blocks-that-split', 'revealed', 'Three offered words as blocks, each one cracking as weight is put on it.'),
   s013: motif('art-writing-the-line', 'revealed', 'A figure drawing the next stretch of the uneven line it is standing on.'),
   s014: motif('art-three-readings', 'revealed', 'The three readings again, each ending in its own shape, with no shape becoming the others.'),
-  s015: motif('art-two-instruments', 'revealed', 'The measuring instruments turned back on the three of us.'),
+  s015: motif('art-two-instruments', 'revealed', 'The measuring instruments turned back on us \u2014 on the one of us this beat\u2019s cast line places.'),
 
   // c2 — Must enjoyment become meaningful or productive?
   s016: motif('art-joy-and-conditions', 'situation', 'The game itself, enjoyed and tiring, with nothing drawn underneath it yet.'),
-  s017: motif('art-same-game-two-ways', 'revealed', 'The same game drawn twice, once with the other players far off and once with them close.'),
+  s017: motif('art-same-game-two-ways', 'revealed', 'The same game drawn twice, once with the other players far off and once with them close. The beat places a figure in each court rather than the same one twice; see docs/verification.md.'),
   s018: motif('art-two-evenings', 'situation', 'Two evenings in panels of the same size, with the harder one hanging lower.'),
   s019: motif('art-rest-and-the-frame', 'situation', 'An afternoon with nothing attached to it: no frame, no arrow, no outcome.'),
   s020: motif('art-balance', 'situation', 'The afternoon weighed on a plain balance.'),
@@ -66,7 +66,7 @@ export const STORYBOARD_ART = {
   s029: motif('art-ring-of-four', 'situation', 'Four elements held in a ring with no ranking between them.'),
 
   // c3 — Whose definition are we following?
-  s030: motif('art-grown-into-a-frame', 'revealed', 'A small figure playing with nothing around it, then the same figure inside a measured frame.'),
+  s030: motif('art-grown-into-a-frame', 'revealed', 'The beat\u2019s figures small and playing with nothing around them, then the first of them again, taller, inside a measured frame.'),
   s031: motif('art-handed-template', 'situation', 'Identical outline figures handed the identical shape to carry.'),
   s032: motif('art-paths-erased', 'revealed', 'Five paths leaving one point, with only one of them still drawn the whole way.'),
   s033: motif('art-own-leash', 'situation', 'A figure holding its own leash, with nobody else in the frame.'),
@@ -92,7 +92,7 @@ export const STORYBOARD_ART = {
   s051: motif('art-shared-table', 'situation', 'A shared table in the middle, with the league table small and faded in the corner.'),
   s052: motif('art-messages-one-way', 'revealed', 'Messages travelling mostly one way, with a few coming back.'),
   s053: motif('art-overlapping-selves', 'situation', 'The self drawn as an outline that runs into other people rather than closing.'),
-  s054: motif('art-overlapping-selves', 'revealed', 'The same overlap, with the middle figure pressed inward by the shape it is inside.'),
+  s054: motif('art-overlapping-selves', 'revealed', 'The same overlap, with the beat\u2019s first figure \u2014 the one it names as tense \u2014 in the middle and pressed inward by the shape it is inside.'),
   s055: motif('art-figure-row', 'situation', 'One figure alone and at ease, drawn with the same warmth as the group scenes.'),
   s056: motif('art-accumulating-care', 'revealed', 'The same repeated gestures, with what each one cost attached to it.'),
 
