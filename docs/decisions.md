@@ -56,10 +56,15 @@ under it was real work. Three kinds of reference to it survive, meaning three di
   a licence, by dafont's own FAQ. Nor does retiring the offline file create any additional right.
 
   What follows from that, and is enforced by the build: the face is **served by this site** from its
-  own origin, and is **never embedded** in a file handed to someone else.
+  own origin, and is **kept out** of any file handed to someone else. Serving it is already a form
+  of distribution — the hosted page sends the font file to every reader's browser — so the hosted
+  use rests on the grant above, not on a distinction between linking and embedding. Keeping it out
+  of the single-file output is a deliberate scope choice: it holds the font inside the one context
+  the owner approved, a page served from this origin with the author credited.
   `auditProjectFontIsHostedOnly` fails the build if the offline output carries the font's bytes, a
-  URL pointing at it, or even its family name. The bundled DejaVu Sans, which *is* licensed for
-  redistribution, remains behind it on the hosted page and is the only face the offline file carries.
+  URL pointing at it, or even its family name. The bundled DejaVu Sans, which *is* covered by a
+  licence that permits redistribution, remains behind it on the hosted page and is the only face the
+  offline file carries.
   Owned by [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5).
 
 ### Still open, and owned elsewhere

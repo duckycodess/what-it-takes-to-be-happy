@@ -32,15 +32,23 @@ Three things in particular were checked and are not true:
 | The font's own metadata | The `name` table carries a copyright record of `BillySnyderPixelfailurecom`, and **no** licence description (name ID 13) and **no** licence URL (name ID 14). There is no licence text to travel with the file. |
 | [ncase/trust](https://github.com/ncase/trust), the reference site | It bundles this font, but its CC0 `LICENSE` covers Nicky Case's own work and its README lists the font separately under third-party resources. Another project shipping the file is not permission from its author. |
 
-That is why the font is served and not redistributed. Serving it is this site using the face, which
-is what the author's note is about. Embedding the bytes in a single HTML file and handing that file
-to someone else is a copy travelling on its own, with no licence text accompanying it, and nothing
-read above establishes a right to do that. `src/build/verify.js` enforces the distinction:
+Serving the font is itself a form of distribution, and this record should not pretend otherwise.
+The hosted page links `FuturaHandwritten.ttf`, so every reader's browser downloads a copy of the
+font file from this origin. Calling that "linking rather than embedding" does not change what
+reaches the reader. The hosted use therefore rests on the author's grant above — the words the owner
+read and accepted — and not on any claim that serving avoids passing the file on.
+
+Keeping the font out of `dist/offline.html` is a deliberate scope choice rather than something the
+recorded permission compels. The grant is a sentence on a listing page, not a licence text: it
+travels with nothing, and the file's own `name` table carries no terms either. So the project keeps
+the font inside the one context the owner approved — this website, served from this origin, with
+Billy Snyder credited on every hosted page — instead of also placing it inside a document that
+circulates on its own with no record attached. `src/build/verify.js` holds that line:
 `auditProjectFontIsHostedOnly` fails the build if the offline output contains the font's bytes, a
 URL pointing at it, or even its family name in a stack it has no face for.
 
-If that ever changes — a written grant from Billy Snyder, or a licence text accompanying the font —
-the offline file can carry it, and the change is to that audit and to this table.
+If that scope is ever widened — on a written grant from Billy Snyder, or a licence text accompanying
+the font — the offline file can carry it, and the change is to that audit and to this table.
 
 ### Replacing or updating it
 

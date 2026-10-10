@@ -225,12 +225,16 @@ export function auditFontNotices(html, notices) {
 /**
  * Reports any trace of the project typeface in the offline document.
  *
- * The permission recorded for Futura Handwritten covers this site using the
- * face. It does not establish a right to redistribute the file, and a single
- * HTML document handed to someone else carries the bytes with it. So the
- * offline file must contain neither the font's data nor a rule that would
- * reach for it. The bytes are checked by their own base64, not by a filename,
- * because a data URI has no filename to look for.
+ * The permission recorded for Futura Handwritten is the author's own note
+ * granting use, which the owner accepted for this website. Serving the face is
+ * already sending it — the hosted page delivers the file to every reader's
+ * browser — so this check is not a line between distributing and not. It keeps
+ * the font inside the context the owner approved: a page served from this
+ * origin with the author credited, rather than a document that travels on its
+ * own with no record attached. So the offline file must contain neither the
+ * font's data nor a rule that would reach for it. The bytes are checked by
+ * their own base64, not by a filename, because a data URI has no filename to
+ * look for.
  *
  * @param {string} html the offline document
  * @param {Buffer} fontBytes the project typeface

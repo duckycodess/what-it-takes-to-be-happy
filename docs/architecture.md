@@ -151,7 +151,7 @@ A source's `reviewStatus` is the level the audit actually reached: read in full,
 
 The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
 
-The project typeface is handled differently, because its permission is different. Futura Handwritten is used under the author's own note granting use, which is not a named licence and is not a grant to redistribute the file. So it is **served** by the hosted site from this origin and is **never embedded** in an output handed to someone else. One stylesheet carries both faces, with everything that depends on the project typeface inside a marked region the hosted output keeps and the offline file drops; a build check fails the offline output if the font's bytes, a URL pointing at it, or even its family name survive into it. Each output credits the fonts it actually carries and no others, which is also a build check — a credit for a face a reader is not looking at would be a false statement about the page.
+The project typeface is handled differently, because its permission is different. Futura Handwritten is used under the author's own note granting use, which is not a named licence and carries no licence text to travel with the file. Serving it is still sending it: the hosted page delivers the font to every reader's browser, so that use rests on the author's grant rather than on linking instead of embedding. What the build enforces is a narrower scope than the grant — the face is **served** by the hosted site from this origin and is **kept out** of an output that would circulate on its own. One stylesheet carries both faces, with everything that depends on the project typeface inside a marked region the hosted output keeps and the offline file drops; a build check fails the offline output if the font's bytes, a URL pointing at it, or even its family name survive into it. Each output credits the fonts it actually carries and no others, which is also a build check — a credit for a face a reader is not looking at would be a false statement about the page.
 
 ### Illustration, as built
 
@@ -172,8 +172,8 @@ committed concept sheet is provenance for the drawings rather than production ar
 
 The project typeface is settled. Futura Handwritten is served by the hosted site and sets the whole
 essay; the committed DejaVu Sans stands behind it and draws the one character on this content it has
-no glyph for. The distinction that governs where it may appear — permission to use a face is not
-permission to pass the file on — and everything that was checked to establish it, are in
+no glyph for. The grant the hosted serving rests on, the reason the file is nonetheless kept to that
+one context, and everything that was checked, are in
 [`assets/fonts/README.md`](../assets/fonts/README.md). No lookalike was substituted; all lettering is
 browser text, so nothing in the argument depends on the face.
 
