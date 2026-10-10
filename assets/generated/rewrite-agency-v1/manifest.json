@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-agency-v1",
+  "ref": "A04",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-agency-v1",
+  "purpose": "Scenes s094 “Having a say” and s108 “Choosing what to keep” (single, after Vier's dialogue): having a say over which demands to keep, without depicting a path or an idealized second self.",
+  "description": "Vier with angular tuft, thoughtful face, seated with a phone set down and a notebook nearby. One hand raised in a small questioning gesture; no pathways, arrows or idealized second self.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "466b43e44a0046438b0a0c7e1893acb3c73fd2cb22ebdc8217e78924bbce308a"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [
+      {
+        "name": "Vier",
+        "x_fraction": 0.48,
+        "y_fraction": 0.08
+      }
+    ],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "Vier pauses beside a phone and notebook with a questioning expression.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "2f3c2b349916d439342b572dffef4389f4074019a0644a8154e445866aeeaa4e",
+    "alt": "Vier pauses beside a phone and notebook with a questioning expression."
+  }
+}

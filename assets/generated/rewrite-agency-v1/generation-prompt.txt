@@ -1,0 +1,10 @@
+Use case: illustration-story
+Asset type: transparent production cutout for an illustrated essay.
+Input reference image 1: original character sheet, use drawing language and appropriate character identity; ignore its lettering. TJ has a small crown tuft, Koj one curl, Vier an angular tuft, fictional Bob a plain round bald head. These identities do not assign permanent moods.
+Input reference image 2: approved production style, line weight, white-filled heads, compact bodies and short limbs. Use style only; do not copy its composition or surrounding glow.
+Style/medium: very simple expressive 2D stickmen, large rounded solid-white heads, compact white bodies, short limbs, slightly imperfect bold dark charcoal outlines, restrained pink cheeks only when requested mood suits. Minimal feature count, no extra detail or rendering.
+Composition: entire figures and specified props intact with clear comfortable margin and blank space above member heads for browser name text.
+Background: genuinely transparent alpha everywhere outside actual drawn outlines and opaque-white head/body/prop interiors. Clean edges. NO dark background, color wash, glow, halo, cast shadow, texture, haze, panels or frame.
+Text: none. No names, dialogue, words, letters, numbers, logos, captions, labels, watermarks or illustrated UI. Browser renders all language separately. No extra decorative objects beyond brief.
+Primary request: Vier with angular tuft, thoughtful face, seated with a phone set down and a notebook nearby. One hand raised in a small questioning gesture; no pathways, arrows or idealized second self.
+Only Vier appears. Keep his angular tuft, questioning hand gesture and calm thoughtful face clear; phone screen and notebook blank.
