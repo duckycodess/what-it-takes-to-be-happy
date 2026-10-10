@@ -452,7 +452,10 @@ test('the drawings are drawn, with the names above the heads and inside the fram
               var box = label.getBoundingClientRect();
               var head = box.bottom;
               return {
-                name: probe.q('.nametag', label).textContent,
+                name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
+                marked: label.getAttribute('data-role') === 'member'
+                  ? !!probe.q('.nametag', label)
+                  : !!probe.q('.fiction-note', label),
                 insideFrame: box.left >= frameBox.left - 1 && box.right <= frameBox.right + 1,
                 aboveItsAnchor: head <= frameBox.bottom + 1,
                 baked: label.closest('svg') !== null,
@@ -478,6 +481,7 @@ test('the drawings are drawn, with the names above the heads and inside the fram
     for (const label of beat.labels) {
       assert.equal(label.baked, false, `${beat.scene}: "${label.name}" is inside the SVG; names are browser text`);
       assert.equal(label.insideFrame, true, `${beat.scene}: "${label.name}" hangs outside the frame at phone width`);
+      assert.equal(label.marked, true, `${beat.scene}: "${label.name}" is neither a contributor's nametag nor marked as a fictional illustration`);
       assert.equal(label.aboveItsAnchor, true, `${beat.scene}: "${label.name}" sits below the drawing`);
     }
   }
@@ -682,7 +686,7 @@ document.fonts.ready.then(function () {
       labels: probe.all('.art-label', scene).map(function (label) {
         var box = label.getBoundingClientRect();
         return {
-          name: probe.q('.nametag', label).textContent,
+          name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
           pastEdge: Math.round(Math.max(0, box.right - viewport, -box.left)),
           visible: box.width > 0 && box.height > 0,
         };

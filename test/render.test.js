@@ -220,6 +220,97 @@ test('an abstract-level reading is never shown as a passage-level one', () => {
   assert.ok(!/The passage read supports<\/span>\s*$/.test(preceding));
 });
 
+/* ---- The order a beat reads in ------------------------------------------ */
+
+const blockOrder = (sceneHtml) =>
+  [...sceneHtml.matchAll(/<(div class="narration"|ul class="dialogue"|aside class="limitations")/g)]
+    .map((match) => match[1].split(' ')[0] === 'div' ? 'narration' : match[1].startsWith('ul') ? 'dialogue' : 'limitations');
+
+/** One beat's markup: from its own element to wherever the next beat starts. */
+function sceneHtml(html, id) {
+  const start = html.indexOf(`<li class="scene" id="${id}"`);
+  assert.ok(start >= 0, `${id} is not in the output`);
+  const next = html.indexOf('<li class="scene" id="', start + 1);
+  return html.slice(start, next < 0 ? undefined : next);
+}
+
+test('the essential blocks are rendered in the order the beat was authored in', () => {
+  const content = loadValidContent();
+  const scene = byId(content.scenes, 'sc-three-readings');
+  assert.ok(scene.narration.length >= 2 && scene.limitations.length >= 1);
+
+  // The caveat belongs before the narration in this arrangement, which a fixed
+  // narration-then-caveat renderer would silently reverse.
+  scene.mainPath = [
+    { kind: 'limitations', index: 0 },
+    { kind: 'narration', index: 1 },
+    { kind: 'narration', index: 0 },
+  ];
+  const html = sceneHtml(render(content), scene.id);
+  assert.deepEqual(blockOrder(html), ['limitations', 'narration']);
+  assert.ok(html.indexOf(esc(scene.narration[1])) < html.indexOf(esc(scene.narration[0])), 'paragraphs follow the authored sequence');
+  assert.ok(html.indexOf(esc(scene.limitations[0])) < html.indexOf(esc(scene.narration[1])), 'the caveat comes first because the beat says so');
+});
+
+test('consecutive blocks of one kind stay one block, so dialogue is still a list', () => {
+  const content = loadValidContent();
+  const scene = byId(content.scenes, 'sc-chosen-difficulty');
+  scene.mainPath = [
+    { kind: 'narration', index: 0 },
+    { kind: 'dialogue', index: 0 },
+    { kind: 'narration', index: 1 },
+  ];
+  const html = sceneHtml(render(content), scene.id);
+  assert.deepEqual(blockOrder(html), ['narration', 'dialogue', 'narration'], 'a line between two paragraphs splits them');
+
+  const together = loadValidContent();
+  const same = byId(together.scenes, 'sc-chosen-difficulty');
+  same.mainPath = [
+    { kind: 'narration', index: 0 },
+    { kind: 'narration', index: 1 },
+    { kind: 'dialogue', index: 0 },
+  ];
+  assert.deepEqual(blockOrder(sceneHtml(render(together), same.id)), ['narration', 'dialogue']);
+});
+
+test('a beat that is deliberately text-only gets no frame rather than an empty one', () => {
+  const content = loadValidContent();
+  const scene = byId(content.scenes, 'sc-rest-without-a-reason');
+  scene.visual.artId = null;
+  scene.visual.artState = null;
+  scene.visual.artAbsence = 'text-only';
+  scene.visual.cast = [];
+
+  const html = sceneHtml(render(content), scene.id);
+  assert.ok(!html.includes('scene-visual-frame'), 'no bordered box where there is deliberately no drawing');
+  assert.ok(!html.includes('scene-visual-pending'), 'and no notice saying a drawing is still to come');
+  assert.ok(html.includes(esc(scene.visual.description)), 'the description still introduces the beat');
+
+  // A beat whose drawing is merely not made yet is the other case, and it does
+  // say so, because a reader should not have to guess.
+  const draft = loadValidContent();
+  const waiting = byId(draft.scenes, 'sc-rest-without-a-reason');
+  waiting.visual.artId = null;
+  waiting.visual.artState = null;
+  waiting.visual.artAbsence = 'pending';
+  assert.ok(sceneHtml(render(draft), waiting.id).includes('scene-visual-pending'));
+});
+
+test('the chapter list numbers the chapters the reader counts, and only those', () => {
+  const content = loadValidContent();
+  content.chapters[0].number = null;
+  const html = render(content);
+  const items = [...html.matchAll(/<a href="#[^"]+" data-chapter-link="[^"]+">(.*?)<\/a>/g)].map((match) => match[1]);
+
+  assert.equal(items.length, content.chapters.length);
+  assert.equal(items[0], esc(content.chapters[0].title), 'an unnumbered chapter is named, not counted');
+  assert.match(items[1], /^<span class="chapter-number">2<\/span> /);
+
+  // The beat controls need the same two facts, so the chapter carries them.
+  assert.ok(!html.includes(`data-chapter="${content.chapters[0].id}" data-chapter-number`));
+  assert.ok(html.includes(`data-chapter-number="${content.chapters[1].number}" data-chapter-count="${content.chapters.length - 1}"`));
+});
+
 /* ---- The drawings ------------------------------------------------------- */
 
 const frames = (html) => [...html.matchAll(/<div class="scene-visual-frame"[\s\S]*?<\/div>/g)].map((match) => match[0]);
@@ -261,7 +352,12 @@ test('the landing drawing is authored content, not a choice the renderer makes',
   for (const appearance of content.project.visual.cast) {
     const character = byId(content.cast, appearance.characterId);
     const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
-    assert.ok(landing.includes(`<span class="nametag">${esc(character.displayName)}</span><span class="expression">${esc(expression.label)}</span>`));
+    // A contributor is named with the nametag; an invented friend is named and
+    // said to be invented, which is a different label on purpose.
+    const name = character.role === 'member'
+      ? `<span class="nametag">${esc(character.displayName)}</span>`
+      : `<span class="figure-name">${esc(character.displayName)}</span><span class="fiction-note">fictional illustration</span>`;
+    assert.ok(landing.includes(`${name}<span class="expression">${esc(expression.label)}</span>`));
     assert.ok(landing.includes(`data-figure="${character.artId}" data-expression="${expression.artId}"`));
   }
 

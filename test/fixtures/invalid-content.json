@@ -12,6 +12,7 @@
       "id": "ch-one",
       "title": "First",
       "question": "First?",
+      "number": 0,
       "opening": "Opens.",
       "sceneIds": ["sc-a", "sc-missing", "sc-a"]
     },
@@ -19,6 +20,7 @@
       "id": "ch-two",
       "title": "Second",
       "question": "Second?",
+      "number": 2,
       "opening": "Opens.",
       "closing": "Closes.",
       "sceneIds": ["sc-b"]
@@ -27,6 +29,7 @@
       "id": "ch-one",
       "title": "Duplicate identifier",
       "question": "Duplicate?",
+      "number": 2,
       "opening": "Opens.",
       "closing": "Closes.",
       "sceneIds": ["sc-c"]
@@ -48,10 +51,15 @@
           "provenanceId": null
         }
       ],
+      "mainPath": [
+        { "kind": "narration", "index": 0 },
+        { "kind": "dialogue", "index": 3 }
+      ],
       "visual": {
         "description": "Describes the drawing.",
         "artId": "art-nowhere",
         "artState": "revealed",
+        "artAbsence": "pending",
         "cast": [{ "characterId": "cast-tj", "expressionId": "ex-smug" }]
       },
       "conceptIds": [],
@@ -67,10 +75,15 @@
       "title": "Ordered under a chapter it does not declare",
       "narration": ["Reads on the main path."],
       "dialogue": [],
+      "mainPath": [
+        { "kind": "narration", "index": 0 },
+        { "kind": "narration", "index": 0 }
+      ],
       "visual": {
         "description": "Describes the drawing.",
         "artId": "art-figure-row",
         "artState": "revealed",
+        "artAbsence": null,
         "cast": []
       },
       "conceptIds": [],
@@ -85,10 +98,12 @@
       "title": "Also claims the shared detail",
       "narration": ["Reads on the main path."],
       "dialogue": [],
+      "mainPath": [{ "kind": "narration", "index": "first" }],
       "visual": {
         "description": "Describes the drawing.",
         "artId": null,
         "artState": "situation",
+        "artAbsence": "not-drawn-yet",
         "cast": []
       },
       "conceptIds": ["cn-planned-but-written"],
@@ -103,10 +118,12 @@
       "title": "Never listed in any chapter order",
       "narration": ["Reads on the main path, but no reader reaches it."],
       "dialogue": [],
+      "mainPath": [{ "kind": "nattering", "index": 0 }],
       "visual": {
         "description": "Describes the drawing.",
         "artId": null,
         "artState": null,
+        "artAbsence": "pending",
         "cast": []
       },
       "conceptIds": [],

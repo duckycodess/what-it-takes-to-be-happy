@@ -479,9 +479,34 @@ figcaption {
   font-size: 1rem;
 }
 
+/* A beat that is deliberately not an illustrated situation has no frame at
+   all. What would have been the caption introduces the beat instead, so the
+   reader is never shown an empty box to interpret. */
+.scene-visual-note {
+  max-width: var(--measure);
+  margin: 0 0 1.25rem;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
 .art-label .nametag {
   padding: 0.05em 0.5em;
   font-size: 1em;
+}
+
+/* An invented friend is named so a reader can follow them from beat to beat,
+   but without the boxed nametag that marks a contributor, and with what they
+   are said beside the name. The distinction has to survive losing colour and
+   losing the drawing, so it is the box and the words, never a shade. */
+.art-label .figure-name {
+  font-weight: 700;
+  font-size: 1em;
+}
+
+.art-label .fiction-note {
+  font-size: 0.7em;
+  font-style: italic;
+  color: var(--ink-soft);
 }
 
 .art-label .expression { font-size: 0.75em; }
@@ -559,6 +584,8 @@ html.js[data-view='beat'] .scene[data-current] [data-art-layer='reveal'] {
   gap: 0.5rem;
   margin-bottom: 0.3em;
 }
+
+.line-speaker .figure-name { font-weight: 700; }
 
 .line-kind {
   font-size: 0.75rem;

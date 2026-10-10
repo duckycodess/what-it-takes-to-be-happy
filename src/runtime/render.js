@@ -66,10 +66,22 @@ ${detail}${register}
 
 const percent = (value) => `${(Math.round(value * 100) / 100).toFixed(2)}%`;
 
-/** The name and state of one figure, as browser text rather than lettering. */
+/**
+ * The name and state of one figure, as browser text rather than lettering.
+ *
+ * A contributor gets a nametag: the boxed name above the head that says this
+ * drawing stands for a person who wrote something here. An invented friend
+ * gets their name too — a reader has to be able to follow Bob from beat to
+ * beat — but not that nametag, and with "fictional illustration" beside it, so
+ * no drawing in this essay can be mistaken for a member's biography or for
+ * somebody's evidence.
+ */
 function renderFigureLabel(character, expression, anchor) {
   const position = anchor ? ` style="--art-x:${percent(anchor.x)};--art-y:${percent(anchor.y)}"` : '';
-  return `<li class="art-label" data-role="${esc(character.role)}"${position}><span class="nametag">${esc(character.displayName)}</span><span class="expression">${esc(expression.label)}</span></li>`;
+  const name = character.role === 'member'
+    ? `<span class="nametag">${esc(character.displayName)}</span>`
+    : `<span class="figure-name">${esc(character.displayName)}</span><span class="fiction-note">fictional illustration</span>`;
+  return `<li class="art-label" data-role="${esc(character.role)}"${position}>${name}<span class="expression">${esc(expression.label)}</span></li>`;
 }
 
 /**
@@ -91,6 +103,14 @@ function renderFigureLabel(character, expression, anchor) {
  * description carry it exactly as they do in print.
  */
 function renderVisual(visual, castById, className) {
+  // A beat that is deliberately not an illustrated situation gets no frame at
+  // all. An empty bordered box next to a source register would read as a
+  // drawing that failed to arrive; the description still introduces what
+  // follows, as it does everywhere else.
+  if (visual.artAbsence === 'text-only') {
+    return `<p class="scene-visual-note" data-art="text-only">${esc(visual.description)}</p>`;
+  }
+
   const appearances = visual.cast.map((appearance) => {
     const character = castById.get(appearance.characterId);
     const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
@@ -134,19 +154,59 @@ ${frame}
 </figure>`;
 }
 
-function renderDialogue(scene, castById) {
-  if (scene.dialogue.length === 0) return '';
-  const lines = scene.dialogue
+function renderDialogue(lines, castById) {
+  if (lines.length === 0) return '';
+  const spoken = lines
     .map((line) => {
       const speaker = castById.get(line.speakerId);
+      const name = speaker.role === 'member'
+        ? `<span class="nametag">${esc(speaker.displayName)}</span>`
+        : `<span class="figure-name">${esc(speaker.displayName)}</span>`;
       const kind = line.stance === 'member-endorsed' ? '' : '<span class="line-kind">invented example</span>';
       return `<li class="line" data-stance="${esc(line.stance)}">
-<p class="line-speaker"><span class="nametag">${esc(speaker.displayName)}</span>${kind}</p>
+<p class="line-speaker">${name}${kind}</p>
 <p class="line-text">${esc(line.text)}</p>
 </li>`;
     })
     .join('\n');
-  return `<ul class="dialogue">\n${lines}\n</ul>`;
+  return `<ul class="dialogue">\n${spoken}\n</ul>`;
+}
+
+/** One visible caveat, or a run of them, as the block the reader cannot skip. */
+const renderLimitations = (limitations) => (limitations.length === 0 ? '' : `<aside class="limitations" aria-label="Limitations">
+<p class="label">Keep in mind</p>
+${paragraphs(limitations)}
+</aside>`);
+
+/**
+ * The beat's essential blocks, in the order the beat actually reads.
+ *
+ * Twenty beats answer before the narrator explains and five state a caveat
+ * before the line it qualifies, so a fixed narration-then-dialogue-then-caveat
+ * order would quietly rewrite the argument. `mainPath` is the authored
+ * sequence; consecutive blocks of one kind are gathered so dialogue is still
+ * one list and a run of caveats is still one callout.
+ */
+function renderMainPath(scene, castById) {
+  const runs = [];
+  for (const entry of scene.mainPath) {
+    const last = runs[runs.length - 1];
+    if (last && last.kind === entry.kind) last.indexes.push(entry.index);
+    else runs.push({ kind: entry.kind, indexes: [entry.index] });
+  }
+
+  return runs
+    .map((run) => {
+      if (run.kind === 'narration') {
+        return `<div class="narration">\n${paragraphs(run.indexes.map((index) => scene.narration[index]))}\n</div>`;
+      }
+      if (run.kind === 'dialogue') {
+        return renderDialogue(run.indexes.map((index) => scene.dialogue[index]), castById);
+      }
+      return renderLimitations(run.indexes.map((index) => scene.limitations[index]));
+    })
+    .filter(Boolean)
+    .join('\n');
 }
 
 function renderDetail(detail, sourceById) {
@@ -172,13 +232,6 @@ ${sources ? `<ul class="detail-sources">\n${sources}\n</ul>` : ''}
 function renderScene(scene, context, position) {
   const { castById, sourceById, conceptById, detailById } = context;
 
-  const limitations = scene.limitations.length
-    ? `<aside class="limitations" aria-label="Limitations">
-<p class="label">Keep in mind</p>
-${paragraphs(scene.limitations)}
-</aside>`
-    : '';
-
   const concepts = scene.conceptIds.length
     ? `<p class="concepts"><span class="label">Concepts</span> ${scene.conceptIds.map((id) => esc(conceptById.get(id).name)).join(' &middot; ')}</p>`
     : '';
@@ -201,12 +254,8 @@ ${scene.sourceIds.map((id) => renderSourceReference(sourceById.get(id))).join('\
   return `<li class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}" tabindex="-1" aria-labelledby="${esc(scene.id)}-title">
 <h3 class="scene-title" id="${esc(scene.id)}-title">${esc(scene.title)}</h3>
 ${renderVisual(scene.visual, castById, 'scene-visual')}
-<div class="narration">
-${paragraphs(scene.narration)}
-</div>
-${renderDialogue(scene, castById)}
+${renderMainPath(scene, castById)}
 ${concepts}
-${limitations}
 ${details}
 ${sources}
 </li>`;
@@ -218,7 +267,11 @@ function renderChapter(chapter, context) {
     .map((id) => renderScene(sceneById.get(id), context, positions.get(id)))
     .join('\n');
 
-  return `<section class="chapter" id="${esc(chapter.id)}" data-chapter="${esc(chapter.id)}" aria-labelledby="${esc(chapter.id)}-title">
+  const numbering = chapter.number === null
+    ? ''
+    : ` data-chapter-number="${chapter.number}" data-chapter-count="${context.chapterCount}"`;
+
+  return `<section class="chapter" id="${esc(chapter.id)}" data-chapter="${esc(chapter.id)}"${numbering} aria-labelledby="${esc(chapter.id)}-title">
 <header class="chapter-head">
 <h2 id="${esc(chapter.id)}-title">${esc(chapter.title)}</h2>
 <p class="chapter-connection chapter-opening">${esc(chapter.opening)}</p>
@@ -272,9 +325,13 @@ function renderDraftNotice(status) {
  * ordered list on purpose: the register is not a seventh chapter.
  */
 function renderChapterNav(content) {
+  // The opening is not one of the six shared questions, so it carries no
+  // number: numbering it would make the first question the second chapter.
   const items = content.chapters
-    .map((chapter, index) =>
-      `<li><a href="#${esc(chapter.id)}" data-chapter-link="${esc(chapter.id)}"><span class="chapter-number">${index + 1}</span> ${esc(chapter.title)}</a></li>`)
+    .map((chapter) => {
+      const number = chapter.number === null ? '' : `<span class="chapter-number">${chapter.number}</span> `;
+      return `<li><a href="#${esc(chapter.id)}" data-chapter-link="${esc(chapter.id)}">${number}${esc(chapter.title)}</a></li>`;
+    })
     .join('\n');
   return `<nav class="chapter-nav" id="chapters" aria-label="Chapters and sources">
 <p class="label" id="chapter-nav-label">Chapters</p>
@@ -336,6 +393,7 @@ export function renderDocument(content, options) {
     detailById: indexBy(content.details),
     sceneById: indexBy(content.scenes),
     positions: new Map(),
+    chapterCount: content.chapters.filter((chapter) => chapter.number !== null).length,
   };
 
   // Reading order is the chapters' declared scene order, never array position.

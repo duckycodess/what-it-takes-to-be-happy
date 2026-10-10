@@ -91,6 +91,14 @@ test('a deliberately broken document reports every located problem at once', () 
     'ART_ROLE_MISMATCH',
     'ART_STATE_UNAVAILABLE',
     'ART_FIGURE_COUNT',
+    'ART_ABSENCE_UNDECLARED',
+    'ART_ABSENCE_DECLARED',
+    'MAIN_PATH_INDEX',
+    'MAIN_PATH_OUT_OF_RANGE',
+    'MAIN_PATH_DUPLICATE',
+    'MAIN_PATH_INCOMPLETE',
+    'INVALID_CHAPTER_NUMBER',
+    'DUPLICATE_CHAPTER_NUMBER',
   ]) {
     assert.ok(reported.has(code), `expected the broken fixture to report ${code}`);
   }
@@ -227,7 +235,92 @@ test('a beat may name a drawing or declare that it has none, and nothing else', 
   const fallback = byId(undrawn.scenes, 'sc-ordinary-afternoon').visual;
   fallback.artId = null;
   fallback.artState = null;
+  fallback.artAbsence = 'pending';
   assert.deepEqual(validateContent(undrawn).errors, []);
+});
+
+test('an undrawn beat has to say which kind of undrawn it is', () => {
+  const silent = loadValidContent();
+  const visual = byId(silent.scenes, 'sc-ordinary-afternoon').visual;
+  visual.artId = null;
+  visual.artState = null;
+  visual.artAbsence = null;
+  assert.ok(codesAt(validateContent(silent).errors, 'scenes[0].visual.artAbsence').includes('ART_ABSENCE_UNDECLARED'));
+
+  // And a beat that does have a drawing may not also record a reason for not
+  // having one; the two statements would contradict each other.
+  const drawn = loadValidContent();
+  byId(drawn.scenes, 'sc-ordinary-afternoon').visual.artAbsence = 'text-only';
+  assert.ok(codesAt(validateContent(drawn).errors, 'scenes[0].visual.artAbsence').includes('ART_ABSENCE_DECLARED'));
+});
+
+test('finished content may not contain a beat whose drawing is still pending', () => {
+  const draft = loadValidContent();
+  const visual = byId(draft.scenes, 'sc-ordinary-afternoon').visual;
+  visual.artId = null;
+  visual.artState = null;
+  visual.artAbsence = 'pending';
+  assert.deepEqual(validateContent(draft).errors, [], 'a draft may carry a drawing nobody has made yet');
+
+  const final = clone(draft);
+  final.status.final = true;
+  assert.ok(codesAt(validateContent(final).errors, 'scenes[0].visual.artAbsence').includes('PENDING_ART_IN_FINAL_CONTENT'));
+
+  // An intentionally text-only beat is a different statement and stays legal.
+  const settled = clone(final);
+  byId(settled.scenes, 'sc-ordinary-afternoon').visual.artAbsence = 'text-only';
+  assert.ok(!codes(validateContent(settled).errors).includes('PENDING_ART_IN_FINAL_CONTENT'));
+});
+
+/* ---- The order a beat is actually read in ------------------------------ */
+
+test('the main path places every essential block of a beat exactly once', () => {
+  const doc = loadValidContent();
+  for (const scene of doc.scenes) {
+    const expected = scene.narration.length + scene.dialogue.length + scene.limitations.length;
+    assert.equal(scene.mainPath.length, expected, `${scene.id} does not place all of its essential blocks`);
+  }
+
+  const missing = loadValidContent();
+  const scene = byId(missing.scenes, 'sc-three-readings');
+  scene.mainPath = scene.mainPath.filter((entry) => entry.kind !== 'limitations');
+  assert.ok(codes(validateContent(missing).errors).includes('MAIN_PATH_INCOMPLETE'));
+});
+
+test('a main path cannot read a block twice, or read one that is not there', () => {
+  const twice = loadValidContent();
+  byId(twice.scenes, 'sc-ordinary-afternoon').mainPath.push({ kind: 'narration', index: 0 });
+  assert.ok(codes(validateContent(twice).errors).includes('MAIN_PATH_DUPLICATE'));
+
+  const beyond = loadValidContent();
+  byId(beyond.scenes, 'sc-ordinary-afternoon').mainPath.push({ kind: 'dialogue', index: 0 });
+  assert.ok(codes(validateContent(beyond).errors).includes('MAIN_PATH_OUT_OF_RANGE'));
+
+  const nonsense = loadValidContent();
+  byId(nonsense.scenes, 'sc-ordinary-afternoon').mainPath[0].index = -1;
+  assert.ok(codes(validateContent(nonsense).errors).includes('MAIN_PATH_INDEX'));
+
+  const unknownKind = loadValidContent();
+  byId(unknownKind.scenes, 'sc-ordinary-afternoon').mainPath[0].kind = 'aside';
+  const reported = codes(validateContent(unknownKind).errors);
+  assert.ok(reported.includes('INVALID_ENUM'));
+  assert.ok(reported.includes('MAIN_PATH_INCOMPLETE'), 'the block it was meant to place is now unread');
+});
+
+test('a chapter the reader counts carries its own number', () => {
+  const doc = loadValidContent();
+  doc.chapters[0].number = 0;
+  assert.ok(codesAt(validateContent(doc).errors, 'chapters[0].number').includes('INVALID_CHAPTER_NUMBER'));
+
+  const repeated = loadValidContent();
+  repeated.chapters[1].number = repeated.chapters[0].number;
+  assert.ok(codesAt(validateContent(repeated).errors, 'chapters[1].number').includes('DUPLICATE_CHAPTER_NUMBER'));
+
+  // An unnumbered chapter is the declared state for an opening that is not one
+  // of the questions the essay counts.
+  const unnumbered = loadValidContent();
+  unnumbered.chapters[0].number = null;
+  assert.deepEqual(validateContent(unnumbered).errors, []);
 });
 
 test('the landing illustration obeys the same rules as every other drawing', () => {

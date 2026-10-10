@@ -14,66 +14,98 @@
       "description": "Four stickmen stand to either side of a large question mark: one at ease and smiling, one slumped and tired, one still and considering, and one invented friend watching the others. Under each of them is an answer stroke, and no two are the same length.",
       "artId": "art-opening-question",
       "artState": "revealed",
+      "artAbsence": null,
       "cast": [
-        { "characterId": "cast-tj", "expressionId": "ex-joy" },
-        { "characterId": "cast-koj", "expressionId": "ex-tired" },
-        { "characterId": "cast-vier", "expressionId": "ex-reflective" },
-        { "characterId": "cast-bob", "expressionId": "ex-curious" }
+        {
+          "characterId": "cast-tj",
+          "expressionId": "ex-joy"
+        },
+        {
+          "characterId": "cast-koj",
+          "expressionId": "ex-tired"
+        },
+        {
+          "characterId": "cast-vier",
+          "expressionId": "ex-reflective"
+        },
+        {
+          "characterId": "cast-bob",
+          "expressionId": "ex-curious"
+        }
       ]
     }
   },
-
   "chapters": [
     {
       "id": "ch-what-counts",
       "title": "What counts as happiness?",
       "question": "What counts as happiness?",
+      "number": 1,
       "opening": "Placeholder connection. The authored opening will start from an ordinary day rather than a definition, and let the same hours be read in more than one way.",
       "closing": "Placeholder connection. The authored close will carry the unsettled definitions forward instead of resolving them.",
-      "sceneIds": ["sc-ordinary-afternoon", "sc-three-readings"]
+      "sceneIds": [
+        "sc-ordinary-afternoon",
+        "sc-three-readings"
+      ]
     },
     {
       "id": "ch-meaningful-or-not",
       "title": "Must enjoyment become meaningful or productive?",
       "question": "Must enjoyment become meaningful or productive?",
+      "number": 2,
       "opening": "Placeholder connection. The authored opening will pick up the unsettled definitions and press on one of them: whether enjoyment has to earn its place.",
       "closing": "Placeholder connection. The authored close will leave pleasure, meaning, growth, and rest in negotiation rather than ranking them.",
-      "sceneIds": ["sc-chosen-difficulty", "sc-rest-without-a-reason"]
+      "sceneIds": [
+        "sc-chosen-difficulty",
+        "sc-rest-without-a-reason"
+      ]
     },
     {
       "id": "ch-whose-definition",
       "title": "Whose definition are we following?",
       "question": "Whose definition are we following?",
+      "number": 3,
       "opening": "Placeholder connection. The authored opening will ask where the ranking in the previous chapter came from.",
       "closing": "Placeholder connection. The authored close will keep socially shaped desire and real agency in tension rather than declaring either one false.",
-      "sceneIds": ["sc-inherited-markers"]
+      "sceneIds": [
+        "sc-inherited-markers"
+      ]
     },
     {
       "id": "ch-relationships",
       "title": "How do relationships help, and when does care become pressure?",
       "question": "How do relationships help, and when does care become pressure?",
+      "number": 4,
       "opening": "Placeholder connection. The authored opening will move from inherited expectations to the people those expectations are negotiated with.",
       "closing": "Placeholder connection. The authored close will hold belonging and its labour together, including boundaries and solitude.",
-      "sceneIds": ["sc-ordinary-belonging"]
+      "sceneIds": [
+        "sc-ordinary-belonging"
+      ]
     },
     {
       "id": "ch-room-for-happiness",
       "title": "Who has room for happiness?",
       "question": "Who has room for happiness?",
+      "number": 5,
       "opening": "Placeholder connection. The authored opening will return to an earlier enjoyable scene and reveal what it quietly required.",
       "closing": "Placeholder connection. The authored close will separate the reality of joy in hardship from any claim that the hardship is acceptable.",
-      "sceneIds": ["sc-conditions-behind-the-invitation", "sc-what-enough-means"]
+      "sceneIds": [
+        "sc-conditions-behind-the-invitation",
+        "sc-what-enough-means"
+      ]
     },
     {
       "id": "ch-what-could-change",
       "title": "What could change, and what do we still disagree about?",
       "question": "What could change, and what do we still disagree about?",
+      "number": 6,
       "opening": "Placeholder connection. The authored opening will turn from description to the assignment's change question.",
       "closing": "Placeholder connection. The authored close will name what the group still disagrees about, including the risk of universalising its own standpoint.",
-      "sceneIds": ["sc-changes-and-open-questions"]
+      "sceneIds": [
+        "sc-changes-and-open-questions"
+      ]
     }
   ],
-
   "scenes": [
     {
       "id": "sc-ordinary-afternoon",
@@ -84,14 +116,34 @@
         "This fixture text exists so the reading view, the printed view, and the offline file can be built and checked before the essay is written. It is not a draft of the opening."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        }
+      ],
       "visual": {
         "description": "Three stickmen stand apart, each on a separate patch of ground and in a different state, with their names set above their heads as text. An unnamed dashed figure stands to one side, carrying no name: this essay's mark for a figure it invented rather than a person who exists.",
         "artId": "art-apart-together",
         "artState": "revealed",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-tj", "expressionId": "ex-joy" },
-          { "characterId": "cast-koj", "expressionId": "ex-reflective" },
-          { "characterId": "cast-vier", "expressionId": "ex-curious" }
+          {
+            "characterId": "cast-tj",
+            "expressionId": "ex-joy"
+          },
+          {
+            "characterId": "cast-koj",
+            "expressionId": "ex-reflective"
+          },
+          {
+            "characterId": "cast-vier",
+            "expressionId": "ex-curious"
+          }
         ]
       },
       "conceptIds": [],
@@ -109,22 +161,51 @@
         "In this fixture, no reading is attributed to anyone. The contributors' own positions are written only from notes they have endorsed, and those notes are not wired in yet."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        },
+        {
+          "kind": "limitations",
+          "index": 0
+        }
+      ],
       "visual": {
         "description": "One ordinary moment sits framed in the middle of the drawing, with a path running from it to each figure and a different shape at the end of every path. One of the figures is drawn unsettled rather than decided.",
         "artId": "art-three-readings",
         "artState": "revealed",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-koj", "expressionId": "ex-curious" },
-          { "characterId": "cast-vier", "expressionId": "ex-uncertain" }
+          {
+            "characterId": "cast-koj",
+            "expressionId": "ex-curious"
+          },
+          {
+            "characterId": "cast-vier",
+            "expressionId": "ex-uncertain"
+          }
         ]
       },
-      "conceptIds": ["cn-eudaimonia"],
-      "sourceIds": ["R01"],
+      "conceptIds": [
+        "cn-eudaimonia"
+      ],
+      "sourceIds": [
+        "R01"
+      ],
       "limitations": [
         "Aristotle's Book I is read here in translation and is one part of a longer work. The further question of who is in a position to obtain what he calls external goods is the group's question, not his."
       ],
-      "detailIds": ["dt-definitions-still-open"],
-      "interactionIds": ["in-definitions-still-open"]
+      "detailIds": [
+        "dt-definitions-still-open"
+      ],
+      "interactionIds": [
+        "in-definitions-still-open"
+      ]
     },
     {
       "id": "sc-chosen-difficulty",
@@ -144,15 +225,35 @@
           "provenanceId": null
         }
       ],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        },
+        {
+          "kind": "dialogue",
+          "index": 0
+        }
+      ],
       "visual": {
         "description": "Two identical slopes stand side by side. Bob climbs one of them with empty hands. Over the other, a block is drawn coming down onto the same climb, with an arrow pointing at the place it will sit.",
         "artId": "art-two-climbs",
         "artState": "revealed",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-bob", "expressionId": "ex-tired" }
+          {
+            "characterId": "cast-bob",
+            "expressionId": "ex-tired"
+          }
         ]
       },
-      "conceptIds": ["cn-self-determination"],
+      "conceptIds": [
+        "cn-self-determination"
+      ],
       "sourceIds": [],
       "limitations": [],
       "detailIds": [],
@@ -167,12 +268,26 @@
         "This fixture holds the place in the reading order. The argument itself has not been written."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        }
+      ],
       "visual": {
         "description": "A figure rests on an open ground line with nothing else in the frame: no measuring ticks, no rising arrow, nothing the rest is supposed to be producing.",
         "artId": "art-rest-and-the-frame",
         "artState": "situation",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-tj", "expressionId": "ex-tired" }
+          {
+            "characterId": "cast-tj",
+            "expressionId": "ex-tired"
+          }
         ]
       },
       "conceptIds": [],
@@ -190,15 +305,31 @@
         "This fixture carries no claim about which influences anyone would keep."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        }
+      ],
       "visual": {
         "description": "A line of unnamed dashed figures each carry the same square, handed out identically. One named figure stands apart from the row, holding nothing.",
         "artId": "art-handed-template",
         "artState": "situation",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-vier", "expressionId": "ex-frustrated" }
+          {
+            "characterId": "cast-vier",
+            "expressionId": "ex-frustrated"
+          }
         ]
       },
-      "conceptIds": ["cn-adaptation"],
+      "conceptIds": [
+        "cn-adaptation"
+      ],
       "sourceIds": [],
       "limitations": [],
       "detailIds": [],
@@ -213,17 +344,48 @@
         "This fixture does not describe any real friendship, household, or community."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        },
+        {
+          "kind": "limitations",
+          "index": 0
+        },
+        {
+          "kind": "limitations",
+          "index": 1
+        }
+      ],
       "visual": {
         "description": "Between the two figures, small identical marks have stacked up into something with a shape: one ordinary gesture repeated until the repetition itself is visible.",
         "artId": "art-accumulating-care",
         "artState": "situation",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-koj", "expressionId": "ex-joy" },
-          { "characterId": "cast-bob", "expressionId": "ex-curious" }
+          {
+            "characterId": "cast-koj",
+            "expressionId": "ex-joy"
+          },
+          {
+            "characterId": "cast-bob",
+            "expressionId": "ex-curious"
+          }
         ]
       },
-      "conceptIds": ["cn-weak-ties", "cn-kapwa"],
-      "sourceIds": ["R15", "R17"],
+      "conceptIds": [
+        "cn-weak-ties",
+        "cn-kapwa"
+      ],
+      "sourceIds": [
+        "R15",
+        "R17"
+      ],
       "limitations": [
         "The weak-ties finding was checked at abstract level only, and it describes day-to-day associations rather than proof that acquaintances cause happiness.",
         "Ordinary ethics is represented here by a publisher's description of Lambek's volume. No passage of the book itself was read."
@@ -249,16 +411,42 @@
           "provenanceId": null
         }
       ],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        },
+        {
+          "kind": "dialogue",
+          "index": 0
+        },
+        {
+          "kind": "limitations",
+          "index": 0
+        }
+      ],
       "visual": {
         "description": "The invitation still floats above the line with its friends attached to it. Below the line, in a band of its own, are the travel, the tasks, the person being cared for, and the person doing the caring, all of which the free evening already contained.",
         "artId": "art-invitation-conditions",
         "artState": "revealed",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-bob", "expressionId": "ex-sad" }
+          {
+            "characterId": "cast-bob",
+            "expressionId": "ex-sad"
+          }
         ]
       },
-      "conceptIds": ["cn-structural-violence"],
-      "sourceIds": ["R27"],
+      "conceptIds": [
+        "cn-structural-violence"
+      ],
+      "sourceIds": [
+        "R27"
+      ],
       "limitations": [
         "Naming a structural barrier requires identifying the affected people and the mechanism. This fixture does neither."
       ],
@@ -274,22 +462,52 @@
         "No figure, threshold, or finding is asserted in this fixture."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        },
+        {
+          "kind": "limitations",
+          "index": 0
+        },
+        {
+          "kind": "limitations",
+          "index": 1
+        }
+      ],
       "visual": {
         "description": "A field of points sits at many different heights above one baseline, with a single average line drawn straight across them, and a figure at the side pointing at it.",
         "artId": "art-spread-and-average",
         "artState": "situation",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-tj", "expressionId": "ex-frustrated" }
+          {
+            "characterId": "cast-tj",
+            "expressionId": "ex-frustrated"
+          }
         ]
       },
       "conceptIds": [],
-      "sourceIds": ["R02", "R10", "R11"],
+      "sourceIds": [
+        "R02",
+        "R10",
+        "R11"
+      ],
       "limitations": [
         "Income findings depend on the population studied and the well-being measure used. This fixture states no threshold and converts no finding into a local figure.",
         "The linked discussion thread could not be opened during the source audit, so nothing here rests on its contents."
       ],
-      "detailIds": ["dt-income-measurement-limits"],
-      "interactionIds": ["in-income-measurement-limits"]
+      "detailIds": [
+        "dt-income-measurement-limits"
+      ],
+      "interactionIds": [
+        "in-income-measurement-limits"
+      ]
     },
     {
       "id": "sc-changes-and-open-questions",
@@ -300,14 +518,38 @@
         "It will end with what the group still disagrees about. This fixture names none of those disagreements, because they belong to the contributors rather than to the scaffolding."
       ],
       "dialogue": [],
+      "mainPath": [
+        {
+          "kind": "narration",
+          "index": 0
+        },
+        {
+          "kind": "narration",
+          "index": 1
+        },
+        {
+          "kind": "limitations",
+          "index": 0
+        }
+      ],
       "visual": {
         "description": "Three figures stand above the line, one with both arms up, and a ball arcs away past them. Underneath the line, drawn as three bars with arrows pushing up into it, are the supports the afternoon was resting on.",
         "artId": "art-joy-and-conditions",
         "artState": "revealed",
+        "artAbsence": null,
         "cast": [
-          { "characterId": "cast-tj", "expressionId": "ex-reflective" },
-          { "characterId": "cast-koj", "expressionId": "ex-reflective" },
-          { "characterId": "cast-vier", "expressionId": "ex-reflective" }
+          {
+            "characterId": "cast-tj",
+            "expressionId": "ex-reflective"
+          },
+          {
+            "characterId": "cast-koj",
+            "expressionId": "ex-reflective"
+          },
+          {
+            "characterId": "cast-vier",
+            "expressionId": "ex-reflective"
+          }
         ]
       },
       "conceptIds": [],
@@ -319,7 +561,6 @@
       "interactionIds": []
     }
   ],
-
   "cast": [
     {
       "id": "cast-tj",
@@ -328,13 +569,41 @@
       "appearance": "Original stickman with a small hair tuft, following the first concept sheet. The appearance is provisional and not an approved likeness.",
       "artId": "tj",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
-        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
-        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
-        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
-        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
-        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
-        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
+        {
+          "id": "ex-joy",
+          "label": "Joy",
+          "artId": "joy"
+        },
+        {
+          "id": "ex-curious",
+          "label": "Curiosity",
+          "artId": "curiosity"
+        },
+        {
+          "id": "ex-sad",
+          "label": "Sadness",
+          "artId": "sadness"
+        },
+        {
+          "id": "ex-frustrated",
+          "label": "Frustration",
+          "artId": "frustration"
+        },
+        {
+          "id": "ex-tired",
+          "label": "Fatigue",
+          "artId": "fatigue"
+        },
+        {
+          "id": "ex-reflective",
+          "label": "Reflection",
+          "artId": "reflection"
+        },
+        {
+          "id": "ex-uncertain",
+          "label": "Uncertainty",
+          "artId": "uncertainty"
+        }
       ]
     },
     {
@@ -344,13 +613,41 @@
       "appearance": "Original stickman with a curl, following the first concept sheet. The appearance is provisional and not an approved likeness.",
       "artId": "koj",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
-        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
-        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
-        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
-        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
-        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
-        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
+        {
+          "id": "ex-joy",
+          "label": "Joy",
+          "artId": "joy"
+        },
+        {
+          "id": "ex-curious",
+          "label": "Curiosity",
+          "artId": "curiosity"
+        },
+        {
+          "id": "ex-sad",
+          "label": "Sadness",
+          "artId": "sadness"
+        },
+        {
+          "id": "ex-frustrated",
+          "label": "Frustration",
+          "artId": "frustration"
+        },
+        {
+          "id": "ex-tired",
+          "label": "Fatigue",
+          "artId": "fatigue"
+        },
+        {
+          "id": "ex-reflective",
+          "label": "Reflection",
+          "artId": "reflection"
+        },
+        {
+          "id": "ex-uncertain",
+          "label": "Uncertainty",
+          "artId": "uncertainty"
+        }
       ]
     },
     {
@@ -360,13 +657,41 @@
       "appearance": "Original stickman with an angular tuft, following the first concept sheet. The appearance is provisional and not an approved likeness.",
       "artId": "vier",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
-        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
-        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
-        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
-        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
-        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
-        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
+        {
+          "id": "ex-joy",
+          "label": "Joy",
+          "artId": "joy"
+        },
+        {
+          "id": "ex-curious",
+          "label": "Curiosity",
+          "artId": "curiosity"
+        },
+        {
+          "id": "ex-sad",
+          "label": "Sadness",
+          "artId": "sadness"
+        },
+        {
+          "id": "ex-frustrated",
+          "label": "Frustration",
+          "artId": "frustration"
+        },
+        {
+          "id": "ex-tired",
+          "label": "Fatigue",
+          "artId": "fatigue"
+        },
+        {
+          "id": "ex-reflective",
+          "label": "Reflection",
+          "artId": "reflection"
+        },
+        {
+          "id": "ex-uncertain",
+          "label": "Uncertainty",
+          "artId": "uncertainty"
+        }
       ]
     },
     {
@@ -376,17 +701,44 @@
       "appearance": "Original stickman with a plain round head, deliberately distinct from the three contributors. Bob is invented for illustration.",
       "artId": "bob",
       "expressions": [
-        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
-        { "id": "ex-curious", "label": "Curiosity", "artId": "curiosity" },
-        { "id": "ex-sad", "label": "Sadness", "artId": "sadness" },
-        { "id": "ex-frustrated", "label": "Frustration", "artId": "frustration" },
-        { "id": "ex-tired", "label": "Fatigue", "artId": "fatigue" },
-        { "id": "ex-reflective", "label": "Reflection", "artId": "reflection" },
-        { "id": "ex-uncertain", "label": "Uncertainty", "artId": "uncertainty" }
+        {
+          "id": "ex-joy",
+          "label": "Joy",
+          "artId": "joy"
+        },
+        {
+          "id": "ex-curious",
+          "label": "Curiosity",
+          "artId": "curiosity"
+        },
+        {
+          "id": "ex-sad",
+          "label": "Sadness",
+          "artId": "sadness"
+        },
+        {
+          "id": "ex-frustrated",
+          "label": "Frustration",
+          "artId": "frustration"
+        },
+        {
+          "id": "ex-tired",
+          "label": "Fatigue",
+          "artId": "fatigue"
+        },
+        {
+          "id": "ex-reflective",
+          "label": "Reflection",
+          "artId": "reflection"
+        },
+        {
+          "id": "ex-uncertain",
+          "label": "Uncertainty",
+          "artId": "uncertainty"
+        }
       ]
     }
   ],
-
   "sources": [
     {
       "id": "R01",
@@ -406,10 +758,10 @@
       "url": "https://www.pnas.org/doi/10.1073/pnas.1011492107",
       "type": "Research",
       "intendedRole": "Everyday emotional well-being versus life evaluation and income patterns.",
-      "limitation": "US respondents, 2008\u20132009, self-reported and correlational. The plateau figure is a value in that dataset in US dollars of that period; it cannot be converted into a peso figure or a national standard.",
+      "limitation": "US respondents, 2008–2009, self-reported and correlational. The plateau figure is a value in that dataset in US dollars of that period; it cannot be converted into a peso figure or a national standard.",
       "reviewStatus": "verified-full",
       "evidenceBasis": "The publisher page returned HTTP 403 on 9 October 2026. The full text was read from the August 2010 author copy, and the published abstract was retrieved separately through NCBI E-utilities and matched it word for word.",
-      "citation": "Daniel Kahneman and Angus Deaton, \"High income improves evaluation of life but not emotional well-being\", Proceedings of the National Academy of Sciences 107(38), 2010, pp. 16489\u201316493. doi:10.1073/pnas.1011492107.",
+      "citation": "Daniel Kahneman and Angus Deaton, \"High income improves evaluation of life but not emotional well-being\", Proceedings of the National Academy of Sciences 107(38), 2010, pp. 16489–16493. doi:10.1073/pnas.1011492107.",
       "supportedClaim": "Everyday emotional well-being and life evaluation are distinct measures with different correlates, and in this dataset they related to income differently."
     },
     {
@@ -421,8 +773,8 @@
       "limitation": "One low-income city in Mindanao in 2019, not a national sample. The threshold the paper reports belongs to that sample and is not a Filipino price of happiness. Its highest income band holds only 30 respondents.",
       "reviewStatus": "verified-full",
       "evidenceBasis": "Journal page read and the full PDF downloaded and text-extracted on 9 October 2026; abstract, methods on p. 955, results on p. 956, and Table II.",
-      "citation": "Rosalina Palanca-Tan, \"Income and Happiness: a Philippine Context\", Philippine Journal of Science 150(5), October 2021, pp. 951\u2013961.",
-      "supportedClaim": "In a 2019 household survey of 522 respondents in Koronadal City, mean self-rated happiness was 6.75 on a 0\u201310 scale despite a poverty incidence above the national figure, and reported happiness rose with income up to roughly PHP 20,000 of monthly household income."
+      "citation": "Rosalina Palanca-Tan, \"Income and Happiness: a Philippine Context\", Philippine Journal of Science 150(5), October 2021, pp. 951–961.",
+      "supportedClaim": "In a 2019 household survey of 522 respondents in Koronadal City, mean self-rated happiness was 6.75 on a 0–10 scale despite a poverty incidence above the national figure, and reported happiness rose with income up to roughly PHP 20,000 of monthly household income."
     },
     {
       "id": "R11",
@@ -457,7 +809,7 @@
       "limitation": "Abstract-level only. These are within-person daily associations, not an experiment showing that adding acquaintances causes happiness, and the abstract states neither sample sizes nor country.",
       "reviewStatus": "verified-abstract",
       "evidenceBasis": "Abstract retrieved through NCBI E-utilities for PMID 24769739 on 9 October 2026. The full article was not read.",
-      "citation": "Gillian M. Sandstrom and Elizabeth W. Dunn, \"Social Interactions and Well-Being: The Surprising Power of Weak Ties\", Personality and Social Psychology Bulletin 40(7), 2014, pp. 910\u2013922. doi:10.1177/0146167214529799.",
+      "citation": "Gillian M. Sandstrom and Elizabeth W. Dunn, \"Social Interactions and Well-Being: The Surprising Power of Weak Ties\", Personality and Social Psychology Bulletin 40(7), 2014, pp. 910–922. doi:10.1177/0146167214529799.",
       "supportedClaim": "On days when people had more interactions with acquaintances and other weak ties, they reported greater happiness and greater feelings of belonging."
     },
     {
@@ -468,12 +820,11 @@
       "intendedRole": "Structural violence and avoidable gaps in realisation.",
       "limitation": "The definition turns on what counts as avoidable and on what counts as a potential realisation, which Galtung himself calls highly problematic. That makes it easy to over-apply, so it needs a concrete barrier, named affected people, and a mechanism.",
       "reviewStatus": "verified-full",
-      "evidenceBasis": "The publisher page returned HTTP 403 on 9 October 2026. The full article was read from a scan carrying the published pagination at an alternate host; pp. 168\u2013171.",
-      "citation": "Johan Galtung, \"Violence, Peace, and Peace Research\", Journal of Peace Research 6(3), 1969, pp. 167\u2013191. doi:10.1177/002234336900600301.",
+      "evidenceBasis": "The publisher page returned HTTP 403 on 9 October 2026. The full article was read from a scan carrying the published pagination at an alternate host; pp. 168–171.",
+      "citation": "Johan Galtung, \"Violence, Peace, and Peace Research\", Journal of Peace Research 6(3), 1969, pp. 167–191. doi:10.1177/002234336900600301.",
       "supportedClaim": "Galtung defines violence as the avoidable gap between what people could realise and what they actually realise, and defines structural violence as that gap produced by a social structure with no identifiable actor harming anyone directly."
     }
   ],
-
   "concepts": [
     {
       "id": "cn-eudaimonia",
@@ -482,7 +833,9 @@
       "explanation": null,
       "application": null,
       "question": null,
-      "sourceIds": ["R01"]
+      "sourceIds": [
+        "R01"
+      ]
     },
     {
       "id": "cn-self-determination",
@@ -500,7 +853,9 @@
       "explanation": null,
       "application": null,
       "question": null,
-      "sourceIds": ["R17"]
+      "sourceIds": [
+        "R17"
+      ]
     },
     {
       "id": "cn-kapwa",
@@ -518,7 +873,9 @@
       "explanation": null,
       "application": null,
       "question": null,
-      "sourceIds": ["R27"]
+      "sourceIds": [
+        "R27"
+      ]
     },
     {
       "id": "cn-adaptation",
@@ -530,7 +887,6 @@
       "sourceIds": []
     }
   ],
-
   "details": [
     {
       "id": "dt-definitions-still-open",
@@ -539,7 +895,9 @@
         "Placeholder supplementary text. The authored version will set out why the group does not close the definition question, and what each remaining reading would cost.",
         "Nothing essential to the argument will live only in a panel like this one."
       ],
-      "sourceIds": ["R01"]
+      "sourceIds": [
+        "R01"
+      ]
     },
     {
       "id": "dt-income-measurement-limits",
@@ -548,10 +906,12 @@
         "Placeholder supplementary text. The authored version will state which outcome each study measured, in which population, and in which year.",
         "The main reading path will already carry the limitation; this panel only carries the longer detail."
       ],
-      "sourceIds": ["R02", "R10"]
+      "sourceIds": [
+        "R02",
+        "R10"
+      ]
     }
   ],
-
   "interactions": [
     {
       "id": "in-definitions-still-open",
@@ -572,7 +932,6 @@
       "detailId": "dt-income-measurement-limits"
     }
   ],
-
   "provenance": [
     {
       "id": "pv-fixture-scaffold",
