@@ -9,7 +9,7 @@
 
 ## 2. Explanatory presentation
 
-- [ ] 2.1 Provide truthful original motif coverage for at least 86/87 beats and label fictional friends distinctly; s087 is intentionally text-only without an empty/pending frame. Verify coverage map and composed-state tests, original nametags/accessibility test and no pending-art frames in final HTML. Update `docs/art-system.md` and `docs/asset-workflow.md` with actual counts; if generated art is needed, use the documented request/isolated asset-branch route.
+- [x] 2.1 Provide truthful original motif coverage for at least 86/87 beats and label fictional friends distinctly; s087 is intentionally text-only without an empty/pending frame. Verify coverage map and composed-state tests, original nametags/accessibility test and no pending-art frames in final HTML. Update `docs/art-system.md` and `docs/asset-workflow.md` with actual counts; if generated art is needed, use the documented request/isolated asset-branch route.
 - [ ] 2.2 Preserve accessible chapter labels (Opening, 1–6), ordering, details, keyboard and static/reduced-motion states; deliberately update fixture-indexed reader/browser/font tests, verify targeted tests for navigation, optional detail, all 87 beats and fallback glyphs, and update scoped runtime docs.
 
 ## 3. Integration evidence

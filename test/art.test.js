@@ -73,6 +73,56 @@ test('the drawable identifiers are stable, because content points at them by nam
     'art-door-distance',
     'art-joy-and-conditions',
     'art-spread-and-average',
+    'art-three-panels',
+    'art-sequence-of-states',
+    'art-list-as-objects',
+    'art-three-dials',
+    'art-cleared-space',
+    'art-blocks-that-split',
+    'art-writing-the-line',
+    'art-same-game-two-ways',
+    'art-two-evenings',
+    'art-ranked-before-weighing',
+    'art-three-threads',
+    'art-one-block-grows',
+    'art-pyramid-and-partial-fills',
+    'art-ring-of-four',
+    'art-grown-into-a-frame',
+    'art-paths-erased',
+    'art-own-leash',
+    'art-desire-with-a-trail',
+    'art-four-answers',
+    'art-two-columns-that-leak',
+    'art-claim-against-its-size',
+    'art-shared-timeline',
+    'art-one-burden-lifted',
+    'art-second-pressure',
+    'art-split-face',
+    'art-set-points',
+    'art-equal-panels',
+    'art-quoted-panel-outside',
+    'art-care-undone',
+    'art-weak-ties-scatter',
+    'art-shared-table',
+    'art-messages-one-way',
+    'art-overlapping-selves',
+    'art-short-box-long-statement',
+    'art-curves-replaced',
+    'art-one-number-four-situations',
+    'art-smile-and-bill',
+    'art-pouring-twice',
+    'art-hour-moved',
+    'art-connected-positions',
+    'art-self-as-enterprise',
+    'art-frame-they-had-not-noticed',
+    'art-icon-over-a-gap',
+    'art-offered-not-handed',
+    'art-bench-no-purchase',
+    'art-barrier-reduced',
+    'art-empty-evidence-column',
+    'art-two-kinds-of-effort',
+    'art-facing-pairs',
+    'art-questions-above',
   ]);
 });
 
@@ -326,10 +376,16 @@ test('the coverage map is honest about how much is drawn and how much is not', (
   const coverage = storyboardCoverage();
   assert.equal(coverage.total, 87);
   assert.equal(coverage.drawn + coverage.fallback, coverage.total);
-  // The claim this package makes is representative motifs, not 87 bespoke
-  // pictures. Both halves of that have to stay true.
-  assert.ok(coverage.drawn >= 30, `only ${coverage.drawn} beats have a motif`);
-  assert.ok(coverage.fallback > 0, 'a map claiming every beat is drawn would be a false claim');
+  // Eighty-six beats are drawn. The eighty-seventh is the source register, and
+  // it is undrawn on purpose rather than undrawn yet, which the map says.
+  assert.equal(coverage.drawn, 86, `${coverage.drawn} beats have a motif`);
+  assert.equal(coverage.fallback, 1);
+  const undrawn = Object.entries(STORYBOARD_ART).filter(([, entry]) => entry.art === null);
+  assert.deepEqual(undrawn.map(([id]) => id), ['s087']);
+  assert.equal(undrawn[0][1].absence, 'text-only', 'the one undrawn beat declares that being text is the decision');
+  for (const [, entry] of Object.entries(STORYBOARD_ART)) {
+    if (entry.art !== null) assert.equal(entry.absence, null, 'a drawn beat records no reason for being undrawn');
+  }
 
   // Nothing in the catalogue is dead: every motif is reached by a real beat.
   for (const id of COMPOSITION_IDS) {
