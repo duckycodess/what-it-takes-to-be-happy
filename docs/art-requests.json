@@ -12,9 +12,27 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A02",
-      "alt": "Bob sits tired beside an open notebook."
+      "alt": "Bob sits tired beside an open notebook.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-mixed-day-v1",
+        "source_head": "6c17d2743a99f1a21389216dcefb88ab4d05824b",
+        "cherry_picked_source_commits": [
+          "3a95af8e264ea56321fd02a3a7b9bfc6f6648053",
+          "dc676d77b4a2be575f1f77975e0c78f64eb3a82a",
+          "6c17d2743a99f1a21389216dcefb88ab4d05824b"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-mixed-day-v1/scene.png",
+            "sha256": "65205e77fb42fc78ab0d2610174c416761a64620e206ba63c2d5aac275ecc91d",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-chosen-study-v1",
@@ -27,9 +45,27 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A03",
-      "alt": "Koj concentrates on an open book with a pencil in hand."
+      "alt": "Koj concentrates on an open book with a pencil in hand.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-chosen-study-v1",
+        "source_head": "f2286167c9b751e5d5fcbab06b481851e49deae9",
+        "cherry_picked_source_commits": [
+          "4e3670bb22aec7105c905236f798feacc417f06d",
+          "206b959ca708097aaafc04cc324681c2144167b4",
+          "f2286167c9b751e5d5fcbab06b481851e49deae9"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-chosen-study-v1/scene.png",
+            "sha256": "bc24ff95bf21ffc80dbd277e5814a742406803c767991bdab4d4f18faf3e179e",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-agency-v1",
@@ -42,9 +78,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A04",
-      "alt": "Vier pauses beside a phone and notebook with a questioning expression."
+      "alt": "Vier pauses beside a phone and notebook with a questioning expression.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-agency-v1",
+        "source_head": "c096ef05d72cfab48775d957026051fc442653ad",
+        "cherry_picked_source_commits": [
+          "bb072cde430901ee7435b1af5b8e1f1c7e73c120",
+          "c096ef05d72cfab48775d957026051fc442653ad"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-agency-v1/scene.png",
+            "sha256": "2f3c2b349916d439342b572dffef4389f4074019a0644a8154e445866aeeaa4e",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-playing-v1",
@@ -57,9 +110,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A05",
-      "alt": "TJ and Bob enjoy playing a game together."
+      "alt": "TJ and Bob enjoy playing a game together.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-playing-v1",
+        "source_head": "50ff1ce08d7f1079d874264eeb92fc6a32217892",
+        "cherry_picked_source_commits": [
+          "ac2fb95fa0fab7b684f5e5aa27dc780de56d49f8",
+          "50ff1ce08d7f1079d874264eeb92fc6a32217892"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-playing-v1/scene.png",
+            "sha256": "3edb56bcb3ff705b098ac73898c174ce5687b3d93faf8e66fd50be9e66d82e83",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-required-work-v1",
@@ -72,9 +142,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A06",
-      "alt": "Bob looks tired beside a stack of tasks and a clock."
+      "alt": "Bob looks tired beside a stack of tasks and a clock.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-required-work-v1",
+        "source_head": "35bb65be9d791dd1a096bf3bf4f4d19dfc97d1a5",
+        "cherry_picked_source_commits": [
+          "dda6bdd684e98da79f3d0c1ff3e29377a577dbd1",
+          "35bb65be9d791dd1a096bf3bf4f4d19dfc97d1a5"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-required-work-v1/scene.png",
+            "sha256": "343c50ed088d9c7654a3cb6f2991f79f172af23219313e9a9f0cc1c100815c54",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-rest-v1",
@@ -87,9 +174,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A07",
-      "alt": "TJ rests comfortably against a cushion."
+      "alt": "TJ rests comfortably against a cushion.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-rest-v1",
+        "source_head": "4156365987d2b5670db4c132b668a7dd709ecc1c",
+        "cherry_picked_source_commits": [
+          "b8e0ebda5aa27b5badc96502c6e95e8703486e27",
+          "4156365987d2b5670db4c132b668a7dd709ecc1c"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-rest-v1/scene.png",
+            "sha256": "117f8e8c1ec185995dea43ea548d5a18b36cbabe0c1ea45571ad7a37fd52f9ac",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-expectations-v1",
@@ -102,9 +206,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A08",
-      "alt": "Vier considers symbols of grades, work, relationships and income."
+      "alt": "Vier considers symbols of grades, work, relationships and income.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-expectations-v1",
+        "source_head": "76475ba535337629081b65dd02ca608373a7fb8d",
+        "cherry_picked_source_commits": [
+          "d8da8d8b157646bf48fef9c719eb49aaee37c0eb",
+          "76475ba535337629081b65dd02ca608373a7fb8d"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-expectations-v1/scene.png",
+            "sha256": "d64131ae768ddbd463161a309e8da28afe5fbfceb8de046b3bf2c1686704d285",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-phone-connection-v1",
@@ -117,9 +238,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A09a",
-      "alt": "TJ and Bob smile while using their phones to connect."
+      "alt": "TJ and Bob smile while using their phones to connect.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-phone-connection-v1",
+        "source_head": "8728f15aa5dae0da9d87ac99db077e28be7520b6",
+        "cherry_picked_source_commits": [
+          "61b7826d7ca75f0a859cebc6add569542249a92e",
+          "8728f15aa5dae0da9d87ac99db077e28be7520b6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-phone-connection-v1/scene.png",
+            "sha256": "ad67d07d6f119cc129890da4a1348e7eb4fe275f6168692a6b98215742cda8e5",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-phone-comparison-v1",
@@ -132,9 +270,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A09b",
-      "alt": "TJ looks tense while looking at his phone."
+      "alt": "TJ looks tense while looking at his phone.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-phone-comparison-v1",
+        "source_head": "6dfae1d852b922642ad49b56ff8ad8e31023cd67",
+        "cherry_picked_source_commits": [
+          "7064d7582f255f460e09e834174c7b23a2b90055",
+          "6dfae1d852b922642ad49b56ff8ad8e31023cd67"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-phone-comparison-v1/scene.png",
+            "sha256": "dd2d2504cc39c3e36364a40c7959ed4e0a7e281d8410d3c2f3832ac331e3579b",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-cheer-pressure-v1",
@@ -147,9 +302,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A10",
-      "alt": "Bob looks sad while a cheerful friend gestures toward him."
+      "alt": "Bob looks sad while a cheerful friend gestures toward him.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-cheer-pressure-v1",
+        "source_head": "cd6e637692e6f5cb0506be80fc201606830bde8d",
+        "cherry_picked_source_commits": [
+          "c5eff9350b7ec68ca5c8d9b600d483929d63561d",
+          "cd6e637692e6f5cb0506be80fc201606830bde8d"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-cheer-pressure-v1/scene.png",
+            "sha256": "6f9bfd2bc34aded6a09bd6eed1fb7200750fc1032211642135eb65ff41b98a97",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-joy-and-pressure-v1",
@@ -162,9 +334,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A11",
-      "alt": "Bob enjoys a meal while nearby tasks remain unresolved."
+      "alt": "Bob enjoys a meal while nearby tasks remain unresolved.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-joy-and-pressure-v1",
+        "source_head": "878fec84935f153ff1bad1ca86934780a5cc12de",
+        "cherry_picked_source_commits": [
+          "ff2b4a0346156ee84e3cc2081ee4567ac21a5a82",
+          "878fec84935f153ff1bad1ca86934780a5cc12de"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-joy-and-pressure-v1/scene.png",
+            "sha256": "d4f122497d0bbbddc1d8b14c96ebb5f69f581c4e8008ad354d07efb6d249618d",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-shared-meal-v1",
@@ -177,9 +366,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A12",
-      "alt": "TJ, Koj and Vier share a meal around a small table."
+      "alt": "TJ, Koj and Vier share a meal around a small table.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-shared-meal-v1",
+        "source_head": "fbc055471e4c717cb911659cbc45bc16f20052fd",
+        "cherry_picked_source_commits": [
+          "8844b31acdc179874164a6fb05e21b263d166c3e",
+          "fbc055471e4c717cb911659cbc45bc16f20052fd"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-shared-meal-v1/scene.png",
+            "sha256": "c626ec7f1ac8bebde8967758c66420bb71bb2a8cd29cd5c601e68b967933a7f3",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-care-work-v1",
@@ -192,9 +398,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A13",
-      "alt": "A fictional organizer arranges plates while checking a schedule."
+      "alt": "A fictional organizer arranges plates while checking a schedule.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-care-work-v1",
+        "source_head": "b084560f1ac0682d980723a98d2c404eb1742555",
+        "cherry_picked_source_commits": [
+          "0cc33d6a40f449ede30c3a94a3456d991b8761f1",
+          "b084560f1ac0682d980723a98d2c404eb1742555"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-care-work-v1/scene.png",
+            "sha256": "08ab49f902c7c11939c226e7a4b6de218228f9ea1af5bb0dacfb703a88c42829",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-solitude-v1",
@@ -207,9 +430,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A14",
-      "alt": "Bob reads alone with a relaxed expression."
+      "alt": "Bob reads alone with a relaxed expression.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-solitude-v1",
+        "source_head": "519a4e898a33af0e7eafe805fa98d0bd226b982a",
+        "cherry_picked_source_commits": [
+          "8fad9d209ff89a54586f32f9b279163110891e4b",
+          "519a4e898a33af0e7eafe805fa98d0bd226b982a"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-solitude-v1/scene.png",
+            "sha256": "754ffd09bec8c5f57af6d53a33cdfdbd4b3d864b49235b769d08393d6820ac8a",
+            "width": 1274,
+            "height": 1235
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-time-available-v1",
@@ -222,9 +462,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A15a",
-      "alt": "Bob has time to join a game."
+      "alt": "Bob has time to join a game.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-time-available-v1",
+        "source_head": "9e51dbd69e5a443cd8980c4a95372dbe83d3d02c",
+        "cherry_picked_source_commits": [
+          "e0145273403350f24c96b85cd52db3866d9a8b0e",
+          "9e51dbd69e5a443cd8980c4a95372dbe83d3d02c"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-time-available-v1/scene.png",
+            "sha256": "7b0ba665e7cf08f00fe94e5bb294695fc1b11190863583b6efc98b8bcf40e83a",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-time-claimed-v1",
@@ -237,9 +494,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A15b",
-      "alt": "Bob carries a work bag beside a bus-stop post and clock."
+      "alt": "Bob carries a work bag beside a bus-stop post and clock.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-time-claimed-v1",
+        "source_head": "a45e75b921a725a8c77b7c533e30d56f63cbb275",
+        "cherry_picked_source_commits": [
+          "7e84898515605a62cfa5f93060de3a222d6e767a",
+          "a45e75b921a725a8c77b7c533e30d56f63cbb275"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-time-claimed-v1/scene.png",
+            "sha256": "d8f82e976dfc2b1f20e252f890feab59bf786b840fb21c24b1c81b9c8416f999",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-time-transfer-v1",
@@ -252,9 +526,32 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A16",
-      "alt": "First cutout: A fictional person rests. Second cutout: A fictional worker does the dishes."
+      "alt": "First cutout: A fictional person rests. Second cutout: A fictional worker does the dishes.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-time-transfer-v1",
+        "source_head": "aac08c91db827e5351dea0dab9a862b8f3c5e9d5",
+        "cherry_picked_source_commits": [
+          "e82f6593341cb0d348ce7b8ebd69d850949f11fb",
+          "aac08c91db827e5351dea0dab9a862b8f3c5e9d5"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-time-transfer-v1/rest.png",
+            "sha256": "b314bfd7c0dc84b1f50b280ebf007569f6f81f0af6ab855ac46e9f1793f5d97e",
+            "width": 1536,
+            "height": 1024
+          },
+          {
+            "path": "assets/generated/rewrite-time-transfer-v1/worker.png",
+            "sha256": "879d31f56883b6d25364610942fce3735df5cb9f7dcbfb7a879b7cb483744fce",
+            "width": 1374,
+            "height": 1145
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-campus-space-v1",
@@ -267,9 +564,26 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A17",
-      "alt": "Two fictional students spend time in a shaded shared seating area."
+      "alt": "Two fictional students spend time in a shaded shared seating area.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-campus-space-v1",
+        "source_head": "e539b4ca0893e07055ec9a5a135936027804675b",
+        "cherry_picked_source_commits": [
+          "d251eae3c9e746ff389c084cbb208328aeccf2ea",
+          "e539b4ca0893e07055ec9a5a135936027804675b"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-campus-space-v1/scene.png",
+            "sha256": "6e39ff362a73e0812250eaef90f2e8cfc698a607ddbb09b6641b32840d47a0f8",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     },
     {
       "id": "rewrite-space-work-v1",
@@ -282,9 +596,32 @@
         "assets/concepts/stickman-character-sheet-v1.png",
         "assets/generated/rewrite-opening-v1/opening.png"
       ],
-      "status": "requested",
+      "status": "consumed",
       "ref": "A18",
-      "alt": "First cutout: Two fictional students spend time at a shared table. Second cutout: A fictional staff member cleans a shared table."
+      "alt": "First cutout: Two fictional students spend time at a shared table. Second cutout: A fictional staff member cleans a shared table.",
+      "consumed": {
+        "asset_branch": "codex/art-rewrite-space-work-v1",
+        "source_head": "5fc5d4cc087ab192db1e3634a86cccc9ca0ad66b",
+        "cherry_picked_source_commits": [
+          "d97378478311ddae4ecff04590c6688e75ad830b",
+          "5fc5d4cc087ab192db1e3634a86cccc9ca0ad66b"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/rewrite-space-work-v1/students.png",
+            "sha256": "700fac8f43522930e6863bfb45bc4d8d4c1a42ef746aabf585276d9cd1e1a5cb",
+            "width": 1536,
+            "height": 1024
+          },
+          {
+            "path": "assets/generated/rewrite-space-work-v1/staff.png",
+            "sha256": "56fc323ea93b500a81fe77647577807095f9f5ecc4f107b7eb9716e4d5958d25",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
     }
   ]
 }
