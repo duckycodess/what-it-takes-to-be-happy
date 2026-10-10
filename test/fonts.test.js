@@ -106,16 +106,20 @@ test('every character the essay prints is drawn by a font the hosted page carrie
   const uncovered = [...printed].filter((point) => !project.has(point) && !fallback.has(point));
   assert.deepEqual(uncovered, [], 'a character no packaged font can draw would appear as a missing-glyph box');
 
-  // The gap the fallback exists to close, named rather than assumed. If the
-  // project typeface ever grows the en dash, or the prose grows a character
-  // neither face has, this is where it shows up.
+  // The gap the fallback exists to close, named rather than assumed. All three
+  // are punctuation the essay cannot drop: the en dash in number ranges and
+  // dates, the em dash throughout the prose, and the tilde operator inside a
+  // quoted figure from a paper. Changing a quotation to suit a font would be
+  // changing the evidence, so the fallback draws them instead.
   const missingFromProject = [...printed].filter((point) => !project.has(point)).sort((a, b) => a - b);
   assert.deepEqual(
     missingFromProject.map((point) => String.fromCodePoint(point)),
-    ['–'],
-    'the en dash is the one printed character Futura Handwritten has no glyph for',
+    ['–', '—', '∼'],
+    'these are the printed characters Futura Handwritten has no glyph for',
   );
-  assert.ok(fallback.has(0x2013), 'and the bundled fallback has it');
+  for (const point of [0x2013, 0x2014, 0x223c]) {
+    assert.ok(fallback.has(point), `the bundled fallback must draw U+${point.toString(16).toUpperCase()}`);
+  }
 });
 
 test('the offline file prints nothing the fallback alone cannot draw', async () => {

@@ -22,8 +22,8 @@ const runValidate = (args) => {
 test('validating the authored document succeeds and reports what it checked', () => {
   const { status, stdout } = runValidate([]);
   assert.equal(status, 0);
-  assert.match(stdout, /^ok\s+content\/content\.json: 6 chapter\(s\), 9 scene\(s\)/m);
-  assert.match(stdout, /marked non-final/);
+  assert.match(stdout, /^ok\s+content\/content\.json: 7 chapter\(s\), 87 scene\(s\)/m);
+  assert.match(stdout, /marked final/);
 });
 
 test('validating a broken document fails with a nonzero exit code and located errors', () => {
@@ -31,7 +31,7 @@ test('validating a broken document fails with a nonzero exit code and located er
   assert.equal(status, 1);
   assert.match(stderr, /FAIL test\/fixtures\/invalid-content\.json/);
   assert.match(stderr, /\[SCENE_ORPHANED\]/);
-  assert.match(stderr, /scenes\[0\]\.narration: \[EMPTY_ESSENTIAL_SCENE\]/);
+  assert.match(stderr, /scenes\[0\]\.mainPath: \[EMPTY_ESSENTIAL_SCENE\]/);
 });
 
 test('an unreadable document fails cleanly rather than crashing', () => {

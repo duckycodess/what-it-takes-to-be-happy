@@ -235,9 +235,15 @@
 
     if (positionOutput) positionOutput.textContent = String(current + 1);
     if (whereOutput) {
-      whereOutput.textContent = chapter
-        ? 'Chapter ' + (chapterIndex + 1) + ' of ' + chapters.length + ': ' + (heading ? heading.textContent : '')
-        : '';
+      // The chapter says whether the reader counts it. The opening is not one
+      // of the shared questions, so it is named rather than numbered, and the
+      // count is the number of questions rather than the number of sections.
+      var number = chapter ? chapter.getAttribute('data-chapter-number') : null;
+      var count = chapter ? chapter.getAttribute('data-chapter-count') : null;
+      var title = heading ? heading.textContent : '';
+      if (!chapter) whereOutput.textContent = '';
+      else if (number) whereOutput.textContent = 'Chapter ' + number + ' of ' + count + ': ' + title;
+      else whereOutput.textContent = title;
     }
     if (boundaryOutput) {
       boundaryOutput.textContent = current === 0

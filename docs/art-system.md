@@ -12,11 +12,16 @@ designs came from and [art direction](art-direction.md) for the look they follow
 
 - It **is** a small set of reusable parts — identities, expressions, postures — and a catalogue of
   explanatory motifs that scenes point at by identifier.
-- It is **not** 87 bespoke illustrations. Thirty-four of the storyboard's 87 beats have a motif
-  today; the other 53 declare that they have none and are carried by their written description,
-  which is also the text alternative, the print illustration, and the reduced-motion equivalent.
-  [`src/art/storyboard-map.js`](../src/art/storyboard-map.js) records the decision for every beat,
-  and `npm test` fails if a beat is missing from it.
+- **Eighty-six of the storyboard's 87 beats are drawn.** The eighty-seventh, `s087`, is the source
+  register: a readable list rather than an illustrated situation, declared `text-only` in both
+  [`src/art/storyboard-map.js`](../src/art/storyboard-map.js) and the content document, so the
+  reader gets no frame there rather than an empty one. `npm test` fails if a beat is missing from
+  that map.
+- It is **not** 86 bespoke illustrations, and does not claim to be. Sixty-six compositions carry
+  the 86 beats: fifty-one draw one beat each, and fifteen are reused by two or three beats that
+  make the same move — most often one beat in `situation` and a later one in `revealed`, which is
+  how a return to an earlier scene shows what was always inside it. The table below says exactly
+  which beats share a motif.
 - The contributors' drawn appearances are **provisional stand-ins**, not approved likenesses. They
   came from the generated concept sheet and can change at any time without any identifier changing.
 
@@ -89,24 +94,74 @@ A composition is a motif that explains something, reusable across beats that mak
 declares how many figures it can place and whether it has a **condition layer** — a second layer
 that shows what was under the situation all along.
 
-| `artId` | What it shows | Figures | Condition layer |
-| --- | --- | --- | --- |
-| `art-figure-row` | The cast in the open, nothing else in frame | 1–8 | — |
-| `art-opening-question` | The question, with people either side of it | 0–5 | Different answer strokes under each |
-| `art-apart-together` | Separate footings, separate voices | 1–4 | The unnamed dashed figure |
-| `art-three-readings` | One moment, a path to each reader of it | 1–3 | The paths, each ending in its own shape |
-| `art-life-line` | A life as a marked length, not a moment | 0–2 | Stretches of it fenced off |
-| `art-two-instruments` | A dial and a ruler aimed at one person | 0–2 | The second instrument and its reading |
-| `art-balance` | Two unlike things weighed against each other, and the platform a second figure stands on to do the ranking | 0–2 | The arrow from that platform to the pans |
-| `art-two-climbs` | A climb entered beside a climb imposed | 1–2 | The load, in the hands carrying it — or, with one figure, coming down onto the second climb |
-| `art-rest-and-the-frame` | Rest with nothing attached to it | 1–2 | The measuring frame somebody draws around that rest |
-| `art-handed-template` | The same shape handed to everybody | 1–2 | One of them set down |
-| `art-one-screen-two-things` | Contact and ranking on one screen | 1–2 | The ladder inside it |
-| `art-invitation-conditions` | An invitation, and the evening it assumed | 1–3 | Travel, tasks, and care, below the line |
-| `art-accumulating-care` | Small repeated gestures adding up | 1–3 | What each one cost |
-| `art-door-distance` | A door that exists, at different distances | 1–5 | The barrier and the measured gap |
-| `art-joy-and-conditions` | A good afternoon, enjoyed | 1–3 | The supports underneath it |
-| `art-spread-and-average` | An average drawn over a distribution | 0–2 | The tail it passes over |
+| `artId` | What it draws | Figures | Condition layer | Beats |
+| --- | --- | --- | --- | --- |
+| `art-figure-row` | The cast, standing in the open | 1–8 | — | `s055` `s086` |
+| `art-opening-question` | The question, with nobody settling it | 0–5 | yes | `s001` `s076` |
+| `art-apart-together` | Standing apart, and the figure nobody named | 1–4 | yes | `s002` |
+| `art-three-readings` | One moment, read several ways | 1–3 | yes | `s004` `s014` |
+| `art-life-line` | A whole life, not one good afternoon | 0–2 | yes | `s007` `s008` `s023` |
+| `art-two-instruments` | Two instruments, one person | 0–2 | yes | `s010` `s015` `s050` |
+| `art-balance` | Weighing one thing against another | 0–2 | yes | `s020` `s022` |
+| `art-two-climbs` | A climb entered, and a climb imposed | 1–2 | yes | `s025` |
+| `art-rest-and-the-frame` | Rest, and the frame somebody draws around it | 1–2 | yes | `s019` `s026` |
+| `art-handed-template` | The shape everyone is handed | 1–2 | yes | `s031` `s044` |
+| `art-one-screen-two-things` | One screen, two things happening | 1–2 | yes | `s037` |
+| `art-invitation-conditions` | An invitation, and what is under it | 1–3 | yes | `s057` `s058` `s059` |
+| `art-accumulating-care` | Small repeated care, and where it comes from | 1–3 | yes | `s047` `s056` |
+| `art-door-distance` | The same door, at different distances | 1–5 | yes | `s068` `s069` `s072` |
+| `art-joy-and-conditions` | A good afternoon, with its supports drawn in | 1–3 | yes | `s016` `s075` `s085` |
+| `art-spread-and-average` | The average, and the people it is drawn over | 0–2 | yes | `s065` `s080` |
+| `art-three-panels` | Three ordinary hours, side by side | 1–3 | — | `s003` |
+| `art-sequence-of-states` | One person, several states, one continuous line | 1–1 | — | `s005` |
+| `art-list-as-objects` | A list drawn as the things it names | 1–2 | — | `s006` |
+| `art-three-dials` | Three readings that need not agree | 0–2 | — | `s009` |
+| `art-cleared-space` | Room to turn around, not an empty life | 1–2 | — | `s011` |
+| `art-blocks-that-split` | Words that crack when you stand on them | 1–1 | yes | `s012` |
+| `art-writing-the-line` | Drawing the line you are standing on | 1–1 | yes | `s013` |
+| `art-same-game-two-ways` | The same game, with and without the people | 1–2 | yes | `s017` |
+| `art-two-evenings` | Two evenings, one of them heavier | 1–1 | — | `s018` |
+| `art-ranked-before-weighing` | The pans were set before anything was put in them | 0–1 | — | `s021` |
+| `art-three-threads` | Three threads running through one ordinary thing | 1–2 | — | `s024` |
+| `art-one-block-grows` | A day with one block taking the rest | 1–2 | — | `s027` |
+| `art-pyramid-and-partial-fills` | The staircase, and what the paper actually says | 1–1 | yes | `s028` |
+| `art-ring-of-four` | Four things in a ring, with nothing on top | 1–3 | — | `s029` |
+| `art-grown-into-a-frame` | The frame that arrives later | 1–2 | yes | `s030` |
+| `art-paths-erased` | Five ways out, one still drawn | 1–2 | yes | `s032` |
+| `art-own-leash` | Holding your own leash | 1–1 | — | `s033` |
+| `art-desire-with-a-trail` | A want, with where it came from behind it | 0–1 | — | `s034` |
+| `art-four-answers` | One purchase, four different answers | 1–2 | — | `s035` |
+| `art-two-columns-that-leak` | Two columns that do not hold | 1–2 | — | `s036` |
+| `art-claim-against-its-size` | The headline, and the finding drawn to scale | 1–2 | — | `s038` |
+| `art-shared-timeline` | One timeline, four different grounds | 1–4 | yes | `s039` |
+| `art-one-burden-lifted` | One weight off, the rest where they were | 1–2 | yes | `s040` `s060` |
+| `art-second-pressure` | The trouble, and the pressure added to it | 1–2 | yes | `s041` |
+| `art-split-face` | Two feelings on one face | 1–1 | yes | `s042` |
+| `art-set-points` | Five lines, and not all of them come back | 0–1 | — | `s043` |
+| `art-equal-panels` | A milestone and an ordinary exchange, at the same size | 1–2 | — | `s045` |
+| `art-quoted-panel-outside` | A panel kept outside the room | 1–2 | — | `s046` |
+| `art-care-undone` | The same small acts, taken away one at a time | 1–2 | yes | `s048` |
+| `art-weak-ties-scatter` | The people who are not your closest | 1–2 | yes | `s049` |
+| `art-shared-table` | A table, and the league table in the corner | 0–3 | — | `s051` |
+| `art-messages-one-way` | Messages travelling mostly one way | 1–2 | yes | `s052` |
+| `art-overlapping-selves` | Selves whose outlines run into each other | 1–3 | yes | `s053` `s054` |
+| `art-short-box-long-statement` | A short sentence, and the one that will not fit in it | 1–2 | — | `s061` |
+| `art-curves-replaced` | One curve, replaced by several that behave differently | 0–1 | yes | `s062` |
+| `art-one-number-four-situations` | One number, four situations | 1–4 | — | `s063` |
+| `art-smile-and-bill` | A smile and an unpaid bill, both at full weight | 1–2 | — | `s064` |
+| `art-pouring-twice` | The same pour, from a full container and from a nearly empty one | 1–2 | — | `s066` |
+| `art-hour-moved` | An hour that moved rather than vanished | 1–3 | yes | `s067` |
+| `art-connected-positions` | Positions that hold each other up | 0–3 | yes | `s070` |
+| `art-self-as-enterprise` | A person with a business attached to them | 1–2 | yes | `s071` |
+| `art-frame-they-had-not-noticed` | The frame around the people talking | 1–3 | yes | `s073` |
+| `art-icon-over-a-gap` | An icon laid across a gap it does not cover | 1–2 | yes | `s074` |
+| `art-offered-not-handed` | Set down within reach, not handed over | 1–3 | — | `s077` |
+| `art-bench-no-purchase` | A bench you can sit on without buying anything | 1–4 | — | `s078` |
+| `art-barrier-reduced` | The barrier made smaller, and still drawn | 1–2 | yes | `s079` |
+| `art-empty-evidence-column` | The proposals, and the column that is empty | 0–2 | — | `s081` |
+| `art-two-kinds-of-effort` | Two kinds of effort at the same obstacle | 1–3 | — | `s082` |
+| `art-facing-pairs` | Pairs that did not close the gap | 1–4 | — | `s083` |
+| `art-questions-above` | A question where a conclusion would be | 1–3 | yes | `s084` |
 
 Two states settle a composition:
 
@@ -148,8 +203,11 @@ catalogues above. See [the content contract](content-contract.md) for the fields
 }
 ```
 
-`"artId": null` with `"artState": null` is the declared fallback: the beat renders its figures'
-names and its description, and says so in the markup with `data-art="none"`.
+`"artId": null` with `"artState": null` needs `"artAbsence"` to say why. `pending` renders the
+figures' names, the description, and a notice, marked in the markup with `data-art="none"`;
+`text-only` renders no frame at all, because an empty bordered box reads as a drawing that failed
+to arrive. Finished content may not contain `pending`. See [the content
+contract](content-contract.md).
 
 The figures are placed in the scene's own cast order, so moving a name up the list moves that figure
 to the composition's first slot.
@@ -185,7 +243,7 @@ any other essential text.
 
 ```html
 <figure class="scene-visual">
-  <div class="scene-visual-frame" data-art="art-invitation-conditions" data-art-state="revealed">
+  <div class="scene-visual-frame" data-art="art-invitation-conditions" data-art-state="revealed" data-labels="over">
     <svg class="scene-art" viewBox="0 0 480 300" aria-hidden="true"> … </svg>
     <ul class="art-labels">
       <li class="art-label" data-role="member" style="--art-x:31.25%;--art-y:43.87%">
@@ -193,14 +251,26 @@ any other essential text.
       </li>
     </ul>
   </div>
+  <p class="figure-fiction"><span class="label">Invented figures</span> Bob, Nessa</p>
   <figcaption>The invitation still floats above the line …</figcaption>
 </figure>
 ```
+
+A crowded beat is the same markup with `data-labels="list"`, the `--art-x`/`--art-y` positions
+dropped, and the labels in left-to-right order.
 
 - **Names are browser text**, positioned over the drawing from an anchor the composition computed
   above that figure's head. They stay selectable, searchable, and translatable, they grow with the
   reader's own type size, and no drawing contains lettering — a build check rejects `<text>` inside
   any drawing.
+- **Where they go is measured, not assumed.** The renderer compares the composition's anchors
+  against a label-width budget taken from real measurements, and where a pair would collide or run
+  off the edge it moves the whole set into a row under the drawing, ordered left to right. The
+  frame says which it did, in `data-labels`. A browser test measures every label box on every beat
+  at a phone width and a desktop width and fails on any overlap.
+- **Which figures are invented is said under the drawing**, at reading size, rather than beside a
+  name where it was six and a half pixels tall on a phone. The nametag still marks a contributor
+  and its absence still marks an invented figure.
 - The drawing is `aria-hidden`; the caption is the description, so nothing is announced twice.
 - On a narrow frame the state word is removed from sight but kept in the document, because the
   names would otherwise collide; the caption states the same thing for every reader.
@@ -258,13 +328,17 @@ explanation.
 
 ## Known limitations
 
-- Fifty-three of the 87 beats have no drawing. Each one says, in `storyboard-map.js`, what a drawing
-  would have to show.
+- One of the 87 beats has no drawing, and that is a decision rather than a gap: `s087` is the
+  source register. The content contract will not let finished content carry a beat whose drawing is
+  merely `pending`.
 - The contributors' appearances are provisional and have not been approved by the people they
   represent.
-- `art-figure-row` can place eight figures, and eight nametags across one frame is tight: on a
-  narrow screen the state words are hidden and only the names remain. No other composition places
-  more than five.
+- `art-figure-row` can place eight figures, and eight labels across one frame does not fit at all.
+  The renderer measures that from the anchors and moves the whole set into a row under the drawing
+  instead; five beats of 87 are laid out that way. No other composition places more than five.
+- `art-split-face` draws the second half of a face at fixed offsets from the figure's own head, so
+  it lines up only where the scene gives that figure a state the head does not tilt in. `joy` and
+  `frustration` are the two, and `s042` uses `joy`.
 - A composition places figures in fixed slots. A beat that needs a genuinely new arrangement needs a
   new composition rather than an option on an existing one; that is deliberate, because an
   arrangement that can mean anything explains nothing.

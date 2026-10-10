@@ -17,6 +17,8 @@ import {
   CAST_ROLES,
   CONCEPT_STATUSES,
   INTERACTION_SURFACES,
+  MAIN_PATH_KINDS,
+  ART_ABSENCE_REASONS,
   ART_STATES,
 } from './schema.js';
 import {
@@ -35,9 +37,10 @@ const FIELDS = {
   root: ['schema', 'status', 'project', 'chapters', 'scenes', 'cast', 'sources', 'concepts', 'details', 'interactions', 'provenance'],
   status: ['final', 'label', 'notice'],
   project: ['title', 'question', 'summary', 'readingTimeEstimate', 'visual'],
-  chapter: ['id', 'title', 'question', 'opening', 'closing', 'sceneIds'],
-  scene: ['id', 'chapterId', 'title', 'narration', 'dialogue', 'visual', 'conceptIds', 'sourceIds', 'limitations', 'detailIds', 'interactionIds'],
-  visual: ['description', 'artId', 'artState', 'cast'],
+  chapter: ['id', 'title', 'question', 'number', 'opening', 'closing', 'sceneIds'],
+  scene: ['id', 'chapterId', 'title', 'narration', 'dialogue', 'mainPath', 'visual', 'conceptIds', 'sourceIds', 'limitations', 'detailIds', 'interactionIds'],
+  mainPath: ['kind', 'index'],
+  visual: ['description', 'artId', 'artState', 'artAbsence', 'cast'],
   visualCast: ['characterId', 'expressionId'],
   dialogue: ['id', 'speakerId', 'text', 'stance', 'sourceIds', 'provenanceId'],
   castMember: ['id', 'role', 'displayName', 'appearance', 'artId', 'expressions'],
@@ -257,7 +260,7 @@ function validateProject(bag, doc, ids, expressionsByCharacter) {
   // The landing illustration is authored content like any other beat's, so it
   // obeys the same rules: a drawing the artwork can produce, a state it can
   // settle into, a cast it can place, and a description that stands in for it.
-  validateVisual(bag, doc.project.visual, 'project.visual', ids, expressionsByCharacter);
+  validateVisual(bag, doc.project.visual, 'project.visual', ids, expressionsByCharacter, isFinal(doc));
 }
 
 function validateCast(bag, doc) {
@@ -427,16 +430,22 @@ function validateScenes(bag, doc, ids, expressionsByCharacter) {
     checkString(bag, scene.title, `${path}.title`);
     checkReference(bag, ids, scene.chapterId, `${path}.chapterId`, ['chapter'], { what: 'Chapter' });
 
-    // Essential narration is the main reading path. It must stand on its own,
-    // independently of dialogue, optional detail, or illustration.
+    // The main path is the essential reading route: narrator paragraphs, spoken
+    // lines, and visible caveats, in the order `mainPath` gives them. All three
+    // are in every output, so a beat carried by dialogue alone still reads in
+    // print and with motion reduced. What a beat may not be is empty.
     if (checkArray(bag, scene.narration, `${path}.narration`)) {
       scene.narration.forEach((paragraph, paragraphIndex) => {
         checkString(bag, paragraph, `${path}.narration[${paragraphIndex}]`);
       });
-      const meaningful = scene.narration.filter((paragraph) => typeof paragraph === 'string' && paragraph.trim() !== '');
-      if (meaningful.length === 0) {
-        bag.add(`${path}.narration`, 'EMPTY_ESSENTIAL_SCENE', `Scene ${JSON.stringify(scene.id ?? index)} has no essential narration. Every scene must read on the main path without dialogue, illustration, or optional detail.`);
-      }
+    }
+    const essential = [
+      ...(Array.isArray(scene.narration) ? scene.narration : []),
+      ...(Array.isArray(scene.limitations) ? scene.limitations : []),
+      ...(Array.isArray(scene.dialogue) ? scene.dialogue.map((line) => (isPlainObject(line) ? line.text : null)) : []),
+    ];
+    if (!essential.some((text) => typeof text === 'string' && text.trim() !== '')) {
+      bag.add(`${path}.mainPath`, 'EMPTY_ESSENTIAL_SCENE', `Scene ${JSON.stringify(scene.id ?? index)} has nothing on the main path: no narration, no dialogue, and no visible caveat. Every beat must read without optional detail or illustration.`);
     }
 
     checkStringArray(bag, scene.limitations, `${path}.limitations`);
@@ -445,8 +454,9 @@ function validateScenes(bag, doc, ids, expressionsByCharacter) {
     checkReferenceList(bag, ids, scene.detailIds, `${path}.detailIds`, ['detail'], { what: 'Detail' });
     checkReferenceList(bag, ids, scene.interactionIds, `${path}.interactionIds`, ['interaction'], { what: 'Interaction' });
 
-    validateVisual(bag, scene.visual, `${path}.visual`, ids, expressionsByCharacter);
+    validateVisual(bag, scene.visual, `${path}.visual`, ids, expressionsByCharacter, isFinal(doc));
     validateSceneDialogue(bag, scene, path, ids);
+    validateMainPath(bag, scene, path);
 
     // An optional interaction must reveal a detail the same scene already
     // carries statically, so the explanation survives with the reveal unused.
@@ -462,12 +472,63 @@ function validateScenes(bag, doc, ids, expressionsByCharacter) {
   });
 }
 
+/** Whether the document declares itself finished. Unset counts as not final. */
+const isFinal = (doc) => doc?.status?.final === true;
+
+/**
+ * The order a reader actually meets a beat's essential blocks.
+ *
+ * `narration`, `dialogue` and `limitations` stay three arrays, because they are
+ * three different presentations. `mainPath` is the sequence, and it must be a
+ * complete permutation of them: every paragraph, every line, and every visible
+ * caveat exactly once. Anything less would let a block exist in the document
+ * and never be read; anything more would print it twice.
+ */
+function validateMainPath(bag, scene, path) {
+  const mainPathPath = `${path}.mainPath`;
+  if (!checkArray(bag, scene.mainPath, mainPathPath, { allowEmpty: false })) return;
+
+  const blocks = {
+    narration: Array.isArray(scene.narration) ? scene.narration.length : 0,
+    dialogue: Array.isArray(scene.dialogue) ? scene.dialogue.length : 0,
+    limitations: Array.isArray(scene.limitations) ? scene.limitations.length : 0,
+  };
+  const seen = { narration: new Set(), dialogue: new Set(), limitations: new Set() };
+
+  scene.mainPath.forEach((entry, index) => {
+    const entryPath = `${mainPathPath}[${index}]`;
+    if (!checkObject(bag, entry, entryPath, FIELDS.mainPath)) return;
+    if (!checkEnum(bag, entry.kind, `${entryPath}.kind`, MAIN_PATH_KINDS)) return;
+    if (!Number.isInteger(entry.index) || entry.index < 0) {
+      bag.add(`${entryPath}.index`, 'MAIN_PATH_INDEX', `${entryPath}.index must be a whole number naming a position in ${entry.kind}.`);
+      return;
+    }
+    if (entry.index >= blocks[entry.kind]) {
+      bag.add(`${entryPath}.index`, 'MAIN_PATH_OUT_OF_RANGE', `${entryPath} points at ${entry.kind}[${entry.index}], but this scene has ${blocks[entry.kind]} ${entry.kind} entries.`);
+      return;
+    }
+    if (seen[entry.kind].has(entry.index)) {
+      bag.add(`${entryPath}.index`, 'MAIN_PATH_DUPLICATE', `${entry.kind}[${entry.index}] is already placed earlier in ${mainPathPath}. Each essential block is read once.`);
+      return;
+    }
+    seen[entry.kind].add(entry.index);
+  });
+
+  for (const kind of MAIN_PATH_KINDS) {
+    for (let index = 0; index < blocks[kind]; index += 1) {
+      if (!seen[kind].has(index)) {
+        bag.add(`${path}.${kind}[${index}]`, 'MAIN_PATH_INCOMPLETE', `${kind}[${index}] is never placed in ${mainPathPath}, so no reader would meet it. Add it where it belongs in the reading order.`);
+      }
+    }
+  }
+}
+
 /**
  * A drawing and the figures in it. Scenes use this, and so does the landing:
  * one rule set, so the opening cannot quietly become a special case that
  * invents a cast or claims a drawing nobody made.
  */
-function validateVisual(bag, visual, visualPath, ids, expressionsByCharacter) {
+function validateVisual(bag, visual, visualPath, ids, expressionsByCharacter, final) {
   if (!checkObject(bag, visual, visualPath, FIELDS.visual)) return;
   // The visual description doubles as the text alternative and as the static
   // equivalent when motion is reduced, so it is never optional.
@@ -475,7 +536,7 @@ function validateVisual(bag, visual, visualPath, ids, expressionsByCharacter) {
     label: `${visualPath}.description (also the text alternative and reduced-motion equivalent)`,
   });
   if (!checkArray(bag, visual.cast, `${visualPath}.cast`)) return;
-  validateSceneArt(bag, visual, visualPath);
+  validateSceneArt(bag, visual, visualPath, final);
   visual.cast.forEach((appearance, appearanceIndex) => {
     const appearancePath = `${visualPath}.cast[${appearanceIndex}]`;
     if (!checkObject(bag, appearance, appearancePath, FIELDS.visualCast)) return;
@@ -497,14 +558,34 @@ function validateVisual(bag, visual, visualPath, ids, expressionsByCharacter) {
  * a drawing that does not exist, a layer a composition cannot show, or more
  * figures than it can place.
  */
-function validateSceneArt(bag, visual, visualPath) {
-  const { artId, artState } = visual;
+function validateSceneArt(bag, visual, visualPath, final) {
+  const { artId, artState, artAbsence } = visual;
 
   if (artId === null || artId === undefined) {
     if (artState !== null && artState !== undefined) {
       bag.add(`${visualPath}.artState`, 'ART_STATE_UNAVAILABLE', `${visualPath}.artState must be null while this scene has no composition. The written description is what carries the beat.`);
     }
+    // An undrawn beat has to say which kind of undrawn it is. "Nobody has made
+    // it yet" and "this one is deliberately not a picture" read the same in a
+    // document and must not read the same to a reader.
+    if (!ART_ABSENCE_REASONS.includes(artAbsence)) {
+      bag.add(`${visualPath}.artAbsence`, 'ART_ABSENCE_UNDECLARED', `${visualPath}.artAbsence must be one of: ${ART_ABSENCE_REASONS.join(', ')}, because this beat has no drawing. Declare whether one is still to be made or whether this beat is intentionally text-only.`);
+    } else if (final && artAbsence === 'pending') {
+      bag.add(`${visualPath}.artAbsence`, 'PENDING_ART_IN_FINAL_CONTENT', `${visualPath}.artAbsence is "pending", which finished content may not contain. Draw the beat, or declare it "text-only" if it is deliberately not an illustrated situation.`);
+    }
+
+    // A text-only beat is rendered without a frame at all, so a cast listed on
+    // one would be named nowhere: the document would say somebody is in a
+    // drawing the reader is never shown. A beat whose art is merely pending
+    // still has its frame and still names them.
+    if (artAbsence === 'text-only' && Array.isArray(visual.cast) && visual.cast.length > 0) {
+      bag.add(`${visualPath}.cast`, 'TEXT_ONLY_CAST', `${visualPath} is declared text-only, which is rendered with no frame and no names, so it may not place ${visual.cast.length} figure(s). Draw the beat, or move who is in it into the description.`);
+    }
     return;
+  }
+
+  if (artAbsence !== null && artAbsence !== undefined) {
+    bag.add(`${visualPath}.artAbsence`, 'ART_ABSENCE_DECLARED', `${visualPath}.artAbsence must be null while this beat names a drawing. A reason is only recorded where there is no drawing.`);
   }
 
   if (!checkString(bag, artId, `${visualPath}.artId`)) return;
@@ -559,12 +640,25 @@ function validateOwnershipAndOrder(bag, doc, ids) {
   if (!checkArray(bag, doc.chapters, 'chapters', { allowEmpty: false })) return;
 
   const claims = new Map(); // scene id -> { chapterId, path }
+  const numbers = new Map(); // displayed chapter number -> where it was claimed
 
   doc.chapters.forEach((chapter, index) => {
     const path = `chapters[${index}]`;
     if (!checkObject(bag, chapter, path, FIELDS.chapter)) return;
     checkString(bag, chapter.title, `${path}.title`);
     checkString(bag, chapter.question, `${path}.question`);
+    // A chapter the reader counts carries its own number, so an opening that is
+    // not one of the shared questions is not silently counted as the first of
+    // them. `null` is the declared "this chapter is not numbered".
+    if (chapter.number !== null && chapter.number !== undefined) {
+      if (!Number.isInteger(chapter.number) || chapter.number < 1) {
+        bag.add(`${path}.number`, 'INVALID_CHAPTER_NUMBER', `${path}.number must be a whole number of at least 1, or null for a chapter the reader does not count.`);
+      } else if (numbers.has(chapter.number)) {
+        bag.add(`${path}.number`, 'DUPLICATE_CHAPTER_NUMBER', `Chapter number ${chapter.number} is already used at ${numbers.get(chapter.number)}.`);
+      } else {
+        numbers.set(chapter.number, `${path}.number`);
+      }
+    }
     // Opening and closing connections are what keep six questions reading as
     // one argument instead of six separate essays.
     checkString(bag, chapter.opening, `${path}.opening`, {

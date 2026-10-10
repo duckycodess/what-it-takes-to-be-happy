@@ -97,6 +97,28 @@ export const CONCEPT_STATUSES = ['planned', 'drafted'];
 export const INTERACTION_SURFACES = ['scene-detail', 'source-detail'];
 
 /**
+ * The three kinds of essential block a beat can put on the main reading path.
+ *
+ * A scene stores them in three arrays, because they are three different things
+ * with three different presentations. The order a reader meets them is a
+ * separate editorial fact: twenty beats answer before the narrator explains,
+ * and five state a caveat before the line it qualifies. `scenes[].mainPath`
+ * records that order as references into these arrays, so the text itself is
+ * never duplicated and a renderer cannot quietly impose an order of its own.
+ */
+export const MAIN_PATH_KINDS = ['narration', 'dialogue', 'limitations'];
+
+/**
+ * Why a beat has no drawing.
+ *
+ * `pending` means one is intended and has not been made; final content may not
+ * contain it. `text-only` means the beat is deliberately not an illustrated
+ * situation — the source register handoff is one — and the reader should see
+ * no frame at all rather than an empty one.
+ */
+export const ART_ABSENCE_REASONS = ['pending', 'text-only'];
+
+/**
  * Which layers of a scene's drawing are settled on screen: `situation` is the
  * scene as it first appears, `revealed` adds the condition layer that explains
  * it. The artwork package owns the list; the contract only names it, so a

@@ -57,6 +57,18 @@ const { screen, print } = split(css);
 /** The class names a selector targets, ignoring state and attributes. */
 const classesIn = (selector) => [...selector.matchAll(/\.([\w-]+)/g)].map((match) => match[1]);
 
+test('a width cap in print applies to the whole figure, so names stay above heads', () => {
+  // The drawing is an SVG inside a frame, and each name is positioned at a
+  // percentage of that frame. Capping the drawing alone leaves the frame as
+  // wide as the page, and every name drifts away from the figure it belongs
+  // to. Rendering the print rules on screen is how this was found; this is
+  // what stops it coming back.
+  const capped = print.filter((rule) => /max-width/.test(rule.body)).flatMap((rule) => classesIn(rule.selector));
+  assert.ok(capped.includes('scene-visual'), 'print should cap the beat figure');
+  assert.ok(!capped.includes('scene-art'), 'capping the drawing alone separates it from the names over it');
+  assert.ok(!capped.includes('scene-visual-frame'), 'the frame follows the figure it is inside');
+});
+
 test('everything a view hides on screen is either restored in print or is screen apparatus', () => {
   // Apparatus: controls and shortcuts that carry no part of the argument.
   // Anything new that hides content has to be added to the print restore

@@ -86,7 +86,8 @@ test('progress names the beat and the chapter it belongs to', () => {
   page.click(page.find('[data-next]'));
 
   assert.equal(page.text('[data-position-current]'), '3');
-  assert.equal(page.text('[data-position-where]'), `Chapter 2 of ${content.chapters.length}: ${content.chapters[1].title}`);
+  const counted = content.chapters.filter((chapter) => chapter.number !== null).length;
+  assert.equal(page.text('[data-position-where]'), `Chapter ${content.chapters[1].number} of ${counted}: ${content.chapters[1].title}`);
   assert.equal(page.text('[data-position-boundary]'), '', 'nothing is said about a boundary in the middle');
 });
 
@@ -339,10 +340,12 @@ test('the return control is offered only when there is a beat to return to', () 
 
 test('a panel is a reveal between beats and plain text in the continuous view', () => {
   const page = begin();
-  assert.deepEqual(page.panels().map((panel) => panel.open), [false, false], 'collapsed while moving beat by beat');
+  const count = page.panels().length;
+  assert.ok(count >= 2, 'the essay carries optional panels');
+  assert.deepEqual(page.panels().map((panel) => panel.open), Array(count).fill(false), 'collapsed while moving beat by beat');
 
   page.click(page.find('[data-view-toggle]'));
-  assert.deepEqual(page.panels().map((panel) => panel.open), [true, true], 'open where the text simply reads');
+  assert.deepEqual(page.panels().map((panel) => panel.open), Array(count).fill(true), 'open where the text simply reads');
 });
 
 test('a panel the reader opened or closed stays that way across view switches', () => {
@@ -360,7 +363,8 @@ test('a panel the reader opened or closed stays that way across view switches', 
   page.togglePanel(second, true);
   page.togglePanel(first, false);
   page.click(page.find('[data-view-toggle]'));
-  assert.deepEqual(page.panels().map((panel) => panel.open), [false, true], 'both choices survive the continuous view');
+  const [firstOpen, secondOpen] = page.panels().map((panel) => panel.open);
+  assert.deepEqual([firstOpen, secondOpen], [false, true], 'both choices survive the continuous view');
 });
 
 test('opening or dismissing a panel changes nothing else about where the reader is', () => {
@@ -380,11 +384,14 @@ test('opening or dismissing a panel changes nothing else about where the reader 
 
 test('printing opens every panel and then gives the reader their choices back', () => {
   const page = begin();
+  const count = page.panels().length;
   page.togglePanel(page.panels()[1], true);
 
   const whilePrinting = page.print();
-  assert.deepEqual(whilePrinting, [true, true], 'the printed argument is complete, whatever is collapsed on screen');
-  assert.deepEqual(page.panels().map((panel) => panel.open), [false, true], 'and the reader gets their own panels back');
+  assert.deepEqual(whilePrinting, Array(count).fill(true), 'the printed argument is complete, whatever is collapsed on screen');
+  const after = page.panels().map((panel) => panel.open);
+  assert.deepEqual(after.slice(0, 2), [false, true], 'and the reader gets their own panels back');
+  assert.deepEqual(after.slice(2), Array(count - 2).fill(false), 'panels nobody touched are collapsed again');
 });
 
 /* --- Views ---------------------------------------------------------------- */

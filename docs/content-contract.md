@@ -8,9 +8,11 @@ Run `npm run validate` after every edit. It prints a located, named error for ea
 
 ## What is in the repository today
 
-`content/content.json` is a **non-final fixture**. It exists so the foundation could be built, validated, rendered, packaged, and checked before the essay is written. Every chapter connection, scene, dialogue line, and illustration note in it is a structural stand-in, `status.final` is `false`, and the reader shows that notice to anyone who opens the page. The storyboard package writes the real chapters; the integration package replaces the fixture scenes.
+`content/content.json` is the **complete essay**. `status.final` is `true`, so the reader sees no draft notice. It holds the storyboard's seven chapters and 87 beats in their authored order, the 76 lines the three contributors actually said in the group notes, the 32 audited sources at the evidence levels the audit reached, 35 class concepts each explained, applied and questioned, eleven optional panels, and the drawings.
 
-Nothing in the fixture states a position held by TJ, Koj, or Vier, and no source in it claims more than the audit actually established. Those are contract rules, not fixture habits — see *Member positions* and *Evidence levels* below. The sources in the fixture are the real audited ones from [the register](research.md), carried at one of each evidence level.
+The editorial source is still [the storyboard](storyboard.md), and the two are compared rather than trusted: `test/transfer.test.js` checks every beat identifier, every main-path paragraph, line and caveat in order, every cast placement, and every source citation against it. Two differences are deliberate and listed in that test — the landing carries `s001`'s question, names and reading time, and the fourteen chapter bridges are authored for the site with a provenance record on each chapter saying so.
+
+Nothing here states a position held by TJ, Koj, or Vier without a provenance record naming the note it comes from, and no source claims more than the audit actually established. Those are contract rules, not habits of this particular document — see *Member positions* and *Evidence levels* below.
 
 ## Document shape
 
@@ -54,9 +56,12 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `id` | identifier | Stable chapter identifier. |
 | `title` | string | Chapter name used for the chapter shortcuts. |
 | `question` | string | The shared question this chapter organises. |
+| `number` | integer or `null` | The number the reader counts this chapter as, or `null` for a chapter outside the count. |
 | `opening` | string | The connection **into** this chapter from the previous argument. |
 | `closing` | string | The connection **out of** this chapter into the next. |
 | `sceneIds` | identifier[] | The chapter's beats, **in reading order**. |
+
+`number` exists because the opening is a chapter in the document and is not one of the shared questions. Numbering it would make the first question the second chapter, in the chapter list and in the progress line alike. Numbers must be whole numbers of at least 1 and must not repeat; `null` is the declared "the reader does not count this one". The displayed count is the number of numbered chapters, not the number of sections.
 
 `opening` and `closing` are required. They are what keep six questions reading as one argument instead of six separate essays, and they are the first thing a reordering delta has to rewrite.
 
@@ -67,8 +72,9 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `id` | identifier | Stable beat identifier. |
 | `chapterId` | identifier | The owning chapter. Must agree with the chapter that lists this scene. |
 | `title` | string | Short beat title, used in the reading view and as a heading. |
-| `narration` | string[] | **Essential** narrative paragraphs. At least one must be non-empty. |
+| `narration` | string[] | Narrator paragraphs. May be empty on a beat carried by dialogue alone; sixteen are. |
 | `dialogue` | object[] | Optional spoken lines (see below). |
+| `mainPath` | object[] | The order the beat's essential blocks are read in (see below). |
 | `visual` | object | `description` plus `cast` appearances (see below). |
 | `conceptIds` | identifier[] | Class concepts this beat explains, applies, or questions. |
 | `sourceIds` | identifier[] | Sources whose labels and limits belong on this beat. |
@@ -76,16 +82,30 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `detailIds` | identifier[] | Optional expandable detail carried by this beat. |
 | `interactionIds` | identifier[] | Optional reveals attached to this beat. |
 
-`narration` is the main reading path. It must carry the beat on its own, with dialogue, illustration, and every optional surface removed — that is exactly what the print and reduced-motion routes fall back to.
+The **main reading path** is `narration`, `dialogue` and `limitations` together, in the order `mainPath` gives them. All three appear in every output — presentation, continuous reading, print, and with scripting unavailable — so a beat carried by dialogue alone still reads everywhere. What a beat may not be is empty: a scene with no narration, no dialogue, and no caveat is rejected as `EMPTY_ESSENTIAL_SCENE`. Illustration and optional detail are outside this, and removing both must leave the beat complete.
+
+#### `scenes[].mainPath`
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `kind` | `narration`, `dialogue`, or `limitations` | Which of the beat's three essential arrays this step reads from. |
+| `index` | integer | Which entry of that array, counting from zero. |
+
+The three arrays hold the text; `mainPath` holds the **order**. They are separate because the three are three different presentations — paragraphs, a list of spoken lines, a visible caveat — and because the order is an editorial fact of its own. Twenty beats answer before the narrator explains, and five state a caveat before the line it qualifies; a renderer that always printed narration, then dialogue, then caveats would quietly rewrite those beats.
+
+`mainPath` must be a complete permutation of the three arrays: every paragraph, every line, and every caveat appears exactly once. Less would leave a block in the document that no reader meets; more would print it twice. Consecutive steps of one kind are rendered as one block, so dialogue is still one list and a run of caveats is still one callout.
+
+Citations, concepts, and optional panels are not in `mainPath`. They follow the beat's ordered essential blocks, in that fixed order, because they are apparatus rather than argument.
 
 #### `scenes[].visual`
 
 | Field | Type | Meaning |
 | --- | --- | --- |
 | `description` | string | What the illustration shows. This doubles as the text alternative and as the reduced-motion equivalent, so it is never optional. |
-| `artId` | identifier or `null` | The composition the beat is drawn with, from [the drawing system](art-system.md). `null` declares that this beat has no drawing yet. |
+| `artId` | identifier or `null` | The composition the beat is drawn with, from [the drawing system](art-system.md). `null` declares that this beat has no drawing, and `artAbsence` says which kind of no. |
 | `artState` | `situation`, `revealed`, or `null` | Which layers are settled: the situation alone, or the situation with the condition layer that explains it. `null` when `artId` is `null`. |
-| `cast[].characterId` | identifier | Who appears. |
+| `artAbsence` | `pending`, `text-only`, or `null` | Why this beat has no drawing. `null` when `artId` is set; required otherwise. |
+| `cast[].characterId` | identifier | Who appears. A `text-only` beat places nobody, because it is rendered with no frame and no names. |
 | `cast[].expressionId` | identifier | Which of that character's own expressions they wear. |
 
 The scene's cast order is the order the composition places figures in, so moving a name up the list
@@ -95,6 +115,20 @@ moves that figure to the first slot.
 and `description` still carries the beat, exactly as it does in print and under reduced motion.
 A scene may not ask a composition for a layer it does not have, or hand it more figures than it can
 place; both are rejected.
+
+`artAbsence` says **which kind** of undrawn a beat is, because the two read the same in a document
+and must not read the same to a reader:
+
+| Value | Meaning | What the reader sees |
+| --- | --- | --- |
+| `pending` | A drawing is intended and has not been made. | The frame, the named figures, and a notice saying the drawing is not made yet. |
+| `text-only` | This beat is deliberately not an illustrated situation. | No frame at all. The description introduces the beat, and nothing suggests a drawing failed to arrive. |
+| `null` | The beat has a drawing. | The drawing. |
+
+**Finished content may not contain `pending`.** Once `status.final` is `true`, a beat either has a
+drawing or declares that being text-only is the decision. `text-only` is for a beat that is a
+handoff rather than a situation — the source register at the end of the essay is the one in this
+essay — and it is a claim about the beat, not a way to retire an unfinished drawing.
 
 #### `scenes[].dialogue[]`
 
@@ -201,6 +235,10 @@ A dialogue line marked `member-endorsed` speaks for TJ, Koj, or Vier. Such a lin
 
 Lines marked `fictional-illustration` are spoken by invented figures such as Bob. They make a situation concrete. They are not evidence, not population data, and not any contributor's biography.
 
+The same boundary is drawn in the illustration. A contributor's name is rendered as a **nametag**: a boxed name. An invented friend is named too — a reader has to be able to follow Bob from beat to beat — but without that box, and the beat says plainly underneath the drawing which of the figures in it were invented. The distinction is the box and those words, never a colour, so it survives print, a monochrome screen, and a screen reader.
+
+Where the names sit is the renderer's decision, not the document's. A name sits above its own head wherever the drawing has room; on a crowded beat the whole set moves into a row under the drawing, in the order the figures stand in, because two names on top of each other are worse than a row. Five of the 87 beats are laid out that way, and a browser test measures every label box on every beat at a phone width and a desktop one.
+
 Research is shared group material: any avatar may draw on a source another member found, as long as the citation stays attached to the source and the spoken position matches what that member endorses.
 
 ## Identifiers and editorial deltas
@@ -219,8 +257,10 @@ Nothing in the contract refers to an array position. Reading order comes from `c
 | Add a contributor's position | Add the provenance record first, then the dialogue line pointing at it. |
 | Record a source audit | Set `reviewStatus` to the level actually reached, then record `evidenceBasis` and `citation`, and `supportedClaim` if the level allows one. |
 | Draft a concept's treatment | Set `status` to `drafted` and write all three of `explanation`, `application`, `question`. |
-| Give a beat a drawing | Set `visual.artId` to a composition and `visual.artState` to the state it settles into, and rewrite `visual.description` to describe what is actually drawn. |
-| Take a drawing away | Set both `visual.artId` and `visual.artState` to `null`. The description carries the beat. |
+| Give a beat a drawing | Set `visual.artId` to a composition and `visual.artState` to the state it settles into, set `visual.artAbsence` to `null`, and rewrite `visual.description` to describe what is actually drawn. |
+| Take a drawing away | Set `visual.artId` and `visual.artState` to `null` and `visual.artAbsence` to the reason. The description carries the beat. |
+| Reorder what a beat says | That scene's `mainPath` only. The text stays where it is. |
+| Add or remove an essential block | Edit the array, then place or remove its step in `mainPath`. The validator reports it if you forget. |
 
 Keep an existing identifier pointing at the same thing. If a source is replaced by a different work, add a new identifier rather than repointing the old one.
 
@@ -238,7 +278,10 @@ Keep an existing identifier pointing at the same thing. If a source is replaced 
 | `DUPLICATE_ID` | An identifier is reused, including an expression repeated within a character. |
 | `UNKNOWN_REFERENCE`, `WRONG_REFERENCE_KIND`, `DUPLICATE_REFERENCE` | A reference points at nothing, at the wrong kind of entry, or is listed twice. |
 | `INVALID_ENUM` | A role, stance, review status, concept status, or interaction surface is not one of the allowed values. |
-| `EMPTY_ESSENTIAL_SCENE` | A scene has no essential narration. |
+| `EMPTY_ESSENTIAL_SCENE` | A scene has nothing on the main path at all. |
+| `MAIN_PATH_INDEX`, `MAIN_PATH_OUT_OF_RANGE` | A reading-order step names a position that is not a whole number, or one the array does not have. |
+| `MAIN_PATH_DUPLICATE`, `MAIN_PATH_INCOMPLETE` | A reading-order step repeats a block, or an essential block is never placed. |
+| `INVALID_CHAPTER_NUMBER`, `DUPLICATE_CHAPTER_NUMBER` | A chapter number is not a whole number of at least 1, or is already used. |
 | `SCENE_ORPHANED` | A scene is in no chapter's reading order. |
 | `SCENE_CLAIMED_TWICE` | A scene appears in more than one chapter order, or twice in one. |
 | `SCENE_CHAPTER_MISMATCH` | A scene's `chapterId` disagrees with the chapter that orders it. |
@@ -246,6 +289,9 @@ Keep an existing identifier pointing at the same thing. If a source is replaced 
 | `UNKNOWN_ART_REFERENCE` | A character, an expression, or a scene names a drawing the artwork package cannot produce. |
 | `ART_ROLE_MISMATCH` | A contributor is drawn as an invented friend, or the reverse, or anyone is drawn as the unnamed outline. |
 | `ART_STATE_UNAVAILABLE` | A scene asks a composition for a condition layer it does not have, or declares a state for a beat that has no drawing. |
+| `ART_ABSENCE_UNDECLARED`, `ART_ABSENCE_DECLARED` | A beat with no drawing does not say why, or a beat with one records a reason for not having one. |
+| `PENDING_ART_IN_FINAL_CONTENT` | Finished content still carries a beat whose drawing has not been made. |
+| `TEXT_ONLY_CAST` | A beat declared text-only places figures, which it would never show. |
 | `ART_FIGURE_COUNT` | A scene gives a composition more or fewer figures than it can place. |
 | `UNSUPPORTED_MEMBER_POSITION` | A `member-endorsed` line has no provenance record. |
 | `INVALID_SOURCE_URL` | A source destination is not an `http://` or `https://` address. |

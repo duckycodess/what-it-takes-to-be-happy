@@ -133,9 +133,18 @@ probe
       visibleChapters: probe.all('.chapter').filter(probe.visible).length,
     };
   })
-  // On to the beat that carries both an optional panel and its own sources,
-  // so every control touched below is one a reader can actually see.
-  .step(function () { probe.q('[data-next]').click(); })
+  // On to the first beat from here that carries both an optional panel and its
+  // own sources, so every control touched below is one a reader can see. Which
+  // beat that is belongs to the content, not to this test.
+  .step(function () {
+    var guard = 0;
+    while (guard++ < 60) {
+      var beat = probe.q('[data-scene][data-current]');
+      if (beat.querySelector('details.detail') && beat.querySelector('.source [data-source-link]')) break;
+      probe.q('[data-next]').click();
+    }
+    report.panelBeat = probe.sceneId();
+  })
   .step(function () {
     var panel = probe.q('[data-scene][data-current] details.detail');
     report.panelBefore = { open: panel.open, visible: probe.visible(probe.q('summary', panel)) };
@@ -252,7 +261,11 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.afterNext.focused, ORDER[2]);
   assert.equal(value.afterNext.hash, `#${ORDER[2]}`);
   assert.equal(value.afterNext.position, '3');
-  assert.match(value.afterNext.where, /^Chapter 2 of 6: /);
+  // The progress line names the chapter the beat is in, with the number the
+  // reader counts it as — the opening is named rather than numbered.
+  const beatChapter = content.chapters.find((chapter) => chapter.sceneIds.includes(ORDER[2]));
+  const counted = content.chapters.filter((chapter) => chapter.number !== null).length;
+  assert.equal(value.afterNext.where, `Chapter ${beatChapter.number} of ${counted}: ${beatChapter.title}`);
 
   assert.equal(value.afterChapterJump.topOfWindow, 0);
   assert.equal(value.afterChapterJump.scene, content.chapters[4].sceneIds[0]);
@@ -265,7 +278,7 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.panelAfterClick.open, true);
   assert.equal(value.panelAfterClick.bodyVisible, true);
   assert.equal(value.panelAfterClick.focusStayedOnSummary, true, 'opening a panel does not take focus away from its own control');
-  assert.equal(value.panelAfterClick.sceneUnchanged, ORDER[7], 'and does not move the reader off the beat');
+  assert.equal(value.panelAfterClick.sceneUnchanged, value.panelBeat, 'and does not move the reader off the beat');
   assert.equal(value.panelAfterClick.nextStillAvailable, true, 'a panel never gates progression');
 
   assert.equal(value.reading.view, 'reading');
@@ -274,7 +287,12 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.reading.visibleScenes, ORDER.length, 'the continuous view is the whole essay');
   assert.equal(value.reading.registerVisible, true);
   assert.equal(value.reading.controlsVisible, false);
-  assert.deepEqual(value.reading.panelsOpen, [true, true], 'every panel reads in place in the continuous view');
+  assert.equal(value.reading.panelsOpen.length, content.details.length);
+  assert.deepEqual(
+    value.reading.panelsOpen,
+    Array(content.details.length).fill(true),
+    'every panel reads in place in the continuous view',
+  );
   assert.equal(value.reading.horizontalOverflow, 0);
 
   assert.equal(value.backAmongBeats.view, 'beat');
@@ -294,7 +312,7 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.sources.focused, value.sources.hash.slice(1), 'the reader lands on the entry they followed');
 
   assert.equal(value.returned.view, 'beat');
-  assert.equal(value.returned.scene, ORDER[7], 'and comes back to the beat they left');
+  assert.equal(value.returned.scene, value.panelBeat, 'and comes back to the beat they left');
   assert.equal(value.returned.focused, value.returned.scene);
 
   // Back works on a local file, and restores how the reader was reading as
@@ -302,8 +320,8 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.backOnce.view, 'reading', 'Back returns to the register they had opened');
   assert.ok(value.backOnce.hash.startsWith('#R'), `expected the source fragment, got ${value.backOnce.hash}`);
   assert.equal(value.backTwice.view, 'beat', 'and Back again returns to the beats, not just to the fragment');
-  assert.equal(value.backTwice.scene, ORDER[7]);
-  assert.equal(value.backTwice.hash, `#${ORDER[7]}`);
+  assert.equal(value.backTwice.scene, value.panelBeat);
+  assert.equal(value.backTwice.hash, `#${value.panelBeat}`);
 });
 
 /* --- A deep link, and the wide layout ------------------------------------- */
@@ -439,7 +457,17 @@ test('the drawings are drawn, with the names above the heads and inside the fram
       ${ORDER.map(() => `probe
         .step(function () {
           var scene = probe.q('[data-scene][data-current]');
-          var frame = probe.q('.scene-visual-frame', scene);
+          var frame = scene.querySelector('.scene-visual-frame');
+          if (!frame) {
+            // A beat that is deliberately text-only has no frame at all. What
+            // it must still have is its description, as ordinary page text.
+            report.beats.push({
+              scene: probe.sceneId(),
+              art: 'text-only',
+              textOnlyNote: probe.q('.scene-visual-note', scene).textContent.length,
+            });
+            return;
+          }
           var frameBox = frame.getBoundingClientRect();
           var svg = probe.q('svg.scene-art', frame);
           report.beats.push({
@@ -448,11 +476,17 @@ test('the drawings are drawn, with the names above the heads and inside the fram
             hasSvg: !!svg,
             svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
             pendingNotice: !!probe.q('.scene-visual-pending', frame),
+            placement: frame.getAttribute('data-labels'),
+            inventedLine: probe.q('.figure-fiction', scene) ? probe.q('.figure-fiction', scene).textContent : '',
+            inventedType: probe.q('.figure-fiction', scene) ? probe.style(probe.q('.figure-fiction', scene), 'fontSize') : null,
             labels: probe.all('.art-label', frame).map(function (label) {
               var box = label.getBoundingClientRect();
               var head = box.bottom;
               return {
-                name: probe.q('.nametag', label).textContent,
+                name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
+                role: label.getAttribute('data-role'),
+                boxed: !!probe.q('.nametag', label),
+                left: box.left, right: box.right, top: box.top, bottom: box.bottom,
                 insideFrame: box.left >= frameBox.left - 1 && box.right <= frameBox.right + 1,
                 aboveItsAnchor: head <= frameBox.bottom + 1,
                 baked: label.closest('svg') !== null,
@@ -466,7 +500,12 @@ test('the drawings are drawn, with the names above the heads and inside the fram
   });
 
   assert.equal(value.beats.length, ORDER.length);
+  const textOnly = value.beats.filter((beat) => beat.art === 'text-only');
+  assert.equal(textOnly.length, 1, 'exactly one beat is deliberately not an illustrated situation');
+  assert.ok(textOnly[0].textOnlyNote > 0, `${textOnly[0].scene} still introduces itself in words`);
+
   for (const beat of value.beats) {
+    if (beat.art === 'text-only') continue;
     const drawn = beat.art !== 'none';
     assert.equal(beat.hasSvg, drawn, `${beat.scene} declares data-art="${beat.art}" but ${beat.hasSvg ? 'has' : 'has no'} drawing`);
     assert.equal(beat.pendingNotice, !drawn,
@@ -474,12 +513,96 @@ test('the drawings are drawn, with the names above the heads and inside the fram
     if (drawn) assert.ok(beat.svgWidth > 0, `${beat.scene} drew nothing with width`);
     assert.ok(beat.caption > 0, `${beat.scene} needs its written description whether or not it is drawn`);
 
-    assert.ok(beat.labels.length > 0, `${beat.scene} should name who is in the frame`);
+    // Who is in the frame is the content document's decision, including the
+    // beats where the answer is nobody: eleven are the narrator alone.
+    const placed = content.scenes.find((scene) => scene.id === beat.scene).visual.cast.length;
+    assert.equal(beat.labels.length, placed, `${beat.scene} should name exactly the figures it places`);
+    // Which figures were made up is said under the drawing at reading size,
+    // where there is room for the words, rather than over a head where there
+    // is not. A beat with no invented figure in it says nothing.
+    const friends = content.scenes.find((scene) => scene.id === beat.scene).visual.cast
+      .map((entry) => content.cast.find((character) => character.id === entry.characterId))
+      .filter((character) => character.role === 'friend');
+    if (friends.length === 0) {
+      assert.equal(beat.inventedLine, '', `${beat.scene} has no invented figure and should not say it has`);
+    } else {
+      for (const friend of friends) {
+        assert.ok(beat.inventedLine.includes(friend.displayName), `${beat.scene} draws ${friend.displayName} without saying they are invented`);
+      }
+      assert.ok(parseFloat(beat.inventedType) >= 14, `${beat.scene} says so at ${beat.inventedType}, which is too small to read`);
+    }
+
     for (const label of beat.labels) {
       assert.equal(label.baked, false, `${beat.scene}: "${label.name}" is inside the SVG; names are browser text`);
       assert.equal(label.insideFrame, true, `${beat.scene}: "${label.name}" hangs outside the frame at phone width`);
+      assert.equal(label.boxed, label.role === 'member', `${beat.scene}: "${label.name}" does not keep the contributor/invented distinction`);
       assert.equal(label.aboveItsAnchor, true, `${beat.scene}: "${label.name}" sits below the drawing`);
     }
+  }
+});
+
+/** Every label box on every beat, at one layout width. */
+function labelBoxes(width) {
+  const { value } = runInChrome({
+    html: offline,
+    width,
+    height: 900,
+    driver: `
+      var report = { beats: [] };
+      probe.step(function () { probe.q('[data-begin]').click(); });
+      ${ORDER.map(() => `probe
+        .step(function () {
+          var scene = probe.q('[data-scene][data-current]');
+          var frame = scene.querySelector('.scene-visual-frame');
+          report.beats.push({
+            scene: probe.sceneId(),
+            placement: frame ? frame.getAttribute('data-labels') : 'none',
+            labels: frame ? probe.all('.art-label', frame).map(function (label) {
+              var box = label.getBoundingClientRect();
+              var name = probe.q('.nametag', label) || probe.q('.figure-name', label);
+              return { name: name.textContent, left: box.left, right: box.right, top: box.top, bottom: box.bottom };
+            }) : [],
+          });
+        })
+        .step(function () { var next = probe.q('[data-next]'); if (!next.disabled) next.click(); });`).join('\n')}
+      probe.run(function () { probe.done(report); });`,
+  });
+  return value.beats;
+}
+
+const overlaps = (a, b) =>
+  Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0
+  && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0;
+
+test('no two names sit on top of each other, on any beat, at either width', { skip }, () => {
+  // A name over a head is only useful if a reader can tell which head it
+  // belongs to. Before this check, eight labels on the closing beat ran
+  // through each other by up to 48 pixels, and three other beats were doing
+  // the same more quietly. The renderer now moves a crowded beat's names into
+  // a row under the drawing; this is what says whether that worked, on all 87
+  // beats, at a true phone layout and at a desktop one.
+  for (const width of [360, 1280]) {
+    const beats = labelBoxes(width);
+    assert.equal(beats.length, ORDER.length);
+
+    for (const beat of beats) {
+      for (let i = 0; i < beat.labels.length; i += 1) {
+        for (let j = i + 1; j < beat.labels.length; j += 1) {
+          const [a, b] = [beat.labels[i], beat.labels[j]];
+          assert.ok(
+            !overlaps(a, b),
+            `${beat.scene} at ${width}px: "${a.name}" and "${b.name}" overlap by ${Math.round(Math.min(a.right, b.right) - Math.max(a.left, b.left))}px`,
+          );
+        }
+      }
+    }
+
+    // And the crowded beats are the ones that moved, rather than every beat
+    // quietly giving up on names over heads.
+    const listed = beats.filter((beat) => beat.placement === 'list').map((beat) => beat.scene);
+    const over = beats.filter((beat) => beat.placement === 'over');
+    assert.ok(over.length > 60, `only ${over.length} beats still name their figures over their heads`);
+    assert.deepEqual(listed, ['s068', 's072', 's078', 's080', 's086'], 'the beats that lay their names out underneath');
   }
 });
 
@@ -682,7 +805,7 @@ document.fonts.ready.then(function () {
       labels: probe.all('.art-label', scene).map(function (label) {
         var box = label.getBoundingClientRect();
         return {
-          name: probe.q('.nametag', label).textContent,
+          name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
           pastEdge: Math.round(Math.max(0, box.right - viewport, -box.left)),
           visible: box.width > 0 && box.height > 0,
         };

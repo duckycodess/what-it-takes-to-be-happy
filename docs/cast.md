@@ -40,9 +40,9 @@ contribution and is attributed to Vier throughout this project.
 Every figure below is invented for this essay. Each exists to make one argument visible. None is a
 measurement, a survey respondent, a member's relative, or a real person's story.
 
-| ID | Display name | Appearance anchor | Explanatory purpose | First planned scene |
+| ID | Display name | Appearance anchor | Explanatory purpose | First scene drawn in |
 | --- | --- | --- | --- | --- |
-| `bob` | Bob | Plain round head, no anchor | Ordinary enjoyment with no productive outcome; later, the same invitation seen with its conditions visible | `s016` |
+| `bob` | Bob | Plain round head, no anchor | Ordinary enjoyment with no productive outcome; later, the same invitation seen with its conditions visible | `s001` |
 | `nessa` | Nessa | Hair framing the face as two arcs | A free evening on the calendar that already contains commuting, chores, and care for someone else | `s059` |
 | `dino` | Dino | Three upright bristles on a flat crown | Comfortable circumstances that do not deliver happiness on their own | `s038` |
 | `ivy` | Ivy | A short tied tail of hair on the left | Solitude chosen rather than suffered; connection without one prescribed life arrangement | `s055` |
