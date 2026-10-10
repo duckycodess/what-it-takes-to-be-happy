@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Edit target: the supplied two-person phone-connection cutout.
+Primary request: Same TJ identity and phone pose, now thoughtful and slightly tense; no second person, status symbols, numeric counts or assumed diagnosis. Preserve framing close to A09a for an instantaneous state swap.
+Remove the right bald person completely and replace his entire area with genuine transparent alpha. Keep the left person's TJ identity (three short curved hair strands), exact seated pose, head position and size, phone shape, arms, legs, full framing and canvas dimensions. Change only TJ's facial expression: remove pink smiling cheeks, set thoughtful slightly tense eyebrows and small neutral mouth. Do not imply a diagnosis or a new cause beyond phone comparison.
+Keep white-filled head and body and the existing simple bold line style. No leftover ghost outlines from right person, no text, captions, numbers, status symbols, shadows, glow or background rectangle. Preserve genuine transparent surroundings.
