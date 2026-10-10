@@ -1,0 +1,33 @@
+{
+  "checked_at_utc": "2026-10-10T17:02:16.410662+00:00",
+  "browser": "Chrome headless on Windows, driven from WSL",
+  "background": "#fffdf7",
+  "selected_images_inspected": 1,
+  "image_css_width": 336,
+  "visual_findings": [
+    "Correct required subjects and expressions; selected versions preserve member or fictional identities",
+    "Complete meaningful heads and props visible with no scene frame or background rectangle",
+    "No baked names, dialogue or other lettering",
+    "No visible surrounding glow on cream background"
+  ],
+  "browser_text_anchors_inspected": false,
+  "snapshots": [
+    {
+      "file": "/mnt/c/users/t7045/documents/codex/2026-10-08/grill-me-home-tj-agents-skills-2/work/overnight-redesign/art-inspection/set-1.png",
+      "sha256": "d5f05e0995dde9e86c41b0b01628226e1030ab545a3f5eb1fcded1219cc475e1",
+      "role": "Provider selected-image visual inspection on cream background"
+    }
+  ],
+  "limitations": [
+    "Provider fixture inspection, not a hosted deployment or full-site navigation/print test",
+    "336px asset presentation; not a physical-phone check",
+    "Worker must consume assets, verify final rendering and obtain independent review of exact pushed integration head"
+  ],
+  "mechanical_browser_checks": {
+    "record": "/mnt/c/users/t7045/documents/codex/2026-10-08/grill-me-home-tj-agents-skills-2/work/overnight-redesign/art-inspection/contact-browser-check.json",
+    "sha256": "1c5c0ae1b91261fe2026f10eed92672efe190def7831f47a05dea62655bc7543",
+    "all_selected_images_loaded": true,
+    "futura_loaded_in_both_label_sheets": true,
+    "all_labels_within_image_width": true
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-required-work-v1",
+  "ref": "A06",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-required-work-v1",
+  "purpose": "Scene s097 “Chosen challenge, forced hardship” (pair with A03, view label “Required work”): obligation a fictional person cannot refuse, never assigned to Koj.",
+  "description": "Fictional Bob, visibly tired, seated with an unlettered stack of task papers and a simple clock. No bill amounts, grades, employer or hardship assigned to a member.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "97f835e1615a06ef38ea4999695d90217a935b52254976d0a25723e46b4a93ff"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "Bob looks tired beside a stack of tasks and a clock.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "343c50ed088d9c7654a3cb6f2991f79f172af23219313e9a9f0cc1c100815c54",
+    "alt": "Bob looks tired beside a stack of tasks and a clock."
+  }
+}
