@@ -1,0 +1,19 @@
+{
+  "reviewer": "provider-side visual inspection in this Codex task",
+  "background_composite": "#fdfbf7",
+  "checks": {
+    "single_character": true,
+    "recognizable_koj_curl": true,
+    "compact_seated_pose": true,
+    "open_unlettered_book": true,
+    "pencil_present": true,
+    "alpha_channel_present": true,
+    "no_visible_background_on_cream": true
+  },
+  "not_checked": [
+    "owner approval",
+    "browser layout and responsive name/prop anchors",
+    "screen reader",
+    "hosted deployment"
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-chosen-study-v1",
+  "requesting_issue": 15,
+  "request_origin": "Owner-approved redesign art-plan A03",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-chosen-study-v1",
+  "scene": "s090",
+  "purpose": "Koj concentrates on an open book with a pencil in a frameless scene",
+  "status": "provider_inspected",
+  "generation_status": "provider_inspected",
+  "approval_status": "pending_owner_review",
+  "implementation_ready": false,
+  "selected_image": {
+    "path": "koj-study.png",
+    "width": 1312,
+    "height": 1199,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "sha256": "f5b4d5753acd3d35fa7bb93ca5df0b2eed29b7a4a704e9787f0dbf6a19af4202"
+  },
+  "method": "Built-in image generation using supplied local character/style references",
+  "references": [
+    {
+      "role": "Character identity reference; no lettering reused",
+      "path": "assets/concepts/stickman-character-sheet-v1.png",
+      "sha256": "ffb60fd660fe36ceb6d83fa74437850ebaa2803b6e2039f83208ad696b6dd8bc"
+    },
+    {
+      "role": "Approved line-art/style and proportions reference",
+      "path": "assets/generated/rewrite-opening-v1/opening.png",
+      "sha256": "87d5173c5e69915b82ec83948cfe73928527449f4a47173b9888654991b89004"
+    }
+  ],
+  "generation": {
+    "prompt": "generation-prompt.txt",
+    "prompt_sha256": "155cb62dbcba8ca61be72b3ee8037e3da0cc13da9a55d7303e50df769f9b53ed",
+    "output": "koj-study.png",
+    "output_sha256": "f5b4d5753acd3d35fa7bb93ca5df0b2eed29b7a4a704e9787f0dbf6a19af4202"
+  },
+  "cast": [
+    {
+      "name": "Koj",
+      "position": "center",
+      "identity": "single curl",
+      "expression": "concentrated, slightly strained"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "Koj",
+        "x_fraction": 0.5
+      }
+    ],
+    "name_y_fraction_desktop": 0.02,
+    "name_y_fraction_phone": 0.01,
+    "prop_anchors": [
+      {
+        "name": "open book and pencil",
+        "x_fraction": 0.5,
+        "y_fraction": 0.78
+      }
+    ]
+  },
+  "alt": "Koj concentrates on an open book with a pencil in hand.",
+  "motion": "none",
+  "inspection": {
+    "checked_at_utc": "2026-10-11T08:56:00Z",
+    "record": "inspection.json",
+    "rendering": "Provider-inspected PNG with alpha and composited on #fdfbf7",
+    "visual_findings": [
+      "One compact seated figure with recognizable curl",
+      "Concentrated, slightly strained face; open blank book and pencil",
+      "No text, grades, labels, badges, extra figures, frame or visible background on cream composite",
+      "Alpha channel present; outside silhouette transparent"
+    ],
+    "limitations": [
+      "Not owner-reviewed",
+      "No browser responsive anchors or hosted-site validation",
+      "No physical-device, screen-reader or print test"
+    ]
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": false,
+    "instruction": "Requesting worker must consume this asset commit and review exact final implementation head; owner approval pending."
+  }
+}
