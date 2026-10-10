@@ -1,0 +1,10 @@
+Use case: illustration-story
+Asset type: transparent production cutout for an illustrated essay.
+Input reference image 1: original character sheet, use drawing language and appropriate character identity; ignore its lettering. TJ has three small thin CURVED strands at the upper-left of a smooth head, never triangular spikes, Koj one curl, Vier an angular tuft, fictional Bob a plain round bald head. These identities do not assign permanent moods.
+Input reference image 2: approved production style, line weight, white-filled heads, compact bodies and short limbs. Use style only; do not copy its composition or surrounding glow.
+Style/medium: very simple expressive 2D stickmen, large rounded solid-white heads, compact white bodies, short limbs, slightly imperfect bold dark charcoal outlines, restrained pink cheeks only when requested mood suits. Minimal feature count, no extra detail or rendering.
+Composition: entire figures and specified props intact with clear comfortable margin and blank space above member heads for browser name text.
+Background: genuinely transparent alpha everywhere outside actual drawn outlines and opaque-white head/body/prop interiors. Clean edges. NO dark background, color wash, glow, halo, cast shadow, texture, haze, panels or frame.
+Text: none. No names, dialogue, words, letters, numbers, logos, captions, labels, watermarks or illustrated UI. Browser renders all language separately. No extra decorative objects beyond brief.
+Primary request: TJ, Koj and Vier seated around a small low table with three simple plates. Friendly, calm expressions, full visible heads and compact bodies. No restaurant brand, purchase or depicted real event. Reserve browser names above heads.
+Keep exact cast order left-to-right: TJ left with THREE SMALL CURVED hair strands (never angular spikes), Koj center with ONE CURL, Vier right with ANGULAR SPIKES. Three compact seated figures, calm friendly faces, one low table with exactly three simple plates. Clearly separated complete heads with transparent space above for browser names. No fourth person, clutter, restaurants, lettering or social hierarchy.
