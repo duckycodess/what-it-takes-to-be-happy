@@ -1,0 +1,5 @@
+Use case: precise-object-edit
+Edit target image 1: two seated friends gaming and the screen, transparent cutout.
+Supporting reference image 2: approved opening with TJ left, Koj center, Vier right.
+Change ONLY the left gaming character's hair. He is TJ. Replace his pointed triangular spikes with TJ's three small, thin, curved crown tufts from the LEFT character in reference image 2. TJ must NOT have Vier's sharp angular spikes. Keep the rounded head outline smooth apart from those three short curved strands.
+Preserve all other faces, bodies, controllers, poses, screen, colors, positions, full framing and image size. Do not add marks, labels, text or props. Preserve genuine alpha transparency outside the actual drawing and white-filled heads. No added glow, halo, shadow or background.
