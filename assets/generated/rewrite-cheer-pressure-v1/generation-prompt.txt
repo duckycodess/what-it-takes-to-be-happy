@@ -1,0 +1,10 @@
+Use case: illustration-story
+Asset type: transparent production cutout for an illustrated essay.
+Input reference image 1: original character sheet, use drawing language and appropriate character identity; ignore its lettering. TJ has three small thin CURVED strands at the upper-left of a smooth head, never triangular spikes, Koj one curl, Vier an angular tuft, fictional Bob a plain round bald head. These identities do not assign permanent moods.
+Input reference image 2: approved production style, line weight, white-filled heads, compact bodies and short limbs. Use style only; do not copy its composition or surrounding glow.
+Style/medium: very simple expressive 2D stickmen, large rounded solid-white heads, compact white bodies, short limbs, slightly imperfect bold dark charcoal outlines, restrained pink cheeks only when requested mood suits. Minimal feature count, no extra detail or rendering.
+Composition: entire figures and specified props intact with clear comfortable margin and blank space above member heads for browser name text.
+Background: genuinely transparent alpha everywhere outside actual drawn outlines and opaque-white head/body/prop interiors. Clean edges. NO dark background, color wash, glow, halo, cast shadow, texture, haze, panels or frame.
+Text: none. No names, dialogue, words, letters, numbers, logos, captions, labels, watermarks or illustrated UI. Browser renders all language separately. No extra decorative objects beyond brief.
+Primary request: Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text “Cheer up!” near friend, not over heads.
+Two fictional smooth bald round-headed figures, no member hair identities: sad Bob on left seated with lowered shoulders and visible unhappy mouth; encouraging friend on right with cheerful smile and small open-palm gesture toward Bob. No touching or changing Bob's face. Leave empty transparent space above/right of friend for browser-rendered Cheer up; draw no speech bubble or lettering.
