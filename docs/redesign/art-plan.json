@@ -1,0 +1,262 @@
+[
+  {
+    "ref": "A01",
+    "id": "rewrite-opening-v1",
+    "description": "Approved TJ left, Koj center, Vier right, seated around a small basketball. Use the selected PNG without redrawing. Browser name anchors: x 18%, 50%, 82%; y 3% desktop, 1% phone, as inspected.",
+    "alt": "TJ, Koj and Vier share a casual afternoon around a basketball; TJ smiles while Koj looks reflective and Vier looks curious.",
+    "status": "complete",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A02",
+    "id": "rewrite-mixed-day-v1",
+    "description": "Fictional Bob seated beside an open, unlettered notebook. Tired eyebrows, small neutral mouth, relaxed shoulders; the task looks demanding without a despairing or triumphant verdict. One intact figure.",
+    "alt": "Bob sits tired beside an open notebook.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A03",
+    "id": "rewrite-chosen-study-v1",
+    "description": "Koj with the recognizable curl, compact seated body, open book and pencil. Concentrated eyebrows, slightly strained expression; no ecstatic smile, grades, labels or badges.",
+    "alt": "Koj concentrates on an open book with a pencil in hand.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A04",
+    "id": "rewrite-agency-v1",
+    "description": "Vier with angular tuft, thoughtful face, seated with a phone set down and a notebook nearby. One hand raised in a small questioning gesture; no pathways, arrows or idealized second self.",
+    "alt": "Vier pauses beside a phone and notebook with a questioning expression.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A05",
+    "id": "rewrite-playing-v1",
+    "description": "TJ and fictional Bob sit together with simple game controllers; relaxed expressive faces. One small unlettered screen off to the side, no game logo or generated UI. Preserve both full figures.",
+    "alt": "TJ and Bob enjoy playing a game together.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A06",
+    "id": "rewrite-required-work-v1",
+    "description": "Fictional Bob, visibly tired, seated with an unlettered stack of task papers and a simple clock. No bill amounts, grades, employer or hardship assigned to a member.",
+    "alt": "Bob looks tired beside a stack of tasks and a clock.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A07",
+    "id": "rewrite-rest-v1",
+    "description": "TJ with crown tuft reclining comfortably against a simple cushion; restful eyes, small content smile. No phone app, timer, productivity badge or “before/after” body.",
+    "alt": "TJ rests comfortably against a cushion.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A08",
+    "id": "rewrite-expectations-v1",
+    "description": "Vier thoughtful at center; four separate small props around him: blank grade sheet, work bag, two-person keepsake silhouette, blank banknote. Plenty of blank space for the four browser labels specified in s103. No milestones route or scoring.",
+    "alt": "Vier considers symbols of grades, work, relationships and income.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A09a",
+    "id": "rewrite-phone-connection-v1",
+    "description": "TJ using a small phone with a warm smile; fictional Bob beside him, holding a phone and smiling back. No screen lettering, messages, notification counts or connection arrows. Two full figures.",
+    "alt": "TJ and Bob smile while using their phones to connect.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A09b",
+    "id": "rewrite-phone-comparison-v1",
+    "description": "Same TJ identity and phone pose, now thoughtful and slightly tense; no second person, status symbols, numeric counts or assumed diagnosis. Preserve framing close to A09a for an instantaneous state swap.",
+    "alt": "TJ looks tense while looking at his phone.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A10",
+    "id": "rewrite-cheer-pressure-v1",
+    "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text “Cheer up!” near friend, not over heads.",
+    "alt": "Bob looks sad while a cheerful friend gestures toward him.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A11",
+    "id": "rewrite-joy-and-pressure-v1",
+    "description": "Fictional Bob seated with a plate of food and a phone placed aside. A restrained smile and worried brow coexist; a small stack of blank papers nearby indicates unresolved demands, not measured debt.",
+    "alt": "Bob enjoys a meal while nearby tasks remain unresolved.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A12",
+    "id": "rewrite-shared-meal-v1",
+    "description": "TJ, Koj and Vier seated around a small low table with three simple plates. Friendly, calm expressions, full visible heads and compact bodies. No restaurant brand, purchase or depicted real event. Reserve browser names above heads.",
+    "alt": "TJ, Koj and Vier share a meal around a small table.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A13",
+    "id": "rewrite-care-work-v1",
+    "description": "One fictional organizer arranging plates while checking a blank phone. Focused rather than permanently unhappy; other guests need not appear. No gender-coded duty or inferred member household.",
+    "alt": "A fictional organizer arranges plates while checking a schedule.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A14",
+    "id": "rewrite-solitude-v1",
+    "description": "Fictional Bob reading alone, relaxed posture and content face; one simple book. Empty surrounding space stays transparent, without loneliness symbols.",
+    "alt": "Bob reads alone with a relaxed expression.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A15a",
+    "id": "rewrite-time-available-v1",
+    "description": "Fictional Bob standing freely with a small basketball, smiling and ready to join. No literal calendar, text or estimated free hours.",
+    "alt": "Bob has time to join a game.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A15b",
+    "id": "rewrite-time-claimed-v1",
+    "description": "Same Bob identity carrying a plain work bag, glancing at a clock, with a simple bus-stop post nearby. Tired expression; no employer, route map or fictional schedule data.",
+    "alt": "Bob carries a work bag beside a bus-stop post and clock.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A16",
+    "id": "rewrite-time-transfer-v1",
+    "description": "Two fictional people in separate transparent groups: one resting, the other doing dishes. Distinguish through pose and browser labels, not a rich/poor caricature. Keep task tools fully visible. Supply separately usable cutouts for pair layout.",
+    "alt": "First cutout: A fictional person rests. Second cutout: A fictional worker does the dishes.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A17",
+    "id": "rewrite-campus-space-v1",
+    "description": "Fictional proposed shared space: bench, modest shade and two students spending time together, with clear unobstructed space alongside seating. No actual campus landmark, commercial branding or success indicators.",
+    "alt": "Two fictional students spend time in a shaded shared seating area.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  },
+  {
+    "ref": "A18",
+    "id": "rewrite-space-work-v1",
+    "description": "Pair cutouts: two fictional students at a shared table; a fictional staff member cleaning the same kind of table. Staff expression attentive, not automatically miserable. No implication of measured workload.",
+    "alt": "First cutout: Two fictional students spend time at a shared table. Second cutout: A fictional staff member cleans a shared table.",
+    "status": "requested",
+    "issue": 15,
+    "transparent_background": true,
+    "reference_assets": [
+      "assets/concepts/stickman-character-sheet-v1.png",
+      "assets/generated/rewrite-opening-v1/opening.png"
+    ]
+  }
+]

@@ -1,0 +1,132 @@
+{
+  "01": {
+    "source_id": "R02",
+    "url": "https://www.pnas.org/doi/10.1073/pnas.1011492107",
+    "audit_status": "verified-full"
+  },
+  "02": {
+    "source_id": "R01",
+    "url": "https://classics.mit.edu/Aristotle/nicomachaen.1.i.html",
+    "audit_status": "verified-full"
+  },
+  "03": {
+    "source_id": "R03",
+    "url": "https://selfdeterminationtheory.org/SDT/documents/2000_DeciRyan_PIWhatWhy.pdf",
+    "audit_status": "verified-full"
+  },
+  "04": {
+    "source_id": "R07",
+    "url": "https://alexishaselberger.substack.com/p/what-happens-when-work-is-all-you",
+    "audit_status": "verified-full"
+  },
+  "05": {
+    "source_id": "R05",
+    "url": "https://oll.libertyfund.org/titles/bentham-an-introduction-to-the-principles-of-morals-and-legislation",
+    "audit_status": "verified-full"
+  },
+  "06": {
+    "source_id": "R06",
+    "url": "https://www.gutenberg.org/files/11224/11224-h/11224-h",
+    "audit_status": "verified-full"
+  },
+  "07": {
+    "source_id": "R08",
+    "url": "https://psychclassics.yorku.ca/Maslow/motivation.htm",
+    "audit_status": "verified-full"
+  },
+  "08": {
+    "source_id": "R04",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/14674824/",
+    "audit_status": "verified-abstract"
+  },
+  "09": {
+    "source_id": "R23",
+    "url": "https://deepblue.lib.umich.edu/bitstream/handle/2027.42/136039/sipr12033_am.pdf",
+    "audit_status": "verified-abstract"
+  },
+  "10": {
+    "source_id": "R24",
+    "url": "https://www.nature.com/articles/s41562-018-0506-1",
+    "audit_status": "verified-abstract"
+  },
+  "11": {
+    "source_id": "R25",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/21787076/",
+    "audit_status": "verified-abstract"
+  },
+  "12": {
+    "source_id": "R26",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/16719675/",
+    "audit_status": "verified-abstract"
+  },
+  "13": {
+    "source_id": "R15",
+    "url": "https://fordhampress.com/ordinary-ethics-hb-9780823233168.html",
+    "audit_status": "verified-locator"
+  },
+  "14": {
+    "source_id": "R16",
+    "url": "https://academic.oup.com/fordham-scholarship-online/book/38025",
+    "audit_status": "verified-locator"
+  },
+  "15": {
+    "source_id": "R17",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/24769739/",
+    "audit_status": "verified-abstract"
+  },
+  "16": {
+    "source_id": "R19",
+    "url": "https://www.worldhappiness.report/ed/2025/",
+    "audit_status": "verified-full"
+  },
+  "17": {
+    "source_id": "R20",
+    "url": "https://workingmommanila.wordpress.com/category/friendly-mom/",
+    "audit_status": "verified-full"
+  },
+  "18": {
+    "source_id": "R12",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/18356530/",
+    "audit_status": "verified-abstract"
+  },
+  "19": {
+    "source_id": "R31",
+    "url": "https://www.um.edu.mt/library/oar/handle/123456789/116643",
+    "audit_status": "verified-full"
+  },
+  "20": {
+    "source_id": "R13",
+    "url": "https://pubmed.ncbi.nlm.nih.gov/28739889/",
+    "audit_status": "verified-abstract"
+  },
+  "21": {
+    "source_id": "R09",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10013834/",
+    "audit_status": "verified-abstract"
+  },
+  "22": {
+    "source_id": "R10",
+    "url": "https://philjournalsci.dost.gov.ph/income-and-happiness-a-philippine-context/",
+    "audit_status": "verified-full"
+  },
+  "23": {
+    "source_id": "R32",
+    "url": "https://plato.stanford.edu/entries/capability-approach/",
+    "audit_status": "verified-full"
+  },
+  "24": {
+    "source_id": "R27",
+    "url": "https://journals.sagepub.com/doi/10.1177/002234336900600301",
+    "audit_status": "verified-full"
+  },
+  "25": {
+    "source_id": "R28",
+    "url": "https://www.tandfonline.com/doi/abs/10.1080/00220388.2010.487095",
+    "audit_status": "verified-abstract"
+  },
+  "26": {
+    "source_id": "R29",
+    "url": "https://academic.oup.com/book/40603",
+    "audit_status": "verified-locator"
+  }
+}

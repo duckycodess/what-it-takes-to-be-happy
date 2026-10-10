@@ -1,0 +1,24 @@
+# Approved rewrite and overnight authorization
+
+## Current direction: 11 October 2026, Asia/Manila
+
+The owner reviewed the full scene script in this chat and said: "I approve this. We must start working overnight". This explicitly approves its full reader copy, scene flow, production instructions, source-page copy and drawing briefs, and resumes the existing website workers and monitoring. It supersedes the earlier instruction to pause after completing #6. The owner reviews the creative work; Claude implements that approved material and independent technical review checks the final implementation.
+
+The unchanged approved script is [approved-scene-script.md](approved-scene-script.md), SHA-256 `a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f`. Its draft-status sentences, pending-owner-review checklist and paused/unqueued statements are historical and are superseded by this authorization. Preserve all reader-facing copy, source identities and meaningful limits. Do not shorten the 45-scene argument to satisfy an arbitrary word cap. Its 4,138 main-path words imply about 20.7 minutes at 200 words/minute; no reading-time promise is displayed.
+
+## Work order and ownership
+
+1. Queue the existing canonical rewrite #15 with its UUID intact. Existing Pi/Claude profiles own the isolated implementation branch. They may plan, audit approved source mappings, write their implementation plan and prepare art requests while image production runs. Actual application integration begins when the required generated assets are available; no substitute manual drawings, invented copy or placeholder signoff.
+2. This chat supplies the built-in-generated art specified in [art-plan.json](art-plan.json). Opening A01 is already approved and delivered in asset commit `ff11f8c17648eb389e066cc5a1cab0ef450e13ba` on `codex/art-rewrite-opening-v1`. The remaining image briefs are approved, but unseen outputs are not falsely described as owner-inspected. The provider must inspect selected images and deliver exact prompts, dimensions, checksums and useful name/prop anchors in isolated asset-only `codex/art-<safe-id>` branches. Workers consume those commits into their own issue branch and retain true request/completion evidence. Never edit a live worker checkout.
+3. Verify the integration's actual checks, worker signoff and independent approval of its exact pushed commit. Let the existing dispatcher merge. Descriptive commit bodies are required, without co-author trailers, tool/assistant attribution or session links.
+4. After #15 is reviewed and merged with no essential art pending, allow existing #7 to prepare and verify the complete hosted website. The old offline wording is superseded by the 9 October owner amendment. The website is the sole deliverable; no offline download, submission, parity or network-disabled local-file gate is required. The Vercel production hold stays until the reviewed complete essay passes release verification.
+
+Keep #1 as the unqueued project index until recording completed outcomes. Preserve old ticket UUIDs, real Beads dependencies, all unrelated registrations, worker profiles and resource limits. Website dispatcher selection is #15 first, then #7. The existing #7 dependency on #6 is already satisfied; scheduling order is not a fabricated dependency.
+
+## Fixed integration requirements
+
+Read the exact scene production records and interface strings. Use the frameless layouts, generated artwork, still presentation, two optional comparisons, Futura Handwritten, browser-rendered names/dialogue, source links beside claims and separate Sources & Credits with return state. Next/Back, chapter revisiting, phone/desktop reflow, complete continuous reading and print must preserve the full argument. Claude's discretion covers implementation details, not rewriting the voice or adding narration, captions, disclaimers or credits to scenes.
+
+The source-map register preserves existing R identities and actual audit boundaries. Prior audit records are historical evidence; do not claim newly reading passages without doing so. The complete approved Sources & Credits text preserves Billy Snyder's font grant and research/art/reference provenance. Historical manual drawing and generic entrance-animation guidance is superseded for this rewrite.
+
+This handoff authorizes work, not a claim of finished artwork, review, deployment or physical-device testing. Report actual limitations. Local overnight execution requires the computer awake, online and running Codex/WSL.
