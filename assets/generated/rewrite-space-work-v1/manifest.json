@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-space-work-v1",
+  "ref": "A18",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-space-work-v1",
+  "purpose": "Scene s126 “Who benefits, who pays?” (pair, view labels “Students using the space” then “Staff maintaining it”): the maintenance the proposal creates; the pair layout needs two separately usable cutouts.",
+  "description": "Pair cutouts: two fictional students at a shared table; a fictional staff member cleaning the same kind of table. Staff expression attentive, not automatically miserable. No implication of measured workload.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "staff-prompt.txt",
+      "sha256": "0e3c43f5eba0e0357cf4bfb12231ef3b1a8b6611a08c5684622c9b0769bc38d9"
+    },
+    {
+      "path": "students-prompt.txt",
+      "sha256": "7e8f59ccc48adff7cbf015011df345bdb43768429ffb2afe0d302bf33c7be51e"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "First cutout: Two fictional students spend time at a shared table. Second cutout: A fictional staff member cleans a shared table.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_images": [
+    {
+      "path": "students.png",
+      "width": 1536,
+      "height": 1024,
+      "format": "PNG",
+      "mode": "RGBA",
+      "transparent_background": true,
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "transparent_corners": true,
+      "sha256": "700fac8f43522930e6863bfb45bc4d8d4c1a42ef746aabf585276d9cd1e1a5cb",
+      "alt": "Two fictional students spend time at a shared table."
+    },
+    {
+      "path": "staff.png",
+      "width": 1536,
+      "height": 1024,
+      "format": "PNG",
+      "mode": "RGBA",
+      "transparent_background": true,
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "transparent_corners": true,
+      "sha256": "56fc323ea93b500a81fe77647577807095f9f5ecc4f107b7eb9716e4d5958d25",
+      "alt": "A fictional staff member cleans a shared table."
+    }
+  ],
+  "staff_table_reference": "students.png"
+}
