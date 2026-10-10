@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-cheer-pressure-v1",
+  "ref": "A10",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-cheer-pressure-v1",
+  "purpose": "Scene s106 “Pressure to be cheerful” (single): sadness that persists while a fictional friend urges cheer, with clear space for the browser dialogue “Cheer up!” beside the friend rather than over heads.",
+  "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text “Cheer up!” near friend, not over heads.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "26a29bb009600574db775cb3828307905474c80684c58de4c52b136b375d19e6"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [
+      {
+        "text": "Cheer up!",
+        "x_fraction": 0.83,
+        "y_fraction": 0.5
+      }
+    ],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "Bob looks sad while a cheerful friend gestures toward him.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "6f9bfd2bc34aded6a09bd6eed1fb7200750fc1032211642135eb65ff41b98a97",
+    "alt": "Bob looks sad while a cheerful friend gestures toward him."
+  }
+}
