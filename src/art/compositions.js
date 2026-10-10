@@ -110,9 +110,13 @@ const CATALOGUE = [
     settled: 'Every figure stands on the shared ground line wearing its own expression.',
     minFigures: 1,
     maxFigures: 8,
+    // A name sits above each head, and an invented figure's name carries the
+    // words that say it is invented. Eight of those across one frame is the
+    // tightest case in the essay, so a crowded row is pulled inward rather
+    // than pushed to the edges where the outermost label would hang off.
     slots: (count) => row(count, {
       scale: count > 5 ? 0.62 : 0.82,
-      spread: Math.min(count > 5 ? 400 : 300, count * 86),
+      spread: Math.min(count > 5 ? 320 : 300, count * 86),
       poses: count === 1 ? ['ease'] : ['stand'],
     }),
     base: ({ slots, figures }) => `${ground()}${placeAll(slots, figures)}`,

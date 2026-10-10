@@ -179,11 +179,16 @@ sitting with" list. It carries no heading of its own and is attributed to Vier t
 
 ## Fictional friends
 
-Each invented figure, what it is for, and where it appears. None is evidence; none is biography.
+Each invented figure, what it is for, and where it appears — "appears" meaning the figure is in that
+beat's cast line and is therefore drawn in it. Corrected on 10 October 2026 against the storyboard's
+own cast lines: this table previously listed `bob` at `s019` and `s075`, where the beat's static
+description recalls his afternoon but the cast line does not place him, and omitted `s001` and
+`s003`, where it does. `test/coverage.test.js` now compares the two and fails if they part again.
+None is evidence; none is biography.
 
 | Figure | Purpose | Scenes |
 | --- | --- | --- |
-| `bob` | Ordinary enjoyment with no outcome, then the same afternoon with its conditions visible | `s016`, `s017`, `s019`, `s030`, `s045`, `s048`, `s049`, `s057`, `s058`, `s075`, `s078`, `s085`, `s086` |
+| `bob` | Ordinary enjoyment with no outcome, then the same afternoon with its conditions visible | `s001`, `s003`, `s016`, `s017`, `s030`, `s045`, `s048`, `s049`, `s057`, `s058`, `s078`, `s085`, `s086` |
 | `nessa` | A free evening that was never free; care work and fare | `s059`, `s067`, `s072`, `s078`, `s085`, `s086` |
 | `dino` | Comfortable circumstances that do not deliver happiness | `s038`, `s072`, `s086` |
 | `ivy` | Solitude chosen, not suffered | `s055`, `s072`, `s086` |
@@ -252,9 +257,27 @@ in print.
 transition, provenance, status), chapter headers and the chapter index, the handoff section, source
 citations in panels, and optional detail — which is supplementary by definition.
 
-The figure quoted to the reader on the landing scene (`s001`) is this same range, and
-`tools/count-main-path.sh` is the only place it is computed. If the prose changes, re-run the tool
-and update both this table and `s001` together.
+The figure in `s001`'s own text is this same range, and `tools/count-main-path.sh` is the only place
+it is computed. If the prose changes, re-run the tool and update both this table and `s001` together.
+
+### The published corpus is slightly larger, and the site says so
+
+The website is not quite this corpus. It adds the fourteen chapter bridges, and the landing carries
+`s001`'s question and its names-and-time sentence rather than the first beat. Measured with
+`./tools/count-main-path.sh --published`, which counts the landing introduction, the bridges, and
+every beat's narration, dialogue and visible caveats in `mainPath` order:
+
+| Measure | Storyboard corpus | Published corpus |
+| --- | --- | --- |
+| Main-path words | 8,627 | 8,992 |
+| Reading estimate | roughly 35–44 minutes | about 36 to 45 minutes |
+
+The difference is the 365 words of chapter bridges, less the 29 words the landing carries instead of
+`s001`. **The reader is shown the published figure**, because that is the corpus they walk through;
+`test/measure.test.js` fails if the landing's estimate is not what the document actually counts, and
+if the published corpus is not the storyboard corpus plus the bridges minus the landing split.
+`s001`'s own sentence keeps the storyboard figure, because that is what the storyboard measures, and
+the site never prints that sentence.
 
 **This is longer than the 15–30 minutes the brief anticipated, and we did not cut to fit.**
 `docs/brief.md` sets that range as an approximate commitment "to be estimated from actual content",

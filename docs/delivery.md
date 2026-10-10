@@ -4,7 +4,7 @@ Vercel hosting is the deliverable. The 9 October owner amendment discontinued th
 
 ## Current state
 
-The repository contains the static foundation: a validated content document, the shared renderer, and a build that writes `dist/`. The content is an explicitly non-final fixture, no deployment of the essay exists, and production builds are held (below). The delivery ticket, [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7), owns the released site once the integrated essay exists.
+The repository contains the static site: the complete content document, the shared renderer, and a build that writes `dist/`. The content is now the finished essay rather than a fixture, but no deployment of it exists and production builds are held (below). The delivery ticket, [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7), owns the released site once the integrated essay exists.
 
 ## Build settings for the Vercel project
 
@@ -36,7 +36,7 @@ Reported by the supervising chat on 9 October 2026. It supersedes the earlier sa
 
 These identifiers are supervision-reported, not verified from this worktree. They identify where the site will be deployed; they do not claim that the essay has been deployed.
 
-**A production hold is in force.** Production builds are currently skipped on purpose, so that a non-final fixture cannot become the group's public essay. Any preview that exists is foundation work, not the finished essay. The hold is released only when the reviewed complete essay passes the hosted release checks below, and releasing it is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s call. Nothing in this repository should be read as a claim that a final essay has been released.
+**A production hold is in force.** Production builds are currently skipped on purpose, so that nothing becomes the group's public essay before it has been reviewed and checked on the deployed site. Any preview that exists is foundation work, not the finished essay. The hold is released only when the reviewed complete essay passes the hosted release checks below, and releasing it is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s call. Nothing in this repository should be read as a claim that a final essay has been released.
 
 The build is deterministic — nothing records a timestamp, a random value, or a machine path — so a redeploy of the same commit produces byte-identical files. A preview deployment and the production deployment of one commit are therefore comparable byte for byte.
 

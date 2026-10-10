@@ -135,6 +135,11 @@ The build refuses to publish an output that drops essential content, and refuses
 
 The reader package filled in the behaviour this document described. Three decisions carry most of it.
 
+A beat's essential blocks are rendered in the order `scenes[].mainPath` gives them rather than in a
+fixed narration-then-dialogue-then-caveat order, because twenty beats answer before the narrator
+explains and five state a caveat before the line it qualifies. Consecutive blocks of one kind are
+gathered, so dialogue is still one list and a run of caveats is still one callout.
+
 **The fragment is the state.** Every move writes one and every fragment resolves: a beat identifier to that beat, a chapter identifier to that chapter's first beat, `sources` or a single source identifier to the register in the continuous view. `hashchange` and `popstate` apply whatever the fragment says, so deep links, chapter revisiting, and the browser's Back button are one mechanism rather than three. `history.pushState` is tried first and the entry carries the view, so Back restores how the reader was reading as well as where they were; a browser that refuses `pushState` — which a `file://` document is exactly where to expect — falls back to assigning `location.hash` and infers the view from the fragment instead. Switching view replaces the current entry rather than adding one: how you read is not a place. A fragment the script does not recognise is left alone after the first load: the document has landmarks of its own — the skip link's `#essay`, the chapter list's `#chapters` — and following one is a move within the page, not a reason to take the reader off their beat.
 
 **A move is announced once.** Focus moves to the newly selected beat, which carries `aria-labelledby` pointing at its own title. Nothing else is a live region, so the move is reported once rather than twice. The progress line next to the controls is plain text: position, the chapter it sits in, and a sentence at each end, because a disabled button is easy to miss and does not say why it is disabled. The view switch changes its label and carries no `aria-pressed`, for the same reason — both would read as "Back to the beats, pressed".
@@ -162,13 +167,15 @@ refuses a document that asks for a drawing the artwork cannot produce. Names abo
 text positioned over the drawing, never lettering inside it. A composition's condition layer is in
 the markup and settled by default, and the one CSS entrance animates a drawing that is already
 correct — which is what makes rapid Next/Back and reduced motion safe rather than special cases.
-[The drawing system](art-system.md) is the full account, including the 33 of 87 storyboard beats
-that have a motif and the 54 that are still carried by their written description.
+[The drawing system](art-system.md) is the full account, including which beats share a motif and
+why `s087` is drawn by nobody on purpose.
 
 ### What is still open
 
-Final prose, the complete scene set, and the reader's finished visual design are all still open. The
-committed concept sheet is provenance for the drawings rather than production artwork.
+The prose and the scene set are no longer open: the content document carries the storyboard's 87
+beats and the drawings for 86 of them. What is still open is the reader's finished visual design,
+and the deployment. The committed concept sheet is provenance for the drawings rather than
+production artwork.
 
 The project typeface is settled. Futura Handwritten is served by the hosted site and sets the whole
 essay; the committed DejaVu Sans stands behind it and draws the one character on this content it has

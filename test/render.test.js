@@ -30,7 +30,7 @@ test('reading order follows the chapters, not the order scenes are stored in', (
 
   const shuffled = loadValidContent();
   shuffled.scenes.reverse();
-  const chapter = byId(shuffled.chapters, 'ch-what-counts');
+  const chapter = byId(shuffled.chapters, 'c1');
   chapter.sceneIds = [...chapter.sceneIds].reverse();
 
   assert.deepEqual(sceneOrder(render(content)), expected);
@@ -87,30 +87,53 @@ test('member names are rendered as selectable text, never baked into an image', 
   assert.match(html, /<span class="nametag">TJ<\/span>/);
 });
 
-test('an invented figure is labelled as an example rather than as evidence', () => {
+test('an invented figure is named without a contributor\'s nametag, and said to be invented', () => {
   const content = loadValidContent();
   const html = render(content);
-  assert.match(html, /data-stance="fictional-illustration"/);
-  assert.match(html, /<span class="line-kind">invented example<\/span>/);
+  const friends = content.cast.filter((character) => character.role === 'friend');
+  assert.ok(friends.length > 0);
+
+  for (const friend of friends) {
+    assert.ok(
+      html.includes(`<span class="figure-name">${esc(friend.displayName)}</span><span class="fiction-note">fictional illustration</span>`),
+      `${friend.displayName} is drawn but not marked as an illustration`,
+    );
+    assert.ok(!html.includes(`<span class="nametag">${esc(friend.displayName)}</span>`), `${friend.displayName} carries a contributor's nametag`);
+  }
+
+  // And a contributor is marked the other way, in the same place.
+  for (const member of content.cast.filter((character) => character.role === 'member')) {
+    assert.ok(html.includes(`<span class="nametag">${esc(member.displayName)}</span>`));
+  }
+
+  // The same boundary in dialogue: a line that was not a member's position
+  // would be marked as an invented example rather than printed as a position.
+  const invented = loadValidContent();
+  const line = invented.scenes.flatMap((scene) => scene.dialogue)[0];
+  line.stance = 'fictional-illustration';
+  line.provenanceId = null;
+  assert.match(render(invented), /<span class="line-kind">invented example<\/span>/);
 });
 
 test('content text is escaped rather than interpreted as markup', () => {
   const content = loadValidContent();
-  byId(content.scenes, 'sc-rest-without-a-reason').title = '<script>alert(1)</script> & "quotes"';
+  byId(content.scenes, 's019').title = '<script>alert(1)</script> & "quotes"';
   const html = render(content);
   assert.ok(!html.includes('<script>alert(1)</script>'));
   assert.ok(html.includes(esc('<script>alert(1)</script> & "quotes"')));
 });
 
-test('the draft notice is rendered while the content is not final', () => {
+test('the finished essay shows no draft notice, and a draft still would', () => {
   const content = loadValidContent();
-  assert.match(render(content), /class="draft-notice"/);
-  assert.match(render(content), /content="noindex"/);
+  assert.equal(content.status.final, true);
+  assert.ok(!render(content).includes('class="draft-notice"'));
+  assert.match(render(content), /content="index"/);
 
-  const final = loadValidContent();
-  final.status.final = true;
-  assert.ok(!render(final).includes('class="draft-notice"'));
-  assert.match(render(final), /content="index"/);
+  const draft = loadValidContent();
+  draft.status.final = false;
+  draft.status.notice = 'Still being written.';
+  assert.match(render(draft), /class="draft-notice"/);
+  assert.match(render(draft), /content="noindex"/);
 });
 
 test('hosted output links its resources and offline output embeds them', () => {
@@ -236,7 +259,7 @@ function sceneHtml(html, id) {
 
 test('the essential blocks are rendered in the order the beat was authored in', () => {
   const content = loadValidContent();
-  const scene = byId(content.scenes, 'sc-three-readings');
+  const scene = byId(content.scenes, 's010');
   assert.ok(scene.narration.length >= 2 && scene.limitations.length >= 1);
 
   // The caveat belongs before the narration in this arrangement, which a fixed
@@ -254,7 +277,7 @@ test('the essential blocks are rendered in the order the beat was authored in', 
 
 test('consecutive blocks of one kind stay one block, so dialogue is still a list', () => {
   const content = loadValidContent();
-  const scene = byId(content.scenes, 'sc-chosen-difficulty');
+  const scene = byId(content.scenes, 's008');
   scene.mainPath = [
     { kind: 'narration', index: 0 },
     { kind: 'dialogue', index: 0 },
@@ -264,7 +287,7 @@ test('consecutive blocks of one kind stay one block, so dialogue is still a list
   assert.deepEqual(blockOrder(html), ['narration', 'dialogue', 'narration'], 'a line between two paragraphs splits them');
 
   const together = loadValidContent();
-  const same = byId(together.scenes, 'sc-chosen-difficulty');
+  const same = byId(together.scenes, 's008');
   same.mainPath = [
     { kind: 'narration', index: 0 },
     { kind: 'narration', index: 1 },
@@ -275,7 +298,7 @@ test('consecutive blocks of one kind stay one block, so dialogue is still a list
 
 test('a beat that is deliberately text-only gets no frame rather than an empty one', () => {
   const content = loadValidContent();
-  const scene = byId(content.scenes, 'sc-rest-without-a-reason');
+  const scene = byId(content.scenes, 's019');
   scene.visual.artId = null;
   scene.visual.artState = null;
   scene.visual.artAbsence = 'text-only';
@@ -289,7 +312,7 @@ test('a beat that is deliberately text-only gets no frame rather than an empty o
   // A beat whose drawing is merely not made yet is the other case, and it does
   // say so, because a reader should not have to guess.
   const draft = loadValidContent();
-  const waiting = byId(draft.scenes, 'sc-rest-without-a-reason');
+  const waiting = byId(draft.scenes, 's019');
   waiting.visual.artId = null;
   waiting.visual.artState = null;
   waiting.visual.artAbsence = 'pending';
@@ -298,17 +321,18 @@ test('a beat that is deliberately text-only gets no frame rather than an empty o
 
 test('the chapter list numbers the chapters the reader counts, and only those', () => {
   const content = loadValidContent();
-  content.chapters[0].number = null;
+  assert.equal(content.chapters[0].number, null, 'the opening is not one of the questions the essay counts');
   const html = render(content);
   const items = [...html.matchAll(/<a href="#[^"]+" data-chapter-link="[^"]+">(.*?)<\/a>/g)].map((match) => match[1]);
 
   assert.equal(items.length, content.chapters.length);
   assert.equal(items[0], esc(content.chapters[0].title), 'an unnumbered chapter is named, not counted');
-  assert.match(items[1], /^<span class="chapter-number">2<\/span> /);
+  assert.match(items[1], new RegExp(`^<span class="chapter-number">${content.chapters[1].number}</span> `));
 
   // The beat controls need the same two facts, so the chapter carries them.
   assert.ok(!html.includes(`data-chapter="${content.chapters[0].id}" data-chapter-number`));
-  assert.ok(html.includes(`data-chapter-number="${content.chapters[1].number}" data-chapter-count="${content.chapters.length - 1}"`));
+  const counted = content.chapters.filter((chapter) => chapter.number !== null).length;
+  assert.ok(html.includes(`data-chapter-number="${content.chapters[1].number}" data-chapter-count="${counted}"`));
 });
 
 /* ---- The drawings ------------------------------------------------------- */
@@ -320,6 +344,7 @@ test('every drawn beat renders its drawing inline, at the state the content aske
   const html = render(content);
 
   for (const scene of content.scenes) {
+    if (scene.visual.artAbsence === 'text-only') continue; // no frame at all, on purpose
     const frame = frames(html).find((entry) => entry.includes(`data-art="${scene.visual.artId ?? 'none'}"`));
     assert.ok(frame, `${scene.id} should render a frame`);
   }
@@ -366,13 +391,14 @@ test('the landing drawing is authored content, not a choice the renderer makes',
   changed.project.visual.artState = 'situation';
   changed.project.visual.cast = [{ characterId: 'cast-vier', expressionId: 'ex-uncertain' }];
   const other = render(changed);
-  assert.ok(other.includes('<figure class="landing-art">\n<div class="scene-visual-frame" data-art="art-figure-row"'));
-  assert.ok(!other.includes('data-art="art-opening-question"'));
+  const changedLanding = other.slice(other.indexOf('<figure class="landing-art">'), other.indexOf('</figure>', other.indexOf('<figure class="landing-art">')));
+  assert.ok(changedLanding.includes('<div class="scene-visual-frame" data-art="art-figure-row"'));
+  assert.ok(!changedLanding.includes('data-art="art-opening-question"'), 'the landing follows the document, not a default');
 });
 
 test('a beat with no drawing keeps its figures and its description', () => {
   const content = loadValidContent();
-  const scene = byId(content.scenes, 'sc-ordinary-afternoon');
+  const scene = byId(content.scenes, 's002');
   scene.visual.artId = null;
   scene.visual.artState = null;
 
@@ -411,7 +437,7 @@ test('the same figure is drawn differently when the content says it feels differ
   const one = render(content);
 
   const changed = loadValidContent();
-  byId(changed.scenes, 'sc-ordinary-afternoon').visual.cast[0].expressionId = 'ex-sad';
+  byId(changed.scenes, 's002').visual.cast[0].expressionId = 'ex-sad';
   const other = render(changed);
 
   assert.notEqual(one, other, 'an expression change must reach the drawing');

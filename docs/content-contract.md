@@ -8,9 +8,11 @@ Run `npm run validate` after every edit. It prints a located, named error for ea
 
 ## What is in the repository today
 
-`content/content.json` is a **non-final fixture**. It exists so the foundation could be built, validated, rendered, packaged, and checked before the essay is written. Every chapter connection, scene, dialogue line, and illustration note in it is a structural stand-in, `status.final` is `false`, and the reader shows that notice to anyone who opens the page. The storyboard package writes the real chapters; the integration package replaces the fixture scenes.
+`content/content.json` is the **complete essay**. `status.final` is `true`, so the reader sees no draft notice. It holds the storyboard's seven chapters and 87 beats in their authored order, the 76 lines the three contributors actually said in the group notes, the 32 audited sources at the evidence levels the audit reached, 35 class concepts each explained, applied and questioned, eleven optional panels, and the drawings.
 
-Nothing in the fixture states a position held by TJ, Koj, or Vier, and no source in it claims more than the audit actually established. Those are contract rules, not fixture habits — see *Member positions* and *Evidence levels* below. The sources in the fixture are the real audited ones from [the register](research.md), carried at one of each evidence level.
+The editorial source is still [the storyboard](storyboard.md), and the two are compared rather than trusted: `test/transfer.test.js` checks every beat identifier, every main-path paragraph, line and caveat in order, every cast placement, and every source citation against it. Two differences are deliberate and listed in that test — the landing carries `s001`'s question, names and reading time, and the fourteen chapter bridges are authored for the site with a provenance record on each chapter saying so.
+
+Nothing here states a position held by TJ, Koj, or Vier without a provenance record naming the note it comes from, and no source claims more than the audit actually established. Those are contract rules, not habits of this particular document — see *Member positions* and *Evidence levels* below.
 
 ## Document shape
 
@@ -80,7 +82,7 @@ Unknown fields are rejected rather than ignored, so a typo surfaces instead of s
 | `detailIds` | identifier[] | Optional expandable detail carried by this beat. |
 | `interactionIds` | identifier[] | Optional reveals attached to this beat. |
 
-`narration` is the main reading path. It must carry the beat on its own, with dialogue, illustration, and every optional surface removed — that is exactly what the print and reduced-motion routes fall back to.
+The **main reading path** is `narration`, `dialogue` and `limitations` together, in the order `mainPath` gives them. All three appear in every output — presentation, continuous reading, print, and with scripting unavailable — so a beat carried by dialogue alone still reads everywhere. What a beat may not be is empty: a scene with no narration, no dialogue, and no caveat is rejected as `EMPTY_ESSENTIAL_SCENE`. Illustration and optional detail are outside this, and removing both must leave the beat complete.
 
 #### `scenes[].mainPath`
 
@@ -274,7 +276,7 @@ Keep an existing identifier pointing at the same thing. If a source is replaced 
 | `DUPLICATE_ID` | An identifier is reused, including an expression repeated within a character. |
 | `UNKNOWN_REFERENCE`, `WRONG_REFERENCE_KIND`, `DUPLICATE_REFERENCE` | A reference points at nothing, at the wrong kind of entry, or is listed twice. |
 | `INVALID_ENUM` | A role, stance, review status, concept status, or interaction surface is not one of the allowed values. |
-| `EMPTY_ESSENTIAL_SCENE` | A scene has no essential narration. |
+| `EMPTY_ESSENTIAL_SCENE` | A scene has nothing on the main path at all. |
 | `MAIN_PATH_INDEX`, `MAIN_PATH_OUT_OF_RANGE` | A reading-order step names a position that is not a whole number, or one the array does not have. |
 | `MAIN_PATH_DUPLICATE`, `MAIN_PATH_INCOMPLETE` | A reading-order step repeats a block, or an essential block is never placed. |
 | `INVALID_CHAPTER_NUMBER`, `DUPLICATE_CHAPTER_NUMBER` | A chapter number is not a whole number of at least 1, or is already used. |

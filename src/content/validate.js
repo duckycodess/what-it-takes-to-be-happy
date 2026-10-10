@@ -430,16 +430,22 @@ function validateScenes(bag, doc, ids, expressionsByCharacter) {
     checkString(bag, scene.title, `${path}.title`);
     checkReference(bag, ids, scene.chapterId, `${path}.chapterId`, ['chapter'], { what: 'Chapter' });
 
-    // Essential narration is the main reading path. It must stand on its own,
-    // independently of dialogue, optional detail, or illustration.
+    // The main path is the essential reading route: narrator paragraphs, spoken
+    // lines, and visible caveats, in the order `mainPath` gives them. All three
+    // are in every output, so a beat carried by dialogue alone still reads in
+    // print and with motion reduced. What a beat may not be is empty.
     if (checkArray(bag, scene.narration, `${path}.narration`)) {
       scene.narration.forEach((paragraph, paragraphIndex) => {
         checkString(bag, paragraph, `${path}.narration[${paragraphIndex}]`);
       });
-      const meaningful = scene.narration.filter((paragraph) => typeof paragraph === 'string' && paragraph.trim() !== '');
-      if (meaningful.length === 0) {
-        bag.add(`${path}.narration`, 'EMPTY_ESSENTIAL_SCENE', `Scene ${JSON.stringify(scene.id ?? index)} has no essential narration. Every scene must read on the main path without dialogue, illustration, or optional detail.`);
-      }
+    }
+    const essential = [
+      ...(Array.isArray(scene.narration) ? scene.narration : []),
+      ...(Array.isArray(scene.limitations) ? scene.limitations : []),
+      ...(Array.isArray(scene.dialogue) ? scene.dialogue.map((line) => (isPlainObject(line) ? line.text : null)) : []),
+    ];
+    if (!essential.some((text) => typeof text === 'string' && text.trim() !== '')) {
+      bag.add(`${path}.mainPath`, 'EMPTY_ESSENTIAL_SCENE', `Scene ${JSON.stringify(scene.id ?? index)} has nothing on the main path: no narration, no dialogue, and no visible caveat. Every beat must read without optional detail or illustration.`);
     }
 
     checkStringArray(bag, scene.limitations, `${path}.limitations`);
