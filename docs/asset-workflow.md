@@ -28,21 +28,37 @@ The edit removed Bob's hair tufts so the generic friend is distinct from TJ. The
 
 ## What is built now
 
-The production drawing system exists and is described in [the drawing system](art-system.md). In
-short: eight original figures, seven drawable expressions, nine postures, and sixty-six explanatory
-compositions, all authored as geometry in [`src/art/`](../src/art/) and generated into the markup as
-inline SVG. The renderer places names above heads as browser text, the build refuses any drawing
-that reaches outside the document or carries its own lettering, and every output contains every line
-of every drawing.
+**As of 11 October 2026 the website's illustrations are generated images.** The approved rewrite
+specifies eighteen exact drawing briefs, and the art provider delivered twenty inspected assets for
+them — `A09a`/`A09b` and `A15a`/`A15b` are the two states of the two optional comparisons, and
+`A16` and `A18` each supply two independently usable cutouts — as twenty-one selected transparent
+PNGs under [`assets/generated/`](../assets/generated/), one folder per brief, each with the exact
+prompts, dimensions, checksums and name anchors it was inspected at.
 
-Eighty-six of the storyboard's 87 beats are mapped to a composition;
-[`src/art/storyboard-map.js`](../src/art/storyboard-map.js) records the decision for every beat, and
-a test fails if a beat is missing from that record. The one that is not drawn, `s087`, is the source
-register, and it is declared text-only rather than pending, so the reader sees a readable list
-rather than an empty frame. No generated image was needed for any of it: every line is authored
-geometry, so `docs/art-requests.json` has no request from this package. The concept sheet below is
-where the identities came from, and it is still packaged into both outputs — in the colophon,
-labelled as the provisional study it is.
+How one arrives:
+
+1. The brief is written into [`docs/art-requests.json`](art-requests.json) on the issue branch, in
+   the shape [the autonomous build handoff](autonomous-build.md) defines.
+2. The provider generates it, inspects the selected output, and publishes it on an **asset-only**
+   branch named `codex/art-<id>` with its manifest and prompts. A live worker checkout is never
+   edited.
+3. The worker fetches that branch, inspects the complete chain, cherry-picks it oldest-first so the
+   history and file modes survive, and marks the request consumed with the actual commit and
+   checksum rather than a changed status word.
+4. `content/content.json` records each selected file's path, width, height, SHA-256, approved
+   alternative text and label anchors; `npm run validate` and `npm test` refuse a drawing that is
+   not one of those inspected files, that lost its alternative text, or whose anchors fall outside
+   the image.
+
+The hosted page links the files, with their boxes reserved and everything after the first
+illustration lazy; the retained single-file export inlines the same bytes as base64. Names, view
+labels and dialogue are browser text positioned over the image — no lettering is baked into a
+bitmap, and the build refuses an output that drops or substitutes one.
+
+*(Superseded: between 8 and 10 October 2026 the illustrations were authored geometry in `src/art/`,
+inlined as SVG, with a composition mapped to each of the 87 storyboard beats. That system and what
+reviewing it found are recorded in [the drawing system](art-system.md). It was removed by the
+rewrite; the concept sheet below is still where the identities came from.)*
 
 The steps below are the route that was followed, and the route to follow for anything added next.
 
@@ -83,6 +99,9 @@ The owner subsequently requested ongoing generated-art support while the website
 | [Anime.js](https://github.com/juliangarnier/anime) | MIT-licensed library for coordinating browser and SVG animations | Not installed. The one transition the scenes need did not warrant a dependency on the page's critical path |
 | [Rough.js](https://github.com/rough-stuff/rough) | MIT-licensed library that draws sketch-like shapes in SVG or Canvas | Not installed, for the same reason. The sketch quality comes from the authored line work |
 
+The table above describes the superseded browser-drawn system; what is in use now is built-in
+image generation into asset-only branches, as described under *What is built now*.
+
 Image generation is an available authoring service, not an open-source library. Open-source drawing and animation tools can support the website without requiring every authoring step to be open source. No new library or editor has been installed or selected as a mandatory dependency. Record actual versions and license notices when dependencies are added.
 
 ## What the reference used
@@ -107,5 +126,8 @@ Discovery surfaced optional Figma, Runway, Higgsfield, and Adobe Express integra
 - Serve assets and the font from the deployment itself, never from a third party. Add a library only when its role and required license notice are recorded; a font is redistribution and needs the author's actual applicable permission.
 - Keep concepts separate from integrated production assets; document what has actually been generated, drawn, animated, and tested.
 - Record provisional likenesses as provisional wherever they are shown. The contributors' drawn
-  appearances came from a generated study and are stand-ins, not approved portraits; the colophon
-  says so to the reader and [the cast registry](cast.md) says so to whoever edits next.
+  appearances came from a generated study and are stand-ins, not approved portraits. The approved
+  Sources & Credits copy says so to the reader — "member appearances are stand-ins" — and [the cast
+  registry](cast.md) says so to whoever edits next. *(Until 10 October this was said in a colophon
+  on every page; the approved script puts credits on Sources & Credits and allows no credits footer
+  in a scene.)*

@@ -1,8 +1,16 @@
 # The drawing system
 
-How the essay's illustrations are made, what a scene can ask for, and what is not drawn yet.
+> **HISTORICAL, as of 11 October 2026.** This describes the superseded 87-beat build, whose
+> illustrations were browser-drawn geometry in `src/art/`. The approved rewrite replaced them with
+> twenty inspected generated illustrations linked as files, and `src/art/` was removed with it.
+> Nothing below runs. It is kept because it records how that artwork was made, what it claimed, and
+> what reviewing it found — provenance the rewrite inherits rather than discards. For the artwork
+> the website carries now, see [the asset workflow](asset-workflow.md), [the coverage
+> matrix](coverage.md) and [the content contract](content-contract.md).
 
-The artwork is authored geometry in [`src/art/`](../src/art/), generated into the markup at build
+How the essay's illustrations were made, what a scene could ask for, and what was not drawn yet.
+
+The artwork is authored geometry in `src/art/`, generated into the markup at build
 time as inline SVG. There is no image file to fetch, no drawing library, no font inside a picture,
 and no generation service anywhere near the reader: every output contains every line of every
 drawing, so the hosted page needs no request to show one. See [the asset workflow](asset-workflow.md) for where the
@@ -14,7 +22,7 @@ designs came from and [art direction](art-direction.md) for the look they follow
   explanatory motifs that scenes point at by identifier.
 - **Eighty-six of the storyboard's 87 beats are drawn.** The eighty-seventh, `s087`, is the source
   register: a readable list rather than an illustrated situation, declared `text-only` in both
-  [`src/art/storyboard-map.js`](../src/art/storyboard-map.js) and the content document, so the
+  `src/art/storyboard-map.js` and the content document, so the
   reader gets no frame there rather than an empty one. `npm test` fails if a beat is missing from
   that map.
 - It is **not** 86 bespoke illustrations, and does not claim to be. Sixty-six compositions carry
@@ -31,7 +39,7 @@ A figure on screen is four separable choices. Nothing else about a person is dra
 
 | Axis | Owns | Lives in |
 | --- | --- | --- |
-| Identity | The hair shape that makes someone recognisable across every state | `FIGURES` in [`figures.js`](../src/art/figures.js) |
+| Identity | The hair shape that makes someone recognisable across every state | `FIGURES` in `figures.js` |
 | Expression | The face: eyes, brows, mouth, and the head's tilt | `EXPRESSIONS` in the same file |
 | Pose | The limbs, and where the hands are so a prop can be held | `POSES` in the same file |
 | Placement | Where the figure stands, how large, and which way it faces | the composition |

@@ -4,6 +4,14 @@ Status: implementation-neutral architecture for the confirmed experience. This d
 
 > **Amended on 9 October 2026.** The hosted Vercel output is the deliverable; the self-contained offline HTML file is discontinued. [The owner amendment](decisions.md#owner-amendment--9-october-2026) is canonical. The offline path is still described here because the code still produces it and the packaging rules it imposes are still what keeps the hosted page self-sufficient — but nothing below is a release gate any more.
 
+> **Amended again on 11 October 2026, by the approved rewrite.** The website is now a transfer of [the approved 45-scene script](redesign/approved-scene-script.md), and three things this document described are superseded by it:
+>
+> - **The landing carries only the approved title, the opening drawing, Begin and Sources & Credits.** There is no working question, no byline, no member-name list and no reading-time estimate. The main path is still measured — `./tools/count-main-path.sh` reports 4,137 words — but no figure is shown to a reader.
+> - **The drawings are generated bitmaps, not browser-drawn line art.** Twenty inspected PNGs are linked as files, with every name and label anchored over them as browser text. `src/art/` is gone, and with it the figure, composition and storyboard-map modules; [the drawing system](art-system.md) is the superseded build's record.
+> - **The sources are a separate page**, and optional detail panels are gone. Two optional comparisons remain, and neither hides a sentence.
+>
+> The content contract below described the earlier document's entities. [The content contract](content-contract.md) is the current one and takes precedence where the two disagree.
+
 ## Overall shape
 
 The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel. The build also still emits a self-contained offline HTML file from the same content and renderer; since the 9 October amendment that file is retained tooling rather than a deliverable. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.
@@ -54,7 +62,7 @@ Content validation should catch broken references, duplicate or missing identifi
 
 ## Reading behavior
 
-- Landing opens with the working question, emotional original stickmen, Begin, member names, and an honest reading-time estimate once measured.
+- Landing opens with the approved title, the opening drawing with the three names over it, Begin, and Sources & Credits. *(Superseded detail: it previously carried the working question, member names and a measured reading-time estimate. The approved script lists what the landing contains, and none of those is on the list.)*
 - Begin enters the first authored scene. Next and Back traverse the complete sequence; boundary behavior is explicit and keyboard accessible.
 - Chapter shortcuts revisit the beginning of a chosen chapter. Readers do not need to repeat earlier optional interactions.
 - Presentation and full reading views contain the same essential prose, dialogue, findings, caveats, and conclusion.
@@ -102,7 +110,7 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 | --- | --- |
 | `content/content.json` | The single content document. See [the content contract](content-contract.md). |
 | `src/content/` | Schema constants, the validator, and the loader. |
-| `src/art/` | The original drawings: figures, expressions, postures, scene compositions, and the storyboard coverage map. See [the drawing system](art-system.md). |
+| `assets/generated/` | The inspected generated illustrations, one folder per approved brief, with the manifests and prompts they were delivered with. See [the asset workflow](asset-workflow.md). *(`src/art/` held the superseded build's browser-drawn figures and compositions; it was removed by the rewrite and is recorded in [the drawing system](art-system.md).)* |
 | `src/runtime/` | The shared renderer, the stylesheet, and the browser script. |
 | `src/build/` | Asset declarations, data-URI inlining, the output audits, and the build. |
 | `src/tools/` | The validation command and the local preview server. |
