@@ -382,10 +382,39 @@ test('building twice from the same commit produces byte-identical output', () =>
   runBuild();
   const second = hashTree(DIST);
   assert.deepEqual(second, first);
-  assert.ok(Object.keys(first).length >= 7, 'expected the hosted files, the assets, and the offline file');
+  assert.ok(Object.keys(first).length >= 7, 'expected the hosted files and the assets');
 });
 
-test('the offline export writes only the single file and leaves the hosted output alone', () => {
+test('a normal build publishes the hosted site and nothing else', () => {
+  const output = runBuild();
+  const published = hashTree(DIST);
+
+  // The deliverable is the hosted website. The single-file export is retained
+  // tooling, and a publish directory that carries it offers the deployment a
+  // 45 MB document nobody is meant to be handed.
+  assert.ok(!('offline.html' in published), 'the publish directory carries no single-file export');
+  assert.ok(!existsSync(join(DIST, 'offline.html')));
+  assert.ok(!/dist\/offline\.html\s+\d+ bytes/.test(output), 'and the build does not report writing one');
+
+  for (const expected of ['index.html', 'sources.html', 'styles.css', 'reader.js',
+    PROJECT_FONT.published, FALLBACK_FONT.published, FALLBACK_FONT_LICENSE.published]) {
+    assert.ok(expected in published, `${expected} is published`);
+  }
+  assert.ok(Object.keys(published).some((path) => path.endsWith('.png')), 'and the selected drawings');
+
+  // Audited, though: every packaging rule still runs over the export on this
+  // path, which is what keeps the hosted page's own resources accounted for.
+  assert.match(output, /Audited but not published/);
+});
+
+test('neither hosted page offers the export as a download', async () => {
+  const { hosted, sources } = await buildOutputs(loadValidContent());
+  for (const [label, html] of [['the essay', hosted], ['the register', sources]]) {
+    assert.ok(!html.includes('offline.html'), `${label} points a reader at a file the site does not serve`);
+  }
+});
+
+test('the offline export adds exactly that one file and leaves the hosted output alone', () => {
   runBuild();
   const before = hashTree(DIST);
   const output = runBuild(['--only=offline']);
@@ -393,8 +422,27 @@ test('the offline export writes only the single file and leaves the hosted outpu
 
   assert.match(output, /dist\/offline\.html is retained tooling, not a release gate/);
   assert.ok(!/dist\/index\.html\s+\d+ bytes/.test(output), 'an offline export writes no hosted file');
-  assert.deepEqual(after, before, 'an offline export changes nothing else in dist/');
+
+  const added = Object.keys(after).filter((path) => !(path in before));
+  assert.deepEqual(added, ['offline.html'], 'the export adds exactly one file');
+  const { 'offline.html': _exported, ...rest } = after;
+  assert.deepEqual(rest, before, 'and changes no other byte in dist/');
   assert.ok(existsSync(join(DIST, 'index.html')), 'the hosted entry point survives an offline export');
+});
+
+test('a normal build clears an export back out of the publish directory', () => {
+  // So the order the two commands were run in cannot decide what gets
+  // deployed. Only the output of a normal build is publishable; a directory
+  // an export has since added to is not, and this is what makes rebuilding
+  // enough to fix that rather than something a person has to remember.
+  runBuild();
+  const published = hashTree(DIST);
+  runBuild(['--only=offline']);
+  assert.ok(existsSync(join(DIST, 'offline.html')), 'the export is there to be cleared');
+
+  runBuild();
+  assert.ok(!existsSync(join(DIST, 'offline.html')), 'and the next build takes it out again');
+  assert.deepEqual(hashTree(DIST), published, 'leaving exactly the hosted site');
 });
 
 test('the preview server serves the built site and refuses to escape it', async () => {
@@ -431,7 +479,9 @@ test('the preview server serves the built site and refuses to escape it', async 
     }
     assert.ok(hostedCss.includes(PROJECT_FONT.published), 'and the stylesheet asks for it at that path');
 
-    assert.equal((await fetch(`${base}/offline.html`)).status, 200);
+    // What a static host answers after a normal build, which is what the
+    // deployment answers too: the export is not published.
+    assert.equal((await fetch(`${base}/offline.html`)).status, 404);
     assert.equal((await fetch(`${base}/nothing-here`)).status, 404);
     assert.equal((await fetch(`${base}/%2e%2e/%2e%2e/package.json`)).status, 404);
   } finally {

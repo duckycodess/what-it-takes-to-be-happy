@@ -18,7 +18,7 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 | `test/render.test.js`, `test/art.test.js` | The markup: the landing carrying only approved copy, scenes in authored order, frameless art with reserved boxes and lazy loading after the first illustration, name anchors in both manifest generations, pair cutouts and their view labels, and the two comparisons. |
 | `test/reader.test.js` | The reader's journeys in a scripted DOM: authored order, both boundaries, chapter and part revisiting, scene and continuous views, deep links, the browser Back button with and without the History API, the optional comparisons, leaving for a source and coming back to the same place in the same mode, and the chapter rail — collapse and restore, per-chapter expansion, the part being read, and the phone drawer's open, Escape, close and return-focus behaviour. |
 | `test/browser.test.js` | The same site in real Chrome, built and linked as it is served. See below. Skips with a stated reason where no browser is installed. |
-| `test/build.test.js` | The packaging audits, the artwork actually linked, build determinism, the offline export, and the preview server over real HTTP. |
+| `test/build.test.js` | The packaging audits, the artwork actually linked, build determinism, what a normal build does and does not publish, the explicit offline export and the rebuild that clears it, and the preview server over real HTTP. |
 | `test/fonts.test.js` | Each committed font file's size and SHA-256, and — read from both `cmap` tables — that every character either page prints is one a packaged face can draw. |
 | `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; that print drops the rail, the launcher and Read again and that the rail is only ever hidden by its own state; measured contrast for every declared colour; reflow, reduced motion, the ring on each target the script focuses and the absence of the forced `.scene:focus` ring; the measure on both font stacks and the cap on a drawing; that the stylesheet's drawer width is the one the script asks about; and that nothing depending on the project typeface sits outside the region the offline file drops. |
 | `test/measure.test.js` | `./tools/count-main-path.sh` against the document's own recorded figure and rule, the per-chapter breakdown, and that the counted text is the reader's own sentences with titles, speaker labels, citation markers and the register excluded. |
@@ -416,7 +416,11 @@ origin instead of two.
 - **Print pagination, as pages.** The page count was read from a PDF; nobody has looked at where the
   breaks fall or whether a drawing is orphaned from the sentence it belongs to.
 - **Contrast as perceived**, rather than computed from the declared tokens.
-- **The deployment, as a deployment.** Vercel builds a **Preview** for each pushed commit on this
+- **The deployment, as a deployment.** *(Superseded on 11 October 2026: the reviewed head was
+  released and tested on its deployed URLs a few hours after this was written. What that release
+  checked is under [what the hosted release
+  checked](#what-the-hosted-release-checked-and-how) below, and the paragraphs here record what was
+  true at the time of this integration.)* Vercel builds a **Preview** for each pushed commit on this
   branch, and one exists for the reviewed head with a `success` status. It was **not**
   browser-validated: the preview URL is behind the project's access protection and answers an
   anonymous request with a Vercel login redirect, so nothing was exercised against it.
@@ -452,6 +456,81 @@ passing.
 
 No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every
 source file instead.
+
+## What the hosted release checked, and how
+
+Run on 11 October 2026 by the supervising chat, against the deployed site rather than a local tree.
+[Delivery](delivery.md#the-released-site--11-october-2026) holds the full record — URLs, deployment
+ids, the project settings read back, and where the evidence files live. In short:
+
+- **Public production, unauthenticated**: all 29 published files fetched over HTTPS and compared by
+  SHA-256 against the reviewed build; all 29 match. `/offline.html` returns 404. That digest check
+  covers the published tree and nothing else. On the protected preview the same fetch gives 27
+  digest matches: its access protection injects 163 bytes into each HTML response, so the two pages
+  were checked by confirming the reviewed source HTML is intact around that injection instead.
+- **Windows Chrome 154 at actual 360 and 1280 CSS-pixel viewports**, on production and on the tested
+  preview: landing, Begin, Next, Back, Read again; all eight chapter jumps; all 45 scenes read
+  continuously; reading mode carried in the address; Sources & Credits returning to the scene *and*
+  the mode; all 22 unique drawings loaded; one `FontFace` for `Futura Handwritten` reported
+  `loaded`; stylesheet and script fetched over the deployment's own requests; both comparison
+  states.
+- **Print, from the deployment**: a 45-page PDF carrying every one of the 45 scene titles and all
+  147 approved reader text parts. Pages 1, 23 and 45 of the preview's PDF were looked at.
+
+What it does **not** cover, unchanged from the integration above: a physical phone, any engine other
+than Chrome, a physical printer, and a screen reader. The preview was reached with short-lived
+same-project authentication; no credential is recorded in this repository.
+
+That release is the revision `67f571d`, not this branch's head.
+
+## What the output cleanup checked, and how
+
+Checked on 11 October 2026, after `npm run build` stopped writing `dist/offline.html` into the
+publish directory.
+
+`npm run check` passes: **211 tests, 0 failures, 0 skipped** — Chrome is installed here, so the
+whole browser suite ran. `node src/tools/transfer.js --check` reports the content document identical
+to a rebuild from the approved script, and `node src/tools/validate.js` reports the same
+`8 chapter(s), 45 scene(s), 26 source(s), 20 generated asset(s), 4137 main-path words` as before.
+No content, renderer or stylesheet file was touched.
+
+What the three new packaging checks assert. The first two fail on the previous build; the third
+pins behaviour that was already correct — no hosted page has ever linked the export — so that a
+later change cannot quietly start offering a download the deployment does not serve:
+
+- A normal build publishes the hosted site and **nothing else**: no `offline.html` in the tree, no
+  line reporting one written, and the hosted files, both fonts, the bundled licence and the
+  drawings all present. It also asserts the build still reports the export as *audited but not
+  published*, because the audits are the reason the export is rendered at all.
+- An explicit `npm run export:offline` adds **exactly one** file to `dist/` and changes no other
+  byte in it, and a following `npm run build` takes that file back out and leaves a tree identical
+  to the one it published before. That is what makes "only a normal build's output is deployable"
+  something the commands enforce rather than something a person has to remember.
+- Neither hosted page mentions `offline.html`, so no reader is offered a download the deployment
+  does not serve. The preview server — `dist/` served exactly as a static host would — now answers
+  `/offline.html` with a 404 after a normal build, which is the same answer the deployed site gives.
+
+Run by hand as well, because the assertions above are about the build's own output rather than about
+what a deploy would carry: a normal build, then an export, then a normal build again, watching the
+file appear and disappear; and the 29 published files compared by SHA-256 against the digests
+recorded for the production deployment. **All 29 match**, which is the evidence that this change
+removes an output without altering the website.
+
+### Not checked, and by what
+
+- **The deployment, from this head.** Nothing built here has been deployed. Automatic production
+  builds are still held, and a push may create a *preview*, which is neither production nor
+  evidence that production moved.
+
+  **No check here can release that hold.** Since 11 October 2026 every new revision — this one and
+  the separately queued readability revision
+  [#17](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17), which neither depends
+  on nor blocks it — is **preview-only** until the owner approves the reading experience's
+  readability and flow. A reviewed merge is not production-release approval. Production stays at
+  `67f571d`, the hold and the project settings stay as they are, and this document will record a
+  promotion when one actually happens rather than in advance.
+- **Everything the release above could not reach**: a physical phone, another browser engine, a
+  physical printer, a screen reader.
 
 ## What the readability revision checked, and how
 
@@ -573,6 +652,7 @@ It is a stated limitation, not a passed check.
   are all outstanding. No copy-fidelity test in this repository can establish editorial approval,
   and none of them claims to.
 
+
 ## Scenarios for the finished essay
 
 ## Argument and source coverage
@@ -605,6 +685,14 @@ It is a stated limitation, not a passed check.
 ## Hosted release
 
 The release gate is the deployed site. [Delivery](delivery.md#hosted-release-checklist) holds the checklist; these are the scenarios behind it.
+
+The 11 October release of `67f571d` answered these on the deployment, with one exception: the
+real-phone and real-desktop-browser scenario was exercised at emulated 360 and 1280 CSS pixels in
+Chrome alone, and the printed output was read from a PDF rather than off a printer. That release
+went ahead with both gaps recorded as limitations. Those scenarios are unchanged and still
+outstanding; an emulated viewport does not satisfy one and a PDF does not satisfy the other, and the
+baseline being live is not a reason to drop either. Any later revision is preview-only until the
+owner approves readability and flow, whatever these scenarios report.
 
 - Deploy the reviewed revision, then confirm both the preview and the production URL serve that exact commit. Record the URLs verbatim.
 - Exercise all six chapters, navigation, typography and artwork, supplementary details, reading mode, and printing on the deployed site, on a real phone and a real desktop browser.

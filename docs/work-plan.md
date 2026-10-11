@@ -12,7 +12,7 @@ Repository/documentation setup is complete when the seed documents and source sn
 | P3 | Reader and reading views | Responsive landing, Next/Back, chapter shortcuts, sources, optional detail, reading/print view | P2 content/runtime interfaces |
 | P4 | Original artwork and explanatory scene assets | Emotional original cast, illustrations, motion/static descriptions following the storyboard | Existing art/content plans; can begin alongside P1/P2 |
 | P5 | Complete narrative integration | Reviewed story and original scenes wired into reader, with full visible coverage | P1 audited storyboard, P3 working reader, P4 original scene assets |
-| P6 | Vercel release | Verified hosted preview and production site built from the reviewed revision | P5 integrated complete essay |
+| P6 | Vercel release | Verified hosted preview and production site built from the reviewed revision. Released and verified on 11 October 2026 at `67f571d`; see [delivery](delivery.md#the-released-site--11-october-2026) | P5 integrated complete essay |
 
 ## Dependency evidence
 
@@ -40,7 +40,7 @@ The original publication left all tickets unqueued. The owner's 9 October overni
 | [#1](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/1) index | The agreed outcome including a self-contained offline submission file | The hosted Vercel site is the deliverable; the index otherwise stands |
 | [#5](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5) reader | Any acceptance tied to offline font distribution | #5 owns verifying the font author's actual applicable permission and implementing real Futura Handwritten web typography. The reference project's CC0 covers Nicky Case's own work, not this font |
 | [#6](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/6) integration | Offline parity as an integration criterion | #6 owns the complete essay integration; the hosted page is what the integrated essay must be correct in |
-| [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) release | Offline export, network-disabled `file://` acceptance, and hosted/offline parity as release gates | #7 owns exact-revision hosted preview and production verification, and owns removing `dist/offline.html` from the published output and any production download link. That code change is **not yet made** — the current build still writes it |
+| [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) release | Offline export, network-disabled `file://` acceptance, and hosted/offline parity as release gates | #7 owns exact-revision hosted preview and production verification, and owns removing `dist/offline.html` from the published output and any production download link. Both halves are now answered: the site was [released and tested on 11 October 2026](delivery.md#the-released-site--11-october-2026) at `67f571d`, and `npm run build` no longer writes the file into the publish directory |
 
 Everything the amendment leaves alone stays as written: the original Trust-style artwork, names above heads as browser text, phone and desktop reflow, chapter revisiting, the full reading and print view, and every visible finding and caveat. The canonical issue bodies, the TicketSpec UUIDs, and the real Beads dependency edges are unchanged; this amendment is recorded here rather than by rewriting any package's contract.
 
@@ -52,5 +52,5 @@ Everything the amendment leaves alone stays as written: the original Trust-style
 - [Build the responsive reader, chapter navigation, sources, and reading view](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/5)
 - [Create original emotional stickmen and explanatory scene assets](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/4)
 - [Integrate the complete six-chapter essay, dialogue, scenes, and reflection](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/6)
-- [Package the offline submission and deploy the reviewed essay to Vercel](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) — title predates the amendment; the offline half is retired, see the table above
+- [Package the offline submission and deploy the reviewed essay to Vercel](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) — title predates the amendment; the offline half is retired, and what replaced it is in the table above
 - [Record hosted-only delivery and retain the agreed Futura typography](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/12) — the amendment itself

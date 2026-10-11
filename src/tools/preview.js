@@ -5,9 +5,10 @@
  *   npm run build && npm run preview          # http://localhost:4173
  *   npm run preview -- --port 5000
  *
- * This serves `dist/` exactly as a static host would. It is a development
- * convenience only: nothing in the essay needs a server, and the offline file
- * is meant to be opened straight from disk.
+ * This serves `dist/` exactly as a static host would, which is also what
+ * makes it a check: a normal build publishes the hosted site and nothing
+ * else, so `/offline.html` is a 404 here exactly as it is on the deployment.
+ * It is a development convenience only — nothing in the essay needs a server.
  */
 
 import { createServer } from 'node:http';
@@ -85,7 +86,9 @@ async function main() {
   // the local network.
   createPreviewServer().listen(port, '127.0.0.1', () => {
     console.log(`Preview of dist/ at http://localhost:${port}`);
-    console.log('The offline submission file is dist/offline.html; open that one directly from disk.');
+    console.log('This is the hosted site. The single-file export is retained tooling and is not '
+      + 'published: `npm run export:offline` writes dist/offline.html when it is wanted, and the '
+      + 'next `npm run build` clears it out again.');
   });
 }
 
