@@ -416,22 +416,39 @@ origin instead of two.
 - **Print pagination, as pages.** The page count was read from a PDF; nobody has looked at where the
   breaks fall or whether a drawing is orphaned from the sentence it belongs to.
 - **Contrast as perceived**, rather than computed from the declared tokens.
-- **The deployment, as a deployment.** Vercel does build a **Preview** for each pushed commit on
-  this branch, and one exists for the reviewed head with a `success` status. It was **not**
+- **The deployment, as a deployment.** Vercel builds a **Preview** for each pushed commit on this
+  branch, and one exists for the reviewed head with a `success` status. It was **not**
   browser-validated: the preview URL is behind the project's access protection and answers an
-  anonymous request with a Vercel login redirect, so nothing was exercised against it. There has
-  never been a **Production** deployment of this project; the environment list holds `Preview`
-  only. Everything checked above was checked against the locally built hosted tree, opened through
+  anonymous request with a Vercel login redirect, so nothing was exercised against it.
+
+  The repository has two environments, `Preview` and `production`. **One production deployment
+  record exists** — id `6978921582`, for commit `6423ece` ("chore: disable commit and pull request
+  attribution"), created 2026-10-10T09:32:17Z — and it carries **zero statuses**: nothing ever
+  reported success, failure, or an environment URL for it. So there is a production deployment
+  *record*, and there is no production deployment anyone has seen work. No production URL has been
+  verified, and none is served from this branch's work.
+
+  Everything checked above was checked against the locally built hosted tree, opened through
   `file://` after being written to a directory — Chrome fetches the fonts and the artwork over real
   requests either way, but it is not the deployment's own network. A Windows browser driven from
   WSL cannot reach a loopback port inside it, so serving the tree to it was not available; what the
   preview server returns over real HTTP is covered in `test/build.test.js`. Release verification
-  against a deployed URL is #7's.
+  against a deployed URL is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s,
+  and nothing here anticipates it.
 - **Anything about the approved prose itself**, which is the owner's to review and was approved
   before this integration began.
 
 `node ~/.claude/skills/impeccable/scripts/detect.mjs` over the runtime files reports no findings on
 this revision.
+
+Relative links were checked across the **active** documents in `docs/`. The check deliberately stops
+at `docs/redesign/`, which holds the immutable approved handoff: that material is imported
+unaltered, and `redesign-scene-blueprint.md` records six targets that cannot resolve here — five
+absolute paths on the authoring machine where the opening art was inspected, and one link to the
+script under the name it was written at before it was imported as `approved-scene-script.md`. Those
+are an accurate record of where that work was done. Repairing them would edit an immutable handoff,
+so they are left exactly as delivered and excluded from the check rather than silently counted as
+passing.
 
 No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every
 source file instead.

@@ -161,8 +161,16 @@ The build refuses to publish an output that drops essential content, and refuses
 > panels and the progress line were all removed by the rewrite, and the register is now a separate
 > page rather than a section reached by fragment. What the reader does now is specified by
 > [the approved script](redesign/approved-scene-script.md) and checked by `test/reader.test.js` and
-> `test/browser.test.js`; the one idea below that still holds is **the fragment is the state**, and
-> it works as described.
+> `test/browser.test.js`.
+>
+> The one idea below that still holds is **the fragment is the state** — with one carve-out in that
+> paragraph that does not: the script no longer resolves any fragment to the register. On the hosted
+> site `sources` and the individual source anchors live on a separate page, reached by a link that
+> carries the scene and the reading mode in its query instead. The retained single-file export still
+> holds the register in the same document, but it is reached by the browser's own anchor jump, not
+> by this script, which leaves a fragment it does not recognise alone. The rest of that paragraph — a scene identifier,
+> a chapter identifier, `pushState` with the view in the entry and the `location.hash` fallback,
+> and leaving an unrecognised fragment alone — is how the reader still works.
 
 The reader package filled in the behaviour this document described. Three decisions carry most of it.
 
