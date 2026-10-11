@@ -366,6 +366,9 @@ export function parseHtml(html) {
 
   document.documentElement = rootHolder.children.find((child) => child.localName === 'html') || rootHolder;
   document.root = rootHolder;
+  document.body = document.documentElement.children.find((child) => child.localName === 'body')
+    || document.documentElement;
+  document.activeElement = document.body;
   return document;
 }
 
@@ -408,7 +411,11 @@ class HtmlDocument {
   constructor() {
     this.nodeType = 9;
     this.documentElement = null;
+    this.body = null;
     this.root = null;
+    // A browser never answers `null` here: with nothing focused the answer is
+    // the body, which is what `test/browser.test.js` measures in Chrome. The
+    // parser sets it as soon as there is a body to point at.
     this.activeElement = null;
     this.lastScrolledInto = null;
     this.listeners = new Map();
@@ -452,10 +459,14 @@ export function openDocument(html, options = {}) {
     historyEntries: [],
     scrollPositions: [],
     historyRefusals: 0,
+    prints: 0,
   };
 
   const location = {
     _hash: options.hash || '',
+    // A citation link carries the originating scene and reading mode in a
+    // query, and the Sources & Credits page reads them back from here.
+    search: options.search || '',
     get hash() { return this._hash; },
     set hash(value) {
       const next = String(value).startsWith('#') ? String(value) : `#${value}`;
@@ -512,6 +523,7 @@ export function openDocument(html, options = {}) {
     dispatchEvent(event) { return Element.prototype.dispatchEvent.call(this, event); },
     listeners: new Map(),
     scrollTo(x, y) { page.scrollPositions.push([x, y]); },
+    print() { page.prints += 1; },
     matchMedia: () => ({ matches: false, addEventListener() {} }),
   };
 
@@ -538,12 +550,6 @@ export function openDocument(html, options = {}) {
     page.settle();
   };
 
-  /** What a reader does to a panel: the state changes, then `toggle` arrives. */
-  page.togglePanel = (element, open) => {
-    element.open = open;
-    page.settle();
-  };
-
   /**
    * The browser's Back button. Both events are dispatched because which one a
    * real browser fires depends on whether the entry was pushed or came from
@@ -565,13 +571,10 @@ export function openDocument(html, options = {}) {
     page.settle();
   };
 
-  page.print = () => {
-    window.dispatchEvent({ type: 'beforeprint' });
-    page.settle();
-    const snapshot = page.panels().map((panel) => panel.open);
-    window.dispatchEvent({ type: 'afterprint' });
-    page.settle();
-    return snapshot;
+  /** The reader pressing the Print control. */
+  page.pressPrint = () => {
+    page.click(document.querySelector('[data-print]'));
+    return page.prints;
   };
 
   /* --- Reading the page -------------------------------------------------- */
@@ -583,7 +586,25 @@ export function openDocument(html, options = {}) {
     return scene ? scene.getAttribute('data-scene') : null;
   };
   page.scenes = () => document.querySelectorAll('[data-scene]');
-  page.panels = () => document.querySelectorAll('details.detail');
+  page.comparisons = () => document.querySelectorAll('.art-comparison');
+
+  /**
+   * What holds focus, and what was last scrolled to, as short strings.
+   *
+   * Both answer with a name rather than an element on purpose. Comparing two
+   * elements with `assert.equal` reads well until it fails, at which point
+   * the runner formats a cyclic document into the diff and the test process
+   * dies of heap exhaustion instead of reporting the mismatch. `'body'` is
+   * what a browser reports when nothing is focused, which is the same answer
+   * `probe.activeId()` collects from Chrome in `test/browser.test.js`.
+   */
+  const name = (element) => {
+    if (!element) return null;
+    if (element === document.body) return 'body';
+    return element.getAttribute('id') || element.getAttribute('data-scene') || element.localName;
+  };
+  page.focused = () => name(document.activeElement);
+  page.scrolledInto = () => name(document.lastScrolledInto);
   page.find = (selector) => document.querySelector(selector);
   page.text = (selector) => {
     const element = document.querySelector(selector);
