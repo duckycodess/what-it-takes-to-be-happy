@@ -38,7 +38,7 @@ import { createHash } from 'node:crypto';
 
 export const SCHEMA_ID = 'happiness-essay-content/v3';
 export const POLISH_AMENDMENT = { path: 'docs/editorial/polish-amendment.json', sha256: '3234f3285e84c542e3c3137f81d8557622c98675484d91e63600d3c87fb94c50' };
-export const READER_AMENDMENT = { path: 'docs/editorial/reader-amendment.json', sha256: 'ddf72668d8a89fec93399d3b924e4e399eb1b8ec4a6bbdedcd04123acf6288a0' };
+export const READER_AMENDMENT = { path: 'docs/editorial/reader-amendment.json', sha256: '005bc6a6de0ea38765f0ee98d1a1a99da79ac15d027ee8fb91792a519d037618' };
 
 /** The approved essay this content is transferred from, in both its forms. */
 export const APPROVED_ESSAY = {
@@ -666,7 +666,8 @@ export function transfer({ markdown, handoffJson, manifests, sourceMap, amendmen
     }
   }
   // The owner's later reader amendment: the references keep only their
-  // formatted citations, and the landing credits the authors and the class.
+  // formatted citations, the title asks its question, and the landing
+  // credits the authors and the class, one line each.
   if (readerAmendmentJson !== undefined) {
     if (sha256(readerAmendmentJson) !== READER_AMENDMENT.sha256) fail('the owner reader amendment changed');
     const amendment = JSON.parse(readerAmendmentJson);
@@ -674,7 +675,9 @@ export function transfer({ markdown, handoffJson, manifests, sourceMap, amendmen
     if (visibleRich(page.methodNote) !== amendment.method_note_removal) fail('the requested access-note removal no longer matches');
     page.methodNote = [];
     if (amendment.remove_source_notes) for (const source of page.sources) source.note = [];
-    document.landing.credit = noteParts(amendment.landing_credit);
+    document.interface.title = amendment.title;
+    document.landing.title = amendment.title;
+    document.landing.credit = amendment.landing_credit.map(noteParts);
     document.source.readerAmendment = { ...READER_AMENDMENT };
   }
   return document;

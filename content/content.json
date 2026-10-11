@@ -19,11 +19,11 @@
     },
     "readerAmendment": {
       "path": "docs/editorial/reader-amendment.json",
-      "sha256": "ddf72668d8a89fec93399d3b924e4e399eb1b8ec4a6bbdedcd04123acf6288a0"
+      "sha256": "005bc6a6de0ea38765f0ee98d1a1a99da79ac15d027ee8fb91792a519d037618"
     }
   },
   "interface": {
-    "title": "What it takes to be happy",
+    "title": "What it takes to be happy?",
     "begin": "Begin",
     "sources": "Sources & Credits",
     "continuous": "Read continuously",
@@ -40,7 +40,7 @@
     "sound": "Sound"
   },
   "landing": {
-    "title": "What it takes to be happy",
+    "title": "What it takes to be happy?",
     "beginLabel": "Begin",
     "beginSceneId": "s201",
     "sourcesLabel": "Sources & Credits",
@@ -57,9 +57,16 @@
       "afterBlock": 0
     },
     "credit": [
-      {
-        "text": "By Tristan Jovan Noval, John Ranview Vonne Olano and Koji Araneta Yamane. Made for Captain Kert Tandog's Social Science 1 class."
-      }
+      [
+        {
+          "text": "By: Tristan Jovan Noval, John Ranview Vonne Olano, Koji Araneta Yamane"
+        }
+      ],
+      [
+        {
+          "text": "For: Kert Tandog's SocSci 1 Class"
+        }
+      ]
     ]
   },
   "chapters": [

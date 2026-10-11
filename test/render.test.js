@@ -34,7 +34,7 @@ const sourcesPage = parseHtml(renderSourcesPage(content, { ...hostedOptions, ess
 
 test('the landing carries the title, the opening drawing, Begin and Sources & Credits', () => {
   const landing = document.querySelector('.landing');
-  assert.equal(landing.querySelector('h1').textContent, 'What it takes to be happy');
+  assert.equal(landing.querySelector('h1').textContent, 'What it takes to be happy?');
 
   const image = landing.querySelector('img');
   assert.equal(image.getAttribute('src'), 'assets/generated/rewrite-opening-v1/opening.png');
@@ -54,7 +54,13 @@ test('the landing shows nothing the approved script does not list', () => {
   const paragraphs = landing.querySelectorAll('p').map((node) => node.textContent.trim());
   // The two actions, and the credit footnote the owner's reader amendment
   // added. No subtitle, no summary, no reading-time promise, no progress score.
-  assert.deepEqual(paragraphs, ['Begin\nSources & Credits', content.landing.credit.map((part) => part.text).join('')]);
+  assert.deepEqual(paragraphs, ['Begin\nSources & Credits', content.landing.credit.map((line) => line.map((part) => part.text).join('')).join('')]);
+  // One line for who made it, one for whom it was made, and no full stops.
+  assert.equal(landing.querySelectorAll('.landing-credit br').length, 1);
+  assert.deepEqual(content.landing.credit.map((line) => line.map((part) => part.text).join('')), [
+    'By: Tristan Jovan Noval, John Ranview Vonne Olano, Koji Araneta Yamane',
+    "For: Kert Tandog's SocSci 1 Class",
+  ]);
   for (const phrase of ['minute', 'minutes to read', 'by TJ', 'Written by', 'words']) {
     assert.ok(!landing.textContent.includes(phrase), `the landing still says "${phrase}"`);
   }

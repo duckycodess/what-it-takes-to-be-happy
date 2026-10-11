@@ -219,7 +219,7 @@ ${renderArt(content.landing.visual, context)}
 <a class="button" href="#${esc(content.landing.beginSceneId)}" data-begin>${esc(content.landing.beginLabel)}</a>
 <a class="button quiet" href="${esc(context.sourcesHref)}" data-sources>${esc(content.landing.sourcesLabel)}</a>
 </p>
-${content.landing.credit ? `<p class="landing-credit">${renderRich(content.landing.credit)}</p>\n` : ''}</section>`;
+${content.landing.credit ? `<p class="landing-credit">${content.landing.credit.map(renderRich).join('<br>')}</p>\n` : ''}</section>`;
 }
 
 /**

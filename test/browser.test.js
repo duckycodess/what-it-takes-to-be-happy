@@ -286,10 +286,43 @@ test('Sources keeps its way back on screen, scrollbars are not drawn, and the la
 
   const { value: landing } = essayPage({ width: 360, driver: `
     var credit = probe.q('.landing-credit');
-    probe.done({ text: credit.textContent, visible: probe.visible(credit) });
+    probe.done({ lines: credit.innerText.split('\\n'), visible: probe.visible(credit) });
   ` });
   assert.equal(landing.visible, true);
-  assert.equal(landing.text, content.landing.credit.map((part) => part.text).join(''));
+  assert.deepEqual(landing.lines, content.landing.credit.map((line) => line.map((part) => part.text).join('')), 'two lines');
+});
+
+test('hiding the chapters gives the passage the room, and the rail never clips its own controls', { skip }, () => {
+  const { value } = essayPage({ width: 1280, height: 800, hash: `#${ORDER[2]}`, driver: `
+    var report = {};
+    var rail = probe.q('.chapter-rail');
+    var toggle = probe.q('[data-rail-toggle]');
+    probe
+      .step(function () {
+        // The toggle as it is drawn on hover or focus: grown, with its ring.
+        toggle.style.transform = 'scale(1.02)';
+        var box = toggle.getBoundingClientRect(), edge = rail.getBoundingClientRect();
+        var ring = 6;
+        report.ringInsideRail = box.left - ring >= edge.left && box.top - ring >= edge.top;
+        report.continuousShown = probe.visible(probe.q('[data-view-toggle]'));
+        toggle.style.transform = '';
+        toggle.click();
+      })
+      .step(function () {
+        var body = probe.q('.essay-body').getBoundingClientRect();
+        var art = probe.q('[data-current] > .art').getBoundingClientRect();
+        var prose = probe.q('[data-current] p').getBoundingClientRect();
+        report.centred = Math.abs((body.left + body.right) / 2 - innerWidth / 2) < 2;
+        report.artWidth = Math.round(art.width);
+        report.gap = Math.round(art.left - prose.right);
+      })
+      .run(function () { probe.done(report); });
+  ` });
+  assert.equal(value.ringInsideRail, true, 'a grown, focused Hide chapters is not cut off');
+  assert.equal(value.continuousShown, false, 'Read continuously is deferred');
+  assert.equal(value.centred, true, 'the passage and its drawing are centred');
+  assert.equal(value.artWidth, 416, 'the drawing takes the wider 26rem column');
+  assert.ok(value.gap >= 30 && value.gap <= 50, `the drawing sits beside the prose, ${value.gap}px away`);
 });
 
 /** The essay, as the browser is given it. */
@@ -1337,7 +1370,8 @@ test('the landing offers only what the approved landing lists', { skip }, () => 
   // The reading footer is Back and Next. Everything else a reader can do is
   // in the rail, which the next report covers.
   assert.deepEqual(value.reading, [content.interface.back, content.interface.next]);
-  assert.deepEqual(value.railWhileReading, [content.interface.continuous, content.interface.sources]);
+  // Read continuously is deferred by the owner: the rail offers Sources & Credits alone.
+  assert.deepEqual(value.railWhileReading, [content.interface.sources]);
   assert.equal(value.readingSourcesActions, 1, 'and still one route to it, because the landing is off screen');
 
   assert.equal(value.backOnLanding.view, 'landing');
