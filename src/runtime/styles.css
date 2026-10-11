@@ -127,7 +127,7 @@ body {
      line tall and must never cover the end of a scene. The head of the page
      clears the launcher, which is fixed too and is only on screen in the
      arrangements that reserve room for it below. */
-  padding: var(--top-bar) 1rem 8rem;
+  padding: var(--top-bar) 1rem 5.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -493,8 +493,23 @@ html.js[data-rail="closed"] .chapter-rail {
    ----------------------------------------------------------------------- */
 
 .landing {
-  padding: 2.5rem 0 1rem;
+  padding: clamp(4rem, 8vh, 6rem) 0 1rem;
+  max-width: 64rem;
+  min-height: calc(100svh - 2rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
+
+.landing #landing-title {
+  max-width: none;
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  text-wrap: balance;
+}
+
+html.js[data-view="landing"] body { padding-bottom: 1rem; }
 
 /* The opening illustration is the one drawing a reader meets before any
    prose, with nothing beside it to make room for, so it is given more than a
@@ -502,6 +517,10 @@ html.js[data-rail="closed"] .chapter-rail {
    column, which is what the 11 October amendment was about. */
 .landing .art {
   max-width: 34rem;
+  width: min(100%, 34rem);
+  margin: 1.2rem auto;
+  transform: translate(var(--cover-x, 0px), var(--cover-y, 0px));
+  transition: transform 160ms ease-out;
 }
 
 .landing-actions {
@@ -510,7 +529,24 @@ html.js[data-rail="closed"] .chapter-rail {
   gap: 0.7rem;
   max-width: none;
   margin-top: 1.5rem;
+  justify-content: center;
 }
+
+/* Original bitmap ink/highlight, with browser text and native controls. */
+button, .button { transition: transform 90ms ease-out, background-color 90ms ease-out; }
+button:hover, .button:hover, button:focus-visible, .button:focus-visible {
+  background-image: url(__BUTTON_HIGHLIGHT_URL__);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  transform: scale(1.02);
+}
+button:active, .button:active { transform: scale(0.95); }
+.sound-toggle { position: fixed; top: 0.55rem; right: 1rem; z-index: 5; width: auto; max-width: none; font-size: 0.85rem; }
+.sound-toggle[aria-pressed="true"]::after { content: ' ✓'; margin-left: 0.35em; }
+.page-wipe { position: fixed; pointer-events: none; z-index: 1; max-width: none; background-image: url(__SCRATCH_PAPER_URL__); background-size: 115% 120%; background-position: center; }
+.sources-credits { max-width: var(--measure); padding-left: 1.4rem; margin: 1rem 0 1.8rem; }
+.sources-credits li { margin-bottom: 0.5rem; }
+html[data-page="sources"] .sources { padding-top: 4rem; }
 
 /* --------------------------------------------------------------------------
    Scenes
@@ -778,6 +814,11 @@ html.js[data-view="beat"] .scene:not([data-current]) {
   display: none;
 }
 
+html.js[data-view="beat"] .chapter:not([data-current-chapter]) { display: none; }
+html.js[data-view="beat"] .chapter,
+html.js[data-view="beat"] .scene { margin-bottom: 0; }
+html.js[data-view="beat"] .closing-actions:has([hidden]) { display: none; }
+
 /* In the scene view a chapter heading belongs to the scene on screen. */
 html.js[data-view="beat"] .chapter-title {
   display: none;
@@ -960,6 +1001,8 @@ html.js[data-view="beat"] .chapter-title {
    ----------------------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
+  .landing .art { transform: none !important; }
+  .page-wipe { display: none !important; }
   *,
   *::before,
   *::after {
@@ -1003,6 +1046,8 @@ html.js[data-view="beat"] .chapter-title {
     display: none !important;
   }
 
+  .sound-toggle, .page-wipe { display: none !important; }
+
   /* Whatever arrangement the screen was in, paper is one column. */
   .reader-shell {
     display: block !important;
@@ -1018,6 +1063,7 @@ html.js[data-view="beat"] .chapter-title {
   html.js[data-view] .landing,
   html.js[data-view] .essay-body,
   html.js[data-view] .chapter-title,
+  html.js[data-view] .chapter,
   html.js[data-view] .scene,
   html.js[data-view] .art-comparison .art-view,
   html.js[data-view] .art-comparison .art-view-label {

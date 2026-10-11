@@ -5,7 +5,7 @@
       "id": "rewrite-mixed-day-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s091 “One bad day” and s092 “Two different questions” (single): an illustrative difficult day that lets the essay separate a passing mood from a life going well.",
+      "purpose": "Scenes s091 \u201cOne bad day\u201d and s092 \u201cTwo different questions\u201d (single): an illustrative difficult day that lets the essay separate a passing mood from a life going well.",
       "description": "Fictional Bob seated beside an open, unlettered notebook. Tired eyebrows, small neutral mouth, relaxed shoulders; the task looks demanding without a despairing or triumphant verdict. One intact figure.",
       "transparent_background": true,
       "reference_assets": [
@@ -38,7 +38,7 @@
       "id": "rewrite-chosen-study-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s093 “Living well takes more than a mood” (single, after Koj's dialogue), s097 “Chosen challenge, forced hardship” (pair with A06, view label “Chosen effort”) and s100 “Who ranks pleasures?” (pair with A05, view label “Studying”): effort a person chooses, demanding and still worth it.",
+      "purpose": "Scenes s093 \u201cLiving well takes more than a mood\u201d (single, after Koj's dialogue), s097 \u201cChosen challenge, forced hardship\u201d (pair with A06, view label \u201cChosen effort\u201d) and s100 \u201cWho ranks pleasures?\u201d (pair with A05, view label \u201cStudying\u201d): effort a person chooses, demanding and still worth it.",
       "description": "Koj with the recognizable curl, compact seated body, open book and pencil. Concentrated eyebrows, slightly strained expression; no ecstatic smile, grades, labels or badges.",
       "transparent_background": true,
       "reference_assets": [
@@ -71,7 +71,7 @@
       "id": "rewrite-agency-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s094 “Having a say” and s108 “Choosing what to keep” (single, after Vier's dialogue): having a say over which demands to keep, without depicting a path or an idealized second self.",
+      "purpose": "Scenes s094 \u201cHaving a say\u201d and s108 \u201cChoosing what to keep\u201d (single, after Vier's dialogue): having a say over which demands to keep, without depicting a path or an idealized second self.",
       "description": "Vier with angular tuft, thoughtful face, seated with a phone set down and a notebook nearby. One hand raised in a small questioning gesture; no pathways, arrows or idealized second self.",
       "transparent_background": true,
       "reference_assets": [
@@ -103,7 +103,7 @@
       "id": "rewrite-playing-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s096 “A hobby can offer several things” (single) and s100 “Who ranks pleasures?” (pair with A03, view label “Playing”): a freely chosen hobby supplying competence, autonomy and relatedness at once.",
+      "purpose": "Scenes s096 \u201cA hobby can offer several things\u201d (single) and s100 \u201cWho ranks pleasures?\u201d (pair with A03, view label \u201cPlaying\u201d): a freely chosen hobby supplying competence, autonomy and relatedness at once.",
       "description": "TJ and fictional Bob sit together with simple game controllers; relaxed expressive faces. One small unlettered screen off to the side, no game logo or generated UI. Preserve both full figures.",
       "transparent_background": true,
       "reference_assets": [
@@ -135,7 +135,7 @@
       "id": "rewrite-required-work-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s097 “Chosen challenge, forced hardship” (pair with A03, view label “Required work”): obligation a fictional person cannot refuse, never assigned to Koj.",
+      "purpose": "Scene s097 \u201cChosen challenge, forced hardship\u201d (pair with A03, view label \u201cRequired work\u201d): obligation a fictional person cannot refuse, never assigned to Koj.",
       "description": "Fictional Bob, visibly tired, seated with an unlettered stack of task papers and a simple clock. No bill amounts, grades, employer or hardship assigned to a member.",
       "transparent_background": true,
       "reference_assets": [
@@ -167,8 +167,8 @@
       "id": "rewrite-rest-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s098 “Rest does not need to pay us back” (single, after TJ's dialogue): rest shown as worth having in itself, with no timer, reward or productivity framing.",
-      "description": "TJ with crown tuft reclining comfortably against a simple cushion; restful eyes, small content smile. No phone app, timer, productivity badge or “before/after” body.",
+      "purpose": "Scene s098 \u201cRest does not need to pay us back\u201d (single, after TJ's dialogue): rest shown as worth having in itself, with no timer, reward or productivity framing.",
+      "description": "TJ with crown tuft reclining comfortably against a simple cushion; restful eyes, small content smile. No phone app, timer, productivity badge or \u201cbefore/after\u201d body.",
       "transparent_background": true,
       "reference_assets": [
         "assets/concepts/stickman-character-sheet-v1.png",
@@ -199,7 +199,7 @@
       "id": "rewrite-expectations-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s103 “The expected life” (single): four expected milestones as separate blank props, leaving room for the browser labels “Grades”, “Career”, “Relationship” and “Income” beside the matching prop, with no sequence or score.",
+      "purpose": "Scene s103 \u201cThe expected life\u201d (single): four expected milestones as separate blank props, leaving room for the browser labels \u201cGrades\u201d, \u201cCareer\u201d, \u201cRelationship\u201d and \u201cIncome\u201d beside the matching prop, with no sequence or score.",
       "description": "Vier thoughtful at center; four separate small props around him: blank grade sheet, work bag, two-person keepsake silhouette, blank banknote. Plenty of blank space for the four browser labels specified in s103. No milestones route or scoring.",
       "transparent_background": true,
       "reference_assets": [
@@ -231,7 +231,7 @@
       "id": "rewrite-phone-connection-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s104 “What does the purchase give me?” (single, after TJ's dialogue) and the default “Connection” state of scene s105 “One phone, different uses”: the same phone used to stay close to someone.",
+      "purpose": "Scene s104 \u201cWhat does the purchase give me?\u201d (single, after TJ's dialogue) and the default \u201cConnection\u201d state of scene s105 \u201cOne phone, different uses\u201d: the same phone used to stay close to someone.",
       "description": "TJ using a small phone with a warm smile; fictional Bob beside him, holding a phone and smiling back. No screen lettering, messages, notification counts or connection arrows. Two full figures.",
       "transparent_background": true,
       "reference_assets": [
@@ -263,7 +263,7 @@
       "id": "rewrite-phone-comparison-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Second “Comparison” state of scene s105 “One phone, different uses”: the same phone and pose turned to comparison instead; framing must stay close to A09a so the optional control swaps states instantaneously.",
+      "purpose": "Second \u201cComparison\u201d state of scene s105 \u201cOne phone, different uses\u201d: the same phone and pose turned to comparison instead; framing must stay close to A09a so the optional control swaps states instantaneously.",
       "description": "Same TJ identity and phone pose, now thoughtful and slightly tense; no second person, status symbols, numeric counts or assumed diagnosis. Preserve framing close to A09a for an instantaneous state swap.",
       "transparent_background": true,
       "reference_assets": [
@@ -295,8 +295,8 @@
       "id": "rewrite-cheer-pressure-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s106 “Pressure to be cheerful” (single): sadness that persists while a fictional friend urges cheer, with clear space for the browser dialogue “Cheer up!” beside the friend rather than over heads.",
-      "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text “Cheer up!” near friend, not over heads.",
+      "purpose": "Scene s106 \u201cPressure to be cheerful\u201d (single): sadness that persists while a fictional friend urges cheer, with clear space for the browser dialogue \u201cCheer up!\u201d beside the friend rather than over heads.",
+      "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text \u201cCheer up!\u201d near friend, not over heads.",
       "transparent_background": true,
       "reference_assets": [
         "assets/concepts/stickman-character-sheet-v1.png",
@@ -327,7 +327,7 @@
       "id": "rewrite-joy-and-pressure-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s107 “Joy does not cancel the problem” (single): real enjoyment coexisting with unresolved demands, with neither read as the truer feeling.",
+      "purpose": "Scene s107 \u201cJoy does not cancel the problem\u201d (single): real enjoyment coexisting with unresolved demands, with neither read as the truer feeling.",
       "description": "Fictional Bob seated with a plate of food and a phone placed aside. A restrained smile and worried brow coexist; a small stack of blank papers nearby indicates unresolved demands, not measured debt.",
       "transparent_background": true,
       "reference_assets": [
@@ -359,7 +359,7 @@
       "id": "rewrite-shared-meal-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s109 “Ordinary care” and s111 “Sharing a meal” (group): the three members eating together as ordinary care, with browser names reserved above their heads.",
+      "purpose": "Scenes s109 \u201cOrdinary care\u201d and s111 \u201cSharing a meal\u201d (group): the three members eating together as ordinary care, with browser names reserved above their heads.",
       "description": "TJ, Koj and Vier seated around a small low table with three simple plates. Friendly, calm expressions, full visible heads and compact bodies. No restaurant brand, purchase or depicted real event. Reserve browser names above heads.",
       "transparent_background": true,
       "reference_assets": [
@@ -391,7 +391,7 @@
       "id": "rewrite-care-work-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s112 “Who keeps the relationship going?” (single): the unnoticed organizing work behind a shared meal, carried by a fictional person and never assigned to a member.",
+      "purpose": "Scene s112 \u201cWho keeps the relationship going?\u201d (single): the unnoticed organizing work behind a shared meal, carried by a fictional person and never assigned to a member.",
       "description": "One fictional organizer arranging plates while checking a blank phone. Focused rather than permanently unhappy; other guests need not appear. No gender-coded duty or inferred member household.",
       "transparent_background": true,
       "reference_assets": [
@@ -423,7 +423,7 @@
       "id": "rewrite-solitude-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s113 “Boundaries belong in connection” (single): chosen solitude as part of connection rather than a picture of loneliness.",
+      "purpose": "Scene s113 \u201cBoundaries belong in connection\u201d (single): chosen solitude as part of connection rather than a picture of loneliness.",
       "description": "Fictional Bob reading alone, relaxed posture and content face; one simple book. Empty surrounding space stays transparent, without loneliness symbols.",
       "transparent_background": true,
       "reference_assets": [
@@ -455,7 +455,7 @@
       "id": "rewrite-time-available-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Default “Time available” state of scene s114 “The same invitation, different options”: the same fictional person with hours free to accept an invitation.",
+      "purpose": "Default \u201cTime available\u201d state of scene s114 \u201cThe same invitation, different options\u201d: the same fictional person with hours free to accept an invitation.",
       "description": "Fictional Bob standing freely with a small basketball, smiling and ready to join. No literal calendar, text or estimated free hours.",
       "transparent_background": true,
       "reference_assets": [
@@ -487,7 +487,7 @@
       "id": "rewrite-time-claimed-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Second “Time claimed” state of scene s114 “The same invitation, different options”: the same identity with those hours already claimed by work and travel.",
+      "purpose": "Second \u201cTime claimed\u201d state of scene s114 \u201cThe same invitation, different options\u201d: the same identity with those hours already claimed by work and travel.",
       "description": "Same Bob identity carrying a plain work bag, glancing at a clock, with a simple bus-stop post nearby. Tired expression; no employer, route map or fictional schedule data.",
       "transparent_background": true,
       "reference_assets": [
@@ -519,7 +519,7 @@
       "id": "rewrite-time-transfer-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s115 “Buying time moves the work” (pair, view labels “Time gained” then “Work performed”): bought time reappearing as someone else's labour; the pair layout needs two separately usable cutouts.",
+      "purpose": "Scene s115 \u201cBuying time moves the work\u201d (pair, view labels \u201cTime gained\u201d then \u201cWork performed\u201d): bought time reappearing as someone else's labour; the pair layout needs two separately usable cutouts.",
       "description": "Two fictional people in separate transparent groups: one resting, the other doing dishes. Distinguish through pose and browser labels, not a rich/poor caricature. Keep task tools fully visible. Supply separately usable cutouts for pair layout.",
       "transparent_background": true,
       "reference_assets": [
@@ -557,7 +557,7 @@
       "id": "rewrite-campus-space-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s124 “Make room on campus” and s127 “Test a proposal before claiming success” (single): the fictional shared space our proposal asks for, with no real location named and no success marks.",
+      "purpose": "Scenes s124 \u201cMake room on campus\u201d and s127 \u201cTest a proposal before claiming success\u201d (single): the fictional shared space our proposal asks for, with no real location named and no success marks.",
       "description": "Fictional proposed shared space: bench, modest shade and two students spending time together, with clear unobstructed space alongside seating. No actual campus landmark, commercial branding or success indicators.",
       "transparent_background": true,
       "reference_assets": [
@@ -589,7 +589,7 @@
       "id": "rewrite-space-work-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s126 “Who benefits, who pays?” (pair, view labels “Students using the space” then “Staff maintaining it”): the maintenance the proposal creates; the pair layout needs two separately usable cutouts.",
+      "purpose": "Scene s126 \u201cWho benefits, who pays?\u201d (pair, view labels \u201cStudents using the space\u201d then \u201cStaff maintaining it\u201d): the maintenance the proposal creates; the pair layout needs two separately usable cutouts.",
       "description": "Pair cutouts: two fictional students at a shared table; a fictional staff member cleaning the same kind of table. Staff expression attentive, not automatically miserable. No implication of measured workload.",
       "transparent_background": true,
       "reference_assets": [
@@ -621,6 +621,504 @@
           }
         ],
         "verified": "Integrated bytes match the asset-branch head; recorded SHA-256, dimensions, RGBA alpha and prompt-record hashes recomputed in this checkout."
+      }
+    },
+    {
+      "id": "polish-three-answers",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s202",
+      "description": "Three original small round-headed characters across composition: left TJ with small two-prong hair tuft holds a game controller and smiles calmly; middle Koj with single curl carefully balances a small unfinished craft, thoughtful; right Vier with angular three-point tuft gently chooses between two blank direction cards. Each distinct perspective has equal room. Three bodies no extra people.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B01",
+      "alt": "TJ enjoys a game, Koj works on a small craft and Vier considers two alternatives.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-three-answers/scene.png",
+            "sha256": "34eddd2175c3a075bfa968d2904726110620367a4550971cd9e294091652eb64",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-student-standpoint",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s203",
+      "description": "Three student figures TJ small tuft, Koj single curl and Vier angular tuft gather around an open notebook and a modest laptop on low table. Nearby basketball and bus-ticket shape hint free time and travel; thoughtful rather than celebratory. No printed words.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B02",
+      "alt": "TJ, Koj and Vier reflect together over a notebook and laptop, with a basketball and travel ticket nearby.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-student-standpoint/scene.png",
+            "sha256": "97f5d67ec71670632d8749503a92511f2675e780d9261c0de93a6d89314a3ac6",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-needs-together",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s207",
+      "description": "One plain round-headed fictional figure sits with a bowl of food, small home-key beside them, and another friendly plain round-headed figure reaching a welcoming hand. Food, shelter and friendship coexist, not a pyramid or hierarchy. Warm but reflective.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B03",
+      "alt": "Fictional friends share food and connection while a home key sits nearby.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-needs-together/scene.png",
+            "sha256": "61322e1d2dba0bd4b6ba32e0b59c8d2433d8aa1d23c491b8de56993e24e1c61d",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-pleasure-judgment",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s210",
+      "description": "Two plain round-headed fictional figures share a game controller and a book, looking thoughtfully at both equally. A third figure carries the shared snack tray with tired expression, reminding viewer pleasures affect organizer too. Neither book nor game placed above other.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B04",
+      "alt": "Fictional figures consider a game and a book while another carries their shared snacks.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-pleasure-judgment/scene.png",
+            "sha256": "f5a740a1c9bde5d652403e624d3431099baccb912a28e7b58e1eb02ec57d3dc3",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-purchase-purpose",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s212",
+      "description": "TJ, small two-prong tuft, looks thoughtfully at a modest laptop used for making a small creative project, with one coin stack and folded bus ticket next to it. Objects support chosen life but have costs. Only one character.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B05",
+      "alt": "TJ considers how a laptop, its cost and travel needs fit the life he wants.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-purchase-purpose/scene.png",
+            "sha256": "9d1c6dfa505cb54be0f5d714fff7d8bf180df166fe2b8c6bdaaacb991556100c",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-chosen-company",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s216",
+      "description": "Two plain round-headed fictional figures enjoy a gentle conversation over bowls at small table, with a third plain round-headed fictional figure comfortably reading alone beside them at a separate seat. Equal comfortable expressions, no loneliness stereotype.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B06",
+      "alt": "Fictional friends enjoy a meal while another person comfortably reads alone.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-chosen-company/scene.png",
+            "sha256": "cd699a160ce4d3ddfc2b5a1867c757cea1c7e132846303ea6da4739ca0e10c60",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-fare-and-friendship",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s221",
+      "description": "One plain round-headed fictional friend holds a few coins beside a bus-stop post with no writing, thinking about two friends seen nearby in a small welcoming cluster. Person has a half-smile and worried eyebrows, joy and fare concern together. No thought bubble lettering.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B07",
+      "alt": "A fictional friend considers the fare while looking toward a welcoming group.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-fare-and-friendship/scene.png",
+            "sha256": "393dec5aed72182ef05513a38c1f11925be59e50406f44da3637cfd5a424915f",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-real-access",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s222",
+      "description": "Two plain round-headed fictional figures, one using a manual wheelchair and one walking, face a welcoming doorway reached by a gentle usable ramp. Small bus-stop post and clock sit nearby to show transport and hours also matter. Simple low scene, no labels, no miraculous happiness.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B08",
+      "alt": "Fictional visitors approach a usable ramp with transport and opening hours nearby.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-real-access/scene.png",
+            "sha256": "67e16cf9ea9547c7fa78beda6779a3248c873f4bf9ae451811987871e212fdaa",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-setting-options",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s223",
+      "description": "Three plain round-headed fictional figures discuss a blank timetable board with empty squares at low table. One gestures to small clock, another listens, third points to bus icon drawn without writing. Participatory decisions about schedules, not a villain or accusation.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B09",
+      "alt": "Fictional participants discuss a timetable, transport and opening hours together.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-setting-options/scene.png",
+            "sha256": "514495bc3b57fe5d73f476a874bb0b8103e6dae26940548fa523c9c3ffd5b8c3",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-unequal-room",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s224",
+      "description": "Two plain round-headed fictional figures both reach toward simple shared open space. One path clear; other includes small piles of tasks and a transport barrier. Both have agency and varied thoughtful faces; obstacles social, not ability or laziness. No podium or winner.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B10",
+      "alt": "Fictional people face different obstacles on their paths toward shared space.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-unequal-room/scene.png",
+            "sha256": "2eabce70367cef60b0fa5f01246a4a616de607921e5f9140bfe14af4ea048ea7",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-shared-preparation",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s225",
+      "description": "Three plain round-headed fictional friends share tasks preparing small gathering: one carries two bowls, another moves a chair, third adjusts a blank clock marker with others listening. Cooperative ordinary change, one seated resting figure permitted. Small original scene, no text.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B11",
+      "alt": "Fictional friends share preparation, seating and timing for a gathering.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-shared-preparation/scene.png",
+            "sha256": "f014969199848ced8a6d57063a41e7c1e4842a900b840d9cb075a729fb813eb1",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-proposal-review",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s228",
+      "description": "Three plain round-headed fictional figures examine a small campus seating area: one visitor comfortably sitting, one staff member holding broom with thoughtful tired expression, and one person outside entrance gesturing at clock. Facilitator listens with blank notebook. Open evaluation includes absent people and staff burden, not a success medal.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B12",
+      "alt": "Fictional visitors and staff consider a seating area, maintenance demands and hours.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-proposal-review/scene.png",
+            "sha256": "4c9ac244dcefd6dfe0d517559119a18697ff34074362d4478959cdabd84a6f9f",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-many-parts-of-life",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s229",
+      "description": "One plain round-headed fictional figure surrounded by four small everyday objects arranged loosely, not checklist: game ball, open craft notebook, two shared cups, comfortable cushion. Reflective contented face with one uncertain eyebrow, mixed life not perfect smile.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B13",
+      "alt": "A fictional person reflects among objects representing play, valued work, company and rest.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-many-parts-of-life/scene.png",
+            "sha256": "a1e066c6ce77d76648d57629f2b7e5757168807ffd52b0f47e913412be8a5421",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "polish-answers-remain",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Supporting illustration for s230",
+      "description": "TJ small two-prong tuft, Koj single curl and Vier angular tuft sit side by side with comfortable space between. TJ rests with controller, Koj holds small unfinished craft, Vier holds blank open invitation card. They look toward each other with distinct calm/reflective/curious expressions, no forced agreement. All three equally visible.",
+      "transparent_background": true,
+      "reference_assets": [
+        "assets/concepts/stickman-character-sheet-v1.png",
+        "assets/generated/rewrite-opening-v1/opening.png"
+      ],
+      "status": "consumed",
+      "ref": "B14",
+      "alt": "TJ rests with a game, Koj holds a craft and Vier considers an invitation; their perspectives remain distinct.",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/generated/polish-answers-remain/scene.png",
+            "sha256": "65a6a3dddafd4530c6d705ce5a870728e288ff98cad6c047fc6d727ed7392c19",
+            "width": 1536,
+            "height": 1024
+          }
+        ],
+        "verified": "Selected final bytes, dimensions and transparency inspected; fictional figures cleaned separately from the named cast. Prompt hashes retained. Owner preview approval remains pending."
+      }
+    },
+    {
+      "id": "button-highlight",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Button hover and keyboard focus highlight",
+      "description": "Original generated raster UI asset, no lettering.",
+      "status": "consumed",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/ui/polish/button-highlight.png",
+            "sha256": "819bb51f075ce2213f0cc33e0a6bb0441766c763146c719b2af9882ed1a097ed",
+            "width": 2172,
+            "height": 724
+          }
+        ],
+        "verified": "Generated output visually inspected; build verifies selected bitmap hashes."
+      }
+    },
+    {
+      "id": "scratch-paper",
+      "issue": 20,
+      "branch": "codex/issue-20-polish",
+      "purpose": "Decorative reading-area wipe",
+      "description": "Original generated raster UI asset, no lettering.",
+      "status": "consumed",
+      "consumed": {
+        "asset_branch": "codex/art-polish-v1",
+        "source_head": "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6",
+        "cherry_picked_source_commits": [
+          "33cc848576ce0f5127eac95975fd16fa83832d07",
+          "e1dee7bd325dbff8cbd7eace3f215f352d62ecb6"
+        ],
+        "selected_files": [
+          {
+            "path": "assets/ui/polish/scratch-paper.png",
+            "sha256": "67b1e5841f86843bf1c525173afd63b96b7618f535bd636e28a196f22e95bb18",
+            "width": 1254,
+            "height": 1254
+          }
+        ],
+        "verified": "Generated output visually inspected; build verifies selected bitmap hashes."
       }
     }
   ]

@@ -154,14 +154,26 @@ export async function buildOutputs(content) {
   ]);
 
   const artwork = await readSelectedArtwork(content);
+  const uiManifest = JSON.parse(await readText('assets/ui/polish/manifest.json'));
+  const uiArtwork = new Map();
+  for (const image of uiManifest.images) {
+    const bytes = await read(image.path);
+    if (createHash('sha256').update(bytes).digest('hex') !== image.sha256) {
+      throw new ArtworkError(`UI artwork changed: ${image.path}`);
+    }
+    uiArtwork.set(image.path, bytes);
+  }
+  const withUi = (styles, inline) => uiManifest.images.reduce((value, image) =>
+    value.replaceAll(`__${image.id.replaceAll('-', '_').toUpperCase()}_URL__`,
+      inline ? toDataUri(uiArtwork.get(image.path), 'image/png') : image.path), styles);
 
   // Hosted: ordinary linked files, so the browser caches them between visits,
   // and the only output the project typeface is served from.
-  const hostedCss = withFontUrl(
+  const hostedCss = withUi(withFontUrl(
     withFontUrl(css, FONT_URL_TOKEN, FALLBACK_FONT.published),
     PROJECT_FONT_URL_TOKEN,
     PROJECT_FONT.published,
-  );
+  ), false);
   const hostedOptions = {
     mode: 'hosted',
     stylesheetUrl: 'styles.css',
@@ -177,11 +189,11 @@ export async function buildOutputs(content) {
   // covers this site using the face, not a copy of the file travelling inside
   // a document handed to someone else, so the hosted-only region of the
   // stylesheet leaves here and the bundled fallback sets everything.
-  const offlineCss = withFontUrl(
+  const offlineCss = withUi(withFontUrl(
     withoutHostedOnly(css, HOSTED_ONLY_CSS),
     FONT_URL_TOKEN,
     toDataUri(fontBytes, FALLBACK_FONT.mediaType),
-  );
+  ), true);
   const offline = renderEssay(content, {
     mode: 'offline',
     inlineStyles: offlineCss,
@@ -194,7 +206,7 @@ export async function buildOutputs(content) {
     fontNotice: FALLBACK_FONT.noticeAlone,
   });
 
-  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork };
+  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork };
 }
 
 /** Every check the build refuses to publish without. */
@@ -328,6 +340,7 @@ async function main() {
     written.push(await write(join(DIST, FALLBACK_FONT.published), outputs.fontBytes));
     written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
     for (const [path, bytes] of outputs.artwork) written.push(await write(join(DIST, path), bytes));
+    for (const [path, bytes] of outputs.uiArtwork) written.push(await write(join(DIST, path), bytes));
   }
 
   console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} scene(s) `

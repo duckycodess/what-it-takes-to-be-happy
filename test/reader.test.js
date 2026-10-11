@@ -221,8 +221,8 @@ test('the rail opens beside the essay on a wide window and is a drawer on a phon
   assert.equal(open().rail(), 'open', 'a wide window starts with the rail beside the essay');
   assert.equal(open({ narrow: true }).rail(), 'closed', 'a phone starts with the drawer shut');
 
-  // One media query, asked once, and it is the width the stylesheet uses.
-  assert.deepEqual(open().mediaQueries, ['(max-width: 59.99rem)']);
+  // Width and motion preferences each use the stylesheet's own query.
+  assert.deepEqual(open().mediaQueries, ['(prefers-reduced-motion: reduce)', '(max-width: 59.99rem)']);
 });
 
 test('only the chapter being read is expanded, and the rest can be opened one at a time', () => {

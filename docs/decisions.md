@@ -9,8 +9,8 @@ The user confirmed the shared brief and subsequently requested repository creati
 > and its phone drawer, a reading footer of Back and Next alone, no visible Print control, broader
 > prose, smaller contextual artwork, and no red ring around a whole scene. It is
 > [further down this page](#owner-amendment--11-october-2026-how-the-essay-is-read) and governs the
-> reader's interface. It does not touch the approved copy, and the replacement prose it anticipates
-> is **not** approved and **not** integrated.
+> reader's interface. The complete replacement essay was subsequently approved, integrated and merged in PR #19.
+> Issue #20 is a separate, owner-authorized polish revision with its own preview/release gate.
 
 ## Owner amendment — 9 October 2026
 
@@ -245,3 +245,13 @@ authored main path is [the storyboard](storyboard.md), with [the cast registry](
 ### Verification repair and publication — 11 October 2026
 
 The owner authorized publishing issue #17 and fixing its failed tests directly. Root owns the isolated publication checkout for PR #19; the original quota-stopped checkout and sessions remain preserved. Scope includes stale coverage/driver fixtures and real application defects, with complete logs and renewed independent review of the final pushed head. Production remains held for owner desktop/phone layout review and separate release approval. Passage keyboard focus marks the title rather than surrounding the whole scene with a red outline; interactive controls retain visible focus.
+
+## Owner amendment — 11 October 2026, illustrated paper polish
+
+After reviewing PR #19, the owner merged it and authorized a separate issue/PR for the agreed polish. Issue #20 retains the complete approved argument and adds fourteen contextual original illustrations, filling every formerly text-only passage. Fictional figures remain distinct from TJ, Koj and Vier; names remain browser text.
+
+Every Next/Back and paginated chapter move uses a short erase/redraw effect confined to the reading area. The rail and footer remain steady, rapid moves supersede earlier effects, and reduced-motion readers move instantly. The illustrated cover reacts gently to a pointer or tap without moving the title or Begin action. Buttons gain original raster marker highlights and small press feedback. Optional local scratch/click sounds start OFF; no music, hover sound or external sound samples.
+
+The title has a wider desktop measure with natural phone wrapping. Long passages scroll normally; hidden chapter wrappers and trailing blank space are removed only from paginated view. Continuous reading and printing retain every passage.
+
+The exact Sources cuts and three linked credit bullets are recorded in [the hash-bound amendment](editorial/polish-amendment.json), rather than changing the immutable original essay/handoff. The owner must see the new tested preview before authorizing production for this follow-up. PR #19 approval does not silently approve unseen issue #20 work.

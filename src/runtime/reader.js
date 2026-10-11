@@ -30,6 +30,64 @@
 
   var root = document.documentElement;
 
+  // Optional local sound. No autoplay, remote samples or saved opt-in. A
+  // browser that cannot play sound still offers the complete essay.
+  var soundButton = document.querySelector('[data-sound]');
+  var soundOn = false;
+  var audio = null;
+  var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function sound(kind) {
+    if (!soundOn || !audio) return;
+    try {
+      var start = audio.currentTime;
+      var gain = audio.createGain();
+      gain.connect(audio.destination);
+      var source;
+      var duration = kind === 'scratch' ? 0.28 : 0.055;
+      var filter = null;
+      if (kind === 'scratch') {
+        var buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
+        var samples = buffer.getChannelData(0);
+        for (var i = 0; i < samples.length; i += 1) samples[i] = (Math.random() * 2 - 1) * 0.25;
+        source = audio.createBufferSource();
+        source.buffer = buffer;
+        filter = audio.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1600;
+        source.connect(filter);
+        filter.connect(gain);
+      } else {
+        source = audio.createOscillator();
+        source.frequency.setValueAtTime(650, start);
+        source.frequency.exponentialRampToValueAtTime(280, start + duration);
+        source.connect(gain);
+      }
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(kind === 'scratch' ? 0.035 : 0.018, start + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+      source.onended = function () { source.disconnect(); gain.disconnect(); if (filter) filter.disconnect(); };
+      source.start(start);
+      source.stop(start + duration);
+    } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
+  }
+  if (soundButton) soundButton.addEventListener('click', function () {
+    soundOn = !soundOn;
+    if (soundOn) {
+      try {
+        var Audio = window.AudioContext || window.webkitAudioContext;
+        if (!Audio) throw new Error('Audio unavailable');
+        if (!audio) audio = new Audio();
+        var ready = audio.resume();
+        if (ready && ready.catch) ready.catch(function () { soundOn = false; soundButton.setAttribute('aria-pressed', 'false'); });
+      } catch (error) { soundOn = false; }
+    }
+    soundButton.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    sound('click');
+  });
+  document.addEventListener('click', function (event) {
+    if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) sound('click');
+  });
+
   /** Reads one parameter out of a query string without URLSearchParams. */
   function param(search, name) {
     var pairs = String(search || '').replace(/^\?/, '').split('&');
@@ -86,6 +144,53 @@
   var railRestore = document.querySelector('[data-rail-restore]');
   var launcher = document.querySelector('.rail-launcher');
   var landing = document.getElementById('landing');
+  var wipe = document.querySelector('[data-page-wipe]');
+  var wipeAnimation = null;
+  function cancelWipe() {
+    if (wipeAnimation) wipeAnimation.cancel();
+    wipeAnimation = null;
+    if (wipe) wipe.hidden = true;
+  }
+  function redraw() {
+    cancelWipe();
+    if (!wipe || !wipe.animate || (reduced && reduced.matches)) return;
+    var content = view === 'landing' ? landing : scenes[current];
+    if (!content) return;
+    var box = content.getBoundingClientRect();
+    var footer = controls && !controls.hidden ? controls.getBoundingClientRect().top : window.innerHeight;
+    wipe.style.left = box.left + 'px';
+    wipe.style.top = Math.max(0, box.top) + 'px';
+    wipe.style.width = box.width + 'px';
+    wipe.style.height = Math.max(0, footer - Math.max(0, box.top)) + 'px';
+    wipe.hidden = false;
+    var animation = wipe.animate([
+      { clipPath: 'inset(0 100% 0 0)', opacity: 0.9 },
+      { clipPath: 'inset(0 0 0 0)', opacity: 0.9, offset: 0.45 },
+      { clipPath: 'inset(0 0 0 100%)', opacity: 0 }
+    ], { duration: 600, easing: 'ease-in-out' });
+    wipeAnimation = animation;
+    sound('scratch');
+    animation.onfinish = function () { if (wipeAnimation === animation) cancelWipe(); };
+  }
+  window.addEventListener('beforeprint', cancelWipe);
+  window.addEventListener('resize', cancelWipe);
+  if (reduced && reduced.addEventListener) reduced.addEventListener('change', cancelWipe);
+
+  // Illustration responds; title and actions never move. No information is
+  // hidden behind the decorative pointer/tap reaction.
+  var cover = landing && landing.querySelector('.art');
+  if (cover) {
+    landing.addEventListener('pointermove', function (event) {
+      if ((reduced && reduced.matches) || event.pointerType === 'touch') return;
+      var box = landing.getBoundingClientRect();
+      cover.style.setProperty('--cover-x', ((event.clientX - box.left) / box.width - 0.5) * 12 + 'px');
+      cover.style.setProperty('--cover-y', ((event.clientY - box.top) / box.height - 0.5) * 8 + 'px');
+    });
+    landing.addEventListener('pointerleave', function () { cover.style.removeProperty('--cover-x'); cover.style.removeProperty('--cover-y'); });
+    cover.addEventListener('pointerdown', function () {
+      if (!(reduced && reduced.matches) && cover.animate) cover.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-7px)', offset: 0.5 }, { transform: 'translateY(0)' }], { duration: 400, easing: 'ease-out' });
+    });
+  }
 
   /* Every link to Sources & Credits, with the address it was written with.
      The shared control has to carry where the reader is, exactly as a
@@ -348,6 +453,9 @@
     scenes.forEach(function (scene, index) {
       scene.toggleAttribute('data-current', index === current && view === 'beat');
     });
+    Array.prototype.slice.call(document.querySelectorAll('.chapter')).forEach(function (chapter) {
+      chapter.toggleAttribute('data-current-chapter', chapter.getAttribute('data-chapter') === scenes[current].getAttribute('data-chapter'));
+    });
     applyPlace(place());
 
     // The first scene's Back is the way out to the landing, and the last
@@ -382,7 +490,7 @@
 
   /* What the drawer is laid over. Not the skip link, which sits above it and
      is still a reasonable way out. */
-  var behindDrawer = [landing, document.querySelector('.essay-body'), controls]
+  var behindDrawer = [landing, document.querySelector('.essay-body'), controls, soundButton]
     .filter(function (element) { return !!element; });
 
   /**
@@ -531,6 +639,7 @@
      bar, where taking focus would be rude rather than helpful. */
 
   function showLanding(options) {
+    cancelWipe();
     var settings = options || {};
     setView('landing');
     window.scrollTo(0, 0);
@@ -542,6 +651,7 @@
   }
 
   function showScene(index, options) {
+    cancelWipe();
     var settings = options || {};
     if (index < 0) { showLanding(); return; }
     current = Math.min(Math.max(index, 0), last);
@@ -552,6 +662,7 @@
   }
 
   function showReading(options) {
+    cancelWipe();
     var settings = options || {};
     setView('reading');
     var target = settings.target || scenes[current];
@@ -641,6 +752,7 @@
       return;
     }
     showScene(index);
+    redraw();
   }
 
   chapterLinks.forEach(function (link) {
@@ -698,12 +810,14 @@
       markMove(event);
       if (current === 0) showLanding();
       else showScene(current - 1);
+      redraw();
     });
   }
   if (nextButton) {
     nextButton.addEventListener('click', function (event) {
       markMove(event);
       showScene(current + 1);
+      redraw();
     });
   }
 
@@ -750,12 +864,13 @@
     if (event.key === 'ArrowRight') {
       event.preventDefault();
       markMove();
-      if (current < last) showScene(current + 1);
+      if (current < last) { showScene(current + 1); redraw(); }
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
       markMove();
       if (current === 0) showLanding();
       else showScene(current - 1);
+      redraw();
     }
   });
 

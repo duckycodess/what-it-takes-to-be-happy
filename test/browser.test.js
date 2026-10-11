@@ -50,11 +50,48 @@ if (built) {
   hostedFiles[PROJECT_FONT.published] = built.projectFontBytes;
   hostedFiles[FALLBACK_FONT.published] = built.fontBytes;
   hostedFiles[FALLBACK_FONT_LICENSE.published] = built.fontLicense;
-  for (const [path, bytes] of built.artwork) hostedFiles[path] = bytes;
+  for (const [path, bytes] of [...built.artwork, ...built.uiArtwork]) hostedFiles[path] = bytes;
 }
 
 const hosted = built ? built.hosted : '';
 const sources = built ? built.sources : '';
+
+test('paper feedback leaves rapid navigation, reading and footer controls usable', { skip }, () => {
+  const { value } = essayPage({ width: 1280, driver: `
+    var report = {};
+    probe.step(function () {
+      report.soundStartsOff = probe.q('[data-sound]').getAttribute('aria-pressed') === 'false';
+      probe.q('[data-begin]').click();
+      probe.q('[data-next]').click();
+      var first = probe.q('[data-page-wipe]').getAnimations()[0];
+      report.firstEffect = !!first;
+      probe.q('[data-next]').click();
+      report.previousCancelled = !first || first.playState === 'idle';
+      report.latestScene = probe.sceneId();
+      var wipe = probe.q('[data-page-wipe]'), box = wipe.getBoundingClientRect();
+      report.footerClear = box.bottom <= probe.q('.reader-controls').getBoundingClientRect().top + 1;
+      report.railClear = box.left >= probe.q('.chapter-rail').getBoundingClientRect().right;
+      report.clicksPassThrough = getComputedStyle(wipe).pointerEvents === 'none';
+      report.visibleChapters = probe.all('.chapter').filter(probe.visible).length;
+      report.shortPageHeight = document.documentElement.scrollHeight;
+      report.sceneBottom = probe.q('[data-current]').getBoundingClientRect().bottom + scrollY;
+      probe.q('[data-view-toggle]').click();
+      report.continuousCancels = wipe.hidden;
+      report.completeScenes = probe.all('[data-scene]').filter(probe.visible).length;
+    }).run(function () { probe.done(report); });
+  ` });
+  assert.equal(value.soundStartsOff, true);
+  assert.equal(value.firstEffect, true);
+  assert.equal(value.previousCancelled, true);
+  assert.equal(value.latestScene, 's203');
+  assert.equal(value.footerClear, true);
+  assert.equal(value.railClear, true);
+  assert.equal(value.clicksPassThrough, true);
+  assert.equal(value.visibleChapters, 1);
+  assert.ok(value.shortPageHeight - value.sceneBottom < 180, 'no hidden chapters create trailing blank paper');
+  assert.equal(value.continuousCancels, true);
+  assert.equal(value.completeScenes, 31);
+});
 
 /** The essay, as the browser is given it. */
 const essayPage = (options) => runInChrome({ html: hosted, files: hostedFiles, ...options });
@@ -1790,12 +1827,14 @@ test('a reader who asked for less motion gets the same essay', { skip }, () => {
     driver: `
       var report = {};
       probe
-        .step(function () { probe.q('[data-begin]').click(); })
+        .step(function () { probe.q('[data-begin]').click(); probe.q('[data-next]').click(); })
         .step(function () {
           var scene = probe.q('[data-scene][data-current]');
           report.scene = probe.sceneId();
           report.visible = probe.visible(scene);
           report.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          report.wipeHidden = probe.q('[data-page-wipe]').hidden;
+          report.runningEffects = document.getAnimations().length;
           report.imageOpacity = probe.style(probe.q('img', scene), 'opacity');
           report.animations = probe.all('*').filter(function (element) {
             return probe.style(element, 'animationName') !== 'none';
@@ -1805,10 +1844,12 @@ test('a reader who asked for less motion gets the same essay', { skip }, () => {
   });
 
   assert.equal(value.reduced, true, 'the browser was asked for reduced motion');
-  assert.equal(value.scene, ORDER[0]);
+  assert.equal(value.scene, ORDER[1]);
   assert.equal(value.visible, true);
   assert.equal(value.imageOpacity, '1', 'the drawing is simply there; there is no entrance to suppress');
-  assert.equal(value.animations, 0, 'nothing animates, so reduced motion changes nothing');
+  assert.equal(value.animations, 0, 'no CSS motion is painted');
+  assert.equal(value.wipeHidden, true, 'the paper wipe is omitted');
+  assert.equal(value.runningEffects, 0, 'no Web Animation is started');
 });
 
 /* --- The project typeface, actually loaded -------------------------------- */

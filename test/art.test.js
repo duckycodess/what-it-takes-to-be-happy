@@ -58,13 +58,14 @@ function approvedBriefs() {
     const row = line.match(/^\| (A\d{2}[ab]?) \| ([a-z0-9-]+) \| (.*?) \| (.*?) \|$/);
     if (row) briefs.set(row[1], { id: row[2], alt: row[4] });
   }
+  for (const brief of JSON.parse(readFileSync(join(repoRoot, 'assets/ui/polish/passage-briefs.json'), 'utf8'))) briefs.set(brief.ref, brief);
   return briefs;
 }
 
 test('every delivered folder carries a manifest for an approved brief', () => {
   const briefs = approvedBriefs();
-  assert.equal(briefs.size, 20);
-  assert.equal(manifests.length, 20);
+  assert.equal(briefs.size, 34);
+  assert.equal(manifests.length, 34);
 
   for (const { name, manifest } of manifests) {
     const ref = manifest.ref ?? 'A01';
@@ -185,7 +186,8 @@ test('every scene that was briefed a drawing has one, and text scenes have none'
   const textOnly = content.scenes.filter((scene) => scene.visual.layout === 'text');
 
   assert.equal(withArt.length + textOnly.length, content.scenes.length);
-  assert.equal(withArt.length, 17, 'the approved essay illustrates 17 of its 31 parts');
+  assert.equal(withArt.length, 31, 'owner amendment illustrates all31parts');
+  assert.equal(textOnly.length, 0);
   for (const scene of textOnly) assert.equal(scene.visual.views.length, 0);
 
   // Every drawing the essay shows is a delivered one. The reverse is no

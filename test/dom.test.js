@@ -125,7 +125,7 @@ test('an element contains its descendants, itself, and nothing else', () => {
   assert.equal(a.contains(null), false);
 });
 
-test('the one media query the script asks about is answered, and can change', () => {
+test('the width media query the script asks about is answered, and can change', () => {
   // There is no layout here, so the answer is given rather than measured. It
   // still has to behave as a `MediaQueryList` does: keep answering, and tell
   // its listener when the answer flips, which is how a test turns a desktop
@@ -139,7 +139,7 @@ test('the one media query the script asks about is answered, and can change', ()
     { narrow: true },
   );
 
-  assert.deepEqual(page.mediaQueries, ['(max-width: 59.99rem)'], 'the script asked about one width');
+  assert.deepEqual(page.mediaQueries, ['(prefers-reduced-motion: reduce)', '(max-width: 59.99rem)'], 'motion and width are queried separately');
   assert.equal(page.rail(), 'closed', 'a narrow window starts with the drawer shut');
 
   page.resizeTo(false);

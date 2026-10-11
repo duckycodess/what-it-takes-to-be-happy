@@ -551,7 +551,7 @@ export function openDocument(html, options = {}) {
   }
 
   /**
-   * The one media query the browser script asks about, as a live object.
+   * Width and motion queries have independent answers, as in a browser.
    *
    * A real `MediaQueryList` keeps answering as the window changes and tells
    * its listeners when the answer flips. So does this, which is what lets a
@@ -563,6 +563,7 @@ export function openDocument(html, options = {}) {
     listeners: [],
     addEventListener(type, handler) { if (type === 'change') this.listeners.push(handler); },
   };
+  const motion = { matches: options.reduced === true, addEventListener() {} };
 
   const window = {
     document,
@@ -575,7 +576,7 @@ export function openDocument(html, options = {}) {
     print() { page.prints += 1; },
     matchMedia: (query) => {
       page.mediaQueries.push(query);
-      return media;
+      return query === '(prefers-reduced-motion: reduce)' ? motion : media;
     },
   };
 

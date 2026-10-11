@@ -377,9 +377,9 @@ export function renderSourcesBody(content, options = {}) {
   const heading = options.heading ?? 'h1';
   return `<section class="sources" id="sources" aria-labelledby="sources-title">
 <${heading} id="sources-title">${esc(page.title)}</${heading}>
-<p class="sources-intro">${renderRich(page.intro)}</p>
+${page.intro.length ? `<p class="sources-intro">${renderRich(page.intro)}</p>` : ''}
 <p class="sources-note">${renderRich(page.classNote)}</p>
-<p class="sources-credits">${renderRich(page.credits)}</p>
+${page.creditItems ? `<ul class="sources-credits">${page.creditItems.map((item) => `<li>${renderRich(item)}</li>`).join('')}</ul>` : `<p class="sources-credits">${renderRich(page.credits)}</p>`}
 <${heading === 'h1' ? 'h2' : 'h3'}>References</${heading === 'h1' ? 'h2' : 'h3'}>
 <p class="sources-note">${renderRich(page.methodNote)}</p>
 <ol class="source-list">
@@ -496,6 +496,7 @@ ${head(content, options, content.landing.title)}
 </head>
 <body>
 <a class="skip-link" href="#essay">${esc(ui.skip)}</a>
+<button type="button" class="sound-toggle js-only" data-sound aria-pressed="false">${esc(ui.sound ?? 'Sound')}</button>
 ${renderRailLauncher(content)}
 <main id="essay" tabindex="-1">
 ${renderLanding(content, ctx)}
@@ -509,6 +510,7 @@ ${renderClosing(content)}
 ${inlineSources}
 </main>
 ${renderControls(content)}
+<div class="page-wipe js-only" data-page-wipe aria-hidden="true" hidden></div>
 ${exportColophon}
 ${script(options)}
 </body>
@@ -531,6 +533,7 @@ ${head(content, options, content.sourcesPage.title)}
 </head>
 <body>
 <a class="skip-link" href="#sources">${esc(content.interface.skip)}</a>
+<button type="button" class="sound-toggle js-only" data-sound aria-pressed="false">${esc(content.interface.sound ?? 'Sound')}</button>
 <main id="sources-main" tabindex="-1">
 ${renderSourcesBody(content, { heading: 'h1', returnHref: options.essayUrl ?? 'index.html' })}
 </main>

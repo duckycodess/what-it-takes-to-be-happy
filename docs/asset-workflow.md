@@ -131,3 +131,7 @@ Discovery surfaced optional Figma, Runway, Higgsfield, and Adobe Express integra
   registry](cast.md) says so to whoever edits next. *(Until 10 October this was said in a colophon
   on every page; the approved script puts credits on Sources & Credits and allows no credits footer
   in a scene.)*
+
+## Issue #20 paper polish
+
+Fourteen additional B-series supporting cutouts and two original decorative UI bitmaps were supplied on `codex/art-polish-v1`. Consume its two commits oldest first; exact heads, prompts, selected dimensions and hashes are in `docs/art-requests.json` and each manifest. Generic figures use plain heads; the named cast keeps the inspected character study and browser-rendered labels. No Trust artwork or audio was copied. UI bitmaps stay in `assets/ui/polish/`, outside the passage register, and their selected hashes are checked by the build. Initial generation files remain outside the selected repository image when a cleanup supersedes them; both exact prompts remain recorded. Provider inspection does not claim owner inspection.

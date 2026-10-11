@@ -12,6 +12,10 @@
     "supersedes": {
       "path": "docs/redesign/approved-scene-script.md",
       "sha256": "a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f"
+    },
+    "amendment": {
+      "path": "docs/editorial/polish-amendment.json",
+      "sha256": "3234f3285e84c542e3c3137f81d8557622c98675484d91e63600d3c87fb94c50"
     }
   },
   "interface": {
@@ -28,7 +32,8 @@
     "back": "Back",
     "next": "Next",
     "readAgain": "Read again",
-    "backToReading": "Back to reading"
+    "backToReading": "Back to reading",
+    "sound": "Sound"
   },
   "landing": {
     "title": "What it takes to be happy",
@@ -247,10 +252,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B01",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -297,10 +308,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B02",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -527,10 +544,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B03",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -712,10 +735,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B04",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -821,10 +850,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B05",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1094,10 +1129,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B06",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1389,10 +1430,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B07",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1433,10 +1480,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B08",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1492,10 +1545,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B09",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1533,10 +1592,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B10",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1583,10 +1648,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B11",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1759,10 +1830,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B12",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1800,10 +1877,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B13",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -1850,10 +1933,16 @@
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
+        "layout": "support",
+        "views": [
+          {
+            "ref": "B14",
+            "image": 0,
+            "label": null
+          }
+        ],
         "control": null,
-        "afterBlock": 0
+        "afterBlock": 1
       }
     },
     {
@@ -2610,18 +2699,312 @@
         }
       ],
       "labels": []
+    },
+    {
+      "ref": "B01",
+      "id": "polish-three-answers",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-three-answers/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "34eddd2175c3a075bfa968d2904726110620367a4550971cd9e294091652eb64",
+          "alt": "TJ enjoys a game, Koj works on a small craft and Vier considers two alternatives."
+        }
+      ],
+      "labels": [
+        {
+          "kind": "name",
+          "text": "TJ",
+          "x": 0.2,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        },
+        {
+          "kind": "name",
+          "text": "Koj",
+          "x": 0.5,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        },
+        {
+          "kind": "name",
+          "text": "Vier",
+          "x": 0.81,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        }
+      ]
+    },
+    {
+      "ref": "B02",
+      "id": "polish-student-standpoint",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-student-standpoint/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "97f5d67ec71670632d8749503a92511f2675e780d9261c0de93a6d89314a3ac6",
+          "alt": "TJ, Koj and Vier reflect together over a notebook and laptop, with a basketball and travel ticket nearby."
+        }
+      ],
+      "labels": [
+        {
+          "kind": "name",
+          "text": "TJ",
+          "x": 0.2,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        },
+        {
+          "kind": "name",
+          "text": "Koj",
+          "x": 0.5,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        },
+        {
+          "kind": "name",
+          "text": "Vier",
+          "x": 0.81,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        }
+      ]
+    },
+    {
+      "ref": "B03",
+      "id": "polish-needs-together",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-needs-together/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "61322e1d2dba0bd4b6ba32e0b59c8d2433d8aa1d23c491b8de56993e24e1c61d",
+          "alt": "Fictional friends share food and connection while a home key sits nearby."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B04",
+      "id": "polish-pleasure-judgment",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-pleasure-judgment/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "f5a740a1c9bde5d652403e624d3431099baccb912a28e7b58e1eb02ec57d3dc3",
+          "alt": "Fictional figures consider a game and a book while another carries their shared snacks."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B05",
+      "id": "polish-purchase-purpose",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-purchase-purpose/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "9d1c6dfa505cb54be0f5d714fff7d8bf180df166fe2b8c6bdaaacb991556100c",
+          "alt": "TJ considers how a laptop, its cost and travel needs fit the life he wants."
+        }
+      ],
+      "labels": [
+        {
+          "kind": "name",
+          "text": "TJ",
+          "x": 0.47,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        }
+      ]
+    },
+    {
+      "ref": "B06",
+      "id": "polish-chosen-company",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-chosen-company/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "cd699a160ce4d3ddfc2b5a1867c757cea1c7e132846303ea6da4739ca0e10c60",
+          "alt": "Fictional friends enjoy a meal while another person comfortably reads alone."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B07",
+      "id": "polish-fare-and-friendship",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-fare-and-friendship/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "393dec5aed72182ef05513a38c1f11925be59e50406f44da3637cfd5a424915f",
+          "alt": "A fictional friend considers the fare while looking toward a welcoming group."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B08",
+      "id": "polish-real-access",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-real-access/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "67e16cf9ea9547c7fa78beda6779a3248c873f4bf9ae451811987871e212fdaa",
+          "alt": "Fictional visitors approach a usable ramp with transport and opening hours nearby."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B09",
+      "id": "polish-setting-options",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-setting-options/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "514495bc3b57fe5d73f476a874bb0b8103e6dae26940548fa523c9c3ffd5b8c3",
+          "alt": "Fictional participants discuss a timetable, transport and opening hours together."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B10",
+      "id": "polish-unequal-room",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-unequal-room/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "2eabce70367cef60b0fa5f01246a4a616de607921e5f9140bfe14af4ea048ea7",
+          "alt": "Fictional people face different obstacles on their paths toward shared space."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B11",
+      "id": "polish-shared-preparation",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-shared-preparation/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "f014969199848ced8a6d57063a41e7c1e4842a900b840d9cb075a729fb813eb1",
+          "alt": "Fictional friends share preparation, seating and timing for a gathering."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B12",
+      "id": "polish-proposal-review",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-proposal-review/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "4c9ac244dcefd6dfe0d517559119a18697ff34074362d4478959cdabd84a6f9f",
+          "alt": "Fictional visitors and staff consider a seating area, maintenance demands and hours."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B13",
+      "id": "polish-many-parts-of-life",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-many-parts-of-life/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "a1e066c6ce77d76648d57629f2b7e5757168807ffd52b0f47e913412be8a5421",
+          "alt": "A fictional person reflects among objects representing play, valued work, company and rest."
+        }
+      ],
+      "labels": []
+    },
+    {
+      "ref": "B14",
+      "id": "polish-answers-remain",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/art-polish-v1",
+      "images": [
+        {
+          "path": "assets/generated/polish-answers-remain/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "65a6a3dddafd4530c6d705ce5a870728e288ff98cad6c047fc6d727ed7392c19",
+          "alt": "TJ rests with a game, Koj holds a craft and Vier considers an invitation; their perspectives remain distinct."
+        }
+      ],
+      "labels": [
+        {
+          "kind": "name",
+          "text": "TJ",
+          "x": 0.2,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        },
+        {
+          "kind": "name",
+          "text": "Koj",
+          "x": 0.5,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        },
+        {
+          "kind": "name",
+          "text": "Vier",
+          "x": 0.81,
+          "yDesktop": 0.1,
+          "yPhone": 0.1
+        }
+      ]
     }
   ],
   "sourcesPage": {
     "title": "Sources & Credits",
-    "intro": [
-      {
-        "text": "Research informs this argument; it does not measure whether our own lives are happy. The numbered entries state what we read. Philosophical frameworks, published findings and personal reflections serve different purposes. Our examples and proposals are applications of that material, not new research results. We have not evaluated a policy or run the proposed campus project."
-      }
-    ],
+    "intro": [],
     "classNote": [
       {
-        "text": "The discussion develops shared notes by TJ, Koj and Vier. The pictured situations are fictional illustrations, and the member appearances are stand-ins. Their positions come from the group notes; the illustrations do not report events in their lives. Our use of habitus follows the class lens recorded in those notes, rather than an original formulation we read for this essay."
+        "text": "The discussion develops shared notes by TJ, Koj and Vier. The pictured situations are fictional illustrations, and the member appearances are stand-ins."
       }
     ],
     "credits": [
@@ -2630,14 +3013,26 @@
         "url": "https://www.dafont.com/futurahandwritten.font"
       },
       {
-        "text": " is by Billy Snyder and is used on the basis of the author's grant on that page. The font is not presented as CC0 or OFL. The drawings are original generated illustrations based on our character study. Visual reference: Nicky Case's "
+        "text": " is by Billy Snyder. The font is not presented as CC0 or OFL."
+      },
+      {
+        "text": " "
+      },
+      {
+        "text": "The drawings are original generated illustrations based on our character study."
+      },
+      {
+        "text": " "
+      },
+      {
+        "text": "Visual reference: Nicky Case's "
       },
       {
         "link": "The Evolution of Trust",
         "url": "https://ncase.me/trust/"
       },
       {
-        "text": ". We did not reuse its production artwork; its CC0 declaration is separate from permission for the font."
+        "text": "."
       }
     ],
     "methodNote": [
@@ -3053,6 +3448,34 @@
           }
         ]
       }
+    ],
+    "creditItems": [
+      [
+        {
+          "link": "Futura Handwritten",
+          "url": "https://www.dafont.com/futurahandwritten.font"
+        },
+        {
+          "text": " is by Billy Snyder. The font is not presented as CC0 or OFL."
+        }
+      ],
+      [
+        {
+          "text": "The drawings are original generated illustrations based on our character study."
+        }
+      ],
+      [
+        {
+          "text": "Visual reference: Nicky Case's "
+        },
+        {
+          "link": "The Evolution of Trust",
+          "url": "https://ncase.me/trust/"
+        },
+        {
+          "text": "."
+        }
+      ]
     ]
   },
   "measure": {

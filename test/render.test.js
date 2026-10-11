@@ -202,7 +202,7 @@ test('a drawing sits after the paragraph the approved anchor names', () => {
     assert.equal(blocksBefore(scene.id), scene.visual.afterBlock, scene.id);
     assert.ok(scene.visual.afterBlock >= 1, `${scene.id}: a drawing opens the part`);
   }
-  assert.equal(illustrated, 17, 'the approved essay illustrates 17 of its 31 parts');
+  assert.equal(illustrated, 31, 'owner amendment illustrates all31parts');
 });
 
 test('every scene with a drawing matches its content entry', () => {
@@ -415,7 +415,7 @@ test('the first, a middle and the final citing scene all link out and back', () 
 test('Sources follows approved paragraph order and References heading', () => {
   const body = sourcesPage.querySelector('.sources');
   const sequence = body.children.map((element) => element.getAttribute('class') || element.tagName.toLowerCase());
-  assert.deepEqual(sequence, ['h1', 'sources-intro', 'sources-note', 'sources-credits', 'h2', 'sources-note', 'source-list', 'sources-return']);
+  assert.deepEqual(sequence, ['h1', 'sources-note', 'sources-credits', 'h2', 'sources-note', 'source-list', 'sources-return']);
   assert.equal(body.querySelector('h2').textContent, 'References');
 });
 
