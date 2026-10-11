@@ -1,485 +1,332 @@
+/**
+ * The markup the renderer produces.
+ *
+ * `test/transfer.test.js` proves the words are the approved ones. This file
+ * proves the shape around them: that the landing carries only what the
+ * approved script lists, that every scene is written into the document whether
+ * or not it is on screen, that a drawing sits where the production note puts
+ * it, that names and view labels are browser text over a frameless image, and
+ * that a reader following a citation can get back to where they were.
+ */
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { renderDocument, esc } from '../src/runtime/render.js';
-import { auditContentCoverage, auditOfflineHtml, auditBundledLicence, auditInlineArtwork } from '../src/build/verify.js';
-import { SOURCE_EVIDENCE_LEVELS } from '../src/content/schema.js';
-import { loadValidContent, byId } from './helpers.js';
+import { renderEssay, renderSourcesPage, sourceAnchor, esc } from '../src/runtime/render.js';
+import { loadValidContent } from './helpers.js';
+import { parseHtml } from './support/dom.js';
 
-const render = (content, overrides = {}) =>
-  renderDocument(content, {
-    mode: 'hosted',
-    stylesheetUrl: 'styles.css',
-    scriptUrl: 'reader.js',
-    fontNotice: 'Bundled fallback font.',
-    fontLicense: 'Permission is hereby granted to the fictional holder of this test licence.\n',
-    illustration: { url: 'art.png', alt: 'Concept sheet.', caption: 'Provisional.', width: 10, height: 10 },
-    ...overrides,
-  });
+const content = loadValidContent();
 
-const sceneOrder = (html) => [...html.matchAll(/data-scene="([^"]+)"/g)].map((match) => match[1]);
+const hostedOptions = {
+  mode: 'hosted',
+  stylesheetUrl: 'styles.css',
+  scriptUrl: 'reader.js',
+  sourcesHref: 'sources.html',
+  sourceHref: (number, sceneId) => `sources.html?from=${sceneId}&view=scene#${sourceAnchor(number)}`,
+};
 
-test('the rendered document carries every piece of essential content', () => {
-  const content = loadValidContent();
-  assert.deepEqual(auditContentCoverage(render(content), content), []);
-});
+const essay = renderEssay(content, hostedOptions);
+const document = parseHtml(essay);
+const sourcesPage = parseHtml(renderSourcesPage(content, { ...hostedOptions, essayUrl: 'index.html' }));
 
-test('reading order follows the chapters, not the order scenes are stored in', () => {
-  const content = loadValidContent();
-  const expected = content.chapters.flatMap((chapter) => chapter.sceneIds);
+/* --- The landing --------------------------------------------------------- */
 
-  const shuffled = loadValidContent();
-  shuffled.scenes.reverse();
-  const chapter = byId(shuffled.chapters, 'c1');
-  chapter.sceneIds = [...chapter.sceneIds].reverse();
+test('the landing carries the title, the opening drawing, Begin and Sources & Credits', () => {
+  const landing = document.querySelector('.landing');
+  assert.equal(landing.querySelector('h1').textContent, 'What it takes to be happy');
 
-  assert.deepEqual(sceneOrder(render(content)), expected);
+  const image = landing.querySelector('img');
+  assert.equal(image.getAttribute('src'), 'assets/generated/rewrite-opening-v1/opening.png');
   assert.deepEqual(
-    sceneOrder(render(shuffled)),
-    shuffled.chapters.flatMap((entry) => entry.sceneIds),
-    'reordering by identifier changes the output order',
+    landing.querySelectorAll('.art-label').map((label) => label.textContent),
+    ['TJ', 'Koj', 'Vier'],
   );
-  assert.notDeepEqual(sceneOrder(render(shuffled)), expected);
+
+  const actions = landing.querySelectorAll('.landing-actions a');
+  assert.deepEqual(actions.map((link) => link.textContent), ['Begin', 'Sources & Credits']);
+  assert.equal(actions[0].getAttribute('href'), '#s088');
+  assert.equal(actions[1].getAttribute('href'), 'sources.html');
 });
 
-test('every beat is in the markup, so print and a scriptless browser keep the whole argument', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  assert.equal(sceneOrder(html).length, content.scenes.length);
+test('the landing shows nothing the approved script does not list', () => {
+  const landing = document.querySelector('.landing');
+  const paragraphs = landing.querySelectorAll('p').map((node) => node.textContent.trim());
+  // One paragraph: the two actions. No subtitle, no byline, no summary, no
+  // reading-time promise, no progress score.
+  assert.deepEqual(paragraphs, ['Begin\nSources & Credits']);
+  for (const phrase of ['minute', 'minutes to read', 'by TJ', 'Written by', 'words']) {
+    assert.ok(!landing.textContent.includes(phrase), `the landing still says "${phrase}"`);
+  }
+});
+
+test('no progress counter or reading-time estimate appears anywhere', () => {
+  for (const phrase of ['Beat ', ' of 45', 'minutes to read', 'About ']) {
+    assert.ok(!essay.includes(phrase), `the essay still shows "${phrase}"`);
+  }
+});
+
+/* --- Scenes -------------------------------------------------------------- */
+
+test('all 45 scenes are in the document, in reading order', () => {
+  const scenes = document.querySelectorAll('[data-scene]');
+  assert.equal(scenes.length, 45);
+  assert.deepEqual(
+    scenes.map((node) => node.getAttribute('data-scene')),
+    content.chapters.flatMap((chapter) => chapter.sceneIds),
+  );
+  // Every scene is focusable so a move can land on it and announce its title.
+  for (const node of scenes) {
+    assert.equal(node.getAttribute('tabindex'), '-1');
+    assert.equal(node.getAttribute('aria-labelledby'), `${node.getAttribute('data-scene')}-title`);
+  }
+});
+
+test('the eight chapter titles are the menu and the headings', () => {
+  const menu = document.querySelectorAll('.chapter-menu a');
+  assert.deepEqual(menu.map((link) => link.textContent), content.chapters.map((chapter) => chapter.title));
+  assert.deepEqual(
+    document.querySelectorAll('.chapter-title').map((node) => node.textContent),
+    content.chapters.map((chapter) => chapter.title),
+  );
+});
+
+test('a drawing sits where the production note puts it', () => {
+  const blocksBefore = (sceneId) => {
+    const scene = document.querySelector(`[data-scene="${sceneId}"]`);
+    const children = scene.childNodes.filter((node) => node.nodeType === 1);
+    const art = children.findIndex((node) => node.localName === 'figure');
+    // The title is the first child, so subtract it to count authored blocks.
+    return art < 0 ? null : art - 1;
+  };
+
+  // A group scene opens with the first narrator block above the art.
+  assert.equal(blocksBefore('s088'), 1);
+  // A single scene whose first authored block is dialogue keeps that order.
+  assert.equal(blocksBefore('s093'), 1);
+  assert.equal(blocksBefore('s094'), 1);
+  // A text scene has no drawing at all, and no substitute.
+  assert.equal(blocksBefore('s090'), null);
+  assert.equal(document.querySelector('[data-scene="s090"]').querySelectorAll('img').length, 0);
+});
+
+test('every scene with a drawing matches its content entry', () => {
   for (const scene of content.scenes) {
-    assert.ok(html.includes(`id="${scene.id}"`));
+    const node = document.querySelector(`[data-scene="${scene.id}"]`);
+    const images = node.querySelectorAll('img');
+    assert.equal(images.length, scene.visual.views.length, scene.id);
+    scene.visual.views.forEach((view, index) => {
+      const asset = content.assets.find((entry) => entry.ref === view.ref);
+      const image = asset.images[view.image];
+      assert.equal(images[index].getAttribute('src'), image.path);
+      assert.equal(images[index].getAttribute('alt'), image.alt);
+      assert.equal(images[index].getAttribute('width'), String(image.width));
+      assert.equal(images[index].getAttribute('height'), String(image.height));
+    });
   }
 });
 
-test('authoring provenance never reaches the output', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  for (const record of content.provenance) {
-    assert.ok(!html.includes(record.note), `${record.id} note leaked`);
-    assert.ok(!html.includes(record.sourceNote), `${record.id} sourceNote leaked`);
-    assert.ok(!html.includes(record.id), `${record.id} identifier leaked`);
-  }
-  assert.ok(!/provenance/i.test(html), 'no authoring workflow vocabulary in the product');
-});
+/* --- Artwork presentation ------------------------------------------------ */
 
-test('optional detail is open in the markup, so the reveal is never the only route', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  const panels = [...html.matchAll(/<details class="detail"([^>]*)>/g)].map((match) => match[1]);
-
-  assert.equal(panels.length, content.details.length, 'every authored panel is rendered');
-  for (const attributes of panels) {
-    assert.match(attributes, /\bopen\b/, 'a panel that is collapsed in the markup would hide its text from print and from a scriptless browser');
-  }
-  // The identifier is what lets the browser script give a reader their own
-  // open-or-closed choice back after a view switch or a print.
-  for (const detail of content.details) {
-    assert.ok(html.includes(`data-detail="${detail.id}"`), `${detail.id} is not addressable`);
+test('the artwork is frameless: no stage, no border element, no caption', () => {
+  assert.equal(document.querySelectorAll('.scene-visual-frame').length, 0);
+  assert.equal(document.querySelectorAll('figcaption').length, 0);
+  // Nothing in the markup draws a box around a drawing or fixes its height.
+  assert.ok(!essay.includes('scene-visual'));
+  assert.ok(!essay.includes('art-stage'));
+  // The image declares its own proportions and nothing overrides them.
+  for (const image of document.querySelectorAll('img')) {
+    assert.equal(image.getAttribute('style'), null, 'a drawing was given an inline size');
   }
 });
 
-test('member names are rendered as selectable text, never baked into an image', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  for (const member of content.cast.filter((character) => character.role === 'member')) {
-    assert.ok(html.includes(`<li class="nametag">${member.displayName}</li>`), `${member.displayName} is missing from the landing`);
+test('names and prop labels are browser text positioned over the image', () => {
+  const expectations = new Map(content.assets.map((asset) => [asset.ref, asset.labels]));
+  for (const view of document.querySelectorAll('.art-view')) {
+    const labels = view.querySelectorAll('.art-label');
+    const expected = expectations.get(view.getAttribute('data-ref'));
+    assert.deepEqual(labels.map((node) => node.textContent), expected.map((label) => label.text));
+    labels.forEach((node, index) => {
+      const style = node.getAttribute('style');
+      assert.match(style, /--x:/);
+      assert.match(style, /--y-desktop:/);
+      assert.match(style, /--y-phone:/);
+      assert.equal(node.getAttribute('data-kind'), expected[index].kind);
+    });
   }
-  assert.match(html, /<span class="nametag">TJ<\/span>/);
+
+  // Both A08's four prop labels and A10's dialogue label are real text.
+  assert.ok(essay.includes('>Grades</span>'));
+  assert.ok(essay.includes('>Cheer up!</span>'));
 });
 
-test('an invented figure is named without a contributor\'s nametag, and said to be invented', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  const friends = content.cast.filter((character) => character.role === 'friend');
-  assert.ok(friends.length > 0);
-
-  for (const friend of friends) {
-    assert.ok(html.includes(`<span class="figure-name">${esc(friend.displayName)}</span>`), `${friend.displayName} is drawn but never named`);
-    assert.ok(!html.includes(`<span class="nametag">${esc(friend.displayName)}</span>`), `${friend.displayName} carries a contributor's nametag`);
+test('only the first drawing loads eagerly', () => {
+  const images = document.querySelectorAll('img');
+  assert.equal(images[0].getAttribute('loading'), null);
+  for (const image of images.slice(1)) {
+    assert.equal(image.getAttribute('loading'), 'lazy', image.getAttribute('src'));
   }
+  for (const image of images) assert.equal(image.getAttribute('decoding'), 'async');
+});
 
-  // That they are invented is stated under the drawing, in body text, on
-  // every beat they appear in. Over a head it was unreadably small and was
-  // what pushed labels into each other on a crowded beat.
-  for (const scene of content.scenes) {
-    const invented = scene.visual.cast
-      .map((entry) => byId(content.cast, entry.characterId))
-      .filter((character) => character.role === 'friend');
-    const beat = sceneHtml(html, scene.id);
-    if (invented.length === 0) {
-      assert.ok(!beat.includes('figure-fiction'), `${scene.id} has no invented figure and should not say it has`);
-      continue;
-    }
-    assert.ok(
-      beat.includes(`<p class="figure-fiction"><span class="label">Invented figures</span> ${invented.map((character) => esc(character.displayName)).join(', ')}</p>`),
-      `${scene.id} draws ${invented.map((character) => character.displayName).join(', ')} without saying they are invented`,
+test('a pair writes both drawings with their exact labels in authored order', () => {
+  for (const scene of content.scenes.filter((entry) => entry.visual.layout === 'pair')) {
+    const figure = document.querySelector(`[data-scene="${scene.id}"] figure.art`);
+    assert.equal(figure.getAttribute('data-layout'), 'pair');
+    assert.equal(figure.getAttribute('data-active'), null, 'a pair is not an optional comparison');
+    assert.deepEqual(
+      figure.querySelectorAll('.art-view-label').map((node) => node.textContent),
+      scene.visual.views.map((view) => view.label),
     );
   }
+});
 
-  // And a contributor is marked the other way, in the same place.
-  for (const member of content.cast.filter((character) => character.role === 'member')) {
-    assert.ok(html.includes(`<span class="nametag">${esc(member.displayName)}</span>`));
+test('an optional comparison offers native buttons with the approved labels', () => {
+  for (const scene of content.scenes.filter((entry) => entry.visual.control !== null)) {
+    const figure = document.querySelector(`[data-scene="${scene.id}"] figure.art`);
+    assert.ok(figure.getAttribute('class').includes('art-comparison'));
+    assert.equal(figure.getAttribute('data-active'), '0');
+
+    const buttons = figure.querySelectorAll('button');
+    assert.equal(buttons.length, 2);
+    assert.deepEqual(buttons.map((node) => node.textContent), scene.visual.control.labels);
+    for (const button of buttons) {
+      // A real button, so Enter and Space already work and a screen reader
+      // already calls it a button.
+      assert.equal(button.localName, 'button');
+      assert.equal(button.getAttribute('type'), 'button');
+      assert.ok(['true', 'false'].includes(button.getAttribute('aria-pressed')));
+    }
+    assert.deepEqual(buttons.map((node) => node.getAttribute('aria-pressed')), ['true', 'false']);
+
+    // Both drawings are in the markup, so print and the continuous view carry
+    // both without a control.
+    assert.equal(figure.querySelectorAll('img').length, 2);
+    // The control is script-only; with no script both drawings and both
+    // labels are simply there.
+    assert.ok(figure.querySelector('.art-control').getAttribute('class').includes('js-only'));
   }
-
-  // The same boundary in dialogue: a line that was not a member's position
-  // would be marked as an invented example rather than printed as a position.
-  const invented = loadValidContent();
-  const line = invented.scenes.flatMap((scene) => scene.dialogue)[0];
-  line.stance = 'fictional-illustration';
-  line.provenanceId = null;
-  assert.match(render(invented), /<span class="line-kind">invented example<\/span>/);
 });
 
-test('content text is escaped rather than interpreted as markup', () => {
-  const content = loadValidContent();
-  byId(content.scenes, 's019').title = '<script>alert(1)</script> & "quotes"';
-  const html = render(content);
-  assert.ok(!html.includes('<script>alert(1)</script>'));
-  assert.ok(html.includes(esc('<script>alert(1)</script> & "quotes"')));
+test('every paragraph of a comparison scene sits outside the figure', () => {
+  for (const id of ['s105', 's114']) {
+    const scene = content.scenes.find((entry) => entry.id === id);
+    const node = document.querySelector(`[data-scene="${id}"]`);
+    const figure = node.querySelector('figure.art');
+    const inFigure = figure.textContent;
+    for (const block of scene.blocks) {
+      const text = block.parts.filter((part) => part.text !== undefined).map((part) => part.text).join('');
+      assert.ok(!inFigure.includes(text.slice(0, 40)), `${id} hides a paragraph inside the control`);
+    }
+  }
 });
 
-test('the finished essay shows no draft notice, and a draft still would', () => {
-  const content = loadValidContent();
-  assert.equal(content.status.final, true);
-  assert.ok(!render(content).includes('class="draft-notice"'));
-  assert.match(render(content), /content="index"/);
+/* --- Controls ------------------------------------------------------------ */
 
-  const draft = loadValidContent();
-  draft.status.final = false;
-  draft.status.notice = 'Still being written.';
-  assert.match(render(draft), /class="draft-notice"/);
-  assert.match(render(draft), /content="noindex"/);
+test('the shared controls use the approved names and are script-only', () => {
+  const controls = document.querySelector('.reader-controls');
+  assert.ok(controls.getAttribute('class').includes('js-only'));
+  assert.equal(controls.querySelector('[data-back]').textContent, 'Back');
+  assert.equal(controls.querySelector('[data-next]').textContent, 'Next');
+  assert.equal(controls.querySelector('[data-read-again]').textContent, 'Read again');
+  assert.equal(controls.querySelector('[data-print]').textContent, 'Print');
+  assert.equal(controls.querySelector('[data-sources]').textContent, 'Sources & Credits');
+
+  const toggle = controls.querySelector('[data-view-toggle]');
+  assert.equal(toggle.textContent, 'Read continuously');
+  assert.equal(toggle.getAttribute('data-scene-label'), 'Scene view');
+
+  // Read again is offered only at the end; the script reveals it there.
+  assert.notEqual(controls.querySelector('[data-read-again]').getAttribute('hidden'), null);
 });
 
-test('hosted output links its resources and offline output embeds them', () => {
-  const content = loadValidContent();
-  const hosted = render(content);
-  assert.match(hosted, /<link rel="stylesheet" href="styles\.css">/);
-  assert.match(hosted, /<script src="reader\.js" defer><\/script>/);
+test('the skip link uses the approved wording', () => {
+  const skip = document.querySelector('.skip-link');
+  assert.equal(skip.textContent, 'Skip to scene');
+  assert.equal(skip.getAttribute('href'), '#essay');
+});
 
-  const offline = render(content, {
+/* --- Citations and the separate page ------------------------------------- */
+
+test('a citation carries where the reader was and which entry they want', () => {
+  const link = document.querySelector('[data-scene="s105"] .citation');
+  assert.equal(link.getAttribute('href'), 'sources.html?from=s105&view=scene#source-9');
+  assert.equal(link.getAttribute('aria-label'), 'Source 9');
+  assert.equal(link.textContent, '[9]');
+
+  // Every citation names its own scene, so the return is never a guess.
+  for (const scene of document.querySelectorAll('[data-scene]')) {
+    const id = scene.getAttribute('data-scene');
+    for (const citation of scene.querySelectorAll('.citation')) {
+      assert.equal(citation.getAttribute('data-from'), id);
+      assert.match(citation.getAttribute('href'), new RegExp(`^sources\\.html\\?from=${id}&view=scene#source-\\d+$`));
+    }
+  }
+});
+
+test('the first, a middle and the final citing scene all link out and back', () => {
+  const citing = content.scenes.filter((scene) =>
+    scene.blocks.some((block) => block.parts.some((part) => part.citation !== undefined)));
+  const sample = [citing[0], citing[Math.floor(citing.length / 2)], citing.at(-1)];
+  assert.deepEqual(sample.map((scene) => scene.id), ['s092', 's109', 's126']);
+
+  for (const scene of sample) {
+    const links = document.querySelectorAll(`[data-scene="${scene.id}"] .citation`);
+    assert.ok(links.length > 0);
+    for (const link of links) {
+      const number = Number(link.getAttribute('data-citation'));
+      assert.ok(sourcesPage.querySelector(`#${sourceAnchor(number)}`), `entry ${number} is missing from the page`);
+    }
+  }
+});
+
+test('the Sources & Credits page is a separate document with a return control', () => {
+  assert.equal(sourcesPage.documentElement.getAttribute('data-page'), 'sources');
+  assert.equal(sourcesPage.querySelector('h1').textContent, 'Sources & Credits');
+
+  const entries = sourcesPage.querySelectorAll('.source');
+  assert.equal(entries.length, 26);
+  entries.forEach((entry, index) => {
+    assert.equal(entry.getAttribute('id'), sourceAnchor(index + 1));
+    assert.equal(entry.querySelector('.source-number').textContent, `[${index + 1}]`);
+    // Each entry says what was actually opened.
+    assert.ok(entry.querySelector('.source-note').textContent.includes('Read:'));
+  });
+
+  const back = sourcesPage.querySelector('[data-return]');
+  assert.equal(back.textContent, 'Back to reading');
+  // Written for a reader with no script; the script rewrites it to the scene
+  // and mode the citation carried.
+  assert.equal(back.getAttribute('href'), 'index.html');
+});
+
+test('the essay does not repeat the register beside every claim', () => {
+  assert.equal(document.querySelectorAll('.source').length, 0);
+  assert.equal(document.querySelectorAll('.source-note').length, 0);
+  for (const citation of ['Read: full article', 'Read: abstract only']) {
+    assert.ok(!essay.includes(citation), 'an access note leaked into the scenes');
+  }
+});
+
+/* --- The single-file export ---------------------------------------------- */
+
+test('the retained export carries the register inside itself', () => {
+  const inline = parseHtml(renderEssay(content, {
     mode: 'offline',
-    inlineStyles: 'body{color:#000}',
-    inlineScript: 'void 0;',
-    illustration: { url: 'data:image/png;base64,AAAA', alt: 'a', caption: 'b', width: 1, height: 1 },
-  });
-  assert.match(offline, /<style>\nbody\{color:#000\}\n<\/style>/);
-  assert.ok(!offline.includes('<link rel="stylesheet"'));
-  assert.ok(!/<script src=/.test(offline));
+    inlineStyles: 'body{}',
+    inlineScript: '',
+    inlineSources: true,
+    assetUrl: () => 'data:image/png;base64,AA==',
+    sourcesHref: '#sources',
+    sourceHref: (number) => `#${sourceAnchor(number)}`,
+  }));
+  assert.ok(inline.querySelector('#sources'));
+  assert.equal(inline.querySelectorAll('.source').length, 26);
+  assert.equal(inline.querySelector('.citation').getAttribute('href'), '#source-1');
 });
 
-test('the offline audit recognises each way a file could reach outside itself', () => {
-  const cases = [
-    ['<script src="reader.js"></script>', 'script-src'],
-    ['<link rel="stylesheet" href="styles.css">', 'link-href'],
-    ['<img src="art.png" alt="">', 'src'],
-    ['<style>@font-face{src:url(font.ttf)}</style>', 'css-url'],
-    ['<style>@import "other.css";</style>', 'css-import'],
-    ['<a href="other.html">next</a>', 'a-href'],
-    ['<img srcset="small.png 1x" src="data:image/png;base64,AA">', 'srcset'],
-    ['<iframe src="data:text/html,hi"></iframe>', 'element'],
-  ];
-  for (const [html, kind] of cases) {
-    const kinds = auditOfflineHtml(html).map((problem) => problem.kind);
-    assert.ok(kinds.includes(kind), `expected ${kind} for ${html}`);
-  }
-
-  assert.deepEqual(
-    auditOfflineHtml('<img src="data:image/png;base64,AA" alt=""><a href="#x">x</a><a href="https://example.org">e</a><style>body{background:url(data:image/png;base64,AA)}</style>'),
-    [],
-    'data URIs, fragments, and external destinations are all legitimate',
-  );
-});
-
-test('missing essential content is reported rather than shipped', () => {
-  const content = loadValidContent();
-  const html = render(content).replace(esc(content.chapters[0].closing), '');
-  const problems = auditContentCoverage(html, content);
-  assert.equal(problems.length, 1);
-  assert.equal(problems[0].kind, 'chapter-closing');
-});
-
-test('leaked authoring provenance is reported rather than shipped', () => {
-  const content = loadValidContent();
-  const html = `${render(content)}<p>${esc(content.provenance[0].note)}</p>`;
-  const problems = auditContentCoverage(html, content);
-  assert.deepEqual(problems.map((problem) => problem.kind), ['provenance-leak']);
-});
-
-test('each source is shown at the evidence level it actually reached', () => {
-  const content = loadValidContent();
-  const html = render(content);
-
-  for (const source of content.sources) {
-    const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
-    assert.ok(html.includes(`data-status="${source.reviewStatus}">${esc(level.label)}</p>`), `${source.id} should show "${level.label}"`);
-
-    if (source.supportedClaim) {
-      // The claim is phrased against what was read, so an abstract or a
-      // publisher description is never presented as a passage from the work.
-      assert.ok(html.includes(`<span class="label">${esc(level.claimLabel)}</span> ${esc(source.supportedClaim)}`), `${source.id} should attribute its claim to ${level.claimLabel}`);
-    } else {
-      assert.ok(html.includes(esc(source.intendedRole)), `${source.id} should still say why the notes list it`);
-    }
-    assert.ok(html.includes(esc(source.limitation)), `${source.id} should keep its limitation visible`);
-  }
-});
-
-test('an unopened source shows no supported claim anywhere in the output', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  const unopened = content.sources.filter((source) => !SOURCE_EVIDENCE_LEVELS[source.reviewStatus].requiresSupportedClaim);
-  assert.ok(unopened.length > 0, 'the fixture should include a source that could not be opened');
-
-  for (const source of unopened) {
-    assert.ok(
-      html.includes(`<span class="label">Listed in the notes for</span> ${esc(source.intendedRole)}`),
-      `${source.id} should say why the notes list it instead of claiming support`,
-    );
-    // Every block rendered for this source must be free of a supports line.
-    const blocks = [...html.matchAll(/<li class="source"[^>]*>[\s\S]*?<\/li>/g)]
-      .map((match) => match[0])
-      .filter((block) => block.includes(esc(source.url)));
-    assert.ok(blocks.length > 0, `${source.id} should appear in the output`);
-    for (const block of blocks) {
-      assert.ok(!block.includes('class="source-claim"'), `${source.id} must not show a supported claim`);
-    }
-  }
-});
-
-test('an abstract-level reading is never shown as a passage-level one', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  const abstract = content.sources.find((source) => source.reviewStatus === 'verified-abstract');
-  const claimIndex = html.indexOf(esc(abstract.supportedClaim));
-  assert.ok(claimIndex > 0);
-  const preceding = html.slice(Math.max(0, claimIndex - 200), claimIndex);
-  assert.match(preceding, /The abstract supports/);
-  assert.ok(!/The passage read supports<\/span>\s*$/.test(preceding));
-});
-
-/* ---- The order a beat reads in ------------------------------------------ */
-
-const blockOrder = (sceneHtml) =>
-  [...sceneHtml.matchAll(/<(div class="narration"|ul class="dialogue"|aside class="limitations")/g)]
-    .map((match) => match[1].split(' ')[0] === 'div' ? 'narration' : match[1].startsWith('ul') ? 'dialogue' : 'limitations');
-
-/** One beat's markup: from its own element to wherever the next beat starts. */
-function sceneHtml(html, id) {
-  const start = html.indexOf(`<li class="scene" id="${id}"`);
-  assert.ok(start >= 0, `${id} is not in the output`);
-  const next = html.indexOf('<li class="scene" id="', start + 1);
-  return html.slice(start, next < 0 ? undefined : next);
-}
-
-test('the essential blocks are rendered in the order the beat was authored in', () => {
-  const content = loadValidContent();
-  const scene = byId(content.scenes, 's010');
-  assert.ok(scene.narration.length >= 2 && scene.limitations.length >= 1);
-
-  // The caveat belongs before the narration in this arrangement, which a fixed
-  // narration-then-caveat renderer would silently reverse.
-  scene.mainPath = [
-    { kind: 'limitations', index: 0 },
-    { kind: 'narration', index: 1 },
-    { kind: 'narration', index: 0 },
-  ];
-  const html = sceneHtml(render(content), scene.id);
-  assert.deepEqual(blockOrder(html), ['limitations', 'narration']);
-  assert.ok(html.indexOf(esc(scene.narration[1])) < html.indexOf(esc(scene.narration[0])), 'paragraphs follow the authored sequence');
-  assert.ok(html.indexOf(esc(scene.limitations[0])) < html.indexOf(esc(scene.narration[1])), 'the caveat comes first because the beat says so');
-});
-
-test('consecutive blocks of one kind stay one block, so dialogue is still a list', () => {
-  const content = loadValidContent();
-  const scene = byId(content.scenes, 's008');
-  scene.mainPath = [
-    { kind: 'narration', index: 0 },
-    { kind: 'dialogue', index: 0 },
-    { kind: 'narration', index: 1 },
-  ];
-  const html = sceneHtml(render(content), scene.id);
-  assert.deepEqual(blockOrder(html), ['narration', 'dialogue', 'narration'], 'a line between two paragraphs splits them');
-
-  const together = loadValidContent();
-  const same = byId(together.scenes, 's008');
-  same.mainPath = [
-    { kind: 'narration', index: 0 },
-    { kind: 'narration', index: 1 },
-    { kind: 'dialogue', index: 0 },
-  ];
-  assert.deepEqual(blockOrder(sceneHtml(render(together), same.id)), ['narration', 'dialogue']);
-});
-
-test('a beat that is deliberately text-only gets no frame rather than an empty one', () => {
-  const content = loadValidContent();
-  const scene = byId(content.scenes, 's019');
-  scene.visual.artId = null;
-  scene.visual.artState = null;
-  scene.visual.artAbsence = 'text-only';
-  scene.visual.cast = [];
-
-  const html = sceneHtml(render(content), scene.id);
-  assert.ok(!html.includes('scene-visual-frame'), 'no bordered box where there is deliberately no drawing');
-  assert.ok(!html.includes('scene-visual-pending'), 'and no notice saying a drawing is still to come');
-  assert.ok(html.includes(esc(scene.visual.description)), 'the description still introduces the beat');
-
-  // A beat whose drawing is merely not made yet is the other case, and it does
-  // say so, because a reader should not have to guess.
-  const draft = loadValidContent();
-  const waiting = byId(draft.scenes, 's019');
-  waiting.visual.artId = null;
-  waiting.visual.artState = null;
-  waiting.visual.artAbsence = 'pending';
-  assert.ok(sceneHtml(render(draft), waiting.id).includes('scene-visual-pending'));
-});
-
-test('the chapter list numbers the chapters the reader counts, and only those', () => {
-  const content = loadValidContent();
-  assert.equal(content.chapters[0].number, null, 'the opening is not one of the questions the essay counts');
-  const html = render(content);
-  const items = [...html.matchAll(/<a href="#[^"]+" data-chapter-link="[^"]+">(.*?)<\/a>/g)].map((match) => match[1]);
-
-  assert.equal(items.length, content.chapters.length);
-  assert.equal(items[0], esc(content.chapters[0].title), 'an unnumbered chapter is named, not counted');
-  assert.match(items[1], new RegExp(`^<span class="chapter-number">${content.chapters[1].number}</span> `));
-
-  // The beat controls need the same two facts, so the chapter carries them.
-  assert.ok(!html.includes(`data-chapter="${content.chapters[0].id}" data-chapter-number`));
-  const counted = content.chapters.filter((chapter) => chapter.number !== null).length;
-  assert.ok(html.includes(`data-chapter-number="${content.chapters[1].number}" data-chapter-count="${counted}"`));
-});
-
-/* ---- The drawings ------------------------------------------------------- */
-
-const frames = (html) => [...html.matchAll(/<div class="scene-visual-frame"[\s\S]*?<\/div>/g)].map((match) => match[0]);
-
-test('every drawn beat renders its drawing inline, at the state the content asked for', () => {
-  const content = loadValidContent();
-  const html = render(content);
-
-  for (const scene of content.scenes) {
-    if (scene.visual.artAbsence === 'text-only') continue; // no frame at all, on purpose
-    const frame = frames(html).find((entry) => entry.includes(`data-art="${scene.visual.artId ?? 'none'}"`));
-    assert.ok(frame, `${scene.id} should render a frame`);
-  }
-
-  const drawn = content.scenes.filter((scene) => scene.visual.artId !== null);
-  assert.ok(drawn.length > 0, 'the fixture should exercise drawn beats');
-  for (const scene of drawn) {
-    assert.ok(html.includes(`data-art="${scene.visual.artId}" data-art-state="${scene.visual.artState}"`), `${scene.id} should settle into ${scene.visual.artState}`);
-  }
-
-  // The settled state is in the markup, not applied later by a script: print,
-  // a scriptless browser, and the offline file all get the finished drawing.
-  const revealed = drawn.filter((scene) => scene.visual.artState === 'revealed');
-  assert.ok(revealed.length > 0);
-  assert.ok(html.includes('data-art-layer="reveal"'));
-  assert.ok(html.includes('data-art-layer="base"'));
-});
-
-test('the landing drawing is authored content, not a choice the renderer makes', () => {
-  const content = loadValidContent();
-  const html = render(content);
-  const landing = html.slice(html.indexOf('<figure class="landing-art">'), html.indexOf('</figure>', html.indexOf('<figure class="landing-art">')));
-
-  assert.ok(landing.includes(`data-art="${content.project.visual.artId}" data-art-state="${content.project.visual.artState}"`));
-  assert.equal((landing.match(/<li class="art-label"/g) ?? []).length, content.project.visual.cast.length);
-  assert.ok(landing.includes(esc(content.project.visual.description)), 'the landing caption is the authored description');
-
-  // Who stands around the question, and what each of them is feeling, follow
-  // the document. An opening that picked its own cast would be inventing one.
-  for (const appearance of content.project.visual.cast) {
-    const character = byId(content.cast, appearance.characterId);
-    const expression = character.expressions.find((entry) => entry.id === appearance.expressionId);
-    // A contributor is named with the nametag; an invented friend is named and
-    // said to be invented, which is a different label on purpose.
-    const name = character.role === 'member'
-      ? `<span class="nametag">${esc(character.displayName)}</span>`
-      : `<span class="figure-name">${esc(character.displayName)}</span>`;
-    assert.ok(landing.includes(`${name}<span class="expression">${esc(expression.label)}</span>`));
-    assert.ok(landing.includes(`data-figure="${character.artId}" data-expression="${expression.artId}"`));
-  }
-
-  const changed = loadValidContent();
-  changed.project.visual.artId = 'art-figure-row';
-  changed.project.visual.artState = 'situation';
-  changed.project.visual.cast = [{ characterId: 'cast-vier', expressionId: 'ex-uncertain' }];
-  const other = render(changed);
-  const changedLanding = other.slice(other.indexOf('<figure class="landing-art">'), other.indexOf('</figure>', other.indexOf('<figure class="landing-art">')));
-  assert.ok(changedLanding.includes('<div class="scene-visual-frame" data-art="art-figure-row"'));
-  assert.ok(!changedLanding.includes('data-art="art-opening-question"'), 'the landing follows the document, not a default');
-});
-
-test('a beat with no drawing keeps its figures and its description', () => {
-  const content = loadValidContent();
-  const scene = byId(content.scenes, 's002');
-  scene.visual.artId = null;
-  scene.visual.artState = null;
-
-  const html = render(content);
-  const frame = frames(html).find((entry) => entry.includes('data-art="none"'));
-  assert.ok(frame, 'a beat without a composition still renders its frame');
-  assert.ok(!frame.includes('<svg'), 'nothing is drawn where nothing has been drawn');
-  assert.ok(frame.includes('<span class="nametag">TJ</span>'), 'the figures present are still named');
-  assert.ok(html.includes(esc(scene.visual.description)), 'the description still carries the beat');
-});
-
-test('names sit above heads as browser text, positioned by the drawing itself', () => {
-  const content = loadValidContent();
-  const html = render(content);
-
-  const labels = [...html.matchAll(/<li class="art-label" data-role="(\w+)" style="--art-x:([\d.]+)%;--art-y:([\d.]+)%"><span class="nametag">([^<]+)<\/span><span class="expression">([^<]+)<\/span>/g)];
-  assert.ok(labels.length >= 10, `expected a label for every drawn figure, found ${labels.length}`);
-
-  for (const [, role, x, y, name, state] of labels) {
-    assert.ok(['member', 'friend'].includes(role));
-    assert.ok(Number(x) > 0 && Number(x) < 100, `${name} is anchored off the frame`);
-    assert.ok(Number(y) > 0 && Number(y) < 100, `${name} is anchored off the frame`);
-    assert.match(name, /\S/);
-    assert.match(state, /\S/);
-  }
-
-  // The nametag is text in the page. Nothing in the artwork spells a name.
-  for (const drawing of [...html.matchAll(/<svg[\s\S]*?<\/svg>/g)].map((match) => match[0])) {
-    assert.ok(!/<text\b/.test(drawing));
-    for (const member of content.cast) assert.ok(!drawing.includes(member.displayName));
-  }
-});
-
-test('the same figure is drawn differently when the content says it feels differently', () => {
-  const content = loadValidContent();
-  const one = render(content);
-
-  const changed = loadValidContent();
-  byId(changed.scenes, 's002').visual.cast[0].expressionId = 'ex-sad';
-  const other = render(changed);
-
-  assert.notEqual(one, other, 'an expression change must reach the drawing');
-  assert.ok(other.includes('data-expression="sadness"'));
-});
-
-test('every drawing in an output is self-contained and carries no lettering', () => {
-  assert.deepEqual(auditInlineArtwork(render(loadValidContent())), []);
-
-  const cases = [
-    ['<svg><image href="art.png"/></svg>', /raster file/],
-    ['<svg><use href="#head"/></svg>', /identifier/],
-    ['<svg><text x="0">TJ</text></svg>', /Lettering/],
-    ['<svg><g id="head"></g></svg>', /identifier/],
-    ['<svg><circle fill="url(#g)"/></svg>', /another resource/],
-    ['<svg><style>.a{font-family:Futura}</style></svg>', /stylesheet or script/],
-  ];
-  for (const [html, message] of cases) {
-    const problems = auditInlineArtwork(html);
-    assert.ok(problems.length > 0, `expected a problem for ${html}`);
-    assert.ok(problems.some((problem) => message.test(problem.message)), `${html}: ${problems.map((p) => p.message).join(' / ')}`);
-  }
-});
-
-test('the bundled font licence travels inside the document', () => {
-  const content = loadValidContent();
-  const licence = 'Permission is hereby granted to the fictional holder of this test licence.\n';
-  assert.deepEqual(auditBundledLicence(render(content), licence), []);
-  assert.equal(auditBundledLicence('<p>no licence here</p>', licence).length, 1);
+test('escaping covers attribute and element content alike', () => {
+  assert.equal(esc(`<a href="x">&'`), '&lt;a href=&quot;x&quot;&gt;&amp;&#39;');
+  // The ampersand in the approved control name survives into the markup.
+  assert.ok(essay.includes('Sources &amp; Credits'));
 });
