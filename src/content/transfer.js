@@ -275,15 +275,28 @@ function parseProduction(sceneId, note, assetsByRef) {
 }
 
 /**
- * Where the drawing sits inside a `single` scene.
+ * Where the drawing sits inside a scene.
  *
- * The layout contract puts it after the first authored block, and five notes
- * add "art follows <speaker>'s dialogue". Both are read: the position is
- * computed from the blocks, and a note that names a speaker has to agree with
- * it, so a reordered scene is caught rather than silently re-illustrated.
+ * The layout contract puts it after the first authored block in all three
+ * illustrated layouts: a group opens with the narrator block above the art, a
+ * pair the same, and a single opens with its first authored block, which is
+ * sometimes that scene's opening line of dialogue.
+ *
+ * Five single notes add "art follows <speaker>'s dialogue". Both are read: the
+ * position is computed from the blocks, and a note naming a speaker has to
+ * agree with it, so a reordered scene is caught rather than silently
+ * re-illustrated. A group or a pair has to open on the narrator, because that
+ * is what its contract says it does.
  */
 function artPlacement(sceneId, note, blocks, layout) {
-  if (layout !== 'single') return 0;
+  if (layout === 'text') return 0;
+
+  if (layout === 'group' || layout === 'pair') {
+    if (blocks[0].kind !== 'narration') {
+      fail(`${sceneId}: a ${layout} scene opens with its first narrator block above the art`);
+    }
+  }
+
   const named = note.match(/art follows ([A-Za-z]+)'s dialogue/);
   if (named) {
     const speaker = named[1];
