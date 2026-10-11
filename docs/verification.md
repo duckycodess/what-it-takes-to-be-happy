@@ -416,11 +416,17 @@ origin instead of two.
 - **Print pagination, as pages.** The page count was read from a PDF; nobody has looked at where the
   breaks fall or whether a drawing is orphaned from the sentence it belongs to.
 - **Contrast as perceived**, rather than computed from the declared tokens.
-- **The deployment.** Nothing here was served by Vercel. The files are opened through `file://`
-  after being written to a directory; Chrome fetches the fonts and the artwork over real requests
-  either way, but it is not the deployment's own network. A Windows browser driven from WSL cannot
-  reach a loopback port inside it, so serving the tree to it was not available. What the preview
-  server does over real HTTP is covered in `test/build.test.js`.
+- **The deployment, as a deployment.** Vercel does build a **Preview** for each pushed commit on
+  this branch, and one exists for the reviewed head with a `success` status. It was **not**
+  browser-validated: the preview URL is behind the project's access protection and answers an
+  anonymous request with a Vercel login redirect, so nothing was exercised against it. There has
+  never been a **Production** deployment of this project; the environment list holds `Preview`
+  only. Everything checked above was checked against the locally built hosted tree, opened through
+  `file://` after being written to a directory — Chrome fetches the fonts and the artwork over real
+  requests either way, but it is not the deployment's own network. A Windows browser driven from
+  WSL cannot reach a loopback port inside it, so serving the tree to it was not available; what the
+  preview server returns over real HTTP is covered in `test/build.test.js`. Release verification
+  against a deployed URL is #7's.
 - **Anything about the approved prose itself**, which is the owner's to review and was approved
   before this integration began.
 
