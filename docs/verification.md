@@ -703,3 +703,11 @@ owner approves readability and flow, whatever these scenarios report.
 Offline reading, network-disabled `file://` sessions, and hosted/offline parity are **not** gates. The packaging audits that the single-file output exercises still run under `npm test`, and they are useful there — they prove every required resource is committed and inlined — but no release waits on them.
 
 Run focused automated contract/navigation checks and concrete manual visual checks on the deployed site where appropriate. Broaden testing when failures or new changes justify it.
+
+## Issue #17 repair verification — 11 October 2026
+
+The approved 31-part essay passed `npm run check` (validation, all 249 tests with zero failures/skips/cancellations, and normal hosted build). Chrome was installed and the real browser cases ran, including phone drawer focus, keyboard passage focus, all selected drawings and labels, source return, continuous reading and complete print. The copy-guard refusal uses a scratch checkout so parallel test suites never read tampered prose. Piped main-path text is complete; approved copy remains 8,595 words.
+
+A separate editorial fidelity audit passed eight chapters, 31 parts, 123 paragraphs, all 26 source entries and all 45 old-address relocations. Sources paragraph order and References heading now match the approved handoff. Follow-up coverage/style checks also passed after documentation and CSS-comment cleanup.
+
+This records implementation verification, not independent approval of a pushed commit, hosted acceptance, final owner layout approval or production release. Physical phones, other engines and physical printers remain untested. Production hold stays active.

@@ -18,17 +18,16 @@ Final desktop/phone owner review and production approval remain pending. Keep th
 
 The captured application and test files match the isolated snapshot tested on 11 October. That snapshot passed validation and build. Separate Chrome checks at 360 and 1280 CSS pixels passed navigation, chapter links, source-return state, continuous reading, print completeness, Futura loading, selected images and horizontal overflow. The phone width was emulated; physical phones and other browser engines were not tested. This is local verification, not hosted acceptance or independent review of this pushed commit.
 
-The full test suite remains failed: **248 tests, 231 passed, 17 failed, zero skipped or cancelled**, exit code 1. This publication does not replace that result with the successful narrower checks.
+The initial publication preserved a failed result: **248 tests, 231 passed, 17 failed**, exit code 1. That historical result was repaired; it was not replaced by narrower checks.
 
-## Required before merge
+The repair verification ran `npm run check` successfully: **249 tests passed, zero failed, skipped or cancelled**, followed by a successful normal hosted build. Coverage now describes all 31 approved parts; stale browser drivers use current identifiers and measure the rendered pair anchors, including wrappers using `display: contents`. The corpus command writes synchronously so a piped export cannot lose its final paragraphs. The approval-guard test mutates a scratch checkout rather than the real corpus another suite may read.
 
-- Reconcile eight coverage fixtures that still reference the old scene matrix and identifiers, preserving the assignment coverage requirements.
-- Update the approval-guard test's retired document-path expectation without weakening its refusal of altered copy.
-- Diagnose seven browser failures: launcher-offset expectation, three unfinished drivers, older artwork/name-count expectations and the retired `s097` pair selector. Do not assume every failure is fixture drift.
-- Resolve the corpus emission failure (7,346 versus 8,595 words in the suite). Standalone pipe and file captures produced 52,599 bytes and 8,595 words; they do not clear the full-suite failure.
-- Compare rendered Sources paragraph order and the References heading with the approved handoff.
-- Update active repository guidance and the content contract for the approved 31-part essay; preserve historical records.
-- Obtain genuine passing relevant checks, worker signoff and independent approval of the exact final pushed head. The dispatcher handles merging.
-- Prepare a verified hosted preview for owner readability review. Production promotion requires separate owner approval and same-revision release checks.
+The Sources page now follows the approved paragraph order and includes References. Keyboard passage focus marks its title without outlining the whole reading column; interactive control focus remains visible. The immutable essay, ordered handoff and content document checksums above are unchanged. A separate editorial audit passed all 123 paragraphs, 26 sources and 45 historical address relocations.
+
+## Required before merge and release
+
+- Obtain genuine independent approval of the exact final pushed head, plus manager signoff and dispatcher merge gates. Passing implementation checks do not manufacture that evidence.
+- Verify the hosted preview of that same revision, including network-loaded fonts/artwork, source return, phone/desktop reading and complete print.
+- Obtain owner final readability/layout approval and separate production release approval. Production remains at the recorded baseline until an approved same-revision release is tested and promoted.
 
 No additional artwork or retired offline deliverable is required. Preserve research, font and artwork provenance.

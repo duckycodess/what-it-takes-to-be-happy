@@ -379,11 +379,12 @@ export function renderSourcesBody(content, options = {}) {
 <${heading} id="sources-title">${esc(page.title)}</${heading}>
 <p class="sources-intro">${renderRich(page.intro)}</p>
 <p class="sources-note">${renderRich(page.classNote)}</p>
+<p class="sources-credits">${renderRich(page.credits)}</p>
+<${heading === 'h1' ? 'h2' : 'h3'}>References</${heading === 'h1' ? 'h2' : 'h3'}>
 <p class="sources-note">${renderRich(page.methodNote)}</p>
 <ol class="source-list">
 ${page.sources.map(renderSourceEntry).join('\n')}
 </ol>
-<p class="sources-credits">${renderRich(page.credits)}</p>
 <p class="sources-return"><a class="button" href="${esc(options.returnHref ?? 'index.html')}" data-return>${esc(page.returnLabel)}</a></p>
 </section>`;
 }

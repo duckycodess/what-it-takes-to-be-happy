@@ -352,7 +352,7 @@ test('a source entry is ringed on arrival, and a whole scene no longer is', () =
     !selectors.includes('.scene:focus-visible'),
     'a deep link would ring the whole scene, which is the outline the amendment removed',
   );
-  const sceneRing = selectors.find((selector) => selector.endsWith('.scene:focus-visible'));
+  const sceneRing = selectors.find((selector) => selector.endsWith('.scene:focus-visible .scene-title'));
   assert.ok(sceneRing, 'a keyboard reader still needs to see where they are');
   assert.match(sceneRing, /\[data-move="keyboard"\]/, 'the ring is not tied to how the move was made');
 
@@ -368,7 +368,7 @@ test('a source entry is ringed on arrival, and a whole scene no longer is', () =
 
   // And a ring marks where a reader is looking, which paper does not have.
   const reset = print.filter((rule) => /outline:\s*none/.test(rule.body)).map((rule) => rule.selector).join(' ');
-  for (const target of ['.scene:focus-visible', '.source:focus', '#landing-title:focus']) {
+  for (const target of ['.scene:focus-visible .scene-title', '.source:focus', '#landing-title:focus']) {
     assert.ok(reset.includes(target), `${target} would print its focus ring`);
   }
 });

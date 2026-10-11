@@ -141,11 +141,7 @@ the only two exceptions, so a control that goes missing by accident still fails 
 
 ### Still open under this amendment
 
-- **The replacement prose is not integrated and is not approved.** The interview also settled that
-  the chat would draft richer exact-copy Markdown for the owner to review as an outline, a developed
-  middle chapter, and then a full essay. None of those gates has been met. The website continues to
-  carry the approved 45-scene copy verbatim, and no part of a draft may be integrated until the
-  owner has approved all of it. A layout revision is not copy approval.
+- **The owner approved the full replacement essay for integration on 11 October 2026.** [Approval](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17#issuecomment-6106923541) supersedes the earlier outline/sample/full-copy pending statements. The immutable essay and handoff are under `docs/editorial/`; integration must preserve their exact copy, all source limits and selected art.
 - **The new revision is preview-only.** Nothing here authorises a production deployment, and a
   reviewed merge is not a promotion. Release verification against a deployed URL remains
   [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s, whose contract this
@@ -245,3 +241,7 @@ R14, R21, R22, R30). The scenes that touch any of those say so in reader-visible
 be opened, the concepts they originate are carried by R31 and R32 and the substitution is disclosed to the reader. The
 authored main path is [the storyboard](storyboard.md), with [the cast registry](cast.md) and
 [the coverage matrix](coverage.md).
+
+### Verification repair and publication — 11 October 2026
+
+The owner authorized publishing issue #17 and fixing its failed tests directly. Root owns the isolated publication checkout for PR #19; the original quota-stopped checkout and sessions remain preserved. Scope includes stale coverage/driver fixtures and real application defects, with complete logs and renewed independent review of the final pushed head. Production remains held for owner desktop/phone layout review and separate release approval. Passage keyboard focus marks the title rather than surrounding the whole scene with a red outline; interactive controls retain visible focus.

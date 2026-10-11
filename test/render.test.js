@@ -412,6 +412,13 @@ test('the first, a middle and the final citing scene all link out and back', () 
   }
 });
 
+test('Sources follows approved paragraph order and References heading', () => {
+  const body = sourcesPage.querySelector('.sources');
+  const sequence = body.children.map((element) => element.getAttribute('class') || element.tagName.toLowerCase());
+  assert.deepEqual(sequence, ['h1', 'sources-intro', 'sources-note', 'sources-credits', 'h2', 'sources-note', 'source-list', 'sources-return']);
+  assert.equal(body.querySelector('h2').textContent, 'References');
+});
+
 test('the Sources & Credits page is a separate document with a return control', () => {
   assert.equal(sourcesPage.documentElement.getAttribute('data-page'), 'sources');
   assert.equal(sourcesPage.querySelector('h1').textContent, 'Sources & Credits');

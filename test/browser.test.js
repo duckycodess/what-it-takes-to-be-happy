@@ -230,7 +230,7 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   // either way is that the reader is looking at the scene they moved to.
   assert.equal(value.afterNext.inViewport, true);
   assert.ok(
-    value.afterNext.topOfWindow === 0 || value.afterNext.scrolledAsFarAsItGoes,
+    Math.abs(value.afterNext.topOfWindow - value.firstScene.topOfWindow) <= 1 || value.afterNext.scrolledAsFarAsItGoes,
     `the scene sits ${value.afterNext.topOfWindow}px down a page that could still scroll`,
   );
   assert.equal(value.afterNext.horizontalOverflow, 0);
@@ -251,7 +251,7 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.afterChapterJump.visibleScenes, 1);
 
   assert.equal(value.continuous.view, 'reading');
-  assert.equal(value.continuous.toggleLabel, content.interface.scene);
+  assert.equal(value.continuous.toggleLabel, content.interface.partView);
   assert.equal(value.continuous.visibleScenes, ORDER.length, 'the continuous view is the whole essay');
   assert.equal(value.continuous.chapterTitlesVisible, content.chapters.length);
   assert.equal(value.continuous.comparisonStatesVisible, 4, 'both drawings of both comparisons read in place');
@@ -349,8 +349,8 @@ test('focus moves with the reader, and the keyboard still sees where it went', {
       function ring(element) {
         return {
           id: element.getAttribute('data-scene') || element.getAttribute('id'),
-          style: probe.style(element, 'outlineStyle'),
-          width: probe.style(element, 'outlineWidth'),
+          style: probe.style(element.querySelector('.scene-title') || element, 'outlineStyle'),
+          width: probe.style(element.querySelector('.scene-title') || element, 'outlineWidth'),
           focusVisible: element.matches(':focus-visible'),
         };
       }
@@ -369,7 +369,7 @@ test('focus moves with the reader, and the keyboard still sees where it went', {
         .step(function () { report.afterArrowLeft = probe.sceneId(); })
         .step(function () { probe.q('[data-chapter-link="c8"]').click(); })
         .step(function () { report.afterChapterJump = ring(document.activeElement); })
-        .step(function () { probe.q('[data-part-link="s131"]').click(); })
+        .step(function () { probe.q('[data-part-link="${ORDER.at(-2)}"]').click(); })
         .step(function () { report.afterPart = { scene: probe.sceneId(), focused: ring(document.activeElement) }; })
         .run(function () { probe.done(report); });`,
   });
@@ -384,8 +384,8 @@ test('focus moves with the reader, and the keyboard still sees where it went', {
 
   const chapterEight = content.chapters.find((chapter) => chapter.id === 'c8');
   assert.equal(value.afterChapterJump.id, chapterEight.sceneIds[0]);
-  assert.equal(value.afterPart.scene, 's131', 'a part in the rail opens its own scene');
-  assert.equal(value.afterPart.focused.id, 's131');
+  assert.equal(value.afterPart.scene, ORDER.at(-2), 'a part in the rail opens its own passage');
+  assert.equal(value.afterPart.focused.id, ORDER.at(-2));
 
   // A keyboard reader has no pointer to tell them where they are, so the ring
   // is still painted when the browser judges the move to be a keyboard one.
@@ -394,7 +394,7 @@ test('focus moves with the reader, and the keyboard still sees where it went', {
   assert.notEqual(value.afterArrowRight.focused.width, '0px');
 });
 
-test('a whole scene is ringed only when the browser judges the move a keyboard one', { skip }, () => {
+test('keyboard passage focus marks its title without outlining the whole scene', { skip }, () => {
   // The honest limit of this harness, stated rather than worked around: every
   // click it can make is `element.click()`, which is a script call and not a
   // pointer interaction, so Chrome keeps its keyboard modality and reports
@@ -431,7 +431,7 @@ test('a whole scene is ringed only when the browser judges the move a keyboard o
   assert.ok(!outlining.includes('.scene:focus'), `a rule still forces a ring on every scene: ${outlining.join(', ')}`);
   assert.ok(!outlining.includes('.scene:focus-visible'),
     'a deep link or a return from Sources would ring the whole scene');
-  const sceneRing = outlining.find((selector) => selector.endsWith('.scene:focus-visible'));
+  const sceneRing = outlining.find((selector) => selector.endsWith('.scene:focus-visible .scene-title'));
   assert.ok(sceneRing, 'a keyboard reader lost the ring entirely');
   assert.match(sceneRing, /\[data-move="keyboard"\]/);
   assert.ok(outlining.includes('.source:focus'), 'a citation no longer marks the entry it landed on');
@@ -574,7 +574,7 @@ test('on a wide screen the rail stands beside the essay and collapses out of it'
 });
 
 test('at phone width the drawer opens, dismisses on Escape, and gives focus back', { skip }, () => {
-  const scene = ORDER[12];
+  const scene = content.scenes.find((entry) => entry.blocks.some((block) => block.parts.some((part) => part.citation))).id;
   const { value } = essayPage({
     width: 375,
     height: 780,
@@ -630,10 +630,10 @@ test('at phone width the drawer opens, dismisses on Escape, and gives focus back
           report.focusedOnTriggerAgain = document.activeElement === probe.q('[data-rail-restore]');
         })
         .step(function () { probe.q('[data-rail-restore]').click(); })
-        .step(function () { probe.q('[data-part-link="s127"]').click(); })
+        .step(function () { probe.q('[data-part-link="${ORDER.at(-4)}"]').click(); })
         .step(function () {
           report.afterPart = shape();
-          report.focusedOnScene = document.activeElement === probe.q('#s127');
+          report.focusedOnScene = document.activeElement === probe.q('#${ORDER.at(-4)}');
         })
         .run(function () { probe.done(report); });`,
   });
@@ -666,7 +666,7 @@ test('at phone width the drawer opens, dismisses on Escape, and gives focus back
   assert.equal(value.focusedOnTriggerAgain, true);
 
   assert.equal(value.afterPart.rail, 'closed', 'choosing a part left the drawer over the destination');
-  assert.equal(value.afterPart.scene, 's127');
+  assert.equal(value.afterPart.scene, ORDER.at(-4));
   assert.equal(value.focusedOnScene, true, 'and focus belongs on the destination, not the trigger');
 });
 
@@ -863,7 +863,8 @@ function artwork(width) {
                 loaded: image.complete && image.naturalWidth > 0,
                 naturalWidth: image.naturalWidth,
                 drawnWidth: Math.round(box.width),
-                visible: probe.visible(view),
+                // Pair wrappers use display:contents; measure the rendered image anchor.
+                visible: probe.visible(anchor),
                 viewLabel: probe.q('.art-view-label', view) ? probe.q('.art-view-label', view).textContent : null,
                 labels: probe.all('.art-label', view).map(function (label) {
                   var labelBox = label.getBoundingClientRect();
@@ -914,7 +915,8 @@ test('every selected drawing really loads, at its own proportions', { skip }, ()
       assert.ok(view.drawnWidth > 0, `${scene.scene}: ${view.ref} was laid out with no width`);
     });
   }
-  assert.ok(drawn >= 28, `the essay should show every delivered drawing, found ${drawn}`);
+  const expectedDrawn = content.scenes.reduce((total, scene) => total + (scene.visual.control ? 1 : scene.visual.views.length), 0);
+  assert.equal(drawn, expectedDrawn, 'every selected visible drawing was measured');
 });
 
 test('a name sits over its own head, inside the drawing, as selectable text', { skip }, () => {
@@ -959,7 +961,10 @@ test('a name sits over its own head, inside the drawing, as selectable text', { 
         }
       }
     }
-    assert.ok(labelled > 20, `expected the names to be measured, found ${labelled} at ${width}px`);
+    const expectedLabels = content.scenes.reduce((total, scene) => total + scene.visual.views
+      .filter((view, index) => !scene.visual.control || index === 0)
+      .reduce((sum, view) => sum + content.assets.find((asset) => asset.ref === view.ref).labels.length, 0), 0);
+    assert.equal(labelled, expectedLabels, `all authored labels measured at ${width}px: ${JSON.stringify(scenes.map((scene) => [scene.scene, scene.views.map((view) => [view.ref, view.visible, view.labels.length])]))}`);
   }
 });
 
@@ -979,11 +984,11 @@ function pairBoxes(width, { printRulesOnScreen = false } = {}) {
     files,
     width,
     height: 1000,
-    hash: '#s097',
+    hash: `#${content.scenes.find((entry) => entry.visual.layout === 'pair').id}`,
     driver: `
       var report = {};
       probe.step(function () {
-        var figure = probe.q('.art[data-layout="pair"]', probe.q('#s097'));
+        var figure = probe.q('.art[data-layout="pair"]', probe.q('#${content.scenes.find((entry) => entry.visual.layout === 'pair').id}'));
         report.views = probe.all('.art-view', figure).map(function (view) {
           var anchor = probe.q('.art-anchor', view);
           var label = probe.q('.art-view-label', view);
@@ -1002,7 +1007,7 @@ function pairBoxes(width, { printRulesOnScreen = false } = {}) {
 }
 
 test('a pair shows its two drawings side by side, each above its own label', { skip }, () => {
-  const scene = content.scenes.find((entry) => entry.id === 's097');
+  const scene = content.scenes.find((entry) => entry.visual.layout === 'pair');
   const labels = scene.visual.views.map((view) => view.label);
 
   for (const printRulesOnScreen of [false, true]) {
@@ -1229,7 +1234,7 @@ test('reading continuously, the shared Sources control follows the scroll', { sk
 });
 
 test('the address a reader could copy opens the view they were in', { skip }, () => {
-  const scene = ORDER[12];
+  const scene = content.scenes.find((entry) => entry.blocks.some((block) => block.parts.some((part) => part.citation))).id;
 
   // What the address bar holds after switching into and out of continuous
   // reading, taken from a real browser's own location rather than from what
@@ -1313,9 +1318,9 @@ test('leaving continuous reading keeps the passage, not the way in', { skip }, (
   // A reader enters continuous reading at one scene, reads on by scrolling,
   // then presses Scene view. Scene view has to open the passage in front of
   // them. Opening the scene they came in at would silently undo the reading
-  // they just did -- here, thirty scenes of it.
+  // they just did -- here, twenty-four parts of it.
   const entered = ORDER[4];
-  const target = ORDER[34];
+  const target = ORDER.at(-3);
 
   const { value } = essayPage({
     width: 1024,
@@ -1367,7 +1372,7 @@ test('leaving continuous reading keeps the passage, not the way in', { skip }, (
   assert.equal(value.afterToggle.focused, target, 'and focus moves with the reader, as it does on any move they make');
 
   // Reading continues from there rather than from where they came in.
-  assert.equal(value.afterNext, ORDER[35]);
+  assert.equal(value.afterNext, ORDER.at(-2));
 });
 
 test('the shared control returns to the scrolled-to passage, in continuous mode', { skip }, () => {
