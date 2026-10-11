@@ -52,9 +52,9 @@ test('the landing carries the title, the opening drawing, Begin and Sources & Cr
 test('the landing shows nothing the approved script does not list', () => {
   const landing = document.querySelector('.landing');
   const paragraphs = landing.querySelectorAll('p').map((node) => node.textContent.trim());
-  // One paragraph: the two actions. No subtitle, no byline, no summary, no
-  // reading-time promise, no progress score.
-  assert.deepEqual(paragraphs, ['Begin\nSources & Credits']);
+  // The two actions, and the credit footnote the owner's reader amendment
+  // added. No subtitle, no summary, no reading-time promise, no progress score.
+  assert.deepEqual(paragraphs, ['Begin\nSources & Credits', content.landing.credit.map((part) => part.text).join('')]);
   for (const phrase of ['minute', 'minutes to read', 'by TJ', 'Written by', 'words']) {
     assert.ok(!landing.textContent.includes(phrase), `the landing still says "${phrase}"`);
   }
@@ -415,7 +415,9 @@ test('the first, a middle and the final citing scene all link out and back', () 
 test('Sources follows approved paragraph order and References heading', () => {
   const body = sourcesPage.querySelector('.sources');
   const sequence = body.children.map((element) => element.getAttribute('class') || element.tagName.toLowerCase());
-  assert.deepEqual(sequence, ['h1', 'sources-note', 'sources-credits', 'h2', 'sources-note', 'source-list', 'sources-return']);
+  // The owner's reader amendment removed the access-notes paragraph under
+  // References, so the list follows the heading directly.
+  assert.deepEqual(sequence, ['h1', 'sources-note', 'sources-credits', 'h2', 'source-list', 'sources-return']);
   assert.equal(body.querySelector('h2').textContent, 'References');
 });
 
@@ -428,8 +430,9 @@ test('the Sources & Credits page is a separate document with a return control', 
   entries.forEach((entry, index) => {
     assert.equal(entry.getAttribute('id'), sourceAnchor(index + 1));
     assert.equal(entry.querySelector('.source-number').textContent, `[${index + 1}]`);
-    // Each entry says what was actually opened.
-    assert.ok(entry.querySelector('.source-note').textContent.includes('Read:'));
+    // Only the formatted citation, by the owner's reader amendment.
+    assert.equal(entry.querySelector('.source-head a').textContent, content.sourcesPage.sources[index].citation);
+    assert.equal(entry.querySelector('.source-note'), null);
   });
 
   const back = sourcesPage.querySelector('[data-return]');

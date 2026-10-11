@@ -259,6 +259,39 @@ test('a phone gets the transition over the passage alone, and other moves are no
   assert.equal(value.stillCleared, true);
 });
 
+test('Sources keeps its way back on screen, scrollbars are not drawn, and the landing credits the authors', { skip }, () => {
+  for (const width of [360, 1280]) {
+    const { value: page } = runInChrome({ html: sources, files: hostedFiles, width, height: 780, driver: `
+      var report = {};
+      var back = probe.q('[data-return]');
+      probe
+        .step(function () {
+          report.atTop = probe.inViewport(back);
+          report.scrollbar = probe.style(document.documentElement, 'scrollbarWidth');
+          report.long = document.documentElement.scrollHeight > innerHeight * 2;
+          scrollTo(0, document.documentElement.scrollHeight);
+        })
+        .step(function () {
+          report.scrolled = scrollY > 0;
+          report.atBottom = probe.inViewport(back);
+          var last = probe.all('.source').pop().getBoundingClientRect();
+          report.lastEntryClear = last.bottom <= back.getBoundingClientRect().top + 1;
+          report.notes = probe.all('.source-note').length;
+        })
+        .run(function () { probe.done(report); });
+    ` });
+    assert.deepEqual(page, { atTop: true, scrollbar: 'none', long: true, scrolled: true, atBottom: true, lastEntryClear: true, notes: 0 },
+      `Sources at ${width}px`);
+  }
+
+  const { value: landing } = essayPage({ width: 360, driver: `
+    var credit = probe.q('.landing-credit');
+    probe.done({ text: credit.textContent, visible: probe.visible(credit) });
+  ` });
+  assert.equal(landing.visible, true);
+  assert.equal(landing.text, content.landing.credit.map((part) => part.text).join(''));
+});
+
 /** The essay, as the browser is given it. */
 const essayPage = (options) => runInChrome({ html: hosted, files: hostedFiles, ...options });
 

@@ -1,0 +1,8 @@
+{
+  "schema": "happiness-reader-amendment/v1",
+  "date": "2026-10-11",
+  "owner_authorization": "After the issue #20 release the owner asked directly for the references to keep only each formatted citation, for the access-notes paragraph to go, and for a landing footnote crediting the authors and the class.",
+  "remove_source_notes": true,
+  "method_note_removal": "Access notes describe the recorded source audit and its documented follow-ups. They do not claim that every link was reopened while writing this revision.",
+  "landing_credit": "By Tristan Jovan Noval, John Ranview Vonne Olano and Koji Araneta Yamane. Made for Captain Kert Tandog's Social Science 1 class."
+}

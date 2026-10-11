@@ -219,7 +219,7 @@ ${renderArt(content.landing.visual, context)}
 <a class="button" href="#${esc(content.landing.beginSceneId)}" data-begin>${esc(content.landing.beginLabel)}</a>
 <a class="button quiet" href="${esc(context.sourcesHref)}" data-sources>${esc(content.landing.sourcesLabel)}</a>
 </p>
-</section>`;
+${content.landing.credit ? `<p class="landing-credit">${renderRich(content.landing.credit)}</p>\n` : ''}</section>`;
 }
 
 /**
@@ -359,8 +359,7 @@ const renderRich = (parts) =>
 function renderSourceEntry(source) {
   return `<li class="source" id="${esc(sourceAnchor(source.number))}" data-source="${source.number}" tabindex="-1">
 <p class="source-head"><span class="source-number">${esc(source.label)}</span> <a href="${esc(source.url)}" rel="noreferrer">${esc(source.citation)}</a></p>
-<p class="source-note">${renderRich(source.note)}</p>
-</li>`;
+${source.note.length ? `<p class="source-note">${renderRich(source.note)}</p>\n` : ''}</li>`;
 }
 
 /**
@@ -381,8 +380,7 @@ ${page.intro.length ? `<p class="sources-intro">${renderRich(page.intro)}</p>` :
 <p class="sources-note">${renderRich(page.classNote)}</p>
 ${page.creditItems ? `<ul class="sources-credits">${page.creditItems.map((item) => `<li>${renderRich(item)}</li>`).join('')}</ul>` : `<p class="sources-credits">${renderRich(page.credits)}</p>`}
 <${heading === 'h1' ? 'h2' : 'h3'}>References</${heading === 'h1' ? 'h2' : 'h3'}>
-<p class="sources-note">${renderRich(page.methodNote)}</p>
-<ol class="source-list">
+${page.methodNote.length ? `<p class="sources-note">${renderRich(page.methodNote)}</p>\n` : ''}<ol class="source-list">
 ${page.sources.map(renderSourceEntry).join('\n')}
 </ol>
 <p class="sources-return"><a class="button" href="${esc(options.returnHref ?? 'index.html')}" data-return>${esc(page.returnLabel)}</a></p>

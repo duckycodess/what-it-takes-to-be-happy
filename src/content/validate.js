@@ -293,7 +293,7 @@ function checkRichText(errors, path, parts) {
   return true;
 }
 
-function checkSource(errors, path, source, expectedNumber) {
+function checkSource(errors, path, source, expectedNumber, readerAmended) {
   if (!isObject(source)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
 
   if (source.number !== expectedNumber) {
@@ -317,9 +317,10 @@ function checkSource(errors, path, source, expectedNumber) {
   if (!SOURCE_URL_PATTERN.test(source.url ?? '')) {
     errors.add(`${path}.url`, 'INVALID_URL', 'must be an http(s) destination');
   }
-  // Every entry states what was actually opened. Without it an abstract and a
-  // full reading look the same on the page.
-  checkRichText(errors, `${path}.note`, source.note);
+  // Every entry states what was actually opened, unless the owner's reader
+  // amendment reduced the references to their formatted citations; the audit
+  // level still records what was read.
+  if (!(readerAmended && Array.isArray(source.note) && source.note.length === 0)) checkRichText(errors, `${path}.note`, source.note);
   return true;
 }
 
@@ -528,6 +529,7 @@ export function validateContent(doc) {
       errors.add('.landing.beginSceneId', 'ANCHOR_MISMATCH', 'Begin opens the first part of the first chapter');
     }
     checkVisual(errors, '.landing.visual', doc.landing.visual, assetsByRef, { anchored: false });
+    if (doc.landing.credit !== undefined) checkRichText(errors, '.landing.credit', doc.landing.credit);
   }
 
   /* --- Sources --- */
@@ -543,7 +545,9 @@ export function validateContent(doc) {
   errors.text('.sourcesPage.title', page.title);
   errors.text('.sourcesPage.returnLabel', page.returnLabel);
   for (const key of ['intro', 'classNote', 'credits', 'methodNote']) {
-    if (page[key] !== undefined && !(key === 'intro' && Array.isArray(page[key]) && page[key].length === 0 && doc.source?.amendment)) checkRichText(errors, `.sourcesPage.${key}`, page[key]);
+    const emptied = Array.isArray(page[key]) && page[key].length === 0
+      && ((key === 'intro' && doc.source?.amendment) || (key === 'methodNote' && doc.source?.readerAmendment));
+    if (page[key] !== undefined && !emptied) checkRichText(errors, `.sourcesPage.${key}`, page[key]);
   }
   if (page.creditItems !== undefined) {
     if (errors.list_('.sourcesPage.creditItems', page.creditItems)) page.creditItems.forEach((item, i) => checkRichText(errors, `.sourcesPage.creditItems[${i}]`, item));
@@ -557,7 +561,7 @@ export function validateContent(doc) {
     errors.add('.sourcesPage.sources', 'SOURCE_COUNT',
       `the approved reader page carries ${SOURCE_COUNT} entries, not ${sources.length}`);
   }
-  sources.forEach((source, index) => checkSource(errors, `.sourcesPage.sources[${index}]`, source, index + 1));
+  sources.forEach((source, index) => checkSource(errors, `.sourcesPage.sources[${index}]`, source, index + 1, !!doc.source?.readerAmendment));
 
   const numbers = new Set(sources.filter(isObject).map((source) => source.number));
   const identities = sources.filter(isObject).map((source) => source.sourceId);

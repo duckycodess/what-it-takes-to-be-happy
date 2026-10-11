@@ -121,6 +121,17 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* The owner asked for the scrollbars to be invisible. Every scrolling area
+   still scrolls by wheel, touch, keyboard and trackpad; only the bar is not
+   drawn. */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   margin: 0;
   /* The foot of the page clears the fixed reading footer, which is one short
@@ -532,6 +543,14 @@ html.js[data-view="landing"] body { padding-bottom: 1rem; }
   justify-content: center;
 }
 
+/* Who made the essay, and for which class: a footnote under the actions. */
+.landing-credit {
+  margin: 2.5rem auto 0;
+  max-width: 34rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
+}
+
 /* Original bitmap ink/highlight, with browser text and native controls. */
 button, .button { transition: transform 90ms ease-out, background-color 90ms ease-out; }
 button:hover, .button:hover, button:focus-visible, .button:focus-visible {
@@ -823,6 +842,24 @@ html.js[data-view="reading"] .art-control {
 
 .sources-return {
   margin-top: 2rem;
+}
+
+/* On the separate Sources & Credits page the way back is always in reach,
+   in a footer like the reading one, instead of below 26 references. The
+   body's bottom padding already keeps the last entry clear of it. */
+html[data-page="sources"] .sources-return {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  max-width: none;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  display: flex;
+  justify-content: center;
+  background: var(--paper);
+  border-top: 1.5px solid var(--rule-strong);
 }
 
 /* --------------------------------------------------------------------------

@@ -197,6 +197,7 @@ test('no renderer-added prose reaches the essay', () => {
     ...readerSentences(content),
     ...content.chapters.map((chapter) => chapter.title),
     ...Object.values(content.interface),
+    content.landing.credit.map((part) => part.text).join(''),
     ...content.assets.flatMap((asset) => asset.labels.map((label) => label.text)),
     ...content.scenes.flatMap((scene) => scene.visual.views.map((view) => view.label)).filter(Boolean),
   ]);

@@ -287,3 +287,20 @@ replaces the generated paper wipe and refines two sentences above:
   darkened to the grey of its "off" half for this paper. The approved `Sound` label stays as the
   accessible name and `aria-pressed` carries the state; Trust's visible ON/OFF words are not added,
   because no new reader-facing string may be invented.
+
+## Owner amendment — 11 October 2026, references, return and credit
+
+After the issue #20 release went live the owner asked for four reader-facing changes, recorded in
+[the hash-bound reader amendment](editorial/reader-amendment.json) and applied during transfer like
+the polish amendment, so the immutable essay and handoff stay untouched:
+
+- **References keep only their formatted citations.** Each entry's access note ("Read: …") and the
+  "Access notes describe…" paragraph under References are removed. The audit level of every source
+  is still recorded in the content and in [the research register](research.md); it is no longer
+  printed beside the citation.
+- **The way back from Sources & Credits is always on screen**, in a fixed footer like the reading
+  one, instead of after all 26 references.
+- **A landing footnote credits the work**: "By Tristan Jovan Noval, John Ranview Vonne Olano and Koji
+  Araneta Yamane. Made for Captain Kert Tandog's Social Science 1 class." This is owner-supplied
+  copy, the one byline the landing carries; it does not change the names above the characters.
+- **Scrollbars are not drawn.** Every scrolling area still scrolls; only the bar is hidden.
