@@ -3,12 +3,12 @@
   "ref": "B11",
   "id": "polish-shared-preparation",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "f24bada8c327eca8ec54c601bfd09de2d4299693b28066975274884b3c8bf5e6",
+    "sha256": "f014969199848ced8a6d57063a41e7c1e4842a900b840d9cb075a729fb813eb1",
     "alt": "Fictional friends share preparation, seating and timing for a gathering.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "6d71925450dbc507f668c0e3ce0e5d3bc786863710387be565aca3a066351f85"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }

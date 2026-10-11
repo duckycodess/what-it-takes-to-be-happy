@@ -3,12 +3,12 @@
   "ref": "B12",
   "id": "polish-proposal-review",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "1d51ceb8f214152c8051b9f4cee63153a07152d0c1d32df94e6415990cedc873",
+    "sha256": "4c9ac244dcefd6dfe0d517559119a18697ff34074362d4478959cdabd84a6f9f",
     "alt": "Fictional visitors and staff consider a seating area, maintenance demands and hours.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "365219dab4fe7829bb7ebee206fea6e4c774dd2b74ebf188f8b37cc68d0d83c2"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }

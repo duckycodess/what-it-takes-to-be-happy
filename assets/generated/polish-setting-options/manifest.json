@@ -3,12 +3,12 @@
   "ref": "B09",
   "id": "polish-setting-options",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "6225a4adf9cea172988b3611e12d6d0b00baee6796c2e4c6018e4ec8ae27b203",
+    "sha256": "514495bc3b57fe5d73f476a874bb0b8103e6dae26940548fa523c9c3ffd5b8c3",
     "alt": "Fictional participants discuss a timetable, transport and opening hours together.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "fa2d64c54fbe257ccf17658578dc9bc9d0c95061f376ced55ab2392d42d7e3e7"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }

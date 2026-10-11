@@ -3,12 +3,12 @@
   "ref": "B08",
   "id": "polish-real-access",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "689469aaff015002ae1e1a0fb235016f619d374ed8bed10e5f352ce00a246913",
+    "sha256": "67e16cf9ea9547c7fa78beda6779a3248c873f4bf9ae451811987871e212fdaa",
     "alt": "Fictional visitors approach a usable ramp with transport and opening hours nearby.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "0cb60236fa00983b791c9882589db68d0f5bb4ab22ed3a0d5cb97862a652561e"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }

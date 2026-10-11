@@ -3,12 +3,12 @@
   "ref": "B07",
   "id": "polish-fare-and-friendship",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "d6534febff5a008a443033f010d50d8d2dc75e7511d86c8f8aff7e527fabf616",
+    "sha256": "393dec5aed72182ef05513a38c1f11925be59e50406f44da3637cfd5a424915f",
     "alt": "A fictional friend considers the fare while looking toward a welcoming group.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "3f7e1c08e02e998afc56fa75a82b831d5eecad2c5488c28a22718e6b82f5efa3"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }
