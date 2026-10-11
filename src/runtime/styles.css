@@ -541,8 +541,34 @@ button:hover, .button:hover, button:focus-visible, .button:focus-visible {
   transform: scale(1.02);
 }
 button:active, .button:active { transform: scale(0.95); }
-.sound-toggle { position: fixed; top: 0.55rem; right: 1rem; z-index: 5; width: auto; max-width: none; font-size: 0.85rem; }
-.sound-toggle[aria-pressed="true"]::after { content: ' ✓'; margin-left: 0.35em; }
+/* The Sound control is The Evolution of Trust's own speaker
+   (assets/ui/trust/sound.png): waves while on, a cross while off, one half of
+   the sprite at a time. Trust's "on" half is white for its dark footer, so on
+   this paper it is darkened to the grey of the "off" half. "Sound" remains
+   the button's accessible name and aria-pressed carries the state. */
+button.sound-toggle,
+button.sound-toggle:hover,
+button.sound-toggle:focus-visible,
+button.sound-toggle[aria-pressed="true"] {
+  position: fixed;
+  top: 0.4rem;
+  right: 0.6rem;
+  z-index: 5;
+  width: 2.75rem;
+  height: 2.75rem;
+  max-width: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.sound-icon {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: url(__TRUST_SOUND_ICON_URL__) 100% 0 / auto 100% no-repeat;
+}
+.sound-toggle[aria-pressed="true"] .sound-icon { background-position: 0 0; filter: brightness(0.35); }
+.sound-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 /* Nicky Case's scratcher (The Evolution of Trust, css/slides.css): a 2 x 20
    sprite sheet stretched over the reading area, one frame showing at a time.
    The script places it, sets the sheet once it has loaded, and steps

@@ -63,7 +63,7 @@ export const DIST = join(repoRoot, 'dist');
 
 const STYLESHEET = 'src/runtime/styles.css';
 const READER_SCRIPT = 'src/runtime/reader.js';
-const SCRATCH_MANIFEST = 'assets/ui/scratch/manifest.json';
+const TRUST_MANIFEST = 'assets/ui/trust/manifest.json';
 
 const read = (path) => readFile(join(repoRoot, path));
 const readText = (path) => readFile(join(repoRoot, path), 'utf8');
@@ -171,34 +171,36 @@ export async function buildOutputs(content) {
     value.replaceAll(uiToken(image),
       inline ? toDataUri(uiArtwork.get(image.path), 'image/png') : image.path), styles);
 
-  // Nicky Case's scratch transition, copied unchanged and checked like the
-  // artwork: assets/ui/scratch/README.md says where each file came from.
-  const scratchManifest = JSON.parse(await readText(SCRATCH_MANIFEST));
-  const transition = new Map();
-  for (const file of scratchManifest.files) {
+  // Nicky Case's scratch transition and speaker, copied unchanged and checked
+  // like the artwork: assets/ui/trust/README.md says where each came from.
+  const trustManifest = JSON.parse(await readText(TRUST_MANIFEST));
+  const trust = new Map();
+  for (const file of trustManifest.files) {
     const bytes = await read(file.path);
     if (createHash('sha256').update(bytes).digest('hex') !== file.sha256) {
-      throw new ArtworkError(`Scratch transition asset changed: ${file.path}`);
+      throw new ArtworkError(`Trust UI asset changed: ${file.path}`);
     }
-    transition.set(file.path, bytes);
+    trust.set(file.path, bytes);
   }
-  const scratchUrls = (inline) => Object.fromEntries(scratchManifest.files.map((file) =>
-    [file.id, inline ? toDataUri(transition.get(file.path), file.mediaType) : file.path]));
+  const trustUrls = (inline) => Object.fromEntries(trustManifest.files.map((file) =>
+    [file.id, inline ? toDataUri(trust.get(file.path), file.mediaType) : file.path]));
+  const withTrust = (styles, inline) => Object.entries(trustUrls(inline)).reduce((value, [id, url]) =>
+    value.replaceAll(`__TRUST_${id.replaceAll('-', '_').toUpperCase()}_URL__`, url), styles);
 
   // Hosted: ordinary linked files, so the browser caches them between visits,
   // and the only output the project typeface is served from.
-  const hostedCss = withUi(withFontUrl(
+  const hostedCss = withTrust(withUi(withFontUrl(
     withFontUrl(css, FONT_URL_TOKEN, FALLBACK_FONT.published),
     PROJECT_FONT_URL_TOKEN,
     PROJECT_FONT.published,
-  ), false);
+  ), false), false);
   const hostedOptions = {
     mode: 'hosted',
     stylesheetUrl: 'styles.css',
     scriptUrl: 'reader.js',
     sourcesHref: 'sources.html',
     sourceHref: hostedSourceHref,
-    scratch: scratchUrls(false),
+    scratch: trustUrls(false),
   };
   const hosted = renderEssay(content, hostedOptions);
   const sources = renderSourcesPage(content, { ...hostedOptions, essayUrl: 'index.html' });
@@ -208,11 +210,11 @@ export async function buildOutputs(content) {
   // covers this site using the face, not a copy of the file travelling inside
   // a document handed to someone else, so the hosted-only region of the
   // stylesheet leaves here and the bundled fallback sets everything.
-  const offlineCss = withUi(withFontUrl(
+  const offlineCss = withTrust(withUi(withFontUrl(
     withoutHostedOnly(css, HOSTED_ONLY_CSS),
     FONT_URL_TOKEN,
     toDataUri(fontBytes, FALLBACK_FONT.mediaType),
-  ), true);
+  ), true), true);
   const offline = renderEssay(content, {
     mode: 'offline',
     inlineStyles: offlineCss,
@@ -223,10 +225,10 @@ export async function buildOutputs(content) {
     sourceHref: (number) => `#${sourceAnchor(number)}`,
     fontLicense,
     fontNotice: FALLBACK_FONT.noticeAlone,
-    scratch: scratchUrls(true),
+    scratch: trustUrls(true),
   });
 
-  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork, transition };
+  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork, trust };
 }
 
 /** Every check the build refuses to publish without. */
@@ -361,7 +363,7 @@ async function main() {
     written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
     for (const [path, bytes] of outputs.artwork) written.push(await write(join(DIST, path), bytes));
     for (const [path, bytes] of outputs.uiArtwork) written.push(await write(join(DIST, path), bytes));
-    for (const [path, bytes] of outputs.transition) written.push(await write(join(DIST, path), bytes));
+    for (const [path, bytes] of outputs.trust) written.push(await write(join(DIST, path), bytes));
   }
 
   console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} scene(s) `

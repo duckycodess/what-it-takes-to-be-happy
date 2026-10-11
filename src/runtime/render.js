@@ -457,6 +457,14 @@ function context(content, options) {
 }
 
 /**
+ * The Sound control: Trust's speaker, on until the reader turns it off. The
+ * approved label is its accessible name rather than visible text.
+ */
+function renderSoundToggle(label) {
+  return `<button type="button" class="sound-toggle js-only" data-sound aria-pressed="true"><span class="sound-icon" aria-hidden="true"></span><span class="sound-label">${esc(label ?? 'Sound')}</span></button>`;
+}
+
+/**
  * The page transition's overlay: Nicky Case's scratcher from The Evolution of
  * Trust. Empty and hidden; the reader script lays the sprite sheet over the
  * reading area between moves. Without its files there is no overlay, and
@@ -507,7 +515,7 @@ ${head(content, options, content.landing.title)}
 </head>
 <body>
 <a class="skip-link" href="#essay">${esc(ui.skip)}</a>
-<button type="button" class="sound-toggle js-only" data-sound aria-pressed="false">${esc(ui.sound ?? 'Sound')}</button>
+${renderSoundToggle(ui.sound)}
 ${renderRailLauncher(content)}
 <main id="essay" tabindex="-1">
 ${renderLanding(content, ctx)}
@@ -544,7 +552,7 @@ ${head(content, options, content.sourcesPage.title)}
 </head>
 <body>
 <a class="skip-link" href="#sources">${esc(content.interface.skip)}</a>
-<button type="button" class="sound-toggle js-only" data-sound aria-pressed="false">${esc(content.interface.sound ?? 'Sound')}</button>
+${renderSoundToggle(content.interface.sound)}
 <main id="sources-main" tabindex="-1">
 ${renderSourcesBody(content, { heading: 'h1', returnHref: options.essayUrl ?? 'index.html' })}
 </main>

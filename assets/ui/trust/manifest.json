@@ -1,17 +1,21 @@
 {
-  "schema": "scratch-transition-assets/v1",
+  "schema": "trust-ui-assets/v1",
   "source": {
     "work": "The Evolution of Trust, by Nicky Case",
     "repository": "https://github.com/ncase/trust",
     "commit": "6ec45d73befdb922bd40654dd1c1c903a953562f",
     "license": "CC0-1.0",
     "license_url": "https://github.com/ncase/trust/blob/gh-pages/LICENSE",
-    "behaviour": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/core/Scratcher.js"
+    "behaviour": [
+      "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/core/Scratcher.js",
+      "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/main.js",
+      "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/css/slides.css"
+    ]
   },
   "files": [
     {
       "id": "sheet",
-      "path": "assets/ui/scratch/scratch.png",
+      "path": "assets/ui/trust/scratch.png",
       "mediaType": "image/png",
       "width": 1422,
       "height": 8000,
@@ -20,17 +24,26 @@
     },
     {
       "id": "sound-in",
-      "path": "assets/ui/scratch/scratch_in.mp3",
+      "path": "assets/ui/trust/scratch_in.mp3",
       "mediaType": "audio/mpeg",
       "sha256": "55f6c0cd71e4511e252b1a25666852a334609af0dfe3b6ed1ca27d0101a6969b",
       "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/scratch_in.mp3"
     },
     {
       "id": "sound-out",
-      "path": "assets/ui/scratch/scratch_out.mp3",
+      "path": "assets/ui/trust/scratch_out.mp3",
       "mediaType": "audio/mpeg",
       "sha256": "5c2c714e463521538b5ef097cb9e7ea8e634a9a3eedfdfcbcdf5705ec1e1f987",
       "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/scratch_out.mp3"
+    },
+    {
+      "id": "sound-icon",
+      "path": "assets/ui/trust/sound.png",
+      "mediaType": "image/png",
+      "width": 200,
+      "height": 100,
+      "sha256": "c5c2907c3767851f10270ede0fde2419bf740aa043516352aaf1b947ee062f1e",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/ui/sound.png"
     }
   ]
 }

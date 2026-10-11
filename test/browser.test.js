@@ -65,7 +65,7 @@ const sources = built ? built.sources : '';
  */
 const scratchFiles = {
   ...hostedFiles,
-  ...(built ? Object.fromEntries(built.transition) : {}),
+  ...(built ? Object.fromEntries(built.trust) : {}),
 };
 
 /** Counts the interval timers a page leaves running. */
@@ -86,13 +86,19 @@ test('a move is scribbled over, made underneath, then rubbed out to reveal the n
     probe
       .wait(300)
       .step(function () {
-        report.sheetLoaded = scratcher.style.backgroundImage.indexOf('assets/ui/scratch/scratch.png') >= 0;
-        report.soundStartsOff = probe.q('[data-sound]').getAttribute('aria-pressed') === 'false';
+        report.sheetLoaded = scratcher.style.backgroundImage.indexOf('assets/ui/trust/scratch.png') >= 0;
         probe.q('[data-begin]').click();
         report.beginCovers = !scratcher.hidden;
         report.beginWaits = document.documentElement.getAttribute('data-view') === 'landing';
       })
-      .wait(1700)
+      .wait(1000)
+      .step(function () {
+        // Revealing the essay after the landing: the rail has appeared and
+        // the cover has moved off it to the reading area.
+        report.beginRevealClear = !scratcher.hidden
+          && scratcher.getBoundingClientRect().left >= probe.q('.chapter-rail').getBoundingClientRect().right;
+      })
+      .wait(700)
       .step(function () {
         report.beginArrived = probe.sceneId();
         report.beginCleared = scratcher.hidden;
@@ -125,7 +131,7 @@ test('a move is scribbled over, made underneath, then rubbed out to reveal the n
   ` });
 
   assert.equal(value.sheetLoaded, true, 'the original sheet is preloaded and set');
-  assert.equal(value.soundStartsOff, true);
+  assert.equal(value.beginRevealClear, true, 'the reveal after Begin stays off the rail');
   assert.equal(value.beginCovers, true, 'Begin is a move like any other');
   assert.equal(value.beginWaits, true, 'the landing stays until it is covered');
   assert.equal(value.beginArrived, ORDER[0]);
@@ -146,11 +152,12 @@ test('a move is scribbled over, made underneath, then rubbed out to reveal the n
     'the repeated press did not move twice, and nothing is left behind');
 });
 
-test('each scratch sound starts 100 ms into its phase, once a reader turns sound on', { skip }, () => {
+test('sound starts on, with each scratch recording 100 ms into its phase, and the speaker turns it off', { skip }, () => {
   const { value } = runInChrome({ html: hosted, files: scratchFiles, width: 1280,
     flags: ['--autoplay-policy=no-user-gesture-required'], driver: `
     var report = { played: [] };
     var scratcher = probe.q('[data-scratcher]');
+    var speaker = probe.q('[data-sound]');
     var started = 0;
     // Recorded rather than heard. A page opened from disk cannot fetch the
     // recordings, so it plays them through audio elements.
@@ -161,28 +168,39 @@ test('each scratch sound starts 100 ms into its phase, once a reader turns sound
     probe
       .wait(300)
       .step(function () {
+        report.startsOn = speaker.getAttribute('aria-pressed');
+        report.name = speaker.textContent.trim();
+        var icon = probe.q('.sound-icon', speaker);
+        report.icon = { image: probe.style(icon, 'backgroundImage').indexOf('assets/ui/trust/sound.png') >= 0, x: probe.style(icon, 'backgroundPositionX'), width: icon.getBoundingClientRect().width };
+        report.button = { border: probe.style(speaker, 'borderTopStyle'), background: probe.style(speaker, 'backgroundColor'), width: speaker.getBoundingClientRect().width };
+        started = performance.now();
         probe.q('[data-begin]').click();
       })
       .wait(1700)
       .step(function () {
-        report.silentWhenOff = report.played.length === 0;
-        probe.q('[data-sound]').click();
-      })
-      .wait(300)
-      .step(function () {
-        started = performance.now();
+        speaker.click();
+        report.turnedOff = speaker.getAttribute('aria-pressed');
+        report.offIcon = probe.style(probe.q('.sound-icon', speaker), 'backgroundPositionX');
+        report.playedWhileOn = report.played.length;
         probe.q('[data-next]').click();
       })
       .wait(1700)
+      .step(function () { report.playedWhileOff = report.played.length - report.playedWhileOn; })
       .run(function () { probe.done(report); });
   ` });
 
-  assert.equal(value.silentWhenOff, true, 'sound is off until the reader turns it on');
-  assert.deepEqual(value.played.map((entry) => [entry.file, entry.column]),
+  assert.equal(value.startsOn, 'true', 'sound is on until the reader turns it off');
+  assert.equal(value.name, 'Sound', 'the approved label is the accessible name');
+  assert.deepEqual(value.icon, { image: true, x: '0px', width: 40 }, "Trust's speaker, its waves half");
+  assert.deepEqual(value.button, { border: 'none', background: 'rgba(0, 0, 0, 0)', width: 44 }, 'an icon, not a boxed button');
+  assert.deepEqual(value.played.slice(0, 2).map((entry) => [entry.file, entry.column]),
     [['scratch_in.mp3', '0%'], ['scratch_out.mp3', '-100%']]);
   const [scribble, rub] = value.played.map((entry) => entry.at);
   assert.ok(scribble >= 100 && scribble < 140, `scratch_in at ${scribble} ms`);
   assert.ok(rub >= 900 && rub < 960, `scratch_out at ${rub} ms`);
+  assert.equal(value.turnedOff, 'false');
+  assert.equal(value.offIcon, '100%', 'the crossed-out half');
+  assert.equal(value.playedWhileOff, 0, 'nothing plays once it is off');
 });
 
 test('a phone gets the transition over the passage alone, and other moves are not held up by it', { skip }, () => {

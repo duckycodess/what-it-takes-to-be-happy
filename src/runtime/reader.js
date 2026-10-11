@@ -30,16 +30,18 @@
 
   var root = document.documentElement;
 
-  // Optional local sound, initially off. No autoplay, remote samples or saved
-  // opt-in. Buttons tick with a short synthesised click; page transitions play
-  // the original scratch recordings from The Evolution of Trust, loaded only
-  // once a reader turns sound on. A browser that cannot play sound still
-  // offers the complete essay.
+  // Sound, on until the reader turns it off, as in The Evolution of Trust. No
+  // autoplay, remote samples or saved choice: nothing is heard before the
+  // reader presses, taps or types something. Buttons tick with a short
+  // synthesised click; page transitions play Trust's own scratch recordings.
+  // A browser that cannot play sound still offers the complete essay.
   var soundButton = document.querySelector('[data-sound]');
-  var soundOn = false;
+  var soundOn = true;
   var audio = null;
+  var AudioContextType = window.AudioContext || window.webkitAudioContext;
   var scratcher = document.querySelector('[data-scratcher]');
-  var scratchSounds = null;
+  var scratchBytes = {};
+  var scratchSounds = {};
   var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
   function sound() {
     if (!soundOn || !audio) return;
@@ -60,31 +62,63 @@
       source.stop(start + duration);
     } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
   }
-  /* Decoded into the context the Sound button unlocked, so a later move can
-     play them without a gesture of its own. A page opened from disk cannot
-     fetch its neighbours, and gets plain audio elements instead. */
-  function loadScratchSounds() {
-    if (scratchSounds || !scratcher || !audio) return;
-    scratchSounds = {};
+  /* A page opened from disk cannot fetch its neighbours, and a browser
+     without Web Audio cannot decode them; both get plain audio elements. */
+  function scratchElement(phase) {
+    var url = scratcher && scratcher.getAttribute('data-sound-' + phase);
+    if (!url || !window.Audio) return;
+    var element = new window.Audio(url);
+    element.preload = 'auto';
+    scratchSounds[phase] = element;
+  }
+  /* Fetched as the page loads, so the first move has its sound ready rather
+     than racing a download that only started when it was asked for. */
+  function preloadScratchSounds() {
     ['in', 'out'].forEach(function (phase) {
-      var url = scratcher.getAttribute('data-sound-' + phase);
+      var url = scratcher && scratcher.getAttribute('data-sound-' + phase);
       if (!url) return;
-      var fallback = function () { if (window.Audio) scratchSounds[phase] = new window.Audio(url); };
-      if (!window.fetch || !audio.decodeAudioData) { fallback(); return; }
+      if (!window.fetch || !AudioContextType) { scratchElement(phase); return; }
       window.fetch(url)
         .then(function (response) {
           if (!response.ok) throw new Error('Sound unavailable');
           return response.arrayBuffer();
         })
-        .then(function (data) {
-          var decoding = audio.decodeAudioData(data, function (buffer) { scratchSounds[phase] = buffer; }, fallback);
-          if (decoding && decoding.catch) decoding.catch(function () {});
-        })
-        .catch(fallback);
+        .then(function (data) { scratchBytes[phase] = data; decodeScratchSounds(); })
+        .catch(function () { scratchElement(phase); });
     });
   }
+  /* Decoding needs the audio context, which waits for the reader's first
+     gesture; whichever of the two arrives second does the decoding. */
+  function decodeScratchSounds() {
+    if (!audio) return;
+    Object.keys(scratchBytes).forEach(function (phase) {
+      var data = scratchBytes[phase];
+      delete scratchBytes[phase];
+      try {
+        var decoding = audio.decodeAudioData(data, function (buffer) { scratchSounds[phase] = buffer; },
+          function () { scratchElement(phase); });
+        if (decoding && decoding.catch) decoding.catch(function () {});
+      } catch (error) { scratchElement(phase); }
+    });
+  }
+  /* Browsers keep sound shut until the reader does something, and some shut
+     it again later. Every press, tap or key opens it, in time for the click
+     or move that gesture causes. */
+  function unlockAudio() {
+    if (!soundOn || !AudioContextType) return;
+    try {
+      if (!audio) {
+        audio = new AudioContextType();
+        decodeScratchSounds();
+      }
+      if (audio.state === 'suspended') {
+        var resumed = audio.resume();
+        if (resumed && resumed.catch) resumed.catch(function () {});
+      }
+    } catch (error) { audio = null; }
+  }
   function playScratch(phase) {
-    var clip = soundOn && scratchSounds && scratchSounds[phase];
+    var clip = soundOn && scratchSounds[phase];
     if (!clip) return;
     try {
       if (clip.play) {
@@ -93,6 +127,7 @@
         if (playing && playing.catch) playing.catch(function () {});
         return;
       }
+      if (!audio) return;
       var source = audio.createBufferSource();
       source.buffer = clip;
       source.connect(audio.destination);
@@ -100,20 +135,14 @@
       source.start();
     } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
   }
+  preloadScratchSounds();
+  ['pointerdown', 'touchend', 'keydown', 'click'].forEach(function (type) {
+    document.addEventListener(type, unlockAudio, true);
+  });
   if (soundButton) soundButton.addEventListener('click', function () {
     soundOn = !soundOn;
-    if (soundOn) {
-      try {
-        var Audio = window.AudioContext || window.webkitAudioContext;
-        if (!Audio) throw new Error('Audio unavailable');
-        if (!audio) audio = new Audio();
-        var ready = audio.resume();
-        if (ready && ready.catch) ready.catch(function () { soundOn = false; soundButton.setAttribute('aria-pressed', 'false'); });
-        loadScratchSounds();
-      } catch (error) { soundOn = false; }
-    }
     soundButton.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
-    sound();
+    if (soundOn) { unlockAudio(); sound(); }
   });
   document.addEventListener('click', function (event) {
     if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) sound();
@@ -261,12 +290,6 @@
     if (scratch) return;
     var area = scratcher && sheetReady && !(reduced && reduced.matches) && !document.hidden ? scratchArea() : null;
     if (!area) { move(); return; }
-    // A move is a gesture, which is what a browser that suspended sound since
-    // the Sound button was pressed needs before it will play again.
-    if (soundOn && audio && audio.state === 'suspended') {
-      var resumed = audio.resume();
-      if (resumed && resumed.catch) resumed.catch(function () {});
-    }
     scratch = { move: move, area: null, timer: null, voice: null, swapping: false };
     fitScratcher(area);
     scratcher.hidden = false;
@@ -284,17 +307,12 @@
     scratch.swapping = true;
     try { move(); } catch (error) { failure = error; }
     scratch.swapping = false;
-    // The destination can be laid out differently -- the landing is wider
-    // than a passage -- so the cover takes it in too while it is still solid.
+    // The destination can be laid out differently -- after Begin the essay
+    // sits beside the rail, where the landing did not -- so the cover moves
+    // to the new reading area while it is still solid. Anything it leaves is
+    // blank paper or the rail, never the passage being revealed.
     var area = scratchArea();
-    if (area) {
-      fitScratcher({
-        left: Math.min(area.left, scratch.area.left),
-        right: Math.max(area.right, scratch.area.right),
-        top: Math.min(area.top, scratch.area.top),
-        bottom: Math.max(area.bottom, scratch.area.bottom)
-      });
-    }
+    if (area) fitScratcher(area);
     // A move that failed still leaves a page to reveal. The error is reported
     // rather than left to strand the reader under the scribble.
     if (failure) setTimeout(function () { throw failure; }, 0);
