@@ -220,7 +220,22 @@ button,
   padding: 0.45rem 0.9rem;
   cursor: pointer;
   text-decoration: none;
-  display: inline-block;
+  /* A control is a target before it is a label: 44px is the smallest a
+     fingertip reliably hits, and the padding alone leaves these at 39 on a
+     phone, where the type is smaller. Centred rather than top-aligned, so
+     the extra height is room around the word and not under it. */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+}
+
+/* An author rule beats the browser's own `[hidden] { display: none }`
+   whatever its specificity, so giving a control a display above turns
+   `hidden` off for it. The script hides Read again until the last scene and
+   Next at it; without this they are both on screen the whole way through. */
+[hidden] {
+  display: none !important;
 }
 
 .button.quiet {

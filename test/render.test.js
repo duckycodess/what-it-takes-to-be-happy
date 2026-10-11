@@ -226,6 +226,14 @@ test('every paragraph of a comparison scene sits outside the figure', () => {
 test('the shared controls use the approved names and are script-only', () => {
   const controls = document.querySelector('.reader-controls');
   assert.ok(controls.getAttribute('class').includes('js-only'));
+
+  // Only the chapter menu is named, and it is named by its own visible
+  // heading. Naming this group too would mean writing a reader-facing word
+  // the approved script does not contain.
+  assert.equal(controls.getAttribute('aria-label'), null);
+  const menu = document.querySelector('.chapter-menu');
+  assert.equal(menu.getAttribute('aria-labelledby'), 'chapter-menu-label');
+  assert.equal(document.querySelector('#chapter-menu-label').textContent, 'Chapters');
   assert.equal(controls.querySelector('[data-back]').textContent, 'Back');
   assert.equal(controls.querySelector('[data-next]').textContent, 'Next');
   assert.equal(controls.querySelector('[data-read-again]').textContent, 'Read again');

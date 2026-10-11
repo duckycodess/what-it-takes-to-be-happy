@@ -236,7 +236,11 @@ ${items}
  */
 function renderControls(content, context) {
   const ui = content.interface;
-  return `<nav class="reader-controls js-only" aria-label="${esc(ui.chapters)}">
+  // No `aria-label`: the only names this build may use are the approved
+  // interface strings, and none of them names this group. Labelling it
+  // "Chapters" -- which is the chapter menu's name -- announced two different
+  // landmarks under one name and called Back, Next and Print a chapter list.
+  return `<nav class="reader-controls js-only">
 <button type="button" data-back>${esc(ui.back)}</button>
 <button type="button" data-next>${esc(ui.next)}</button>
 <a class="button" href="#${esc(content.landing.beginSceneId)}" data-read-again hidden>${esc(ui.readAgain)}</a>

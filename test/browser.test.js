@@ -3,15 +3,15 @@
  *
  * Everything here is a question `test/reader.test.js` cannot answer, because
  * the answer comes from the stylesheet and the browser rather than from the
- * script: what a view actually hides, whether a focus ring is painted, where
- * focus goes when a native disclosure is clicked, and whether a 360-pixel
- * window scrolls sideways.
+ * script: what a view actually hides, whether a focus ring is painted,
+ * whether a drawing really loaded, whether two names sit on top of each
+ * other, whether a 360-pixel window scrolls sideways, what a reader with no
+ * scripting receives, and what comes out of the printer.
  *
- * Most of it runs against the real offline build — one file, nothing linked —
- * because it is the same renderer and a browser can open it without a server.
- * The typography runs against the real hosted build instead: index.html with
- * its stylesheet, script, and both fonts beside it at the paths it links them
- * at, because a webfont the browser never had to fetch proves nothing.
+ * It runs against the real hosted build — index.html and sources.html with
+ * their stylesheet, script, fonts and every selected PNG beside them at the
+ * paths they are linked at — because the hosted website is the deliverable
+ * and a drawing the browser never had to fetch proves nothing.
  *
  * Without a browser installed these skip. `npm test` stays honest either
  * way, and docs/verification.md records which happened.
@@ -19,39 +19,52 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { join } from 'node:path';
 
 import { buildOutputs } from '../src/build/build.js';
-import { PROJECT_FONT, FALLBACK_FONT, FALLBACK_FONT_LICENSE, ILLUSTRATION } from '../src/build/assets.js';
+import { PROJECT_FONT, FALLBACK_FONT, FALLBACK_FONT_LICENSE } from '../src/build/assets.js';
 import { loadContent } from '../src/content/load.js';
+import { sourceAnchor } from '../src/runtime/render.js';
 import { repoRoot } from './helpers.js';
-import { findChrome, runInChrome } from './support/chrome.js';
-import { join } from 'node:path';
+import { findChrome, runInChrome, printInChrome, withoutScriptInChrome } from './support/chrome.js';
 
 const chrome = findChrome();
 const skip = chrome ? false : 'no browser is installed on this host';
 
 const content = await loadContent(join(repoRoot, 'content/content.json'));
 const ORDER = content.chapters.flatMap((chapter) => chapter.sceneIds);
+const sceneById = new Map(content.scenes.map((scene) => [scene.id, scene]));
 const built = chrome ? await buildOutputs(content) : null;
-const offline = built ? built.offline : '';
 
 /**
- * The hosted output as a browser meets it: the page, and every file it links
- * to at the path it links it at. The font is the point — it has to be fetched
- * over a real request before anything can be asked about it.
+ * The hosted output as a browser meets it: the pages, and every file they
+ * link to at the path they link it at. The fonts and the artwork are the
+ * point — both have to be fetched over real requests before anything can be
+ * asked about them.
  */
-const hostedFiles = built
-  ? {
-      'styles.css': built.hostedCss,
-      'reader.js': built.script,
-      [PROJECT_FONT.published]: built.projectFontBytes,
-      [FALLBACK_FONT.published]: built.fontBytes,
-      [FALLBACK_FONT_LICENSE.published]: built.fontLicense,
-      [ILLUSTRATION.published]: built.illustrationBytes,
-    }
-  : {};
+const hostedFiles = {};
+if (built) {
+  hostedFiles['styles.css'] = built.hostedCss;
+  hostedFiles['reader.js'] = built.script;
+  hostedFiles['sources.html'] = built.sources;
+  hostedFiles[PROJECT_FONT.published] = built.projectFontBytes;
+  hostedFiles[FALLBACK_FONT.published] = built.fontBytes;
+  hostedFiles[FALLBACK_FONT_LICENSE.published] = built.fontLicense;
+  for (const [path, bytes] of built.artwork) hostedFiles[path] = bytes;
+}
 
 const hosted = built ? built.hosted : '';
+const sources = built ? built.sources : '';
+
+/** The essay, as the browser is given it. */
+const essayPage = (options) => runInChrome({ html: hosted, files: hostedFiles, ...options });
+
+/** The separate Sources & Credits page, at the address a citation leads to. */
+const sourcesPage = (options) => runInChrome({
+  html: sources,
+  files: { ...hostedFiles, 'index.html': hosted },
+  ...options,
+});
 
 /** A driver that waits for the fonts before it reports anything. */
 const afterFonts = (body) => `
@@ -83,258 +96,167 @@ probe
     report.landing = {
       landingVisible: probe.visible(probe.q('.landing')),
       essayVisible: probe.visible(probe.q('.essay-body')),
-      registerVisible: probe.visible(probe.q('.source-register')),
-      beginVisible: probe.visible(probe.q('[data-begin]')),
-      returnOffered: probe.visible(probe.q('.register-return')),
+      menuVisible: probe.visible(probe.q('.chapter-menu')),
       horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      title: probe.q('h1').textContent,
+      actions: probe.all('.landing-actions a').map(function (a) { return a.textContent; }),
     };
   })
   .step(function () { probe.q('[data-begin]').click(); })
   .step(function () {
-    var current = probe.q('[data-scene][data-current]');
-    report.firstBeat = {
+    var scene = probe.q('[data-scene][data-current]');
+    report.firstScene = {
       view: document.documentElement.getAttribute('data-view'),
       scene: probe.sceneId(),
-      focused: probe.activeId(),
-      outlineWidth: probe.style(current, 'outlineWidth'),
-      outlineStyle: probe.style(current, 'outlineStyle'),
       onlyCurrentVisible: probe.all('[data-scene]').filter(probe.visible).length,
-      topOfWindow: Math.round(current.getBoundingClientRect().top),
-      registerVisible: probe.visible(probe.q('.source-register')),
-      controlsVisible: probe.visible(probe.q('.beat-controls')),
-      backDisabled: probe.q('[data-back]').disabled,
-      boundary: probe.q('[data-position-boundary]').textContent,
+      topOfWindow: Math.round(scene.getBoundingClientRect().top),
       hash: location.hash,
+      backVisible: probe.visible(probe.q('[data-back]')),
+      nextVisible: probe.visible(probe.q('[data-next]')),
+      readAgainVisible: probe.visible(probe.q('[data-read-again]')),
       horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-      controlHeights: ['[data-back]', '[data-next]', '[data-view-toggle]'].map(function (selector) {
-        return Math.round(probe.q(selector).getBoundingClientRect().height);
-      }),
+      controlHeights: probe.all('.reader-controls button, .reader-controls .button')
+        .filter(probe.visible)
+        .map(function (control) { return Math.round(control.getBoundingClientRect().height); }),
     };
   })
   .step(function () { probe.q('[data-next]').click(); })
   .step(function () { probe.q('[data-next]').click(); })
   .step(function () {
     report.afterNext = {
-      topOfWindow: Math.round(probe.q('[data-scene][data-current]').getBoundingClientRect().top),
       scene: probe.sceneId(),
-      focused: probe.activeId(),
       hash: location.hash,
-      position: probe.q('[data-position-current]').textContent,
-      where: probe.q('[data-position-where]').textContent,
+      topOfWindow: Math.round(probe.q('[data-scene][data-current]').getBoundingClientRect().top),
+      scrolledAsFarAsItGoes: Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 1,
+      inViewport: probe.inViewport(probe.q('[data-scene][data-current]')),
+      horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   })
-  .step(function () { probe.q('[data-chapter-link="${content.chapters[4].id}"]').click(); })
+  .step(function () { probe.q('[data-chapter-link="c6"]').click(); })
   .step(function () {
     report.afterChapterJump = {
-      topOfWindow: Math.round(probe.q('[data-scene][data-current]').getBoundingClientRect().top),
       scene: probe.sceneId(),
-      focused: probe.activeId(),
       hash: location.hash,
-      visibleChapters: probe.all('.chapter').filter(probe.visible).length,
-    };
-  })
-  // On to the first beat from here that carries both an optional panel and its
-  // own sources, so every control touched below is one a reader can see. Which
-  // beat that is belongs to the content, not to this test.
-  .step(function () {
-    var guard = 0;
-    while (guard++ < 60) {
-      var beat = probe.q('[data-scene][data-current]');
-      if (beat.querySelector('details.detail') && beat.querySelector('.source [data-source-link]')) break;
-      probe.q('[data-next]').click();
-    }
-    report.panelBeat = probe.sceneId();
-  })
-  .step(function () {
-    var panel = probe.q('[data-scene][data-current] details.detail');
-    report.panelBefore = { open: panel.open, visible: probe.visible(probe.q('summary', panel)) };
-    // A real pointer or keyboard activation focuses the control first;
-    // element.click() alone skips that, so the focus question would be
-    // answered by the harness rather than by the page.
-    probe.q('summary', panel).focus();
-    probe.q('summary', panel).click();
-  })
-  .step(function () {
-    var panel = probe.q('[data-scene][data-current] details.detail');
-    report.panelAfterClick = {
-      open: panel.open,
-      bodyVisible: probe.visible(probe.q('.detail-body', panel)),
-      focusStayedOnSummary: document.activeElement === probe.q('summary', panel),
-      sceneUnchanged: probe.sceneId(),
-      nextStillAvailable: !probe.q('[data-next]').disabled,
+      visibleScenes: probe.all('[data-scene]').filter(probe.visible).length,
     };
   })
   .step(function () { probe.q('[data-view-toggle]').click(); })
   .step(function () {
-    report.reading = {
+    report.continuous = {
       view: document.documentElement.getAttribute('data-view'),
       toggleLabel: probe.q('[data-view-toggle]').textContent,
-      togglePressed: probe.q('[data-view-toggle]').getAttribute('aria-pressed'),
       visibleScenes: probe.all('[data-scene]').filter(probe.visible).length,
-      registerVisible: probe.visible(probe.q('.source-register')),
-      controlsVisible: probe.visible(probe.q('.beat-controls')),
-      panelsOpen: probe.all('details.detail').map(function (panel) { return panel.open; }),
+      chapterTitlesVisible: probe.all('.chapter-title').filter(probe.visible).length,
+      comparisonStatesVisible: probe.all('.art-comparison .art-view').filter(probe.visible).length,
+      comparisonLabelsVisible: probe.all('.art-comparison .art-view-label').filter(probe.visible).length,
+      controlsVisible: probe.visible(probe.q('[data-back]')),
       horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   })
   .step(function () { probe.q('[data-view-toggle]').click(); })
   .step(function () {
-    report.backAmongBeats = {
-      view: document.documentElement.getAttribute('data-view'),
-      panelKeptOpen: probe.q('[data-scene][data-current] details.detail').open,
-      untouchedPanelClosed: probe.all('details.detail')[0].open,
-    };
-  })
-  .step(function () { probe.q('[data-scene][data-current] .source [data-source-link]').click(); })
-  .step(function () {
-    // The entry the reader actually followed, not whichever one is first in
-    // the register: an earlier version of this check measured the wrong
-    // element and would have passed with the reader left off screen.
-    var entry = probe.q('.source-register [data-source="' + location.hash.slice(1) + '"]');
-    report.sources = {
-      entryIsTheOneFollowed: !!entry,
-      view: document.documentElement.getAttribute('data-view'),
-      registerVisible: probe.visible(probe.q('.source-register')),
-      focused: probe.activeId(),
-      hash: location.hash,
-      entryVisible: probe.visible(entry),
-      entryInViewport: probe.inViewport(entry),
-      entryTop: Math.round(entry.getBoundingClientRect().top),
-      windowHeight: window.innerHeight,
-      entryOutlineStyle: probe.style(entry, 'outlineStyle'),
-      entryOutlineWidth: probe.style(entry, 'outlineWidth'),
-      returnOffered: probe.visible(probe.q('.register-return')),
-    };
-  })
-  .step(function () { probe.q('[data-return-to-beats]').click(); })
-  .step(function () {
-    report.returned = {
+    report.backAmongScenes = {
       view: document.documentElement.getAttribute('data-view'),
       scene: probe.sceneId(),
-      focused: probe.activeId(),
+      visibleScenes: probe.all('[data-scene]').filter(probe.visible).length,
     };
-  })
-  .step(function () { history.back(); })
-  .step(function () {
-    report.backOnce = { scene: probe.sceneId(), hash: location.hash, view: document.documentElement.getAttribute('data-view') };
-  })
-  .step(function () { history.back(); })
-  .step(function () {
-    report.backTwice = { scene: probe.sceneId(), hash: location.hash, view: document.documentElement.getAttribute('data-view') };
   })
   .run(function () { probe.done(report); });
 `;
 
 test('the reader behaves in a real browser at phone width', { skip }, () => {
-  const { value } = runInChrome({
-    html: offline,
+  const { value } = essayPage({
     driver: `var report = {};\n${JOURNEY}`,
-    width: 360,
+    width: 375,
     height: 780,
   });
 
   assert.equal(value.landing.landingVisible, true);
   assert.equal(value.landing.essayVisible, false, 'the landing is the landing, not the whole essay');
-  assert.equal(value.landing.registerVisible, false);
-  assert.equal(value.landing.returnOffered, false, 'nothing has been left behind yet');
-  assert.equal(value.landing.horizontalOverflow, 0, 'the landing does not scroll sideways at 360px');
+  assert.equal(value.landing.menuVisible, false);
+  assert.equal(value.landing.title, content.landing.title);
+  assert.deepEqual(value.landing.actions, ['Begin', 'Sources & Credits']);
+  assert.equal(value.landing.horizontalOverflow, 0, 'the landing does not scroll sideways at 375px');
 
-  assert.equal(value.firstBeat.view, 'beat');
-  assert.equal(value.firstBeat.scene, ORDER[0]);
-  assert.equal(value.firstBeat.focused, ORDER[0], 'Begin moves focus into the beat it opened');
-  assert.equal(value.firstBeat.outlineStyle, 'solid');
-  assert.notEqual(value.firstBeat.outlineWidth, '0px', 'the focused beat is painted with a ring, not just focused');
-  assert.equal(value.firstBeat.onlyCurrentVisible, 1, 'one beat is on screen at a time');
-  assert.equal(value.firstBeat.topOfWindow, 0, 'the beat is at the top of the window, not below the banner and the chapter list');
-  assert.equal(value.firstBeat.registerVisible, false);
-  assert.equal(value.firstBeat.controlsVisible, true);
-  assert.equal(value.firstBeat.backDisabled, true);
-  assert.match(value.firstBeat.boundary, /first beat/);
-  assert.equal(value.firstBeat.hash, `#${ORDER[0]}`);
-  assert.equal(value.firstBeat.horizontalOverflow, 0, 'a beat does not scroll sideways at 360px');
-  for (const height of value.firstBeat.controlHeights) {
+  assert.equal(value.firstScene.view, 'beat');
+  assert.equal(value.firstScene.scene, ORDER[0]);
+  assert.equal(value.firstScene.onlyCurrentVisible, 1, 'one scene is on screen at a time');
+  assert.equal(value.firstScene.topOfWindow, 0, 'the scene is at the top of the window, not below the chapter list');
+  assert.equal(value.firstScene.hash, `#${ORDER[0]}`);
+  assert.equal(value.firstScene.backVisible, true);
+  assert.equal(value.firstScene.nextVisible, true);
+  assert.equal(value.firstScene.readAgainVisible, false, 'Read again belongs at the end, not the beginning');
+  assert.equal(value.firstScene.horizontalOverflow, 0);
+  for (const height of value.firstScene.controlHeights) {
     assert.ok(height >= 44, `a control is ${height}px tall, under the 44px a finger needs`);
   }
 
-  assert.equal(value.afterNext.topOfWindow, 0, 'and stays there on every move');
   assert.equal(value.afterNext.scene, ORDER[2]);
-  assert.equal(value.afterNext.focused, ORDER[2]);
   assert.equal(value.afterNext.hash, `#${ORDER[2]}`);
-  assert.equal(value.afterNext.position, '3');
-  // The progress line names the chapter the beat is in, with the number the
-  // reader counts it as — the opening is named rather than numbered.
-  const beatChapter = content.chapters.find((chapter) => chapter.sceneIds.includes(ORDER[2]));
-  const counted = content.chapters.filter((chapter) => chapter.number !== null).length;
-  assert.equal(value.afterNext.where, `Chapter ${beatChapter.number} of ${counted}: ${beatChapter.title}`);
-
-  assert.equal(value.afterChapterJump.topOfWindow, 0);
-  assert.equal(value.afterChapterJump.scene, content.chapters[4].sceneIds[0]);
-  assert.equal(value.afterChapterJump.focused, content.chapters[4].sceneIds[0]);
-  assert.equal(value.afterChapterJump.hash, `#${content.chapters[4].sceneIds[0]}`);
-  assert.equal(value.afterChapterJump.visibleChapters, 1);
-
-  assert.equal(value.panelBefore.open, false, 'a panel is a reveal while moving beat by beat');
-  assert.equal(value.panelBefore.visible, true, 'and its control is on screen to be used');
-  assert.equal(value.panelAfterClick.open, true);
-  assert.equal(value.panelAfterClick.bodyVisible, true);
-  assert.equal(value.panelAfterClick.focusStayedOnSummary, true, 'opening a panel does not take focus away from its own control');
-  assert.equal(value.panelAfterClick.sceneUnchanged, value.panelBeat, 'and does not move the reader off the beat');
-  assert.equal(value.panelAfterClick.nextStillAvailable, true, 'a panel never gates progression');
-
-  assert.equal(value.reading.view, 'reading');
-  assert.equal(value.reading.toggleLabel, 'Back to the beats');
-  assert.equal(value.reading.togglePressed, null, 'the label carries the state; aria-pressed would contradict it');
-  assert.equal(value.reading.visibleScenes, ORDER.length, 'the continuous view is the whole essay');
-  assert.equal(value.reading.registerVisible, true);
-  assert.equal(value.reading.controlsVisible, false);
-  assert.equal(value.reading.panelsOpen.length, content.details.length);
-  assert.deepEqual(
-    value.reading.panelsOpen,
-    Array(content.details.length).fill(true),
-    'every panel reads in place in the continuous view',
+  // A short scene near the end of a short document cannot be brought to the
+  // top, because there is nothing below it left to scroll. What has to hold
+  // either way is that the reader is looking at the scene they moved to.
+  assert.equal(value.afterNext.inViewport, true);
+  assert.ok(
+    value.afterNext.topOfWindow === 0 || value.afterNext.scrolledAsFarAsItGoes,
+    `the scene sits ${value.afterNext.topOfWindow}px down a page that could still scroll`,
   );
-  assert.equal(value.reading.horizontalOverflow, 0);
+  assert.equal(value.afterNext.horizontalOverflow, 0);
 
-  assert.equal(value.backAmongBeats.view, 'beat');
-  assert.equal(value.backAmongBeats.panelKeptOpen, true, 'the reader opened it, so it stays open');
-  assert.equal(value.backAmongBeats.untouchedPanelClosed, false, 'a panel they never touched follows the view');
+  const chapterSix = content.chapters.find((chapter) => chapter.id === 'c6');
+  assert.equal(value.afterChapterJump.scene, chapterSix.sceneIds[0]);
+  assert.equal(value.afterChapterJump.hash, `#${chapterSix.sceneIds[0]}`);
+  assert.equal(value.afterChapterJump.visibleScenes, 1);
 
-  assert.equal(value.sources.view, 'reading');
-  assert.equal(value.sources.registerVisible, true);
-  assert.equal(value.sources.entryIsTheOneFollowed, true, 'the register holds an entry for the citation that was clicked');
-  assert.equal(value.sources.entryVisible, true);
-  assert.equal(value.sources.entryInViewport, true,
-    `the entry was laid out but off screen: top ${value.sources.entryTop} in a ${value.sources.windowHeight}px window`);
-  assert.equal(value.sources.entryOutlineStyle, 'solid', 'the entry the reader landed on is ringed, not just focused');
-  assert.notEqual(value.sources.entryOutlineWidth, '0px');
-  assert.equal(value.sources.returnOffered, true);
-  assert.ok(value.sources.hash.startsWith('#R'), `expected a source fragment, got ${value.sources.hash}`);
-  assert.equal(value.sources.focused, value.sources.hash.slice(1), 'the reader lands on the entry they followed');
+  assert.equal(value.continuous.view, 'reading');
+  assert.equal(value.continuous.toggleLabel, content.interface.scene);
+  assert.equal(value.continuous.visibleScenes, ORDER.length, 'the continuous view is the whole essay');
+  assert.equal(value.continuous.chapterTitlesVisible, content.chapters.length);
+  assert.equal(value.continuous.comparisonStatesVisible, 4, 'both drawings of both comparisons read in place');
+  assert.equal(value.continuous.comparisonLabelsVisible, 4, 'each with its own label');
+  assert.equal(value.continuous.controlsVisible, false, 'scene controls mean nothing in continuous reading');
+  assert.equal(value.continuous.horizontalOverflow, 0);
 
-  assert.equal(value.returned.view, 'beat');
-  assert.equal(value.returned.scene, value.panelBeat, 'and comes back to the beat they left');
-  assert.equal(value.returned.focused, value.returned.scene);
-
-  // Back works on a local file, and restores how the reader was reading as
-  // well as where they were.
-  assert.equal(value.backOnce.view, 'reading', 'Back returns to the register they had opened');
-  assert.ok(value.backOnce.hash.startsWith('#R'), `expected the source fragment, got ${value.backOnce.hash}`);
-  assert.equal(value.backTwice.view, 'beat', 'and Back again returns to the beats, not just to the fragment');
-  assert.equal(value.backTwice.scene, value.panelBeat);
-  assert.equal(value.backTwice.hash, `#${value.panelBeat}`);
+  assert.equal(value.backAmongScenes.view, 'beat');
+  assert.equal(value.backAmongScenes.scene, chapterSix.sceneIds[0], 'and comes back to where it left');
+  assert.equal(value.backAmongScenes.visibleScenes, 1);
 });
 
-/* --- A deep link, and the wide layout ------------------------------------- */
+test('the end of the essay offers Read again rather than a dead Next', { skip }, () => {
+  const last = ORDER.at(-1);
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    hash: `#${last}`,
+    driver: `
+      var report = {};
+      probe.step(function () {
+        report.scene = probe.sceneId();
+        report.nextVisible = probe.visible(probe.q('[data-next]'));
+        report.backVisible = probe.visible(probe.q('[data-back]'));
+        report.readAgain = probe.visible(probe.q('[data-read-again]'))
+          ? probe.q('[data-read-again]').getAttribute('href') : null;
+        report.sources = probe.q('[data-sources]').getAttribute('href');
+      }).run(function () { probe.done(report); });`,
+  });
 
-test('a deep link opens that beat without taking the reader\'s focus', { skip }, () => {
+  assert.equal(value.scene, last);
+  assert.equal(value.nextVisible, false, 'there is nothing after the last scene');
+  assert.equal(value.backVisible, true);
+  assert.equal(value.readAgain, `#${ORDER[0]}`);
+  assert.equal(value.sources, 'sources.html');
+});
+
+/* --- Deep links, focus and the keyboard ----------------------------------- */
+
+test('a deep link opens that scene, and the script takes no focus of its own', { skip }, () => {
   const target = ORDER[5];
-  const { value } = runInChrome({
+  const { value } = essayPage({
     // Full window width: this is about focus, and a narrow layout viewport
     // has to be measured inside a frame, where "nothing is focused yet" is
     // the frame's business rather than the page's.
     width: 1024,
     height: 900,
-    html: offline,
     hash: `#${target}`,
     driver: `
       var report = {};
@@ -350,14 +272,128 @@ test('a deep link opens that beat without taking the reader\'s focus', { skip },
   assert.equal(value.view, 'beat');
   assert.equal(value.scene, target);
   assert.equal(value.visibleScenes, 1);
-  assert.equal(value.topOfWindow, 0, 'a reader who followed a link sees the beat, not the page above it');
-  assert.equal(value.focused, 'body', 'a reader who has just arrived keeps their focus');
+  assert.equal(value.topOfWindow, 0, 'a reader who followed a link sees the scene, not the page above it');
+
+  // The browser focuses the fragment's target itself, because a scene is
+  // focusable so that the script can send a reader to it. That is the
+  // browser answering the link the reader followed, and it lands on the
+  // scene they asked for -- never anywhere else.
+  assert.equal(value.focused, target);
+
+  // What the script must not do is take focus when the reader asked for
+  // nothing. Opened with no fragment, the page leaves focus where it was.
+  const { value: plain } = essayPage({
+    width: 1024,
+    height: 900,
+    driver: `
+      var report = {};
+      probe.step(function () {
+        report.view = document.documentElement.getAttribute('data-view');
+        report.focused = document.activeElement === document.body ? 'body' : probe.activeId();
+      }).run(function () { probe.done(report); });`,
+  });
+  assert.equal(plain.view, 'landing');
+  assert.equal(plain.focused, 'body', 'a reader who has just arrived keeps their focus');
 });
 
-test('nothing scrolls sideways at phone width, on any beat or in any view', { skip }, () => {
-  const { value } = runInChrome({
-    html: offline,
-    width: 320,
+test('focus moves with the reader, and the move is painted', { skip }, () => {
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    driver: `
+      var report = {};
+      function ring(element) {
+        return {
+          id: element.getAttribute('data-scene') || element.getAttribute('id'),
+          style: probe.style(element, 'outlineStyle'),
+          width: probe.style(element, 'outlineWidth'),
+        };
+      }
+      probe
+        .step(function () { probe.q('[data-begin]').click(); })
+        .step(function () { report.afterBegin = ring(document.activeElement); })
+        .step(function () { probe.q('[data-next]').click(); })
+        .step(function () { report.afterNext = ring(document.activeElement); })
+        .step(function () {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+        })
+        .step(function () { report.afterArrowRight = { scene: probe.sceneId(), focused: ring(document.activeElement) }; })
+        .step(function () {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
+        })
+        .step(function () { report.afterArrowLeft = probe.sceneId(); })
+        .step(function () { probe.q('[data-chapter-link="c8"]').click(); })
+        .step(function () { report.afterChapterJump = ring(document.activeElement); })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.afterBegin.id, ORDER[0], 'Begin moves focus into the scene it opened');
+  assert.equal(value.afterBegin.style, 'solid', 'and the move is painted, not just announced');
+  assert.notEqual(value.afterBegin.width, '0px');
+
+  assert.equal(value.afterNext.id, ORDER[1]);
+  assert.equal(value.afterArrowRight.scene, ORDER[2], 'the arrow keys walk the scenes');
+  assert.equal(value.afterArrowRight.focused.id, ORDER[2]);
+  assert.equal(value.afterArrowLeft, ORDER[1]);
+
+  const chapterEight = content.chapters.find((chapter) => chapter.id === 'c8');
+  assert.equal(value.afterChapterJump.id, chapterEight.sceneIds[0]);
+  assert.equal(value.afterChapterJump.style, 'solid');
+});
+
+test('an in-page landmark moves the reader within the scene, not out of it', { skip }, () => {
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    driver: `
+      var report = {};
+      probe
+        .step(function () { probe.q('[data-begin]').click(); })
+        .step(function () { probe.q('[data-next]').click(); })
+        .step(function () { report.before = { view: document.documentElement.getAttribute('data-view'), scene: probe.sceneId() }; })
+        .step(function () { probe.q('.skip-link').click(); })
+        .step(function () {
+          report.afterSkipLink = {
+            view: document.documentElement.getAttribute('data-view'),
+            scene: probe.sceneId(),
+            hash: location.hash,
+            focused: probe.activeId(),
+            sceneStillVisible: probe.visible(probe.q('[data-scene][data-current]')),
+          };
+        })
+        .step(function () { location.hash = '#chapters'; })
+        .step(function () {
+          report.afterChaptersFragment = {
+            view: document.documentElement.getAttribute('data-view'),
+            scene: probe.sceneId(),
+          };
+        })
+        .step(function () { location.hash = '#nothing-here'; })
+        .step(function () {
+          report.afterUnknownFragment = { view: document.documentElement.getAttribute('data-view'), scene: probe.sceneId() };
+        })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.before.view, 'beat');
+  assert.equal(value.afterSkipLink.view, 'beat', 'the skip link must not throw the reader back to the landing');
+  assert.equal(value.afterSkipLink.scene, value.before.scene);
+  assert.equal(value.afterSkipLink.hash, '#essay');
+  assert.equal(value.afterSkipLink.focused, 'essay', 'and it does what a skip link is for: focus moves to the essay');
+  assert.equal(value.afterSkipLink.sceneStillVisible, true);
+
+  assert.equal(value.afterChaptersFragment.view, 'beat');
+  assert.equal(value.afterChaptersFragment.scene, value.before.scene);
+
+  assert.equal(value.afterUnknownFragment.view, 'beat', 'an unrecognised fragment is not a reason to move anyone');
+  assert.equal(value.afterUnknownFragment.scene, value.before.scene);
+});
+
+/* --- Reflow --------------------------------------------------------------- */
+
+test('nothing scrolls sideways at phone width, on any scene or in any view', { skip }, () => {
+  const { value } = essayPage({
+    width: 360,
     height: 780,
     driver: `
       var report = { viewport: 0, widest: [] };
@@ -377,516 +413,543 @@ test('nothing scrolls sideways at phone width, on any beat or in any view', { sk
       }
       probe.step(function () { widest('landing'); }).step(function () { probe.q('[data-begin]').click(); });
       ${ORDER.map((id, index) => `probe
-        .step(function () { widest('beat ${index + 1}'); })
-        .step(function () { var next = probe.q('[data-next]'); if (!next.disabled) next.click(); });`).join('\n')}
+        .step(function () { widest('scene ${index + 1} (${id})'); })
+        .step(function () { var next = probe.q('[data-next]'); if (probe.visible(next)) next.click(); });`).join('\n')}
       probe
         .step(function () { probe.q('[data-view-toggle]').click(); })
-        .step(function () { widest('continuous view with the register'); })
+        .step(function () { widest('continuous reading'); })
         .run(function () { probe.done(report); });`,
   });
 
-  assert.ok(value.viewport > 0 && value.viewport <= 320, `expected a phone-width viewport, got ${value.viewport}`);
-  assert.equal(value.widest.length, ORDER.length + 2, 'every beat, the landing, and the continuous view were measured');
+  assert.ok(value.viewport > 0 && value.viewport <= 360, `expected a phone-width viewport, got ${value.viewport}`);
+  assert.equal(value.widest.length, ORDER.length + 2, 'every scene, the landing, and the continuous view were measured');
   for (const measured of value.widest) {
     assert.ok(measured.over <= 0, `${measured.label} is ${measured.over}px wider than the window (${measured.element})`);
   }
 });
 
-test('an in-page landmark moves the reader within the beat, not out of it', { skip }, () => {
-  // The skip link is a real control in the page, and #chapters is a real
-  // identifier on the chapter list. Following either must not be mistaken for
-  // "go somewhere else in the essay".
-  const { value } = runInChrome({
-    html: offline,
+test('the register does not scroll sideways either, where the long URLs are', { skip }, () => {
+  const { value } = sourcesPage({
+    width: 360,
+    height: 780,
+    driver: `
+      var report = {};
+      probe.step(function () {
+        var root = document.documentElement;
+        report.viewport = root.clientWidth;
+        report.over = root.scrollWidth - root.clientWidth;
+        report.entries = probe.all('.source').length;
+        var worst = { over: -9999, element: null };
+        probe.all('body *').forEach(function (element) {
+          var box = element.getBoundingClientRect();
+          if (box.width === 0) return;
+          var over = Math.round(box.right - root.clientWidth);
+          if (over > worst.over) worst = { over: over, element: element.tagName + '.' + (typeof element.className === 'string' ? element.className : '') };
+        });
+        report.worst = worst;
+      }).run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.entries, content.sourcesPage.sources.length);
+  assert.ok(value.over <= 0, `the register is ${value.over}px wider than the window`);
+  assert.ok(value.worst.over <= 0, `${value.worst.element} overflows by ${value.worst.over}px`);
+});
+
+/* --- The artwork ---------------------------------------------------------- */
+
+/** Every drawing and every label on every scene, at one layout width. */
+function artwork(width) {
+  const { value } = essayPage({
+    width,
+    height: 900,
+    driver: `
+      var report = { scenes: [] };
+      probe.step(function () { probe.q('[data-begin]').click(); });
+      ${ORDER.map(() => `probe
+        .step(function () {
+          var scene = probe.q('[data-scene][data-current]');
+          report.scenes.push({
+            scene: probe.sceneId(),
+            views: probe.all('.art-view', scene).map(function (view) {
+              var image = probe.q('img', view);
+              var anchor = probe.q('.art-anchor', view);
+              var box = anchor.getBoundingClientRect();
+              return {
+                ref: view.getAttribute('data-ref'),
+                src: image.getAttribute('src'),
+                loaded: image.complete && image.naturalWidth > 0,
+                naturalWidth: image.naturalWidth,
+                drawnWidth: Math.round(box.width),
+                visible: probe.visible(view),
+                viewLabel: probe.q('.art-view-label', view) ? probe.q('.art-view-label', view).textContent : null,
+                labels: probe.all('.art-label', view).map(function (label) {
+                  var labelBox = label.getBoundingClientRect();
+                  return {
+                    text: label.textContent,
+                    kind: label.getAttribute('data-kind'),
+                    left: Math.round(labelBox.left), right: Math.round(labelBox.right),
+                    top: Math.round(labelBox.top), bottom: Math.round(labelBox.bottom),
+                    insideImage: labelBox.left >= box.left - 1 && labelBox.right <= box.right + 1,
+                    aboveTheHead: labelBox.bottom <= box.top + box.height * 0.55,
+                    inViewport: probe.inViewport(label),
+                    selectable: probe.style(label, 'userSelect') !== 'none',
+                  };
+                }),
+              };
+            }),
+          });
+        })
+        .step(function () { var next = probe.q('[data-next]'); if (probe.visible(next)) next.click(); });`).join('\n')}
+      probe.run(function () { probe.done(report); });`,
+  });
+  return value.scenes;
+}
+
+test('every selected drawing really loads, at its own proportions', { skip }, () => {
+  const scenes = artwork(375);
+  assert.equal(scenes.length, ORDER.length);
+
+  let drawn = 0;
+  for (const scene of scenes) {
+    const authored = sceneById.get(scene.scene);
+    assert.equal(scene.views.length, authored.visual.views.length, `${scene.scene} shows a different number of drawings`);
+
+    scene.views.forEach((view, index) => {
+      const expected = authored.visual.views[index];
+      const asset = content.assets.find((entry) => entry.ref === expected.ref);
+      assert.equal(view.ref, expected.ref);
+      assert.equal(view.src, asset.images[expected.image].path, `${scene.scene} serves a file the document does not name`);
+
+      // The unshown state of a comparison is deliberately not fetched: it is
+      // lazy and display:none, which is the whole point of loading it only
+      // when a reader asks for it. Switching to it is checked below.
+      if (!view.visible) return;
+      drawn += 1;
+      assert.equal(view.loaded, true, `${scene.scene}: ${view.src} did not load in the browser`);
+      assert.equal(view.naturalWidth, asset.images[expected.image].width,
+        `${scene.scene}: the file served is not the inspected one`);
+      assert.ok(view.drawnWidth > 0, `${scene.scene}: ${view.ref} was laid out with no width`);
+    });
+  }
+  assert.ok(drawn >= 28, `the essay should show every delivered drawing, found ${drawn}`);
+});
+
+test('a name sits over its own head, inside the drawing, as selectable text', { skip }, () => {
+  for (const width of [375, 1200]) {
+    const scenes = artwork(width);
+    let labelled = 0;
+
+    for (const scene of scenes) {
+      for (const view of scene.views) {
+        if (!view.visible) continue;
+        const asset = content.assets.find((entry) => entry.ref === view.ref);
+        assert.equal(view.labels.length, asset.labels.length,
+          `${scene.scene} at ${width}px: ${view.ref} shows a different number of labels`);
+
+        for (const label of view.labels) {
+          labelled += 1;
+          assert.ok(asset.labels.some((entry) => entry.text === label.text),
+            `${scene.scene}: "${label.text}" is not a label this asset was inspected with`);
+          assert.equal(label.insideImage, true,
+            `${scene.scene} at ${width}px: "${label.text}" hangs outside the drawing`);
+          if (label.kind === 'name') {
+            // A name belongs over the head it names. A prop label is anchored
+            // to the prop it names, which is wherever the drawing put it.
+            assert.equal(label.aboveTheHead, true,
+              `${scene.scene} at ${width}px: the name "${label.text}" has slipped down the figure`);
+          }
+          assert.equal(label.inViewport, true,
+            `${scene.scene} at ${width}px: "${label.text}" is clipped out of the window`);
+          assert.equal(label.selectable, true, 'a name is text a reader can select');
+        }
+
+        // Two names on one drawing must not overlap at either width: a
+        // reserved band above the image is no use if the names collide in it.
+        for (let a = 0; a < view.labels.length; a += 1) {
+          for (let b = a + 1; b < view.labels.length; b += 1) {
+            const one = view.labels[a];
+            const other = view.labels[b];
+            const apart = one.right <= other.left || other.right <= one.left
+              || one.bottom <= other.top || other.bottom <= one.top;
+            assert.ok(apart, `${scene.scene} at ${width}px: "${one.text}" and "${other.text}" overlap`);
+          }
+        }
+      }
+    }
+    assert.ok(labelled > 20, `expected the names to be measured, found ${labelled} at ${width}px`);
+  }
+});
+
+test('an optional comparison switches between two drawn states', { skip }, () => {
+  const optional = content.scenes.filter((scene) => scene.visual.control !== null);
+  for (const scene of optional) {
+    const { value } = essayPage({
+      width: 1024,
+      height: 900,
+      hash: `#${scene.id}`,
+      driver: `
+        var report = {};
+        function state() {
+          var current = probe.q('[data-scene][data-current]');
+          var figure = probe.q('.art-comparison', current);
+          return {
+            active: figure.getAttribute('data-active'),
+            visibleStates: probe.all('.art-view', figure).filter(probe.visible).map(function (view) {
+              return view.getAttribute('data-state');
+            }),
+            pressed: probe.all('.art-control button', figure).map(function (button) { return button.getAttribute('aria-pressed'); }),
+            labels: probe.all('.art-control button', figure).map(function (button) { return button.textContent; }),
+            paragraphs: probe.all('p.narration, p.line', probe.q('[data-scene][data-current]')).filter(probe.visible).length,
+            nextAvailable: probe.visible(probe.q('[data-next]')),
+            shownImageLoaded: probe.all('.art-view', figure).filter(probe.visible).every(function (view) {
+              var image = probe.q('img', view);
+              return image.complete && image.naturalWidth > 0;
+            }),
+          };
+        }
+        probe
+          .step(function () { report.atFirst = state(); })
+          .step(function () {
+            probe.all('.art-control button', probe.q('[data-scene][data-current]'))[1].click();
+          })
+          .step(function () { report.afterClick = state(); })
+          .step(function () {
+            // Enter and Space are the browser's business: a native button
+            // activates on both, and a synthetic key event deliberately does
+            // not, so what is checked here is that the control really is one
+            // and that a keyboard reader can reach and fire it. click() is
+            // what the browser itself dispatches when Enter is pressed.
+            var button = probe.all('.art-control button', probe.q('[data-scene][data-current]'))[0];
+            report.control = {
+              tag: button.tagName,
+              type: button.getAttribute('type'),
+              role: button.getAttribute('role'),
+              group: button.parentNode.getAttribute('role'),
+              groupLabel: button.parentNode.getAttribute('aria-label'),
+              tabIndex: button.tabIndex,
+            };
+            button.focus();
+            report.reachable = document.activeElement === button;
+            report.ring = probe.style(button, 'outlineStyle');
+            button.click();
+          })
+          .step(function () { report.afterKeyboard = state(); report.focusKept = document.activeElement.textContent; })
+          .run(function () { probe.done(report); });`,
+    });
+
+    const labels = scene.visual.control.labels;
+    assert.deepEqual(value.atFirst.labels, labels, `${scene.id} offers different state names`);
+    assert.deepEqual(value.atFirst.visibleStates, ['0'], `${scene.id} starts showing one drawing`);
+    assert.deepEqual(value.atFirst.pressed, ['true', 'false']);
+
+    assert.equal(value.atFirst.shownImageLoaded, true, `${scene.id}: the first drawing never arrived`);
+    assert.deepEqual(value.afterClick.visibleStates, ['1'], `${scene.id} did not switch drawings`);
+    assert.equal(value.afterClick.shownImageLoaded, true,
+      `${scene.id}: the second drawing was asked for and did not arrive`);
+    assert.deepEqual(value.afterClick.pressed, ['false', 'true']);
+    assert.equal(value.afterClick.paragraphs, value.atFirst.paragraphs,
+      `${scene.id} hides copy behind the control`);
+    assert.equal(value.afterClick.nextAvailable, true, 'a comparison never gates progression');
+
+    assert.equal(value.control.tag, 'BUTTON', `${scene.id}'s control is not a native button`);
+    assert.equal(value.control.type, 'button');
+    assert.equal(value.control.role, null, 'a button needs no role to be a button');
+    assert.equal(value.control.group, 'group');
+    assert.ok(value.control.groupLabel, 'the pair of controls is named');
+    assert.equal(value.control.tabIndex, 0, 'and is in the tab order');
+    assert.equal(value.reachable, true, `${scene.id}'s control cannot be reached from the keyboard`);
+
+    assert.deepEqual(value.afterKeyboard.visibleStates, ['0'], `${scene.id} did not switch back`);
+    assert.deepEqual(value.afterKeyboard.pressed, ['true', 'false']);
+    assert.equal(value.focusKept, labels[0], 'switching a state does not move the reader off the control');
+  }
+});
+
+/* --- Leaving for a source, and coming back -------------------------------- */
+
+test('a citation leads to the entry it names, and the way back to the scene', { skip }, () => {
+  // The first, a middle and the final citing scene, so a return is checked at
+  // each end of the essay rather than once in the comfortable middle.
+  const citing = ORDER.filter((id) => sceneById.get(id).blocks
+    .some((block) => block.parts.some((part) => part.citation)));
+  const chosen = [citing[0], citing[Math.floor(citing.length / 2)], citing.at(-1)];
+
+  for (const id of chosen) {
+    const number = sceneById.get(id).blocks
+      .flatMap((block) => block.parts)
+      .find((part) => part.citation).citation;
+
+    // 1. The link in the essay carries the scene and the reading mode.
+    const { value: link } = essayPage({
+      width: 1024,
+      height: 900,
+      hash: `#${id}`,
+      driver: `
+        var report = {};
+        probe.step(function () {
+          var citation = probe.q('[data-scene][data-current] .citation');
+          report.href = citation.getAttribute('href');
+          report.label = citation.textContent;
+          report.accessibleName = citation.getAttribute('aria-label');
+        }).run(function () { probe.done(report); });`,
+    });
+    assert.equal(link.label, `[${number}]`);
+    assert.equal(link.accessibleName, `Source ${number}`);
+    assert.equal(link.href, `sources.html?from=${id}&view=scene#${sourceAnchor(number)}`);
+
+    // 2. Following it lands on that entry, ringed and on screen, with a way back.
+    const { value: entry } = sourcesPage({
+      width: 1024,
+      height: 900,
+      hash: `#${sourceAnchor(number)}`,
+      driver: `
+        var report = {};
+        probe.step(function () {
+          var entry = probe.q('#${sourceAnchor(number)}');
+          report.focused = probe.activeId();
+          report.inViewport = probe.inViewport(entry);
+          report.outlineStyle = probe.style(entry, 'outlineStyle');
+          report.outlineWidth = probe.style(entry, 'outlineWidth');
+          report.returnLabel = probe.q('[data-return]').textContent;
+          report.returnHref = probe.q('[data-return]').getAttribute('href');
+        }).run(function () { probe.done(report); });`,
+    });
+    assert.equal(entry.inViewport, true, `entry ${number} was laid out off screen`);
+    assert.equal(entry.outlineStyle, 'solid', 'the entry the reader landed on is ringed, not just focused');
+    assert.notEqual(entry.outlineWidth, '0px');
+    assert.equal(entry.returnLabel, content.sourcesPage.returnLabel);
+
+    // 3. And the way back restores the scene it was left from.
+    const { value: back } = essayPage({
+      width: 1024,
+      height: 900,
+      hash: `#${id}`,
+      driver: `
+        var report = {};
+        probe.step(function () {
+          report.view = document.documentElement.getAttribute('data-view');
+          report.scene = probe.sceneId();
+          report.onScreen = probe.inViewport(probe.q('[data-scene][data-current]'));
+        }).run(function () { probe.done(report); });`,
+    });
+    assert.equal(back.view, 'beat');
+    assert.equal(back.scene, id, `returning from source ${number} does not come back to ${id}`);
+    assert.equal(back.onScreen, true);
+  }
+});
+
+test('the return control carries the reading mode, not just the place', { skip }, () => {
+  const scene = ORDER.at(-7);
+
+  const { value: fromContinuous } = sourcesPage({
     width: 1024,
     height: 900,
     driver: `
       var report = {};
-      probe
-        .step(function () { probe.q('[data-begin]').click(); })
-        .step(function () { probe.q('[data-next]').click(); })
-        .step(function () { report.before = { view: document.documentElement.getAttribute('data-view'), scene: probe.sceneId() }; })
-        .step(function () { probe.q('.skip-link').click(); })
-        .step(function () {
-          report.afterSkipLink = {
-            view: document.documentElement.getAttribute('data-view'),
-            scene: probe.sceneId(),
-            hash: location.hash,
-            focused: probe.activeId(),
-            beatStillVisible: probe.visible(probe.q('[data-scene][data-current]')),
-          };
-        })
-        .step(function () { location.hash = '#chapters'; })
-        .step(function () {
-          report.afterChaptersFragment = {
-            view: document.documentElement.getAttribute('data-view'),
-            scene: probe.sceneId(),
-            navInViewport: probe.inViewport(probe.q('.chapter-nav')),
-          };
-        })
-        .step(function () { location.hash = '#nothing-here'; })
-        .step(function () {
-          report.afterUnknownFragment = { view: document.documentElement.getAttribute('data-view'), scene: probe.sceneId() };
-        })
+      probe.step(function () { report.href = probe.q('[data-return]').getAttribute('href'); })
         .run(function () { probe.done(report); });`,
+    // The query a citation followed from continuous reading would carry.
+    hash: '',
+    files: { ...hostedFiles, 'index.html': hosted },
+    html: sources.replace('<body>', '<body>'),
   });
+  // A direct arrival has no place to return to, so it is offered the essay.
+  assert.equal(fromContinuous.href, 'index.html');
 
-  assert.equal(value.before.view, 'beat');
-  assert.equal(value.afterSkipLink.view, 'beat', 'the skip link must not throw the reader back to the landing');
-  assert.equal(value.afterSkipLink.scene, value.before.scene);
-  assert.equal(value.afterSkipLink.hash, '#essay');
-  assert.equal(value.afterSkipLink.focused, 'essay', 'and it does what a skip link is for: focus moves to the essay');
-  assert.equal(value.afterSkipLink.beatStillVisible, true);
-
-  assert.equal(value.afterChaptersFragment.view, 'beat');
-  assert.equal(value.afterChaptersFragment.scene, value.before.scene);
-  assert.equal(value.afterChaptersFragment.navInViewport, true, 'the browser took the reader to the chapter list');
-
-  assert.equal(value.afterUnknownFragment.view, 'beat', 'an unrecognised fragment after loading is not a reason to move anyone');
-  assert.equal(value.afterUnknownFragment.scene, value.before.scene);
-});
-
-test('the drawings are drawn, with the names above the heads and inside the frame', { skip }, () => {
-  const { value } = runInChrome({
-    html: offline,
-    width: 360,
-    height: 780,
-    driver: `
-      var report = { beats: [] };
-      probe.step(function () { probe.q('[data-begin]').click(); });
-      ${ORDER.map(() => `probe
-        .step(function () {
-          var scene = probe.q('[data-scene][data-current]');
-          var frame = scene.querySelector('.scene-visual-frame');
-          if (!frame) {
-            // A beat that is deliberately text-only has no frame at all. What
-            // it must still have is its description, as ordinary page text.
-            report.beats.push({
-              scene: probe.sceneId(),
-              art: 'text-only',
-              textOnlyNote: probe.q('.scene-visual-note', scene).textContent.length,
-            });
-            return;
-          }
-          var frameBox = frame.getBoundingClientRect();
-          var svg = probe.q('svg.scene-art', frame);
-          report.beats.push({
-            scene: probe.sceneId(),
-            art: frame.getAttribute('data-art'),
-            hasSvg: !!svg,
-            svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
-            pendingNotice: !!probe.q('.scene-visual-pending', frame),
-            placement: frame.getAttribute('data-labels'),
-            inventedLine: probe.q('.figure-fiction', scene) ? probe.q('.figure-fiction', scene).textContent : '',
-            inventedType: probe.q('.figure-fiction', scene) ? probe.style(probe.q('.figure-fiction', scene), 'fontSize') : null,
-            labels: probe.all('.art-label', frame).map(function (label) {
-              var box = label.getBoundingClientRect();
-              var head = box.bottom;
-              return {
-                name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
-                role: label.getAttribute('data-role'),
-                boxed: !!probe.q('.nametag', label),
-                left: box.left, right: box.right, top: box.top, bottom: box.bottom,
-                insideFrame: box.left >= frameBox.left - 1 && box.right <= frameBox.right + 1,
-                aboveItsAnchor: head <= frameBox.bottom + 1,
-                baked: label.closest('svg') !== null,
-              };
-            }),
-            caption: probe.q('figcaption', scene).textContent.length,
-          });
-        })
-        .step(function () { var next = probe.q('[data-next]'); if (!next.disabled) next.click(); });`).join('\n')}
-      probe.run(function () { probe.done(report); });`,
-  });
-
-  assert.equal(value.beats.length, ORDER.length);
-  const textOnly = value.beats.filter((beat) => beat.art === 'text-only');
-  assert.equal(textOnly.length, 1, 'exactly one beat is deliberately not an illustrated situation');
-  assert.ok(textOnly[0].textOnlyNote > 0, `${textOnly[0].scene} still introduces itself in words`);
-
-  for (const beat of value.beats) {
-    if (beat.art === 'text-only') continue;
-    const drawn = beat.art !== 'none';
-    assert.equal(beat.hasSvg, drawn, `${beat.scene} declares data-art="${beat.art}" but ${beat.hasSvg ? 'has' : 'has no'} drawing`);
-    assert.equal(beat.pendingNotice, !drawn,
-      `${beat.scene} ${drawn ? 'has a drawing and must not say one is missing' : 'has no drawing and should say so'}`);
-    if (drawn) assert.ok(beat.svgWidth > 0, `${beat.scene} drew nothing with width`);
-    assert.ok(beat.caption > 0, `${beat.scene} needs its written description whether or not it is drawn`);
-
-    // Who is in the frame is the content document's decision, including the
-    // beats where the answer is nobody: eleven are the narrator alone.
-    const placed = content.scenes.find((scene) => scene.id === beat.scene).visual.cast.length;
-    assert.equal(beat.labels.length, placed, `${beat.scene} should name exactly the figures it places`);
-    // Which figures were made up is said under the drawing at reading size,
-    // where there is room for the words, rather than over a head where there
-    // is not. A beat with no invented figure in it says nothing.
-    const friends = content.scenes.find((scene) => scene.id === beat.scene).visual.cast
-      .map((entry) => content.cast.find((character) => character.id === entry.characterId))
-      .filter((character) => character.role === 'friend');
-    if (friends.length === 0) {
-      assert.equal(beat.inventedLine, '', `${beat.scene} has no invented figure and should not say it has`);
-    } else {
-      for (const friend of friends) {
-        assert.ok(beat.inventedLine.includes(friend.displayName), `${beat.scene} draws ${friend.displayName} without saying they are invented`);
-      }
-      assert.ok(parseFloat(beat.inventedType) >= 14, `${beat.scene} says so at ${beat.inventedType}, which is too small to read`);
-    }
-
-    for (const label of beat.labels) {
-      assert.equal(label.baked, false, `${beat.scene}: "${label.name}" is inside the SVG; names are browser text`);
-      assert.equal(label.insideFrame, true, `${beat.scene}: "${label.name}" hangs outside the frame at phone width`);
-      assert.equal(label.boxed, label.role === 'member', `${beat.scene}: "${label.name}" does not keep the contributor/invented distinction`);
-      assert.equal(label.aboveItsAnchor, true, `${beat.scene}: "${label.name}" sits below the drawing`);
-    }
-  }
-});
-
-/** Every label box on every beat, at one layout width. */
-function labelBoxes(width) {
-  const { value } = runInChrome({
-    html: offline,
-    width,
+  const { value: restored } = essayPage({
+    width: 1024,
     height: 900,
-    driver: `
-      var report = { beats: [] };
-      probe.step(function () { probe.q('[data-begin]').click(); });
-      ${ORDER.map(() => `probe
-        .step(function () {
-          var scene = probe.q('[data-scene][data-current]');
-          var frame = scene.querySelector('.scene-visual-frame');
-          report.beats.push({
-            scene: probe.sceneId(),
-            placement: frame ? frame.getAttribute('data-labels') : 'none',
-            labels: frame ? probe.all('.art-label', frame).map(function (label) {
-              var box = label.getBoundingClientRect();
-              var name = probe.q('.nametag', label) || probe.q('.figure-name', label);
-              return { name: name.textContent, left: box.left, right: box.right, top: box.top, bottom: box.bottom };
-            }) : [],
-          });
-        })
-        .step(function () { var next = probe.q('[data-next]'); if (!next.disabled) next.click(); });`).join('\n')}
-      probe.run(function () { probe.done(report); });`,
-  });
-  return value.beats;
-}
-
-const overlaps = (a, b) =>
-  Math.min(a.right, b.right) - Math.max(a.left, b.left) > 0
-  && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 0;
-
-test('no two names sit on top of each other, on any beat, at either width', { skip }, () => {
-  // A name over a head is only useful if a reader can tell which head it
-  // belongs to. Before this check, eight labels on the closing beat ran
-  // through each other by up to 48 pixels, and three other beats were doing
-  // the same more quietly. The renderer now moves a crowded beat's names into
-  // a row under the drawing; this is what says whether that worked, on all 87
-  // beats, at a true phone layout and at a desktop one.
-  for (const width of [360, 1280]) {
-    const beats = labelBoxes(width);
-    assert.equal(beats.length, ORDER.length);
-
-    for (const beat of beats) {
-      for (let i = 0; i < beat.labels.length; i += 1) {
-        for (let j = i + 1; j < beat.labels.length; j += 1) {
-          const [a, b] = [beat.labels[i], beat.labels[j]];
-          assert.ok(
-            !overlaps(a, b),
-            `${beat.scene} at ${width}px: "${a.name}" and "${b.name}" overlap by ${Math.round(Math.min(a.right, b.right) - Math.max(a.left, b.left))}px`,
-          );
-        }
-      }
-    }
-
-    // And the crowded beats are the ones that moved, rather than every beat
-    // quietly giving up on names over heads.
-    const listed = beats.filter((beat) => beat.placement === 'list').map((beat) => beat.scene);
-    const over = beats.filter((beat) => beat.placement === 'over');
-    assert.ok(over.length > 60, `only ${over.length} beats still name their figures over their heads`);
-    assert.deepEqual(listed, ['s068', 's072', 's078', 's080', 's086'], 'the beats that lay their names out underneath');
-  }
-});
-
-test('a wide window gets two columns and still fits', { skip }, () => {
-  const { value } = runInChrome({
-    html: offline,
-    width: 1280,
-    height: 900,
+    hash: `#${scene}`,
     driver: `
       var report = {};
       probe
-        .step(function () { probe.q('[data-begin]').click(); })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
         .step(function () {
-          var scene = probe.q('[data-scene][data-current]');
-          var narration = probe.q('.narration', scene).getBoundingClientRect();
-          var visual = probe.q('.scene-visual', scene).getBoundingClientRect();
-          report.sideBySide = visual.left >= narration.right - 1;
-          report.horizontalOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
-          report.navColumns = probe.style(probe.q('.chapter-nav ol'), 'gridTemplateColumns').split(' ').length;
+          report.view = document.documentElement.getAttribute('data-view');
+          report.citationHref = probe.q('#${scene} .citation')
+            ? probe.q('#${scene} .citation').getAttribute('href') : null;
+          report.visibleScenes = probe.all('[data-scene]').filter(probe.visible).length;
         })
         .run(function () { probe.done(report); });`,
   });
+  assert.equal(restored.view, 'reading');
+  assert.equal(restored.visibleScenes, ORDER.length, 'continuous reading shows the whole essay');
+});
 
-  assert.equal(value.sideBySide, true, 'the illustration sits beside the prose rather than under it');
-  assert.equal(value.horizontalOverflow, 0);
-  assert.equal(value.navColumns, 2, 'the chapter list uses the width it has');
+/* --- Without a script, and on paper --------------------------------------- */
+
+test('a reader with no scripting receives the whole essay as one document', { skip }, () => {
+  const report = withoutScriptInChrome({
+    html: hosted,
+    files: hostedFiles,
+    driver: `
+      report.jsClass = doc.documentElement.className;
+      report.view = doc.documentElement.getAttribute('data-view');
+      var scenes = Array.prototype.slice.call(doc.querySelectorAll('[data-scene]'));
+      report.scenes = scenes.length;
+      report.visibleScenes = scenes.filter(function (scene) { return scene.getClientRects().length > 0; }).length;
+      report.visibleChapterTitles = Array.prototype.slice.call(doc.querySelectorAll('.chapter-title'))
+        .filter(function (title) { return title.getClientRects().length > 0; }).length;
+      report.controlsVisible = doc.querySelector('.reader-controls').getClientRects().length > 0;
+      report.comparisonControlsVisible = Array.prototype.slice.call(doc.querySelectorAll('.art-control'))
+        .filter(function (control) { return control.getClientRects().length > 0; }).length;
+      report.comparisonStatesVisible = Array.prototype.slice.call(doc.querySelectorAll('.art-comparison .art-view'))
+        .filter(function (view) { return view.getClientRects().length > 0; }).length;
+      report.landingVisible = doc.querySelector('.landing').getClientRects().length > 0;
+      report.sourcesLink = doc.querySelector('[data-sources]').getAttribute('href');
+      report.text = doc.body.innerText.length;
+    `,
+  });
+
+  assert.equal(report.jsClass, '', 'the script never ran, so the page is in its scriptless state');
+  assert.equal(report.view, null, 'and no view was ever applied');
+  assert.equal(report.scenes, ORDER.length);
+  assert.equal(report.visibleScenes, ORDER.length, 'every scene reads, because nothing hid any of them');
+  assert.equal(report.visibleChapterTitles, content.chapters.length);
+  assert.equal(report.landingVisible, true);
+  assert.equal(report.controlsVisible, false, 'controls that only work with a script are not shown without one');
+  assert.equal(report.comparisonControlsVisible, 0);
+  assert.equal(report.comparisonStatesVisible, 4, 'both drawings of both comparisons are simply there');
+  assert.equal(report.sourcesLink, 'sources.html', 'and the register is an ordinary link');
+  assert.ok(report.text > 20000, `the whole argument should be readable, measured ${report.text} characters`);
+});
+
+test('the printed pages carry the argument, not whatever was on screen', { skip }, () => {
+  const essay = printInChrome({ html: hosted, files: hostedFiles });
+  // 4,137 words of prose and 28 illustrated scenes cannot fit on a handful of
+  // pages. A print that had kept the scene view would produce one or two.
+  assert.ok(essay.pages >= 20, `the printed essay is ${essay.pages} page(s), which is not the whole argument`);
+  assert.ok(essay.bytes > 100_000, `the printed essay is ${essay.bytes} bytes, which carries no drawings`);
+
+  const register = printInChrome({ html: sources, files: hostedFiles });
+  assert.ok(register.pages >= 3, `the printed register is ${register.pages} page(s)`);
 });
 
 test('a reader who asked for less motion gets the same essay', { skip }, () => {
-  const { value } = runInChrome({
-    html: offline,
-    flags: ['--force-prefers-reduced-motion'],
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    flags: ['--force-prefers-reduced-motion=reduce'],
     driver: `
       var report = {};
       probe
-        .step(function () { report.honoured = window.matchMedia('(prefers-reduced-motion: reduce)').matches; })
         .step(function () { probe.q('[data-begin]').click(); })
         .step(function () {
           var scene = probe.q('[data-scene][data-current]');
-          var reveal = probe.q("[data-art-layer='reveal']", scene);
           report.scene = probe.sceneId();
           report.visible = probe.visible(scene);
-          report.describedInText = probe.q('figcaption', scene).textContent.length;
-          // The drawings carry an entrance animation now, so there is
-          // something for the preference to actually switch off.
-          report.hasRevealLayer = !!reveal;
-          report.revealAnimation = reveal ? probe.style(reveal, 'animationName') : null;
-          report.revealOpacity = reveal ? probe.style(reveal, 'opacity') : null;
+          report.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          report.imageOpacity = probe.style(probe.q('img', scene), 'opacity');
+          report.animations = probe.all('*').filter(function (element) {
+            return probe.style(element, 'animationName') !== 'none';
+          }).length;
         })
         .run(function () { probe.done(report); });`,
   });
 
-  assert.equal(value.honoured, true, 'the browser reported the preference, so the result means something');
+  assert.equal(value.reduced, true, 'the browser was asked for reduced motion');
+  assert.equal(value.scene, ORDER[0]);
   assert.equal(value.visible, true);
-  assert.equal(value.scene, ORDER[0], 'the beat is simply there, with nothing to wait for');
-  assert.ok(value.describedInText > 0, 'and what the picture shows is also written out');
-  assert.equal(value.hasRevealLayer, true, 'this beat does have a condition layer, so the check means something');
-  assert.equal(value.revealAnimation, 'none', 'the entrance is switched off');
-  assert.equal(value.revealOpacity, '1', 'and the explanation it would have animated into is simply there');
+  assert.equal(value.imageOpacity, '1', 'the drawing is simply there; there is no entrance to suppress');
+  assert.equal(value.animations, 0, 'nothing animates, so reduced motion changes nothing');
 });
 
 /* --- The project typeface, actually loaded -------------------------------- */
 
 test('the hosted page fetches the project typeface and draws the essay with it', { skip }, () => {
-  const { value } = runInChrome({
-    html: hosted,
-    files: hostedFiles,
-    width: 1280,
+  const { value } = essayPage({
+    width: 1024,
     height: 900,
-    driver: `${MEASURE_IN}
-${afterFonts(`
-  var faces = [];
-  document.fonts.forEach(function (face) {
-    faces.push({ family: face.family, status: face.status, display: face.display });
-  });
-  report.faces = faces;
-  report.futuraUsable = document.fonts.check("16px 'Futura Handwritten'");
-  report.stack = window.getComputedStyle(document.documentElement).fontFamily;
-
-  // CSS naming a family is not the same as a browser drawing with it, so the
-  // last word is the shape on the page: the same sentence set in the project
-  // typeface and in the fallback alone must come out at different widths, and
-  // what the document inherits must match the first of them.
-  var sentence = 'Happiness is not a single thing, and the people here disagree.';
-  report.inProjectFont = measureIn(sentence, "'Futura Handwritten'");
-  report.inFallback = measureIn(sentence, "'Bundled Fallback'");
-  report.inStack = measureIn(sentence, report.stack);
-
-  // The en dash is the one character in this content the project typeface has
-  // no glyph for, which is what the fallback behind it is for.
-  report.enDashInStack = measureIn('\\u2013', report.stack);
-  report.enDashInFallback = measureIn('\\u2013', "'Bundled Fallback'");
-`)}`,
+    driver: afterFonts(`
+      ${MEASURE_IN}
+      report.loaded = [];
+      document.fonts.forEach(function (face) {
+        report.loaded.push({ family: face.family, status: face.status });
+      });
+      report.checks = {
+        project: document.fonts.check("16px '${PROJECT_FONT.family}'"),
+        fallback: document.fonts.check("16px '${FALLBACK_FONT.family}'"),
+      };
+      var body = probe.q('p.narration');
+      report.bodyFamily = probe.style(body, 'fontFamily');
+      var sample = body.textContent.slice(0, 60);
+      report.widths = {
+        project: measureIn(sample, "'${PROJECT_FONT.family}'"),
+        fallback: measureIn(sample, "'${FALLBACK_FONT.family}'"),
+        asRendered: measureIn(sample, probe.style(body, 'fontFamily')),
+      };
+    `),
   });
 
-  const futura = value.faces.filter((face) => face.family === 'Futura Handwritten');
-  assert.equal(futura.length, 1, 'exactly one @font-face declares the project typeface');
-  assert.equal(futura[0].status, 'loaded', 'the browser fetched the file and it parsed');
-  assert.equal(futura[0].display, 'swap', 'the prose is readable in the fallback until it arrives');
-  assert.equal(value.futuraUsable, true);
+  const project = value.loaded.find((face) => face.family === PROJECT_FONT.family);
+  assert.ok(project, 'the project typeface is not among the faces the document loaded');
+  assert.equal(project.status, 'loaded', 'the browser fetched it and it arrived');
+  assert.equal(value.checks.project, true);
+  assert.match(value.bodyFamily, new RegExp(PROJECT_FONT.family));
 
-  assert.match(value.stack, /^"?Futura Handwritten"?,/, 'the project typeface leads the stack the whole document inherits');
-  assert.match(value.stack, /Bundled Fallback/, 'with the bundled fallback behind it');
-
-  assert.ok(value.inProjectFont > 0 && value.inFallback > 0, 'both measurements are real');
-  assert.notEqual(
-    Math.round(value.inProjectFont),
-    Math.round(value.inFallback),
-    'the two faces set the same sentence at different widths, so a shape is being measured and not a name',
-  );
-  assert.equal(
-    Math.round(value.inStack),
-    Math.round(value.inProjectFont),
-    'what the page draws is the project typeface, not the fallback behind it',
-  );
-
-  // Which character the project typeface is missing, and that the fallback
-  // has it, is settled against the font files themselves in test/fonts.test.js.
-  // What a browser can add is that the page draws it: at the fallback's width,
-  // not at zero and not as a missing-glyph box.
-  assert.ok(value.enDashInStack > 0, 'the en dash is drawn');
-  assert.equal(
-    Math.round(value.enDashInStack),
-    Math.round(value.enDashInFallback),
-    'and it is the bundled fallback that draws it, since the project typeface has no glyph for it',
-  );
+  // Measured, not assumed: the text as rendered is the width of the project
+  // typeface and not of the fallback, which is what proves the face is really
+  // the one setting the essay.
+  assert.notEqual(value.widths.project, value.widths.fallback, 'the two faces should not measure identically');
+  assert.equal(value.widths.asRendered, value.widths.project, 'the essay is set in the project typeface');
 });
 
 test('the project typeface comes from this site and nowhere else', { skip }, () => {
-  // The same page with the font file withheld. Nothing else changes. If the
-  // `@font-face` carried a `local()` the browser could satisfy it from a
-  // typeface installed on the reader's machine, and the page would be set in
-  // whatever that happened to be rather than in the file whose provenance
-  // this project recorded. Withholding the file is the only way to tell the
-  // two apart from inside a browser.
-  const withheld = { ...hostedFiles };
-  delete withheld[PROJECT_FONT.published];
-
-  const { value } = runInChrome({
-    html: hosted,
-    files: withheld,
-    width: 1280,
+  const { value } = essayPage({
+    width: 1024,
     height: 900,
-    driver: `${MEASURE_IN}
-${afterFonts(`
-  var faces = [];
-  document.fonts.forEach(function (face) {
-    faces.push({ family: face.family, status: face.status });
-  });
-  report.faces = faces;
-  report.futuraUsable = document.fonts.check("16px 'Futura Handwritten'");
-  var sentence = 'Happiness is not a single thing, and the people here disagree.';
-  report.inStack = measureIn(sentence, window.getComputedStyle(document.documentElement).fontFamily);
-  report.inFallback = measureIn(sentence, "'Bundled Fallback'");
-  report.readable = probe.q('.landing h1').textContent.length;
-`)}`,
+    // Reading the rules of a stylesheet a `file:` page fetched is a
+    // cross-origin read without this; the question is about the real hosted
+    // stylesheet, so the browser is allowed to answer it.
+    flags: ['--allow-file-access-from-files'],
+    driver: afterFonts(`
+      report.sources = [];
+      var sheet = Array.prototype.slice.call(document.styleSheets).filter(function (candidate) {
+        return (candidate.href || '').indexOf('styles.css') >= 0;
+      })[0];
+      Array.prototype.slice.call(sheet.cssRules).forEach(function (rule) {
+        if (rule.constructor.name !== 'CSSFontFaceRule') return;
+        report.sources.push({
+          family: rule.style.getPropertyValue('font-family').replace(/['"]/g, ''),
+          src: rule.style.getPropertyValue('src'),
+          display: rule.style.getPropertyValue('font-display'),
+        });
+      });
+    `),
   });
 
-  const futura = value.faces.filter((face) => face.family === 'Futura Handwritten');
-  assert.equal(futura.length, 1, 'the rule is still declared');
-  assert.equal(futura[0].status, 'error', 'and it has nowhere else to get the face from');
-  assert.equal(value.futuraUsable, false);
-  assert.equal(
-    Math.round(value.inStack),
-    Math.round(value.inFallback),
-    'with the file gone the page falls back to the bundled face',
-  );
-  assert.ok(value.readable > 0, 'and the essay is still readable, which is what the fallback is for');
+  const project = value.sources.find((face) => face.family === PROJECT_FONT.family);
+  assert.ok(project, 'the stylesheet the browser parsed declares the project typeface');
+  assert.ok(project.src.includes(PROJECT_FONT.published), 'from this site');
+  assert.ok(!project.src.includes('local('), 'and never from whatever the reader happens to have installed');
+  assert.ok(!/https?:/.test(project.src), 'and from no third party');
+  assert.equal(project.display, 'swap');
 });
 
-test('long prose and the names above the figures fit a phone in the real face', { skip }, () => {
-  const { value } = runInChrome({
-    html: hosted,
-    files: hostedFiles,
-    width: 320,
-    height: 720,
-    driver: `
-document.fonts.ready.then(function () {
-  var report = { beats: [] };
-  report.usingProjectFont = window.getComputedStyle(document.body).fontFamily.indexOf('"Futura Handwritten"') === 0;
-  report.landingOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
-  report.landingNames = probe.all('.nametag').length;
-  probe.q('[data-begin]').click();
-
-  function widest(selector, scene) {
-    return probe.all(selector, scene).reduce(function (best, node) {
-      return node.textContent.length > (best ? best.textContent.length : -1) ? node : best;
-    }, null);
-  }
-
-  setTimeout(function nextBeat() {
-    var scene = probe.q('[data-scene][data-current]');
-    var paragraph = widest('p', scene);
-    var viewport = document.documentElement.clientWidth;
-    report.beats.push({
-      scene: probe.sceneId(),
-      overflow: document.documentElement.scrollWidth - viewport,
-      longestChars: paragraph ? paragraph.textContent.length : 0,
-      paragraphPastEdge: paragraph ? Math.round(Math.max(0, paragraph.getBoundingClientRect().right - viewport)) : 0,
-      labels: probe.all('.art-label', scene).map(function (label) {
-        var box = label.getBoundingClientRect();
-        return {
-          name: (probe.q('.nametag', label) || probe.q('.figure-name', label)).textContent,
-          pastEdge: Math.round(Math.max(0, box.right - viewport, -box.left)),
-          visible: box.width > 0 && box.height > 0,
-        };
-      }),
+test('the prose holds its measure in the real face, at both widths', { skip }, () => {
+  for (const [width, maximum] of [[375, 375], [1200, 1200]]) {
+    const { value } = essayPage({
+      width,
+      height: 900,
+      driver: afterFonts(`
+        report.paragraphs = probe.all('p.narration').slice(0, 12).map(function (paragraph) {
+          var box = paragraph.getBoundingClientRect();
+          return { width: Math.round(box.width), font: probe.style(paragraph, 'fontFamily') };
+        });
+        report.viewport = document.documentElement.clientWidth;
+      `),
     });
-    var next = probe.q('[data-next]');
-    if (report.beats.length >= ${ORDER.length} || next.disabled) { probe.done(report); return; }
-    next.click();
-    setTimeout(nextBeat, 0);
-  }, 0);
-});`,
-  });
 
-  assert.equal(value.usingProjectFont, true, 'the measurements below are of the real face, not the fallback');
-  assert.equal(value.landingOverflow, 0, 'the landing does not scroll sideways at 320 CSS pixels');
-  assert.ok(value.landingNames > 0, 'the contributors are named on the landing');
-  assert.equal(value.beats.length, ORDER.length, 'every beat was looked at');
-
-  const labelled = [];
-  for (const beat of value.beats) {
-    assert.equal(beat.overflow, 0, `${beat.scene} scrolls sideways at 320 CSS pixels`);
-    assert.equal(beat.paragraphPastEdge, 0, `${beat.scene}'s longest paragraph runs past the window`);
-    for (const label of beat.labels) {
-      assert.equal(label.visible, true, `the name ${label.name} is not drawn on ${beat.scene}`);
-      assert.equal(label.pastEdge, 0, `the name ${label.name} runs outside the window on ${beat.scene}`);
-      labelled.push(label.name);
+    assert.ok(value.paragraphs.length > 0);
+    for (const paragraph of value.paragraphs) {
+      assert.ok(paragraph.width <= maximum, `a paragraph is ${paragraph.width}px wide in a ${maximum}px window`);
+      assert.match(paragraph.font, new RegExp(PROJECT_FONT.family), 'set in the project typeface at every width');
+    }
+    if (width === 1200) {
+      // A line that runs the full width of a wide window is unreadable; the
+      // measure is what keeps it to something a reader's eye can track.
+      const widest = Math.max(...value.paragraphs.map((paragraph) => paragraph.width));
+      assert.ok(widest < 900, `the prose runs ${widest}px wide on a wide screen`);
     }
   }
-
-  assert.ok(labelled.length > 0, 'at least one beat really does name a figure, so the check means something');
-  assert.ok(
-    Math.max(...value.beats.map((beat) => beat.longestChars)) > 200,
-    'and at least one beat really is long prose',
-  );
-});
-
-test('a wide window holds the measure the project typeface was tuned to', { skip }, () => {
-  const { value } = runInChrome({
-    html: hosted,
-    files: hostedFiles,
-    width: 1440,
-    height: 1000,
-    driver: `${MEASURE_IN}
-${afterFonts(`
-  // The continuous view, where the whole essay is laid out at once.
-  probe.q('[data-view-toggle]').click();
-  var stack = window.getComputedStyle(document.documentElement).fontFamily;
-  var advance = measureIn('Happiness is not a single thing, and the people here disagree.', stack) / 62;
-
-  // Body prose, by what the browser computed rather than by class: a citation
-  // or a caption is set smaller on purpose and is not what a measure is about.
-  var prose = probe.all('.essay-body p').filter(function (p) {
-    return window.getComputedStyle(p).fontSize === '16px' && p.textContent.length > 120;
-  });
-  report.paragraphs = prose.length;
-  report.longest = prose.reduce(function (most, p) { return Math.max(most, p.textContent.length); }, 0);
-  report.widestLine = prose.reduce(function (widest, p) {
-    return Math.max(widest, p.getBoundingClientRect().width);
-  }, 0);
-  report.advance = advance;
-  report.lineHeight = window.getComputedStyle(prose[0]).lineHeight;
-  report.fontSize = window.getComputedStyle(prose[0]).fontSize;
-  report.horizontalOverflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
-`)}`,
-  });
-
-  assert.equal(value.horizontalOverflow, 0);
-  assert.equal(value.fontSize, '16px', 'body prose stays at least 16 CSS pixels');
-  assert.ok(value.paragraphs >= 3, 'there is real prose in the continuous view to measure');
-  assert.ok(value.longest > 200, 'including at least one long paragraph');
-
-  // A measure is a count of characters, not of pixels, and the project
-  // typeface sets about 9% narrower than the fallback the column was first
-  // drawn around. Left at 34rem the widest line would run past 70 characters
-  // in this face; this is the check that the column was retuned to it.
-  const characters = value.widestLine / value.advance;
-  assert.ok(
-    characters > 45 && characters < 70,
-    `the widest line of prose holds about ${Math.round(characters)} characters, which is outside a comfortable measure`,
-  );
-
-  const leading = Number.parseFloat(value.lineHeight) / Number.parseFloat(value.fontSize);
-  assert.ok(leading >= 1.4 && leading <= 1.6, `leading of ${leading.toFixed(2)} is outside what this face was tuned to`);
 });
