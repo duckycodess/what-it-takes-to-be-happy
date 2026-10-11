@@ -1,15 +1,20 @@
 /**
- * Two promises the stylesheet makes that no amount of checking the rendered
- * text can catch, because both are about what a *browser* does with markup
+ * Three promises the stylesheet makes that no amount of checking the rendered
+ * text can catch, because each is about what a *browser* does with markup
  * that is already there.
  *
  * The first is that print carries the whole argument. Every output already
- * contains every beat; a single `display: none` that print forgets to answer
- * would drop part of the essay from the printed page while every content
- * check kept passing.
+ * contains all 45 scenes; a single `display: none` that print forgets to
+ * answer would drop part of the essay from the printed page while every
+ * content check kept passing.
  *
- * The second is that the text can be read. The palette is declared once, in
+ * The second is that the text can be read: the palette is declared once, in
  * custom properties, so it can be measured once.
+ *
+ * The third is that a reader can see where the script just sent them. Focus
+ * moves to a scene, to a register entry or back to the landing title, and
+ * none of those is reached by tabbing, so none of them can rely on
+ * `:focus-visible` to paint the ring.
  */
 
 import test from 'node:test';
@@ -57,16 +62,40 @@ const { screen, print } = split(css);
 /** The class names a selector targets, ignoring state and attributes. */
 const classesIn = (selector) => [...selector.matchAll(/\.([\w-]+)/g)].map((match) => match[1]);
 
-test('a width cap in print applies to the whole figure, so names stay above heads', () => {
-  // The drawing is an SVG inside a frame, and each name is positioned at a
-  // percentage of that frame. Capping the drawing alone leaves the frame as
-  // wide as the page, and every name drifts away from the figure it belongs
-  // to. Rendering the print rules on screen is how this was found; this is
-  // what stops it coming back.
-  const capped = print.filter((rule) => /max-width/.test(rule.body)).flatMap((rule) => classesIn(rule.selector));
-  assert.ok(capped.includes('scene-visual'), 'print should cap the beat figure');
-  assert.ok(!capped.includes('scene-art'), 'capping the drawing alone separates it from the names over it');
-  assert.ok(!capped.includes('scene-visual-frame'), 'the frame follows the figure it is inside');
+/**
+ * The class names a rule actually acts on: the last compound of each
+ * comma-separated selector. `html.js[data-view] .landing` hides the landing,
+ * not `html.js`, and counting the qualifier would report the script flag as a
+ * piece of the essay that print forgot.
+ */
+const subjectsOf = (selector) => selector
+  .split(',')
+  .flatMap((part) => classesIn(part.trim().split(/\s+/).at(-1)));
+
+test('a name is positioned against the image box, so it cannot drift off the head', () => {
+  // The earlier build positioned names against an outer frame, so any rule
+  // that resized the drawing alone left the names behind. They are now
+  // absolutely positioned inside `.art-anchor`, which is the image's own box:
+  // whatever width the image takes, at any viewport or on paper, the labels
+  // take with it. That is a structural guarantee, so it is checked
+  // structurally rather than by naming the rules that must not exist.
+  const anchor = screen.find((rule) => rule.selector === '.art-anchor');
+  assert.match(anchor.body, /position:\s*relative/, 'the label\'s containing block is the image box');
+
+  const image = screen.find((rule) => rule.selector === '.art-anchor img');
+  assert.match(image.body, /width:\s*100%/, 'and the image fills that box exactly');
+  assert.match(image.body, /height:\s*auto/, 'at its own proportions, uncropped');
+
+  const label = screen.find((rule) => rule.selector === '.art-label');
+  assert.match(label.body, /position:\s*absolute/);
+  assert.match(label.body, /left:\s*var\(--x\)/, 'at the fraction the asset was inspected at');
+  assert.match(label.body, /transform:\s*translate\(-50%, -100%\)/, 'sitting above its anchor point');
+
+  // A name sits above the top of the drawing, so the figure reserves room for
+  // it. Without that reserve the first row of names is clipped by whatever
+  // sits above the illustration.
+  const art = screen.find((rule) => rule.selector === '.art');
+  assert.match(art.body, /padding-top:\s*2\.2em/, 'the reserve is in em, so larger type gets more room');
 });
 
 test('everything a view hides on screen is either restored in print or is screen apparatus', () => {
@@ -74,31 +103,26 @@ test('everything a view hides on screen is either restored in print or is screen
   // Anything new that hides content has to be added to the print restore
   // rules, or added here with a reason, rather than silently disappearing.
   const APPARATUS = new Set([
-    'beat-controls',
-    'view-switch',
-    'chapter-nav',
-    'landing-actions',
-    'landing-sources',
-    'source-more',
-    'register-return',
-    'reading-time',
+    'reader-controls',
+    'chapter-menu',
+    'art-control',
+    'sources-return',
     'skip-link',
     'js-only',
-    'beat-boundary',
   ]);
 
   const hiddenByView = new Set();
   for (const rule of screen) {
     if (!/display:\s*none/.test(rule.body)) continue;
     if (!rule.selector.includes('[data-view')) continue;
-    for (const name of classesIn(rule.selector)) hiddenByView.add(name);
+    for (const name of subjectsOf(rule.selector)) hiddenByView.add(name);
   }
   assert.ok(hiddenByView.size > 0, 'the views should hide something, or there are no views');
 
   const restored = new Set();
   for (const rule of print) {
-    if (!/display:\s*(block|flex|grid|inline)/.test(rule.body)) continue;
-    for (const name of classesIn(rule.selector)) restored.add(name);
+    if (!/display:\s*(block|flex|grid|inline|revert)/.test(rule.body)) continue;
+    for (const name of subjectsOf(rule.selector)) restored.add(name);
   }
 
   for (const name of hiddenByView) {
@@ -108,10 +132,10 @@ test('everything a view hides on screen is either restored in print or is screen
 });
 
 test('print shows the argument whichever view the screen was left in', () => {
-  const restoring = print.filter((rule) => /display:\s*block\s*!important/.test(rule.body));
+  const restoring = print.filter((rule) => /display:\s*revert\s*!important/.test(rule.body));
   const covered = new Set(restoring.flatMap((rule) => classesIn(rule.selector)));
 
-  for (const part of ['landing', 'essay-body', 'source-register', 'chapter', 'scene', 'chapter-opening', 'chapter-closing']) {
+  for (const part of ['landing', 'essay-body', 'chapter-title', 'scene']) {
     assert.ok(covered.has(part), `.${part} must print whatever the view state is`);
   }
   // A restore written against one named view would leave the other views
@@ -122,12 +146,19 @@ test('print shows the argument whichever view the screen was left in', () => {
   }
 });
 
-test('an optional panel prints open even if nothing ran before printing', () => {
-  // The browser script also opens them on `beforeprint`, but a printed
-  // argument must not depend on an event firing.
-  const collapsed = print.find((rule) => rule.selector.includes('details:not([open])'));
-  assert.ok(collapsed, 'print should reveal a collapsed panel');
-  assert.match(collapsed.body, /display:\s*block/);
+test('both drawings of an optional comparison print, with their labels', () => {
+  // On screen a comparison shows the state its control names. On paper there
+  // is no control, so a printed page that showed one state would be missing
+  // half of what the scene compares. Nothing here depends on the script
+  // having run: the rule answers the markup, not an event.
+  const restoring = print.filter((rule) => /display:\s*revert\s*!important/.test(rule.body))
+    .map((rule) => rule.selector)
+    .join(' ');
+  assert.ok(restoring.includes('.art-comparison .art-view'), 'both states must print');
+  assert.ok(restoring.includes('.art-comparison .art-view-label'), 'and each must be labelled');
+
+  const hidden = print.find((rule) => /display:\s*none\s*!important/.test(rule.body));
+  assert.ok(hidden.selector.includes('.art-control'), 'the control itself does not print');
 });
 
 /* --- Contrast ------------------------------------------------------------- */
@@ -178,11 +209,18 @@ test('a boundary a reader has to see meets the ratio a boundary needs', () => {
 
 test('long unbroken text is allowed to break rather than scroll the page sideways', () => {
   const breaking = screen.filter((rule) => /overflow-wrap:\s*(break-word|anywhere)/.test(rule.body));
-  const covered = new Set(breaking.flatMap((rule) => classesIn(rule.selector)));
-  assert.ok(breaking.some((rule) => /\bp\b/.test(rule.selector)), 'ordinary paragraphs need it');
-  for (const part of ['source-head', 'source-citation', 'licence-text']) {
-    assert.ok(covered.has(part), `.${part} can be one long unbroken run and needs it most`);
+  const selectors = breaking.map((rule) => rule.selector).join(' ');
+
+  // The register's longest runs are a DOI and a bare URL, and both are inside
+  // a paragraph, so covering the element rather than a class is what reaches
+  // them. A phone at 375px is where this shows up as sideways scrolling.
+  for (const element of ['p', 'li', 'h1', 'h2', 'h3']) {
+    assert.ok(new RegExp(`(^|[\\s,])${element}([\\s,]|$)`).test(selectors), `<${element}> needs it`);
   }
+  assert.ok(
+    breaking.some((rule) => /\bli\b/.test(rule.selector)),
+    'a register entry is a list item and can be one long unbroken run',
+  );
 });
 
 test('a reader who asked for less motion is answered', () => {
@@ -201,14 +239,20 @@ test('every target the script focuses carries a ring without waiting for :focus-
     .filter((rule) => /outline:\s*\d+px solid/.test(rule.body))
     .map((rule) => rule.selector)
     .join(' ');
-  for (const target of ['.scene:focus', '.source-register:focus', '.source:focus']) {
+  for (const target of ['.scene:focus', '.source:focus', '#landing-title:focus']) {
     // Not `:focus-visible`, which the browser withholds after a pointer click.
-    assert.ok(new RegExp(`\\${target}(?![\\w-])`).test(ringed), `${target} is focused by the script but is never ringed`);
+    assert.ok(ringed.includes(target), `${target} is focused by the script but is never ringed`);
   }
+
+  // Nothing may take the ring away again. The one element deliberately left
+  // unringed is the skip link's target, which is the whole essay: outlining
+  // everything a reader skipped to marks nothing.
+  const removed = screen.filter((rule) => /outline:\s*none/.test(rule.body)).map((rule) => rule.selector);
+  assert.deepEqual(removed, ['#essay[tabindex="-1"]:focus']);
 
   // And a ring marks where a reader is looking, which paper does not have.
   const reset = print.filter((rule) => /outline:\s*none/.test(rule.body)).map((rule) => rule.selector).join(' ');
-  for (const target of ['.scene:focus', '.source-register:focus', '.source:focus']) {
+  for (const target of ['.scene:focus', '.source:focus', '#landing-title:focus']) {
     assert.ok(reset.includes(target), `${target} would print its focus ring`);
   }
 });

@@ -166,7 +166,22 @@ a {
   outline-offset: 3px;
 }
 
-[tabindex="-1"]:focus {
+/* The script moves focus to the scene, the register entry or the landing a
+   reader asked for. None of those is reached by tabbing, and a programmatic
+   move after a pointer click does not satisfy :focus-visible, so each is
+   ringed on :focus itself: the ring is how the move is announced to a reader
+   who is looking rather than listening. */
+.scene:focus,
+.source:focus,
+#landing-title:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* The skip link's target is the whole essay. Focusing it is how a keyboard
+   reader gets past the controls; ringing everything they skipped to would
+   outline the entire page, so this one landmark is left unringed. */
+#essay[tabindex="-1"]:focus {
   outline: none;
 }
 
@@ -586,6 +601,13 @@ html.js[data-view="beat"] .chapter-title {
 
   .art[data-layout="pair"] .art-views {
     grid-template-columns: 1fr 1fr;
+  }
+
+  /* A ring marks where a reader is looking. Paper has no such reader. */
+  .scene:focus,
+  .source:focus,
+  #landing-title:focus {
+    outline: none;
   }
 
   .scene,

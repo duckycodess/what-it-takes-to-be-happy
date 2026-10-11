@@ -203,7 +203,7 @@ ${scenes}
  */
 function renderLanding(content, context) {
   return `<section class="landing" id="landing" aria-labelledby="landing-title">
-<h1 id="landing-title">${esc(content.landing.title)}</h1>
+<h1 id="landing-title" tabindex="-1">${esc(content.landing.title)}</h1>
 ${renderArt(content.landing.visual, context)}
 <p class="landing-actions">
 <a class="button" href="#${esc(content.landing.beginSceneId)}" data-begin>${esc(content.landing.beginLabel)}</a>
