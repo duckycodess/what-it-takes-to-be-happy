@@ -9,7 +9,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
 
@@ -64,6 +64,46 @@ test('the build produces outputs that pass every packaging check', async () => {
   const outputs = await buildOutputs(content);
   assert.doesNotThrow(() => auditOutputs(outputs, content));
   assert.deepEqual(auditSelfContainedHtml(outputs.offline), []);
+});
+
+test('the deployment build refuses copy the owner did not approve', () => {
+  // The deployment runs `npm run build` and nothing else. Structural
+  // validation cannot tell approved prose from well-formed prose, so a gate
+  // that lived only in `npm run validate` would be one the deployment walks
+  // around. This edits a narration block the way a careful hand would, leaves
+  // the document perfectly schema-valid, and asks both commands.
+  const path = join(repoRoot, 'content/content.json');
+  const original = readFileSync(path, 'utf8');
+  const tampered = JSON.parse(original);
+  tampered.scenes[0].blocks[0].parts[0].text = 'A perfectly well-formed sentence nobody approved.';
+
+  try {
+    writeFileSync(path, `${JSON.stringify(tampered, null, 2)}\n`);
+
+    // Schema-valid: the validator alone is happy with it.
+    const validated = execFileSync(process.execPath, ['src/tools/validate.js'], {
+      cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    assert.match(validated, /^ok {2}content\/content\.json/m, 'the edit is structurally valid, which is the point');
+
+    // And refused by the build, which is the path a deployment takes.
+    let failure = null;
+    try {
+      runBuild();
+    } catch (error) {
+      failure = error;
+    }
+    assert.ok(failure, 'the build published unapproved copy');
+    assert.equal(failure.status, 1, 'the build must exit nonzero');
+    const said = `${failure.stdout ?? ''}${failure.stderr ?? ''}`;
+    assert.match(said, /is not what docs\/redesign\/approved-scene-script\.md transfers to/);
+    assert.match(said, /nothing was built/);
+  } finally {
+    writeFileSync(path, original);
+  }
+
+  // And the untouched document builds, so the gate is not simply always on.
+  assert.doesNotThrow(() => runBuild());
 });
 
 test('the hosted page links the drawings as files, with their boxes reserved', async () => {

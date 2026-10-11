@@ -747,6 +747,172 @@ test('the shared Sources control returns the reader to where they were', { skip 
   }
 });
 
+test('reading continuously, the shared Sources control follows the scroll', { skip }, () => {
+  // Entering continuous reading at one scene and scrolling to another is the
+  // case the script is otherwise uninvolved in: nothing tells it the reader
+  // moved. If the shared control still carried the scene the view was entered
+  // at, leaving for the register and coming back would drop the reader pages
+  // away from the passage they left.
+  const entered = ORDER[4];
+  const target = ORDER[30];
+
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    hash: `#${entered}`,
+    driver: `
+      var report = {};
+      probe
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () {
+          report.view = document.documentElement.getAttribute('data-view');
+          report.beforeScroll = probe.q('.reader-controls [data-sources]').getAttribute('href');
+          report.focusedBefore = document.activeElement === document.body ? 'body' : probe.activeId();
+        })
+        .step(function () {
+          // A reader scrolling, not a script navigating: no fragment is
+          // written and nothing is focused.
+          var scene = probe.q('#${target}');
+          window.scrollTo(0, scene.getBoundingClientRect().top + window.scrollY + 10);
+        })
+        // The link is rewritten on a short timer after the scroll settles, so
+        // wait for it. A reader does not read the DOM a millisecond later.
+        .step(function () {})
+        .wait(250)
+        .step(function () {
+          report.afterScroll = probe.q('.reader-controls [data-sources]').getAttribute('href');
+          report.hash = location.hash;
+          report.focusedAfter = document.activeElement === document.body ? 'body' : probe.activeId();
+          report.stillContinuous = document.documentElement.getAttribute('data-view');
+          report.visibleScenes = probe.all('[data-scene]').filter(probe.visible).length;
+        })
+        .step(function () {
+          // Back to the top, to prove it tracks rather than only ratchets.
+          window.scrollTo(0, 0);
+        })
+        .wait(250)
+        .step(function () {
+          // Read it the way a reader reaches it. The passive listener keeps
+          // the link fresh while scrolling, and the link recomputes as it is
+          // used, which is the path that matters and the one a browser that
+          // coalesced the last scroll event away still takes.
+          var link = probe.q('.reader-controls [data-sources]');
+          report.afterScrollBackPassive = link.getAttribute('href');
+          link.focus();
+          report.afterScrollBack = link.getAttribute('href');
+          report.focusedOnLink = document.activeElement === link;
+        })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.view, 'reading');
+  assert.equal(value.beforeScroll, `sources.html?from=${entered}&view=continuous`);
+
+  assert.equal(value.afterScroll, `sources.html?from=${target}&view=continuous`,
+    'the control still points at the scene continuous reading was entered at');
+  assert.equal(value.stillContinuous, 'reading', 'and the reader is still reading continuously');
+  assert.equal(value.visibleScenes, ORDER.length);
+
+  // Scrolling is the reader's move, not the script's: tracking it takes no
+  // focus and writes no history entry. Focus is wherever switching to
+  // continuous reading left it — that move the reader did make — and scrolling
+  // must not disturb it.
+  assert.equal(value.focusedBefore, entered, 'the view switch focuses the scene it was made from');
+  assert.equal(value.focusedAfter, value.focusedBefore, 'tracking the scroll must not move focus');
+  assert.equal(value.hash, `#${entered}`, 'and must not rewrite the address bar as the reader scrolls');
+
+  assert.equal(value.focusedOnLink, true);
+  assert.equal(value.afterScrollBack, `sources.html?from=${ORDER[0]}&view=continuous`,
+    'scrolling back to the top should follow the reader back');
+});
+
+test('the shared control returns to the scrolled-to passage, in continuous mode', { skip }, () => {
+  // The other half of the journey: the address the control produced really
+  // does bring the reader back to that passage, still reading continuously.
+  const target = ORDER[30];
+  const { value: back } = sourcesPage({
+    width: 1024,
+    height: 900,
+    query: `?from=${target}&view=continuous`,
+    driver: `
+      var report = {};
+      probe.step(function () { report.href = probe.q('[data-return]').getAttribute('href'); })
+        .run(function () { probe.done(report); });`,
+  });
+  assert.equal(back.href, `index.html?view=continuous#${target}`);
+
+  const { value: restored } = essayPage({
+    width: 1024,
+    height: 900,
+    query: '?view=continuous',
+    hash: `#${target}`,
+    driver: `
+      var report = {};
+      probe.step(function () {
+        report.view = document.documentElement.getAttribute('data-view');
+        report.scrolledTo = probe.inViewport(probe.q('#${target}'));
+        report.visibleScenes = probe.all('[data-scene]').filter(probe.visible).length;
+      }).run(function () { probe.done(report); });`,
+  });
+  assert.equal(restored.view, 'reading', 'and comes back reading continuously');
+  assert.equal(restored.scrolledTo, true, 'at the passage that was left');
+  assert.equal(restored.visibleScenes, ORDER.length);
+});
+
+test('a comparison control is not offered where it would do nothing', { skip }, () => {
+  // In the continuous view both drawings are shown with their labels, so the
+  // buttons have nothing left to switch. Leaving them on screen offers a
+  // control that reports a state change and changes nothing a reader can see.
+  const scene = content.scenes.find((entry) => entry.visual.control !== null);
+
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    hash: `#${scene.id}`,
+    driver: `
+      var report = {};
+      function snapshot() {
+        var figure = probe.q('.art-comparison', probe.q('#${scene.id}'));
+        var controls = probe.all('.art-control', figure);
+        return {
+          view: document.documentElement.getAttribute('data-view'),
+          controlVisible: controls.length > 0 && probe.visible(controls[0]),
+          buttonsVisible: probe.all('.art-control button', figure).filter(probe.visible).length,
+          focusable: probe.all('.art-control button', figure).filter(function (button) {
+            return button.getClientRects().length > 0;
+          }).length,
+          drawingsVisible: probe.all('.art-view', figure).filter(probe.visible).length,
+          labelsVisible: probe.all('.art-view-label', figure).filter(probe.visible).map(function (p) { return p.textContent; }),
+        };
+      }
+      probe
+        .step(function () { report.inScene = snapshot(); })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () { report.inContinuous = snapshot(); })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () { report.backInScene = snapshot(); })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.inScene.view, 'beat');
+  assert.equal(value.inScene.controlVisible, true, 'in the scene view the control does something');
+  assert.equal(value.inScene.buttonsVisible, 2);
+  assert.equal(value.inScene.drawingsVisible, 1, 'one drawing at a time there');
+
+  assert.equal(value.inContinuous.view, 'reading');
+  assert.equal(value.inContinuous.controlVisible, false, 'a control that cannot change anything is not offered');
+  assert.equal(value.inContinuous.buttonsVisible, 0);
+  assert.equal(value.inContinuous.focusable, 0, 'and is out of the keyboard order with it');
+  assert.equal(value.inContinuous.drawingsVisible, 2, 'because both drawings are already shown');
+  assert.deepEqual(
+    value.inContinuous.labelsVisible, scene.visual.control.labels,
+    'with the approved state names still on the page, under their own drawings',
+  );
+
+  assert.equal(value.backInScene.controlVisible, true, 'and it returns with the scene view');
+  assert.equal(value.backInScene.drawingsVisible, 1);
+});
+
 test('an optional comparison switches between two drawn states', { skip }, () => {
   const optional = content.scenes.filter((scene) => scene.visual.control !== null);
   for (const scene of optional) {

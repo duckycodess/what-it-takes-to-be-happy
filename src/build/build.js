@@ -26,7 +26,9 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loadContent, ContentError } from '../content/load.js';
+import { APPROVED_SCRIPT } from '../content/transfer.js';
 import { formatErrors } from '../content/validate.js';
+import { buildContent, serialise, CONTENT_PATH } from '../tools/transfer.js';
 import { renderEssay, renderSourcesPage, sourceAnchor } from '../runtime/render.js';
 import {
   PROJECT_FONT,
@@ -187,8 +189,42 @@ export function auditOutputs(outputs, content) {
 const sha = (data) => createHash('sha256').update(data).digest('hex').slice(0, 12);
 const mb = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
+/**
+ * The approved-copy gate, run by the build itself.
+ *
+ * Structural validation says the document is well formed. It cannot say the
+ * prose is the owner's: a careful hand edit to a narration block passes every
+ * schema rule, and `source.sha256` is only checked for being a hash. The
+ * deployment runs `npm run build` and nothing else, so a gate that lives only
+ * in `npm run validate` is a gate the deployment walks around.
+ *
+ * Rebuilding the document from the approved script answers both questions at
+ * once: `transfer()` refuses a script whose bytes are not the approved ones,
+ * and the result is compared with what is committed, so any edit to either
+ * side fails the build instead of publishing.
+ */
+async function enforceApprovedTransfer() {
+  let expected;
+  try {
+    expected = serialise(await buildContent(repoRoot));
+  } catch (error) {
+    console.error(`The approved transfer could not be rebuilt from ${APPROVED_SCRIPT.path}; nothing was built.`);
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
+  }
+
+  const committed = await readFile(join(repoRoot, CONTENT_PATH), 'utf8').catch(() => null);
+  if (committed !== expected) {
+    console.error(`${CONTENT_PATH} is not what ${APPROVED_SCRIPT.path} transfers to; nothing was built.`);
+    console.error('The published copy must be the approved copy. Run: npm run content:transfer');
+    process.exit(1);
+  }
+}
+
 async function main() {
   const onlyOffline = process.argv.includes('--only=offline');
+
+  await enforceApprovedTransfer();
 
   let content;
   try {

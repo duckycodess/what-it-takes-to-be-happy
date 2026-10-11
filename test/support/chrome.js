@@ -395,6 +395,8 @@ var probe = (function () {
         || active.getAttribute('id') || active.tagName.toLowerCase();
     },
     step: function (fn) { steps.push(fn); return api; },
+    /** Waits before the next step, for work a timer does rather than an event. */
+    wait: function (ms) { steps.push({ wait: ms }); return api; },
     done: function (value) {
       var json = JSON.stringify(value);
       var bytes = unescape(encodeURIComponent(json));
@@ -406,6 +408,7 @@ var probe = (function () {
         if (index >= steps.length) { finish(); return; }
         var fn = steps[index];
         index += 1;
+        if (fn && typeof fn.wait === 'number') { setTimeout(next, fn.wait); return; }
         fn();
         setTimeout(next, 0);
       })();

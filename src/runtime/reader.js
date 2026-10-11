@@ -235,6 +235,36 @@
   }
 
   /**
+   * The scene a reader is actually looking at.
+   *
+   * In the scene view that is `current`, because one scene is on screen. In
+   * the continuous view the whole essay is on the page and the reader scrolls
+   * through it without the script being told, so `current` is only where they
+   * entered. The scene reported is the last one whose top has passed the
+   * reading line, which is the one whose text fills the upper window.
+   *
+   * Reading layout is the browser's answer, and a document with no layout --
+   * a test harness, a page measured before first paint -- has none to give.
+   * There the entry point is still the best answer available, so it is used
+   * rather than guessed at. Nothing here moves focus or scrolls: it only
+   * reads positions.
+   */
+  function visibleSceneIndex() {
+    if (view !== 'reading') return current;
+    if (!scenes[0] || !scenes[0].getBoundingClientRect) return current;
+
+    var line = (window.innerHeight || root.clientHeight || 0) * 0.3;
+    var found = -1;
+    for (var i = 0; i < scenes.length; i += 1) {
+      var box = scenes[i].getBoundingClientRect();
+      if (!box || (box.top === 0 && box.bottom === 0)) return current;
+      if (box.top > line) break;
+      found = i;
+    }
+    return found < 0 ? 0 : found;
+  }
+
+  /**
    * Points the shared Sources & Credits links at the place being read.
    *
    * On the landing there is no place to come back to, so the link stays as
@@ -243,7 +273,8 @@
    * never leaves the page and so never loses their position.
    */
   function writeSourcesLinks() {
-    var scene = scenes[current] ? scenes[current].getAttribute('data-scene') : '';
+    var place = scenes[visibleSceneIndex()];
+    var scene = place ? place.getAttribute('data-scene') : '';
     sourcesLinks.forEach(function (entry) {
       if (entry.base.charAt(0) === '#') return;
       if (view === 'landing' || scene === '') {
@@ -401,6 +432,35 @@
       if (current === 0) showLanding();
       else showScene(current - 1);
     }
+  });
+
+  /* --- Reading position ---------------------------------------------------
+     In the continuous view the reader moves by scrolling, which the script is
+     otherwise uninvolved in. The only thing that needs to keep up is the
+     shared Sources & Credits link, so that leaving for the register and
+     coming back returns to the passage they left rather than to wherever the
+     continuous view was entered. This listens passively, writes one attribute
+     and does nothing else: no focus, no scrolling, no history entry. */
+
+  var scrollPending = false;
+  function refreshSourcesLinks() {
+    if (view !== 'reading' || scrollPending) return;
+    scrollPending = true;
+    // Coalesced on a timer rather than a frame. A scroll fires many events
+    // per frame and this only writes one attribute, so it does not need to be
+    // frequent; it does need to happen in a document that is never painted,
+    // which is exactly where `requestAnimationFrame` never runs.
+    setTimeout(function () { scrollPending = false; writeSourcesLinks(); }, 100);
+  }
+
+  window.addEventListener('scroll', refreshSourcesLinks, { passive: true });
+
+  // And once more as the link is used, for a reader whose browser coalesced
+  // the last scroll frame away, or who reached it by keyboard.
+  sourcesLinks.forEach(function (entry) {
+    entry.link.addEventListener('mousedown', writeSourcesLinks);
+    entry.link.addEventListener('click', writeSourcesLinks);
+    entry.link.addEventListener('focus', writeSourcesLinks);
   });
 
   /* --- History ----------------------------------------------------------- */

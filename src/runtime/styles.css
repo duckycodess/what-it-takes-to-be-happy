@@ -483,6 +483,17 @@ html.js[data-view="beat"] .art-comparison .art-view-label {
   display: none;
 }
 
+/* In the continuous view both drawings are shown with their labels, so the
+   control has nothing left to switch. Leaving it on screen offers a button
+   that reports a state change and changes nothing a reader can see, which is
+   worse than offering no button; hidden, it is also out of the keyboard order
+   and out of the accessibility tree. The approved state names are still on
+   the page -- under each drawing, where the pair layout puts them. Print
+   drops the control for the same reason. */
+html.js[data-view="reading"] .art-control {
+  display: none;
+}
+
 /* --------------------------------------------------------------------------
    Sources & Credits
    ----------------------------------------------------------------------- */
