@@ -3,12 +3,12 @@
   "ref": "B10",
   "id": "polish-unequal-room",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "b95eca6a6e80005c6a2189aad556839ebcb543cca2dfb898fe0ffff64cb4af59",
+    "sha256": "2eabce70367cef60b0fa5f01246a4a616de607921e5f9140bfe14af4ea048ea7",
     "alt": "Fictional people face different obstacles on their paths toward shared space.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "1cd4c1a0d72cb3f41b073b31de977b0c680deddc20a9125acbcfd8e99f8292ae"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }

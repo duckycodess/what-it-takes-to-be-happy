@@ -3,12 +3,12 @@
   "ref": "B06",
   "id": "polish-chosen-company",
   "asset_branch": "codex/art-polish-v1",
-  "status": "pending-character-cleanup",
+  "status": "provider-inspected",
   "selected_image": {
     "path": "scene.png",
     "width": 1536,
     "height": 1024,
-    "sha256": "97aa1085f958d1bd391abc75f4e69dd42087981d5b98aebf8bfb4db789a94348",
+    "sha256": "cd699a160ce4d3ddfc2b5a1867c757cea1c7e132846303ea6da4739ca0e10c60",
     "alt": "Fictional friends enjoy a meal while another person comfortably reads alone.",
     "transparent_background": true
   },
@@ -21,11 +21,15 @@
     {
       "path": "prompt.txt",
       "sha256": "055603332d930cefe655a4966bcf109e5560f05d25fbfd2d1bab091a7706f986"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
     }
   ],
   "inspection": {
     "composition": "supporting passage illustration",
-    "identity": "fictional head cleanup pending",
+    "identity": "plain fictional figures inspected; member hair removed",
     "owner_inspected": false
   }
 }
