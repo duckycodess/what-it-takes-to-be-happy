@@ -14,7 +14,7 @@ Status: implementation-neutral architecture for the confirmed experience. This d
 
 ## Overall shape
 
-The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel. The build also still emits a self-contained offline HTML file from the same content and renderer; since the 9 October amendment that file is retained tooling rather than a deliverable. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.
+The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel. The same content and renderer can also emit a self-contained offline HTML file; since the 9 October amendment that file is retained tooling rather than a deliverable, so a normal build audits it without publishing it and only an explicit export writes it. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.
 
 ```mermaid
 flowchart LR
@@ -23,7 +23,7 @@ flowchart LR
   A[Original character and scene assets] --> P[Shared reader and scene renderer]
   C --> P
   P --> H[Vercel static output]
-  P --> O[Self-contained offline HTML: retained tooling, not a deliverable]
+  P --> O[Self-contained offline HTML: retained tooling, exported on request, not published]
   P --> T[Continuous reading and print view]
 ```
 
@@ -90,7 +90,9 @@ Use semantic controls, visible keyboard focus, a sensible reading order, legible
 
 Vercel serves the static hosted output, and that is the deliverable. The hosted page must carry the complete argument with its own committed resources: no runtime fetching of content, no remote font, no remote illustration dependency, and no third-party request that a reader's network can fail. External reference destinations are ordinary links and may need internet; their labels, claim context, and necessary source details stay readable without following them.
 
-The build also still writes a single self-contained HTML file containing the same prose, references, styles, scripts, font, and illustrations. The 9 October amendment discontinued it as a deliverable: it is not a submission artifact, hosted/offline parity is not an acceptance criterion, and opening it from `file://` with networking disabled is not a release check. It is retained because the rules it enforces — every required resource committed, inlined, and accounted for — are the same rules that keep the hosted page self-sufficient, and because the packaging tests that assert them are cheap. Removing it from the published `dist/` is owned by [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) and has not been done.
+The same render also produces a single self-contained HTML file containing the same prose, references, styles, scripts, font, and illustrations. The 9 October amendment discontinued it as a deliverable: it is not a submission artifact, hosted/offline parity is not an acceptance criterion, and opening it from `file://` with networking disabled is not a release check. It is retained because the rules it enforces — every required resource committed, inlined, and accounted for — are the same rules that keep the hosted page self-sufficient, and because the packaging tests that assert them are cheap.
+
+So every build renders and audits it, and **no build publishes it**: `dist/` holds the hosted site alone, and only `npm run export:offline` writes `dist/offline.html`. A normal build clears `dist/` first, so an export cannot leave a file behind for a later deploy to pick up, and no hosted page links one. That separation is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s, and it is in place.
 
 The foundation implementation documents the actual local preview, validation, hosted packaging, and export commands below.
 
@@ -138,8 +140,8 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 | --- | --- |
 | `npm run validate` | Checks `content/content.json` against the contract. Exits nonzero with located errors. |
 | `npm test` | Runs every check: contract rules, stable-identifier reordering, rendering, packaging, determinism, and the preview server. |
-| `npm run build` | Validates, renders, audits, and writes `dist/`. |
-| `npm run export:offline` | Writes only `dist/offline.html`. Retained tooling; the file is no longer a deliverable. |
+| `npm run build` | Validates, renders, audits both outputs, and writes the hosted site to `dist/` — the publish directory, and nothing else. |
+| `npm run export:offline` | Writes only `dist/offline.html`, into the same directory. Retained tooling; the file is not published, and the next `npm run build` clears it out. Only the output of a normal build is safe to deploy. |
 | `npm run preview` | Serves `dist/` at `http://localhost:4173`. |
 | `npm run check` | `validate`, then `test`, then `build`. |
 
@@ -151,7 +153,7 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 
 - Print carries the complete argument whichever view is open, including both states of each comparison with their labels. *(Historical: the superseded build also had disclosure panels, which print reopened. There are none now.)*
 - A browser with scripting unavailable shows the whole essay in one document, which is the same thing the print route needs.
-- The hosted page and the single-file output differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical. That check now guards the renderer against dropping content in one path, not a parity requirement between two deliverables.
+- The hosted page and the single-file output differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical. That check now guards the renderer against dropping content in one path, not a parity requirement between two deliverables — only one of them is published at all.
 
 The build refuses to publish an output that drops essential content, and refuses a single-file output that references anything it does not carry. External source destinations stay as ordinary links: their labels, roles, and limitations are readable without following them, and only following the link needs a connection.
 
@@ -222,8 +224,9 @@ why `s087` is drawn by nobody on purpose.
 ### What is still open
 
 > **Historical.** This counted the superseded build's 87 beats. The essay is now the approved 45
-> scenes with twenty delivered assets, and what remains open is the deployment, recorded in
-> [delivery](delivery.md) and owned by #7. The paragraph on the typeface below is still accurate.
+> scenes with twenty delivered assets, and the deployment is no longer open either: the site was
+> released on 11 October 2026 and [delivery](delivery.md#the-released-site--11-october-2026) records
+> it. The paragraph on the typeface below is still accurate.
 
 The prose and the scene set are no longer open: the content document carries the storyboard's 87
 beats and the drawings for 86 of them. What is still open is the reader's finished visual design,
@@ -247,4 +250,4 @@ Both harnesses are deliberately small and dependency-free: `test/support/dom.js`
 
 ## Handoffs that create real prerequisites
 
-The reader depends on the foundation's content/runtime interfaces. Final narrative integration depends on an audited storyboard, a working reader, and original scene assets. Hosted release verification depends on the integrated complete essay. Editorial work and original asset development can begin alongside the foundation using these documented contracts.
+The reader depends on the foundation's content/runtime interfaces. Final narrative integration depends on an audited storyboard, a working reader, and original scene assets. Hosted release verification depended on the integrated complete essay, and was carried out against the deployed site on 11 October 2026. Editorial work and original asset development can begin alongside the foundation using these documented contracts.
