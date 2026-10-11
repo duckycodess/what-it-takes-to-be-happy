@@ -433,9 +433,15 @@ button[aria-pressed="true"] {
 }
 
 .rail-parts {
-  margin: 0 0 0.6rem;
+  margin: 0.35rem 0 0.6rem;
   padding: 0 0 0 0.9rem;
   border-left: 2px solid var(--rule);
+}
+
+/* A chapter and its first part can both be marked at once. The gaps keep
+   each highlight its own block instead of letting them run together. */
+.rail-parts li + li {
+  margin-top: 0.2rem;
 }
 
 .rail-parts a {

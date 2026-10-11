@@ -305,6 +305,10 @@ test('hiding the chapters gives the passage the room, and the rail never clips i
         var ring = 6;
         report.ringInsideRail = box.left - ring >= edge.left && box.top - ring >= edge.top;
         report.continuousShown = probe.visible(probe.q('[data-view-toggle]'));
+        // A marked chapter and its first part are separate highlights.
+        var chapter = probe.q('.rail-chapter-link[aria-current]').getBoundingClientRect();
+        var first = probe.q('.rail-chapter-link[aria-current]').closest('.rail-chapter').querySelector('.rail-parts a').getBoundingClientRect();
+        report.highlightGap = Math.round(first.top - chapter.bottom);
         toggle.style.transform = '';
         toggle.click();
       })
@@ -320,6 +324,7 @@ test('hiding the chapters gives the passage the room, and the rail never clips i
   ` });
   assert.equal(value.ringInsideRail, true, 'a grown, focused Hide chapters is not cut off');
   assert.equal(value.continuousShown, false, 'Read continuously is deferred');
+  assert.ok(value.highlightGap >= 4, `chapter and first part highlights are ${value.highlightGap}px apart`);
   assert.equal(value.centred, true, 'the passage and its drawing are centred');
   assert.equal(value.artWidth, 416, 'the drawing takes the wider 26rem column');
   assert.ok(value.gap >= 30 && value.gap <= 50, `the drawing sits beside the prose, ${value.gap}px away`);

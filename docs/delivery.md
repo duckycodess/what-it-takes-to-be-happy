@@ -4,24 +4,24 @@ Vercel hosting is the deliverable. The 9 October owner amendment discontinued th
 
 ## Current state
 
-The essay is live at **<https://what-it-takes-to-be-happy.vercel.app>**, built from
-`67f571de34d932d82dfd344e3589982c495b734b`. What was deployed, what was checked on it, and what was
-not, is [the release record](#the-released-site--11-october-2026) below.
+The essay is live at **<https://what-it-takes-to-be-happy.vercel.app>** and **production now deploys
+automatically from `main`**. On 12 October 2026 the owner asked for production deployments to run
+from GitHub like the previews, so the project's production hold (its ignored build step, described
+below) was removed. Every push to `main` is built by Vercel and promoted to the public URL, and each
+one appears as a **Production** deployment on GitHub.
 
-That revision is **not** this branch's work. The source in this checkout is ahead of it: `npm run
-build` no longer writes `dist/offline.html` into the publish directory, which is the code change
-[#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) owns. **Nothing built from
-this head has been deployed**, and the automatic production build hold described below is still
-engaged, so a push does not change what the public URL serves. The hosted files this head produces
-are byte-identical to the 29 files verified in production — the change removes an output, it does
-not touch the website — but identical bytes are not a deployment, and this document does not record
-one until a supervised release actually happens.
+The hold had existed because the build of `67f571d` still wrote `dist/offline.html` into the publish
+directory. A normal build no longer does: it publishes the hosted site alone, and `/offline.html`
+answers 404 on the live site.
 
-**Every new revision is preview-only** until the owner approves the reading experience's readability
-and flow, which they settled on 11 October 2026. That covers this change and the separately queued
-readability work in [#17](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17);
-neither depends on the other. Production stays at `67f571d` and the hold stays engaged regardless of
-how review or merge goes — see [the hold](#the-provisioned-project).
+Releases since the record below, each built from a clean archive of the merge commit, deployed first
+as a preview and checked file by file, then deployed to production and checked again over anonymous
+HTTPS:
+
+| Date | Source | Production deployment | Checked |
+| --- | --- | --- | --- |
+| 11 October 2026 | `710bbec` (PR #21, issue #20 polish with the Trust transition and sounds) | `what-it-takes-to-be-happy-178uybz5m` | all 51 files match the tested build by SHA-256 |
+| 11 October 2026 | `80827fe` (PR #23, reader amendment) | `what-it-takes-to-be-happy-32dh6qwid` | all 51 files match; title, credit and citation-only references read back |
 
 ## Build settings for the Vercel project
 
@@ -53,8 +53,8 @@ Reported by the supervising chat on 9 October 2026. It supersedes the earlier sa
 
 These identifiers are supervision-reported rather than read from this worktree, and they were verified against the account before anything was changed there. They are where the site [was deployed on 11 October](#the-released-site--11-october-2026).
 
-**A production hold is in force**, and it survived the release. It is the project-level *ignored
-build step* command:
+**Lifted on 12 October 2026.** Until then a production hold was in force. It was the project-level
+*ignored build step* command:
 
 ```sh
 if [ "$VERCEL_ENV" = "production" ]; then exit 0; else exit 1; fi

@@ -314,3 +314,11 @@ the polish amendment, so the immutable essay and handoff stay untouched:
   and the drawing beside it grows from 18rem to 26rem, centred together instead of leaving a gap.
 - **The rail no longer clips its own controls.** A button grows slightly on hover and draws its
   focus ring outside itself; the scrolling rail now has room inside its edge for both.
+
+## Owner direction — 12 October 2026, automatic production
+
+The owner asked for production deployments to appear on GitHub alongside the previews and for work
+to go straight to `main`. The Vercel production hold is lifted: every push to `main` now builds and
+publishes the live site through the Git integration. [Delivery](delivery.md#current-state) records
+the change. The same change gives a marked chapter and its first part separate highlights in the
+rail, and rewrites the README for readers rather than maintainers.
