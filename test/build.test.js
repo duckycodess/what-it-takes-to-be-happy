@@ -463,7 +463,7 @@ test('the preview server serves the built site and refuses to escape it', async 
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.equal(page.headers.get('content-type'), 'text/html; charset=utf-8');
-    assert.match(await page.text(), /<h1 id="landing-title"[^>]*>What it takes to be happy<\/h1>/);
+    assert.match(await page.text(), /<h1 id="landing-title"[^>]*>What it takes to be happy\?<\/h1>/);
 
     const styles = await fetch(`${base}/styles.css`);
     assert.equal(styles.status, 200);

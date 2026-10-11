@@ -197,6 +197,9 @@ test('no renderer-added prose reaches the essay', () => {
     ...readerSentences(content),
     ...content.chapters.map((chapter) => chapter.title),
     ...Object.values(content.interface),
+    // The credit footnote is two lines in one paragraph; its own text is
+    // both lines with the break between them.
+    content.landing.credit.map((line) => line.map((part) => part.text).join('')).join(''),
     ...content.assets.flatMap((asset) => asset.labels.map((label) => label.text)),
     ...content.scenes.flatMap((scene) => scene.visual.views.map((view) => view.label)).filter(Boolean),
   ]);
@@ -237,7 +240,8 @@ test('every control name is the one the approved handoff supplies', () => {
   assert.equal(content.interface.skip, ui.skip_link);
   assert.equal(content.interface.readAgain, ui.end_content_action);
   assert.equal(content.interface.begin, ui.landing_action);
-  assert.equal(content.interface.title, handoff.website_title);
+  // The owner's reader amendment gives the title its question mark.
+  assert.equal(content.interface.title, `${handoff.website_title}?`);
 
   // The approved interface names no Print control and no counter, so the
   // contract carries neither.

@@ -287,3 +287,30 @@ replaces the generated paper wipe and refines two sentences above:
   darkened to the grey of its "off" half for this paper. The approved `Sound` label stays as the
   accessible name and `aria-pressed` carries the state; Trust's visible ON/OFF words are not added,
   because no new reader-facing string may be invented.
+
+## Owner amendment — 11 October 2026, references, return and credit
+
+After the issue #20 release went live the owner asked for these reader-facing changes, recorded in
+[the hash-bound reader amendment](editorial/reader-amendment.json) and applied during transfer like
+the polish amendment, so the immutable essay and handoff stay untouched:
+
+- **References keep only their formatted citations.** Each entry's access note ("Read: …") and the
+  "Access notes describe…" paragraph under References are removed. The audit level of every source
+  is still recorded in the content and in [the research register](research.md); it is no longer
+  printed beside the citation.
+- **The way back from Sources & Credits is always on screen**, in a fixed footer like the reading
+  one, instead of after all 26 references.
+- **The title asks its question**: "What it takes to be happy?", on the landing and as the page
+  title.
+- **A landing footnote credits the work**, in two lines with no full stops: "By: Tristan Jovan Noval,
+  John Ranview Vonne Olano, Koji Araneta Yamane" and "For: Kert Tandog's SocSci 1 Class". This is
+  owner-supplied copy, the one byline the landing carries; it does not change the names above the
+  characters.
+- **Scrollbars are not drawn.** Every scrolling area still scrolls; only the bar is hidden.
+- **Read continuously is deferred.** Its rail control is hidden by one stylesheet rule; the
+  continuous view and its tests remain, so restoring it is deleting that rule. Print still sets the
+  whole essay. This supersedes the 11 October interface amendment's placement of it in the rail.
+- **Hiding the chapters gives the passage the room.** On wide screens the prose keeps its measure
+  and the drawing beside it grows from 18rem to 26rem, centred together instead of leaving a gap.
+- **The rail no longer clips its own controls.** A button grows slightly on hover and draws its
+  focus ring outside itself; the scrolling rail now has room inside its edge for both.

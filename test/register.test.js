@@ -104,9 +104,9 @@ test('each published level carries the access label the reader actually sees', (
     const level = SOURCE_AUDIT_STATUSES[source.auditStatus];
     assert.ok(level, `${source.sourceId} has a level the contract does not define`);
     assert.match(level.label, /\S/);
-    // The entry's own note is what states the limit in the audit's words; the
-    // label only classifies it. Both have to be there.
-    assert.ok(source.note.length > 0, `${source.sourceId} reaches the reader without its access note`);
+    // The owner's reader amendment reduced each entry to its formatted
+    // citation; the audit level is still recorded against it.
+    assert.deepEqual(source.note, [], `${source.sourceId} still shows an access note`);
   }
 });
 

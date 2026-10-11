@@ -15,7 +15,7 @@ import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { transfer, APPROVED_ESSAY, POLISH_AMENDMENT } from '../content/transfer.js';
+import { transfer, APPROVED_ESSAY, POLISH_AMENDMENT, READER_AMENDMENT } from '../content/transfer.js';
 
 export const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 export const CONTENT_PATH = 'content/content.json';
@@ -33,14 +33,15 @@ export async function readManifests(root = repoRoot) {
 
 /** The content document the approved essay and the delivered assets imply. */
 export async function buildContent(root = repoRoot) {
-  const [markdown, handoffJson, sourceMap, manifests, amendmentJson] = await Promise.all([
+  const [markdown, handoffJson, sourceMap, manifests, amendmentJson, readerAmendmentJson] = await Promise.all([
     readFile(join(root, APPROVED_ESSAY.markdown.path), 'utf8'),
     readFile(join(root, APPROVED_ESSAY.handoff.path), 'utf8'),
     readFile(join(root, 'docs/redesign/source-map.json'), 'utf8').then(JSON.parse),
     readManifests(root),
     readFile(join(root, POLISH_AMENDMENT.path), 'utf8'),
+    readFile(join(root, READER_AMENDMENT.path), 'utf8'),
   ]);
-  return transfer({ markdown, handoffJson, manifests, sourceMap, amendmentJson });
+  return transfer({ markdown, handoffJson, manifests, sourceMap, amendmentJson, readerAmendmentJson });
 }
 
 export const serialise = (document) => `${JSON.stringify(document, null, 2)}\n`;

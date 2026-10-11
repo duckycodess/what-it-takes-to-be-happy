@@ -1,0 +1,12 @@
+{
+  "schema": "happiness-reader-amendment/v1",
+  "date": "2026-10-11",
+  "owner_authorization": "After the issue #20 release the owner asked directly for the references to keep only each formatted citation, for the access-notes paragraph to go, for the title to end with a question mark, and for a two-line landing footnote crediting the authors and the class, without full stops.",
+  "title": "What it takes to be happy?",
+  "remove_source_notes": true,
+  "method_note_removal": "Access notes describe the recorded source audit and its documented follow-ups. They do not claim that every link was reopened while writing this revision.",
+  "landing_credit": [
+    "By: Tristan Jovan Noval, John Ranview Vonne Olano, Koji Araneta Yamane",
+    "For: Kert Tandog's SocSci 1 Class"
+  ]
+}

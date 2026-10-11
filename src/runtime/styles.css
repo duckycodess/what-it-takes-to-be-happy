@@ -44,6 +44,8 @@
      page: at 48rem they were wider than the sentences they supported. This is
      what makes one contextual rather than the main event. */
   --art-column: 18rem;
+  /* The drawing's column once the rail is hidden and its room is free. */
+  --art-column-wide: 26rem;
   --body-line-height: 1.6;
   --gap: 1.25rem;
   /* The stack without the project typeface, and the measure and leading drawn
@@ -119,6 +121,17 @@ html {
   font-size: 100%;
   line-height: var(--body-line-height);
   -webkit-text-size-adjust: 100%;
+}
+
+/* The owner asked for the scrollbars to be invisible. Every scrolling area
+   still scrolls by wheel, touch, keyboard and trackpad; only the bar is not
+   drawn. */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -444,6 +457,14 @@ button[aria-pressed="true"] {
   color: var(--ink);
 }
 
+/* Read continuously is deferred by the owner (11 October 2026). The control
+   and the continuous view behind it are kept, and still tested, so bringing
+   it back is deleting this rule; until then it is neither shown nor reached
+   by Tab. Print still sets the whole essay. */
+[data-view-toggle] {
+  display: none !important;
+}
+
 /* Not places in the essay, so not in the list of them. */
 .rail-secondary {
   margin: 1.2rem 0 0;
@@ -530,6 +551,14 @@ html.js[data-view="landing"] body { padding-bottom: 1rem; }
   max-width: none;
   margin-top: 1.5rem;
   justify-content: center;
+}
+
+/* Who made the essay, and for which class: a footnote under the actions. */
+.landing-credit {
+  margin: 2.5rem auto 0;
+  max-width: 34rem;
+  color: var(--ink-soft);
+  font-size: 0.85rem;
 }
 
 /* Original bitmap ink/highlight, with browser text and native controls. */
@@ -825,6 +854,24 @@ html.js[data-view="reading"] .art-control {
   margin-top: 2rem;
 }
 
+/* On the separate Sources & Credits page the way back is always in reach,
+   in a footer like the reading one, instead of below 26 references. The
+   body's bottom padding already keeps the last entry clear of it. */
+html[data-page="sources"] .sources-return {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  max-width: none;
+  margin: 0;
+  padding: 0.6rem 1rem;
+  display: flex;
+  justify-content: center;
+  background: var(--paper);
+  border-top: 1.5px solid var(--rule-strong);
+}
+
 /* --------------------------------------------------------------------------
    Views
 
@@ -968,13 +1015,17 @@ html.js[data-view="beat"] .chapter-title {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  /* A scrolling rail clips whatever crosses its edge, and a button grows a
+     little on hover and draws its focus ring outside itself. The rail is
+     given that much room inside its own edge, and moved back out by the same
+     amount, so its contents stay where they were and nothing is cut off. */
   .chapter-rail {
     position: sticky;
     top: 1.5rem;
     max-height: calc(100vh - 8rem);
     overflow-y: auto;
-    margin: 0;
-    padding: 0 1rem 1rem 0;
+    margin: -0.5rem 0 0 -0.5rem;
+    padding: 0.5rem 1rem 1rem 0.5rem;
     border-bottom: none;
     border-right: 1px solid var(--rule);
   }
@@ -1014,6 +1065,21 @@ html.js[data-view="beat"] .chapter-title {
     float: none;
     width: auto;
     margin: 1.6rem 0 1.8rem;
+  }
+
+  /* With the rail hidden its room goes to the passage: prose at its measure
+     and a larger drawing beside it, centred together rather than left with a
+     gap between them. */
+  html.js[data-rail="closed"] .essay-body {
+    width: 100%;
+    max-width: calc(var(--measure) + 2.5rem + var(--art-column-wide));
+    margin: 0 auto;
+  }
+
+  html.js[data-rail="closed"] .scene > .art:not([data-layout="pair"]) {
+    width: var(--art-column-wide);
+    max-width: none;
+    margin-left: 2.5rem;
   }
 
   /* A smaller drawing carries smaller names, or a long prop label would reach

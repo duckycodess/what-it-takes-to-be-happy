@@ -149,7 +149,14 @@ test('a citation label and its accessible name must match its number', () => {
 });
 
 test('an entry without its access note is rejected', () => {
-  assert.ok(codes(broken((doc) => { doc.sourcesPage.sources[9].note = []; })).includes('MISSING_TEXT'));
+  // Only the owner's reader amendment may reduce an entry to its citation.
+  assert.ok(codes(broken((doc) => { delete doc.source.readerAmendment; doc.sourcesPage.sources[9].note = []; })).includes('MISSING_TEXT'));
+  assert.ok(!codes(broken((doc) => { doc.sourcesPage.sources[9].note = []; })).includes('MISSING_TEXT'));
+  // A record that is merely present, not the pinned file and digest, does not count.
+  for (const forged of [{}, 'yes', { path: 'docs/editorial/reader-amendment.json', sha256: '0'.repeat(64) }]) {
+    assert.ok(codes(broken((doc) => { doc.source.readerAmendment = forged; doc.sourcesPage.sources[9].note = []; })).includes('MISSING_TEXT'));
+    assert.ok(codes(broken((doc) => { doc.source.readerAmendment = forged; doc.sourcesPage.methodNote = []; })).includes('MISSING_TEXT'));
+  }
 });
 
 /* --- Artwork ------------------------------------------------------------ */
