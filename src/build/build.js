@@ -2,7 +2,7 @@
 /**
  * Builds the essay's outputs from one validated content document.
  *
- *   npm run build            -> dist/ (the hosted website) and dist/offline.html
+ *   npm run build            -> dist/ (the hosted website, and nothing else)
  *   npm run export:offline   -> dist/offline.html only
  *
  * The hosted website is the deliverable: `index.html`, the separate
@@ -11,10 +11,17 @@
  * inlining them is deliberate — the 22 selected cutouts are 20.4 MB, and a
  * phone should fetch the one it is looking at.
  *
- * `dist/offline.html` is retained tooling, not a release gate. It inlines
- * every one of those images as base64 and is correspondingly enormous; the
- * build reports its size rather than treating a threshold as evidence about
- * the hosted site.
+ * `dist/offline.html` is retained tooling, not a release gate, and since the
+ * 9 October 2026 owner amendment it is no longer part of what gets published.
+ * Every build still renders it in memory and still runs every packaging audit
+ * over it, because those audits are what prove the hosted page's resources are
+ * all committed and accounted for — but only an explicit `--only=offline`
+ * export writes it to disk. A normal build clears `dist/` first, so a file
+ * left behind by an earlier export never reaches a deploy.
+ *
+ * That ordering matters the other way round too: `dist/` is only safe to
+ * publish when it is the output of a normal build. A directory an export has
+ * since added to is not, which is why nothing here uploads a prebuilt tree.
  *
  * The build is deterministic: nothing records a timestamp, a random value, or
  * a machine path, so the same commit always produces byte-identical output.
@@ -192,9 +199,14 @@ export async function buildOutputs(content) {
 
 /** Every check the build refuses to publish without. */
 export function auditOutputs(outputs, content) {
+  // The export is audited on every build even though only an explicit export
+  // writes it: these are the checks that say every resource the hosted page
+  // needs is committed and accounted for, and they are worth nothing if they
+  // only run on the command nobody deploying ever types.
+  const EXPORT = 'the single-file export';
   const essayOutputs = [
     ['dist/index.html', outputs.hosted, {}],
-    ['dist/offline.html', outputs.offline, { inline: true }],
+    [EXPORT, outputs.offline, { inline: true }],
   ];
 
   for (const [label, html, options] of essayOutputs) {
@@ -210,7 +222,7 @@ export function auditOutputs(outputs, content) {
 
   const sourcesOutputs = [
     ['dist/sources.html', outputs.sources],
-    ['dist/offline.html', outputs.offline],
+    [EXPORT, outputs.offline],
   ];
   for (const [label, html] of sourcesOutputs) {
     const problems = auditSourcesCoverage(html, content);
@@ -224,16 +236,16 @@ export function auditOutputs(outputs, content) {
   // carries, which the approved copy does not mention because the website
   // does not bundle it.
   const credits = auditFontNotices(outputs.offline, [FALLBACK_FONT.noticeAlone]);
-  if (credits.length > 0) fail('dist/offline.html does not credit the font it bundles', credits);
+  if (credits.length > 0) fail(`${EXPORT} does not credit the font it bundles`, credits);
 
   const selfContained = auditSelfContainedHtml(outputs.offline);
-  if (selfContained.length > 0) fail('dist/offline.html depends on resources it does not carry', selfContained);
+  if (selfContained.length > 0) fail(`${EXPORT} depends on resources it does not carry`, selfContained);
 
   const leaked = auditProjectFontIsHostedOnly(outputs.offline, outputs.projectFontBytes, PROJECT_FONT);
-  if (leaked.length > 0) fail('dist/offline.html carries the project typeface, which is served by the hosted site only', leaked);
+  if (leaked.length > 0) fail(`${EXPORT} carries the project typeface, which is served by the hosted site only`, leaked);
 
   const licence = auditBundledLicence(outputs.offline, outputs.fontLicense);
-  if (licence.length > 0) fail('dist/offline.html does not carry the bundled font licence', licence);
+  if (licence.length > 0) fail(`${EXPORT} does not carry the bundled font licence`, licence);
 }
 
 const sha = (data) => createHash('sha256').update(data).digest('hex').slice(0, 12);
@@ -298,13 +310,16 @@ async function main() {
   auditOutputs(outputs, content);
 
   if (!onlyOffline) {
-    // A clean directory keeps a stale file from a previous shape out of a deploy.
+    // A clean directory keeps a stale file from a previous shape — an
+    // offline.html an export wrote here among them — out of a deploy.
     await rm(DIST, { recursive: true, force: true });
   }
   await mkdir(DIST, { recursive: true });
 
   const written = [];
-  if (!onlyOffline) {
+  if (onlyOffline) {
+    written.push(await write(join(DIST, 'offline.html'), outputs.offline));
+  } else {
     written.push(await write(join(DIST, 'index.html'), outputs.hosted));
     written.push(await write(join(DIST, 'sources.html'), outputs.sources));
     written.push(await write(join(DIST, 'styles.css'), outputs.hostedCss));
@@ -314,8 +329,6 @@ async function main() {
     written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
     for (const [path, bytes] of outputs.artwork) written.push(await write(join(DIST, path), bytes));
   }
-  const offlineFile = await write(join(DIST, 'offline.html'), outputs.offline);
-  written.push(offlineFile);
 
   console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} scene(s) `
     + `from content/content.json (${content.measure.words} main-path words).`);
@@ -323,14 +336,21 @@ async function main() {
     console.log(`  ${relative(repoRoot, file.path).padEnd(56)} ${String(file.bytes).padStart(10)} bytes  sha256:${sha(await readFile(file.path))}`);
   }
 
-  const hostedBytes = written.filter((file) => file !== offlineFile).reduce((sum, file) => sum + file.bytes, 0);
-  if (!onlyOffline) {
-    const first = written.find((file) => file.path.endsWith('index.html'));
-    console.log(`Hosted output is dist/ (publish directory): ${mb(hostedBytes)} in total, of which the first `
-      + `page is ${first.bytes} bytes of HTML plus the one eagerly loaded illustration; the rest of the artwork is lazy.`);
+  if (onlyOffline) {
+    const [offlineFile] = written;
+    console.log(`dist/offline.html is retained tooling, not a release gate: ${mb(offlineFile.bytes)} with every `
+      + 'drawing inlined as base64. The hosted site links those files instead.');
+    console.log('dist/ now holds an export and is no longer the published output. Run `npm run build` '
+      + 'before deploying; it clears this file out again.');
+    return;
   }
-  console.log(`dist/offline.html is retained tooling, not a release gate: ${mb(offlineFile.bytes)} with every `
-    + 'drawing inlined as base64. The hosted site links those files instead.');
+
+  const hostedBytes = written.reduce((sum, file) => sum + file.bytes, 0);
+  const first = written.find((file) => file.path.endsWith('index.html'));
+  console.log(`Hosted output is dist/ (publish directory): ${mb(hostedBytes)} in total, of which the first `
+    + `page is ${first.bytes} bytes of HTML plus the one eagerly loaded illustration; the rest of the artwork is lazy.`);
+  console.log(`Audited but not published: the ${mb(Buffer.byteLength(outputs.offline))} single-file export. `
+    + 'It is retained tooling, not a deliverable; `npm run export:offline` writes it when it is wanted.');
 }
 
 // Run only when invoked directly, so tests can import these functions.
