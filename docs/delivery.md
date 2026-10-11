@@ -17,6 +17,12 @@ are byte-identical to the 29 files verified in production — the change removes
 not touch the website — but identical bytes are not a deployment, and this document does not record
 one until a supervised release actually happens.
 
+**Every new revision is preview-only** until the owner approves the reading experience's readability
+and flow, which they settled on 11 October 2026. That covers this change and the separately queued
+readability work in [#17](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17);
+neither depends on the other. Production stays at `67f571d` and the hold stays engaged regardless of
+how review or merge goes — see [the hold](#the-provisioned-project).
+
 ## Build settings for the Vercel project
 
 These are the actual settings the committed build needs. They are recorded in [`vercel.json`](../vercel.json) as well, so the dashboard and the repository cannot drift apart.
@@ -58,10 +64,19 @@ Exit 0 tells Vercel to skip the build, so every **production** build triggered f
 while previews still build. The live site is there because a tested prebuilt output was uploaded and
 promoted under supervision, not because a push built it. The hold is deliberately still engaged: it
 is what stops the then-current build — which still wrote `dist/offline.html` into the publish
-directory — from republishing that file automatically. Releasing it belongs to a supervised release
-of the cleaned output, after this change is reviewed and verified for its exact head, and it is not
-this branch's to release. A pushed commit may produce a **Preview** deployment automatically; a
-preview is not production, and its URL is not evidence that the public site moved.
+directory — from republishing that file automatically. A pushed commit may produce a **Preview**
+deployment automatically; a preview is not production, and its URL is not evidence that the public
+site moved.
+
+**Reviewing or merging this work does not release the hold.** On 11 October 2026 the owner put every
+new revision — [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s output
+cleanup and the separately queued readability revision,
+[#17](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17), alike — on a
+**preview-only** footing until they have approved the reading experience's readability and flow. A
+reviewed source merge is a source decision, not production-release approval. So `67f571d` stays the
+production baseline, the hold stays engaged, no new revision is deployed or promoted, and no project
+setting changes, even after a technical merge. Lifting any of that is the owner's call and happens
+on their word, not on a passing check.
 
 The build is deterministic — nothing records a timestamp, a random value, or a machine path — so a redeploy of the same commit produces byte-identical files. A preview deployment and the production deployment of one commit are therefore comparable byte for byte.
 

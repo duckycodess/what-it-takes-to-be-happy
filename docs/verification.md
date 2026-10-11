@@ -516,8 +516,15 @@ removes an output without altering the website.
 
 - **The deployment, from this head.** Nothing built here has been deployed. Automatic production
   builds are still held, and a push may create a *preview*, which is neither production nor
-  evidence that production moved. Releasing the hold and promoting a cleaned head is a supervised
-  release, and this document will say so when it happens rather than in advance.
+  evidence that production moved.
+
+  **No check here can release that hold.** Since 11 October 2026 every new revision — this one and
+  the separately queued readability revision
+  [#17](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17), which neither depends
+  on nor blocks it — is **preview-only** until the owner approves the reading experience's
+  readability and flow. A reviewed merge is not production-release approval. Production stays at
+  `67f571d`, the hold and the project settings stay as they are, and this document will record a
+  promotion when one actually happens rather than in advance.
 - **Everything the release above could not reach**: a physical phone, another browser engine, a
   physical printer, a screen reader.
 
