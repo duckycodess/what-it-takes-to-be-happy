@@ -457,6 +457,17 @@ function context(content, options) {
 }
 
 /**
+ * The page transition's overlay: Nicky Case's scratcher from The Evolution of
+ * Trust. Empty and hidden; the reader script lays the sprite sheet over the
+ * reading area between moves. Without its files there is no overlay, and
+ * moves happen at once.
+ */
+function renderScratcher(scratch) {
+  if (!scratch) return '';
+  return `<div class="scratcher js-only" data-scratcher data-sheet="${esc(scratch.sheet)}" data-sound-in="${esc(scratch['sound-in'])}" data-sound-out="${esc(scratch['sound-out'])}" aria-hidden="true" hidden></div>`;
+}
+
+/**
  * The essay.
  *
  * @param {object} content a validated content document
@@ -510,7 +521,7 @@ ${renderClosing(content)}
 ${inlineSources}
 </main>
 ${renderControls(content)}
-<div class="page-wipe js-only" data-page-wipe aria-hidden="true" hidden></div>
+${renderScratcher(options.scratch)}
 ${exportColophon}
 ${script(options)}
 </body>

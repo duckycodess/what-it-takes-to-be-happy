@@ -543,7 +543,13 @@ button:hover, .button:hover, button:focus-visible, .button:focus-visible {
 button:active, .button:active { transform: scale(0.95); }
 .sound-toggle { position: fixed; top: 0.55rem; right: 1rem; z-index: 5; width: auto; max-width: none; font-size: 0.85rem; }
 .sound-toggle[aria-pressed="true"]::after { content: ' ✓'; margin-left: 0.35em; }
-.page-wipe { position: fixed; pointer-events: none; z-index: 1; max-width: none; background-image: url(__SCRATCH_PAPER_URL__); background-size: 115% 120%; background-position: center; }
+/* Nicky Case's scratcher (The Evolution of Trust, css/slides.css): a 2 x 20
+   sprite sheet stretched over the reading area, one frame showing at a time.
+   The script places it, sets the sheet once it has loaded, and steps
+   background-position. Above the prose, below the footer, rail and drawer.
+   The sheet is white, as the original page was; the filter takes that white
+   to this page's --paper (#fdfbf7) so the cover is paper, not a whiter box. */
+.scratcher { position: fixed; z-index: 1; max-width: none; background-size: 200% 2000%; filter: sepia(0.38) brightness(0.992); }
 .sources-credits { max-width: var(--measure); padding-left: 1.4rem; margin: 1rem 0 1.8rem; }
 .sources-credits li { margin-bottom: 0.5rem; }
 html[data-page="sources"] .sources { padding-top: 4rem; }
@@ -1002,7 +1008,7 @@ html.js[data-view="beat"] .chapter-title {
 
 @media (prefers-reduced-motion: reduce) {
   .landing .art { transform: none !important; }
-  .page-wipe { display: none !important; }
+  .scratcher { display: none !important; }
   *,
   *::before,
   *::after {
@@ -1046,7 +1052,7 @@ html.js[data-view="beat"] .chapter-title {
     display: none !important;
   }
 
-  .sound-toggle, .page-wipe { display: none !important; }
+  .sound-toggle, .scratcher { display: none !important; }
 
   /* Whatever arrangement the screen was in, paper is one column. */
   .reader-shell {

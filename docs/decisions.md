@@ -255,3 +255,26 @@ Every Next/Back and paginated chapter move uses a short erase/redraw effect conf
 The title has a wider desktop measure with natural phone wrapping. Long passages scroll normally; hidden chapter wrappers and trailing blank space are removed only from paginated view. Continuous reading and printing retain every passage.
 
 The exact Sources cuts and three linked credit bullets are recorded in [the hash-bound amendment](editorial/polish-amendment.json), rather than changing the immutable original essay/handoff. The owner must see the new tested preview before authorizing production for this follow-up. PR #19 approval does not silently approve unseen issue #20 work.
+
+### The original scratch transition — 11 October 2026
+
+On review of PR #21 the owner asked for Nicky Case's own erase-and-reveal transition from
+[The Evolution of Trust](https://github.com/ncase/trust) rather than an original imitation of it. This
+replaces the generated paper wipe and refines two sentences above:
+
+- **Assets.** The reference's sprite sheet and its two scratch recordings are copied unchanged into
+  [`assets/ui/scratch/`](../assets/ui/scratch/README.md), pinned to a commit and hash-checked by the
+  build. The reference is CC0. They are served from this site, never fetched from elsewhere. The
+  generated `scratch-paper.png` stays in the repository as provenance but is no longer published.
+- **Behaviour.** As in `Scratcher.js`: frames advance every 40 ms, the page is scribbled over, the move
+  is made only when the page is fully covered, the next page is revealed, and each phase's recording
+  starts 100 ms in. Begin and Read again count as moves too, alongside Next/Back, arrow keys and rail
+  jumps in the paginated view. The cover's white is filtered to the page's paper colour; nothing
+  else about the sheet changes.
+- **Repeated presses.** A move asked for while a transition is being drawn is ignored, as in the
+  original, instead of superseding it. Moves of another kind (continuous reading, the browser's
+  Back, a deep link) still take effect at once and drop the pending one; printing or hiding the tab
+  completes it immediately.
+- **Sound.** Still off until the reader turns on Sound. The two original recordings replace the
+  synthesised scratch; the button click stays synthesised. Reduced motion still moves instantly with
+  no overlay.

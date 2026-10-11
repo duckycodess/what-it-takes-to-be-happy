@@ -63,6 +63,7 @@ export const DIST = join(repoRoot, 'dist');
 
 const STYLESHEET = 'src/runtime/styles.css';
 const READER_SCRIPT = 'src/runtime/reader.js';
+const SCRATCH_MANIFEST = 'assets/ui/scratch/manifest.json';
 
 const read = (path) => readFile(join(repoRoot, path));
 const readText = (path) => readFile(join(repoRoot, path), 'utf8');
@@ -155,17 +156,34 @@ export async function buildOutputs(content) {
 
   const artwork = await readSelectedArtwork(content);
   const uiManifest = JSON.parse(await readText('assets/ui/polish/manifest.json'));
+  const uiToken = (image) => `__${image.id.replaceAll('-', '_').toUpperCase()}_URL__`;
+  // Only the bitmaps the stylesheet still asks for are published.
+  const uiImages = uiManifest.images.filter((image) => css.includes(uiToken(image)));
   const uiArtwork = new Map();
-  for (const image of uiManifest.images) {
+  for (const image of uiImages) {
     const bytes = await read(image.path);
     if (createHash('sha256').update(bytes).digest('hex') !== image.sha256) {
       throw new ArtworkError(`UI artwork changed: ${image.path}`);
     }
     uiArtwork.set(image.path, bytes);
   }
-  const withUi = (styles, inline) => uiManifest.images.reduce((value, image) =>
-    value.replaceAll(`__${image.id.replaceAll('-', '_').toUpperCase()}_URL__`,
+  const withUi = (styles, inline) => uiImages.reduce((value, image) =>
+    value.replaceAll(uiToken(image),
       inline ? toDataUri(uiArtwork.get(image.path), 'image/png') : image.path), styles);
+
+  // Nicky Case's scratch transition, copied unchanged and checked like the
+  // artwork: assets/ui/scratch/README.md says where each file came from.
+  const scratchManifest = JSON.parse(await readText(SCRATCH_MANIFEST));
+  const transition = new Map();
+  for (const file of scratchManifest.files) {
+    const bytes = await read(file.path);
+    if (createHash('sha256').update(bytes).digest('hex') !== file.sha256) {
+      throw new ArtworkError(`Scratch transition asset changed: ${file.path}`);
+    }
+    transition.set(file.path, bytes);
+  }
+  const scratchUrls = (inline) => Object.fromEntries(scratchManifest.files.map((file) =>
+    [file.id, inline ? toDataUri(transition.get(file.path), file.mediaType) : file.path]));
 
   // Hosted: ordinary linked files, so the browser caches them between visits,
   // and the only output the project typeface is served from.
@@ -180,6 +198,7 @@ export async function buildOutputs(content) {
     scriptUrl: 'reader.js',
     sourcesHref: 'sources.html',
     sourceHref: hostedSourceHref,
+    scratch: scratchUrls(false),
   };
   const hosted = renderEssay(content, hostedOptions);
   const sources = renderSourcesPage(content, { ...hostedOptions, essayUrl: 'index.html' });
@@ -204,9 +223,10 @@ export async function buildOutputs(content) {
     sourceHref: (number) => `#${sourceAnchor(number)}`,
     fontLicense,
     fontNotice: FALLBACK_FONT.noticeAlone,
+    scratch: scratchUrls(true),
   });
 
-  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork };
+  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork, transition };
 }
 
 /** Every check the build refuses to publish without. */
@@ -341,6 +361,7 @@ async function main() {
     written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
     for (const [path, bytes] of outputs.artwork) written.push(await write(join(DIST, path), bytes));
     for (const [path, bytes] of outputs.uiArtwork) written.push(await write(join(DIST, path), bytes));
+    for (const [path, bytes] of outputs.transition) written.push(await write(join(DIST, path), bytes));
   }
 
   console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} scene(s) `

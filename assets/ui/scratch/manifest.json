@@ -1,0 +1,36 @@
+{
+  "schema": "scratch-transition-assets/v1",
+  "source": {
+    "work": "The Evolution of Trust, by Nicky Case",
+    "repository": "https://github.com/ncase/trust",
+    "commit": "6ec45d73befdb922bd40654dd1c1c903a953562f",
+    "license": "CC0-1.0",
+    "license_url": "https://github.com/ncase/trust/blob/gh-pages/LICENSE",
+    "behaviour": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/core/Scratcher.js"
+  },
+  "files": [
+    {
+      "id": "sheet",
+      "path": "assets/ui/scratch/scratch.png",
+      "mediaType": "image/png",
+      "width": 1422,
+      "height": 8000,
+      "sha256": "33dd5d4cc57ad7a60c9291350f1f2bd3bece572be970c8d84339bf6a657b3548",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/ui/scratch.png"
+    },
+    {
+      "id": "sound-in",
+      "path": "assets/ui/scratch/scratch_in.mp3",
+      "mediaType": "audio/mpeg",
+      "sha256": "55f6c0cd71e4511e252b1a25666852a334609af0dfe3b6ed1ca27d0101a6969b",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/scratch_in.mp3"
+    },
+    {
+      "id": "sound-out",
+      "path": "assets/ui/scratch/scratch_out.mp3",
+      "mediaType": "audio/mpeg",
+      "sha256": "5c2c714e463521538b5ef097cb9e7ea8e634a9a3eedfdfcbcdf5705ec1e1f987",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/scratch_out.mp3"
+    }
+  ]
+}
