@@ -679,10 +679,14 @@ test('the landing offers only what the approved landing lists', { skip }, () => 
             view: document.documentElement.getAttribute('data-view'),
             controls: controls(),
             landingActions: probe.all('.landing-actions a').filter(probe.visible).map(function (a) { return a.textContent; }),
+            sourcesActions: probe.all('[data-sources]').filter(probe.visible).length,
           };
         })
         .step(function () { probe.q('[data-begin]').click(); })
-        .step(function () { report.reading = controls(); })
+        .step(function () {
+          report.reading = controls();
+          report.readingSourcesActions = probe.all('[data-sources]').filter(probe.visible).length;
+        })
         .step(function () { probe.q('[data-back]').click(); })
         .step(function () { report.backOnLanding = { view: document.documentElement.getAttribute('data-view'), controls: controls() }; })
         .run(function () { probe.done(report); });`,
@@ -692,14 +696,21 @@ test('the landing offers only what the approved landing lists', { skip }, () => 
   // print the essay without ever meeting it. Sources & Credits is on the
   // approved landing, so it stays.
   assert.equal(value.onLanding.view, 'landing');
-  assert.deepEqual(value.onLanding.controls, [content.interface.sources]);
+  // One Begin and one Sources & Credits, which is what the approved landing
+  // lists. The bar's own Sources link is a second copy of the same
+  // destination, so the whole bar is withheld until there is something to
+  // read; otherwise a reader meets two identical actions.
+  assert.deepEqual(value.onLanding.controls, []);
   assert.deepEqual(value.onLanding.landingActions, [content.landing.beginLabel, content.landing.sourcesLabel]);
+  assert.equal(value.onLanding.sourcesActions, 1, 'the landing offers one route to the register, not two');
 
   assert.ok(value.reading.includes(content.interface.continuous), 'they arrive once there is something to read');
   assert.ok(value.reading.includes(content.interface.print));
+  assert.ok(value.reading.includes(content.interface.sources), 'including the way to the register');
+  assert.equal(value.readingSourcesActions, 1, 'and still one route to it, because the landing is off screen');
 
   assert.equal(value.backOnLanding.view, 'landing');
-  assert.deepEqual(value.backOnLanding.controls, [content.interface.sources], 'and go again on the way out');
+  assert.deepEqual(value.backOnLanding.controls, [], 'and the bar goes again on the way out');
 });
 
 test('the shared Sources control returns the reader to where they were', { skip }, () => {
@@ -824,6 +835,87 @@ test('reading continuously, the shared Sources control follows the scroll', { sk
   assert.equal(value.focusedOnLink, true);
   assert.equal(value.afterScrollBack, `sources.html?from=${ORDER[0]}&view=continuous`,
     'scrolling back to the top should follow the reader back');
+});
+
+test('the address a reader could copy opens the view they were in', { skip }, () => {
+  const scene = ORDER[12];
+
+  // What the address bar holds after switching into and out of continuous
+  // reading, taken from a real browser's own location rather than from what
+  // the script believes it wrote.
+  const { value: written } = essayPage({
+    width: 1024,
+    height: 900,
+    hash: `#${scene}`,
+    driver: `
+      var report = {};
+      probe
+        .step(function () { report.atScene = location.search + location.hash; })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () { report.continuous = location.search + location.hash; })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () { report.backToScene = location.search + location.hash; })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(written.atScene, `#${scene}`);
+  assert.equal(written.continuous, `?view=continuous#${scene}`, 'continuous reading is not in the address');
+  assert.equal(written.backToScene, `#${scene}`, 'a stale mode was left in the address');
+
+  // And each of those addresses, opened fresh, gives the view it describes.
+  for (const [address, expected] of [
+    [{ hash: `#${scene}` }, 'beat'],
+    [{ query: '?view=continuous', hash: `#${scene}` }, 'reading'],
+  ]) {
+    const { value } = essayPage({
+      width: 1024,
+      height: 900,
+      ...address,
+      driver: `
+        var report = {};
+        probe.step(function () {
+          report.view = document.documentElement.getAttribute('data-view');
+          report.visibleScenes = probe.all('[data-scene]').filter(probe.visible).length;
+          report.onScreen = probe.inViewport(probe.q('#${scene}'));
+        }).run(function () { probe.done(report); });`,
+    });
+    assert.equal(value.view, expected, `reloading ${JSON.stringify(address)} opened the wrong view`);
+    assert.equal(value.visibleScenes, expected === 'reading' ? ORDER.length : 1);
+    assert.equal(value.onScreen, true, 'and lands at the scene either way');
+  }
+});
+
+test('returning from Sources and switching view rewrites the address', { skip }, () => {
+  // The way back carries `?view=continuous`. Switching to the scene view has
+  // to take it out, or the URL contradicts the page and reloading or sharing
+  // it opens continuous reading again.
+  const scene = ORDER[18];
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    query: '?view=continuous',
+    hash: `#${scene}`,
+    driver: `
+      var report = {};
+      probe
+        .step(function () { report.arrived = { view: document.documentElement.getAttribute('data-view'), address: location.search + location.hash }; })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () {
+          report.afterSwitch = {
+            view: document.documentElement.getAttribute('data-view'),
+            address: location.search + location.hash,
+            scene: probe.sceneId(),
+          };
+        })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.arrived.view, 'reading');
+  assert.equal(value.arrived.address, `?view=continuous#${scene}`);
+
+  assert.equal(value.afterSwitch.view, 'beat');
+  assert.equal(value.afterSwitch.scene, scene);
+  assert.equal(value.afterSwitch.address, `#${scene}`, 'the stale mode survived the switch');
 });
 
 test('leaving continuous reading keeps the passage, not the way in', { skip }, () => {

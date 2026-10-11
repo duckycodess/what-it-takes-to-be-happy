@@ -78,6 +78,7 @@
   var readAgain = document.querySelector('[data-read-again]');
   var viewToggle = document.querySelector('[data-view-toggle]');
   var printButton = document.querySelector('[data-print]');
+  var controls = document.querySelector('.reader-controls');
   var landing = document.getElementById('landing');
 
   /* Every link to Sources & Credits, with the address it was written with.
@@ -161,14 +162,41 @@
     });
   }
 
-  /* --- The fragment ------------------------------------------------------ */
+  /* --- The address bar --------------------------------------------------- */
 
   var appliedFragment = null;
+
+  /**
+   * The query the address should carry, for the mode being read.
+   *
+   * The fragment says where the reader is; the query says how they are
+   * reading. Both have to be in the URL, because a reader can reload it,
+   * bookmark it or send it to someone, and a fragment alone would open the
+   * scene view every time. Continuous reading records `view=continuous`;
+   * leaving it clears that parameter rather than letting the old answer stand.
+   *
+   * Every other parameter is passed through untouched. This script owns one
+   * name in the query and has no business editing the rest.
+   */
+  function queryForView() {
+    var keep = [];
+    String(window.location.search || '').replace(/^\?/, '').split('&').forEach(function (pair) {
+      if (pair === '') return;
+      if (decodeURIComponent(pair.split('=')[0]) === 'view') return;
+      keep.push(pair);
+    });
+    if (view === 'reading') keep.push('view=continuous');
+    return keep.length > 0 ? '?' + keep.join('&') : '';
+  }
 
   function writeFragment(id, replace) {
     var samePlace = appliedFragment === id;
     appliedFragment = id;
-    var target = '#' + encodeURIComponent(id);
+    var query = queryForView();
+    // A URL with no query has to be written as a path: handing `pushState` a
+    // bare fragment keeps whatever query is already there, which is how a
+    // stale `view=continuous` used to survive a return to the scene view.
+    var target = (query === '' ? (window.location.pathname || '') : query) + '#' + encodeURIComponent(id);
     try {
       if (window.history && window.history.pushState) {
         if (samePlace || replace) window.history.replaceState({ view: view }, '', target);
@@ -180,7 +208,11 @@
     }
     if (samePlace) return;
     try {
-      window.location.hash = target;
+      // Without `pushState` only the fragment can be written, so the mode
+      // cannot be recorded in the address. The reader still moves and Back
+      // still works; a URL copied from here opens at the right scene in the
+      // scene view, which is the view it opens in by default anyway.
+      window.location.hash = '#' + encodeURIComponent(id);
     } catch (error) {
       /* A browser that allows neither keeps working; only Back is lost. */
     }
@@ -213,10 +245,17 @@
     // The approved landing carries the title, the opening drawing, Begin and
     // Sources & Credits, and nothing else. Reading controls belong to a
     // reader who has started reading: offered on the landing they would let
-    // someone print or switch view before meeting the essay at all. The
-    // landing's own Begin and Sources & Credits are in the page, not here.
+    // someone print or switch view before meeting the essay at all.
+    //
+    // The whole bar goes, not only those two. Its Sources & Credits link is a
+    // second copy of the one the landing itself renders, and the approved
+    // landing lists one of each action; the landing's own Begin and Sources &
+    // Credits are in the page, where the script does not touch them. Once the
+    // reader is reading, the landing is off screen and the bar's copy is the
+    // only one they can reach.
     if (viewToggle) viewToggle.hidden = view === 'landing';
     if (printButton) printButton.hidden = view === 'landing';
+    if (controls) controls.hidden = view === 'landing';
   }
 
   function setView(nextView) {

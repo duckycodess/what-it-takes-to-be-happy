@@ -473,8 +473,11 @@ export function openDocument(html, options = {}) {
   const location = {
     _hash: options.hash || '',
     // A citation link carries the originating scene and reading mode in a
-    // query, and the Sources & Credits page reads them back from here.
+    // query, and the Sources & Credits page reads them back from here. The
+    // essay writes it too: the fragment is where the reader is and the query
+    // is how they are reading, so a reloaded or shared URL opens both.
     search: options.search || '',
+    pathname: options.pathname || '/index.html',
     get hash() { return this._hash; },
     set hash(value) {
       const next = String(value).startsWith('#') ? String(value) : `#${value}`;
@@ -485,7 +488,7 @@ export function openDocument(html, options = {}) {
       // reason it is a usable fallback when `pushState` is refused.
       // Assigning the fragment carries no state object, which is exactly
       // why the script has to be able to infer the view without one.
-      page.historyEntries.push({ hash: next, state: null });
+      page.historyEntries.push({ hash: next, search: this.search, state: null });
       window.dispatchEvent({ type: 'hashchange' });
     },
   };
@@ -495,17 +498,33 @@ export function openDocument(html, options = {}) {
     replaceState(state, title, url) { apply(url, state, true); },
   };
 
+  /**
+   * What `pushState`/`replaceState` do to the address.
+   *
+   * A browser resolves the given URL against the current one and updates the
+   * whole address, not only its fragment: `?view=continuous#s105` changes the
+   * query *and* the fragment, and `/index.html#s105` clears the query. The
+   * script relies on both, so this models both rather than treating every
+   * argument as a fragment.
+   */
   function apply(url, state, replace) {
     const next = String(url);
-    location._hash = next.startsWith('#') ? next : `#${next}`;
-    const entry = { hash: location._hash, state: state ?? null };
+    const hashAt = next.indexOf('#');
+    const hash = hashAt < 0 ? '' : next.slice(hashAt);
+    const before = hashAt < 0 ? next : next.slice(0, hashAt);
+
+    if (before.startsWith('?')) location.search = before;
+    else if (before !== '') location.search = '';          // a path clears the query
+    if (hash !== '' || before !== '') location._hash = hash;
+
+    const entry = { hash: location._hash, search: location.search, state: state ?? null };
     if (replace) page.historyEntries[page.historyEntries.length - 1] = entry;
     else page.historyEntries.push(entry);
   }
 
   // Loading a document with a fragment is itself a history entry, so Back
   // from the first move returns to the deep link rather than to nothing.
-  page.historyEntries.push({ hash: location._hash, state: null });
+  page.historyEntries.push({ hash: location._hash, search: location.search, state: null });
 
   if (options.history === false) {
     delete history.pushState;
@@ -568,6 +587,7 @@ export function openDocument(html, options = {}) {
     page.historyEntries.pop();
     const entry = page.historyEntries[page.historyEntries.length - 1];
     location._hash = entry.hash;
+    if (entry.search !== undefined) location.search = entry.search;
     window.dispatchEvent({ type: 'popstate', state: entry.state });
     window.dispatchEvent({ type: 'hashchange' });
     page.settle();
@@ -587,6 +607,8 @@ export function openDocument(html, options = {}) {
 
   /* --- Reading the page -------------------------------------------------- */
 
+  /** The address as a reader would copy it: query and fragment together. */
+  page.address = () => `${location.search}${location.hash}`;
   page.view = () => document.documentElement.getAttribute('data-view');
   page.currentScene = () => document.querySelector('[data-scene][data-current]');
   page.currentSceneId = () => {

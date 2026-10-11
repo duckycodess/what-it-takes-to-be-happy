@@ -270,16 +270,28 @@ test('the reading controls are not offered before the reader has begun', () => {
   assert.equal(page.find('[data-back]').hidden, true);
   assert.equal(page.find('[data-next]').hidden, true);
   assert.equal(page.find('[data-read-again]').hidden, true);
-  // Sources & Credits is on the approved landing, so it stays reachable.
-  assert.equal(page.find('.reader-controls [data-sources]').hidden, false);
+  // The bar goes with them: its Sources & Credits link is a second copy of
+  // the one the landing itself renders, and the approved landing lists one of
+  // each action.
+  assert.equal(page.find('.reader-controls').hidden, true);
+  assert.equal(page.find('.landing-actions [data-sources]').hidden, false, 'the landing keeps its own');
+  assert.deepEqual(
+    page.find('.landing-actions').querySelectorAll('a').map((link) => link.textContent),
+    ['Begin', 'Sources & Credits'],
+  );
 
   page.click(page.find('[data-begin]'));
+  assert.equal(page.find('.reader-controls').hidden, false);
   assert.equal(page.find('[data-view-toggle]').hidden, false);
   assert.equal(page.find('[data-print]').hidden, false);
+  // And now the bar's copy is the only one a reader can reach, because the
+  // landing is off screen.
+  assert.equal(page.find('.reader-controls [data-sources]').hidden, false);
 
   // And they go again if the reader leaves the first scene back to the landing.
   page.click(page.find('[data-back]'));
   assert.equal(page.view(), 'landing');
+  assert.equal(page.find('.reader-controls').hidden, true);
   assert.equal(page.find('[data-view-toggle]').hidden, true);
   assert.equal(page.find('[data-print]').hidden, true);
 });
@@ -355,6 +367,75 @@ test('the first, middle and final citing scenes all return correctly', () => {
 });
 
 /* --- The address bar ----------------------------------------------------- */
+
+test('the address carries the reading mode, so reloading it opens the same view', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.address(), '#s088', 'the scene view is the default, and needs no parameter');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.address(), '?view=continuous#s088', 'continuous reading has to be in the URL to survive a reload');
+
+  // And opening that address really does come back to continuous reading.
+  const reloaded = openDocument(essay, { search: '?view=continuous', hash: '#s088' });
+  assert.equal(reloaded.view(), 'reading');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.address(), '#s088', 'and leaving it has to take the parameter out again');
+});
+
+test('a stale mode in the address is cleared, not left to contradict the view', () => {
+  // The way back from Sources & Credits carries the mode the reader left in.
+  // Switching out of it has to rewrite the address, or the URL in the bar
+  // says continuous while the reader is looking at one scene -- and reloading
+  // or sending it opens the wrong view.
+  const page = openDocument(essay, { search: '?view=continuous', hash: '#s105' });
+  assert.equal(page.view(), 'reading');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.address(), '#s105', 'the stale parameter survived the switch');
+
+  const reloaded = openDocument(essay, { hash: '#s105' });
+  assert.equal(reloaded.view(), 'beat');
+});
+
+test('a parameter this script does not own is left alone', () => {
+  const page = openDocument(essay, { search: '?utm_source=chat&view=continuous', hash: '#s105' });
+  assert.equal(page.view(), 'reading');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'beat');
+  assert.ok(page.address().includes('utm_source=chat'), 'an unrelated parameter was discarded');
+  assert.ok(!page.address().includes('view=continuous'), 'and the mode was not updated');
+  assert.equal(page.address(), '?utm_source=chat#s105');
+
+  // Still there when the mode goes back on.
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.address(), '?utm_source=chat&view=continuous#s105');
+});
+
+test('Back leaves no stale mode behind in the address', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  page.click(page.find('[data-next]'));
+  assert.equal(page.address(), '#s089');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.address(), '?view=continuous#s089');
+
+  // How you read is not a place, so switching the view replaces the entry
+  // rather than adding one: Back goes to the scene before, not back out of
+  // continuous reading. What matters here is that the address it returns to
+  // is the address that entry was written with -- no parameter left over.
+  page.goBack();
+  assert.equal(page.currentSceneId(), 's088');
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.address(), '#s088', 'Back landed on a scene with a continuous-reading URL');
+});
 
 test('a deep link opens that scene without stealing focus', () => {
   const page = open({ hash: '#s120' });
