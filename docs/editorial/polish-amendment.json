@@ -1,0 +1,89 @@
+{
+  "schema": "happiness-polish-amendment/v1",
+  "issue": 20,
+  "owner_authorization": "Settled grilling Q1–Q9; owner explicitly requested ticket and direct implementation on separate PR on11October2026.",
+  "source_removals": [
+    "Research informs this argument; it does not measure whether our own lives are happy. The numbered entries state what we read. Philosophical frameworks, published findings and personal reflections serve different purposes. Our examples and proposals are applications of that material, not new research results. We have not evaluated a policy or run the proposed campus project.",
+    "Their positions come from the group notes; the illustrations do not report events in their lives. Our use of habitus follows the class lens recorded in those notes, rather than an original formulation we read for this essay."
+  ],
+  "credit_items": [
+    "[Futura Handwritten](https://www.dafont.com/futurahandwritten.font) is by Billy Snyder. The font is not presented as CC0 or OFL.",
+    "The drawings are original generated illustrations based on our character study.",
+    "Visual reference: Nicky Case's [The Evolution of Trust](https://ncase.me/trust/)."
+  ],
+  "sound_label": "Sound",
+  "art": [
+    {
+      "scene": "s202",
+      "ref": "B01",
+      "after_block": 1
+    },
+    {
+      "scene": "s203",
+      "ref": "B02",
+      "after_block": 1
+    },
+    {
+      "scene": "s207",
+      "ref": "B03",
+      "after_block": 1
+    },
+    {
+      "scene": "s210",
+      "ref": "B04",
+      "after_block": 1
+    },
+    {
+      "scene": "s212",
+      "ref": "B05",
+      "after_block": 1
+    },
+    {
+      "scene": "s216",
+      "ref": "B06",
+      "after_block": 1
+    },
+    {
+      "scene": "s221",
+      "ref": "B07",
+      "after_block": 1
+    },
+    {
+      "scene": "s222",
+      "ref": "B08",
+      "after_block": 1
+    },
+    {
+      "scene": "s223",
+      "ref": "B09",
+      "after_block": 1
+    },
+    {
+      "scene": "s224",
+      "ref": "B10",
+      "after_block": 1
+    },
+    {
+      "scene": "s225",
+      "ref": "B11",
+      "after_block": 1
+    },
+    {
+      "scene": "s228",
+      "ref": "B12",
+      "after_block": 1
+    },
+    {
+      "scene": "s229",
+      "ref": "B13",
+      "after_block": 1
+    },
+    {
+      "scene": "s230",
+      "ref": "B14",
+      "after_block": 1
+    }
+  ],
+  "main_prose": "All123paragraphs,31titles,26sourceidentities and45relocations remain exact; this amendment changes only Sources copy, supplemental art and interface behavior.",
+  "production_release": "Follow-up preview and owner review pending."
+}

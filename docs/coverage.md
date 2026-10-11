@@ -31,35 +31,35 @@ The remaining 122 blocks are narration, with member positions attributed in pros
 | Scene | Title | Layout |
 | --- | --- | --- |
 | `s201` | Nothing to show for it | support |
-| `s202` | Three different answers | text |
-| `s203` | The lives we are speaking from | text |
+| `s202` | Three different answers | support |
+| `s203` | The lives we are speaking from | support |
 | `s204` | Feeling good, looking back | support |
 | `s205` | Why choose something difficult? | support |
 | `s206` | Having a say | support |
-| `s207` | Do needs have to wait their turn? | text |
+| `s207` | Do needs have to wait their turn? | support |
 | `s208` | Choosing effort, carrying obligations | pair |
 | `s209` | Rest without repayment | support |
-| `s210` | Who decides what counts? | text |
+| `s210` | Who decides what counts? | support |
 | `s211` | When a wish becomes a standard | support |
-| `s212` | What am I buying? | text |
+| `s212` | What am I buying? | support |
 | `s213` | A phone does more than one thing | comparison |
 | `s214` | Being happy on command | support |
 | `s215` | The small things someone remembers | support |
-| `s216` | Company without a quota | text |
+| `s216` | Company without a quota | support |
 | `s217` | Who does the remembering? | support |
 | `s218` | Saying no without leaving | support |
 | `s219` | The same invitation | comparison |
 | `s220` | When someone else does the work | pair |
-| `s221` | Money changes the afternoon | text |
-| `s222` | Available is not usable | text |
-| `s223` | Who sets the options? | text |
-| `s224` | Possible, unequally | text |
-| `s225` | What we can change together | text |
+| `s221` | Money changes the afternoon | support |
+| `s222` | Available is not usable | support |
+| `s223` | Who sets the options? | support |
+| `s224` | Possible, unequally | support |
+| `s225` | What we can change together | support |
 | `s226` | A place to stay without buying anything | support |
 | `s227` | Who carries the improvement? | pair |
-| `s228` | Allowing the proposal to fail | text |
-| `s229` | What happiness consists of | text |
-| `s230` | Where our answers still differ | text |
+| `s228` | Allowing the proposal to fail | support |
+| `s229` | What happiness consists of | support |
+| `s230` | Where our answers still differ | support |
 | `s231` | What made the afternoon possible | support |
 
 ## Research
@@ -101,10 +101,10 @@ All 20 inspected assets remain registered. A04 and A11 are unused in the revised
 
 | Reference | Asset | Where | Cutouts | Labels |
 | --- | --- | --- | --- | --- |
-| `A01` | `rewrite-opening-v1` | `landing` `s201` `s231` | 1 | TJ, Koj, Vier |
+| `A01` | `rewrite-opening-v1` | `landing`, `s201`, `s231` | 1 | TJ, Koj, Vier |
 | `A02` | `rewrite-mixed-day-v1` | `s204` | 1 | — |
-| `A03` | `rewrite-chosen-study-v1` | `s205` `s208` | 1 | Koj |
-| `A04` | `rewrite-agency-v1` | — | 1 | Vier |
+| `A03` | `rewrite-chosen-study-v1` | `s205`, `s208` | 1 | Koj |
+| `A04` | `rewrite-agency-v1` | Unused in this revision | 1 | Vier |
 | `A05` | `rewrite-playing-v1` | `s206` | 1 | TJ |
 | `A06` | `rewrite-required-work-v1` | `s208` | 1 | — |
 | `A07` | `rewrite-rest-v1` | `s209` | 1 | TJ |
@@ -112,7 +112,7 @@ All 20 inspected assets remain registered. A04 and A11 are unused in the revised
 | `A09a` | `rewrite-phone-connection-v1` | `s213` | 1 | TJ |
 | `A09b` | `rewrite-phone-comparison-v1` | `s213` | 1 | TJ |
 | `A10` | `rewrite-cheer-pressure-v1` | `s214` | 1 | Cheer up! |
-| `A11` | `rewrite-joy-and-pressure-v1` | — | 1 | — |
+| `A11` | `rewrite-joy-and-pressure-v1` | Unused in this revision | 1 | — |
 | `A12` | `rewrite-shared-meal-v1` | `s215` | 1 | TJ, Koj, Vier |
 | `A13` | `rewrite-care-work-v1` | `s217` | 1 | — |
 | `A14` | `rewrite-solitude-v1` | `s218` | 1 | — |
@@ -121,6 +121,22 @@ All 20 inspected assets remain registered. A04 and A11 are unused in the revised
 | `A16` | `rewrite-time-transfer-v1` | `s220` | 2 | — |
 | `A17` | `rewrite-campus-space-v1` | `s226` | 1 | — |
 | `A18` | `rewrite-space-work-v1` | `s227` | 2 | — |
+| `B01` | `polish-three-answers` | `s202` | 1 | TJ, Koj, Vier |
+| `B02` | `polish-student-standpoint` | `s203` | 1 | TJ, Koj, Vier |
+| `B03` | `polish-needs-together` | `s207` | 1 | — |
+| `B04` | `polish-pleasure-judgment` | `s210` | 1 | — |
+| `B05` | `polish-purchase-purpose` | `s212` | 1 | TJ |
+| `B06` | `polish-chosen-company` | `s216` | 1 | — |
+| `B07` | `polish-fare-and-friendship` | `s221` | 1 | — |
+| `B08` | `polish-real-access` | `s222` | 1 | — |
+| `B09` | `polish-setting-options` | `s223` | 1 | — |
+| `B10` | `polish-unequal-room` | `s224` | 1 | — |
+| `B11` | `polish-shared-preparation` | `s225` | 1 | — |
+| `B12` | `polish-proposal-review` | `s228` | 1 | — |
+| `B13` | `polish-many-parts-of-life` | `s229` | 1 | — |
+| `B14` | `polish-answers-remain` | `s230` | 1 | TJ, Koj, Vier |
+
+All31parts have supporting artwork; fourteenBbriefs follow owner-confirmed illustration amendment. A04/A11 remain unused provenance.
 
 ## Fictional figures
 

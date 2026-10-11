@@ -37,6 +37,7 @@
 import { createHash } from 'node:crypto';
 
 export const SCHEMA_ID = 'happiness-essay-content/v3';
+export const POLISH_AMENDMENT = { path: 'docs/editorial/polish-amendment.json', sha256: '3234f3285e84c542e3c3137f81d8557622c98675484d91e63600d3c87fb94c50' };
 
 /** The approved essay this content is transferred from, in both its forms. */
 export const APPROVED_ESSAY = {
@@ -507,7 +508,7 @@ function reaches(recorded, url) {
  * @param {object} input.sourceMap `docs/redesign/source-map.json`
  * @returns {object} a content document
  */
-export function transfer({ markdown, handoffJson, manifests, sourceMap }) {
+export function transfer({ markdown, handoffJson, manifests, sourceMap, amendmentJson }) {
   const markdownDigest = sha256(markdown);
   if (markdownDigest !== APPROVED_ESSAY.markdown.sha256) {
     fail(`the essay at ${APPROVED_ESSAY.markdown.path} is ${markdownDigest}, `
@@ -620,7 +621,7 @@ export function transfer({ markdown, handoffJson, manifests, sourceMap }) {
 
   const opening = assetsByRef.get('A01') ?? fail('the opening asset A01 was not delivered');
 
-  return {
+  const document = {
     schema: SCHEMA_ID,
     source: {
       essay: { ...APPROVED_ESSAY.markdown },
@@ -642,6 +643,30 @@ export function transfer({ markdown, handoffJson, manifests, sourceMap }) {
     sourcesPage: readSourcesPage(handoff, sources, ui),
     measure: { words: countWords(scenes), rule: WORD_COUNT_RULE },
   };
+  if (amendmentJson !== undefined) {
+    if (sha256(amendmentJson) !== POLISH_AMENDMENT.sha256) fail('the owner polish amendment changed');
+    const amendment = JSON.parse(amendmentJson);
+    const page = document.sourcesPage;
+    const intro = visibleRich(page.intro);
+    const classNote = visibleRich(page.classNote);
+    if (intro !== amendment.source_removals[0]) fail('the requested intro removal no longer matches');
+    if (!classNote.includes(amendment.source_removals[1])) fail('the requested class note removal no longer matches');
+    page.intro = [];
+    page.classNote = [{ text: classNote.replace(amendment.source_removals[1], '').trim() }];
+    page.creditItems = amendment.credit_items.map(noteParts);
+    page.credits = page.creditItems.flatMap((item, i) => i ? [{ text: ' ' }, ...item] : item);
+    document.interface.sound = amendment.sound_label;
+    document.source.amendment = { ...POLISH_AMENDMENT };
+    for (const entry of amendment.art) {
+      const scene = scenes.find((part) => part.id === entry.scene);
+      if (!scene || scene.visual.layout !== 'text') fail(`${entry.scene}: amendment only supplies previously empty artwork`);
+      if (!assetsByRef.has(entry.ref)) fail(`${entry.scene}: ${entry.ref} has not been delivered`);
+      scene.visual = { layout: 'support', views: [{ ref: entry.ref, image: 0, label: null }], control: null, afterBlock: entry.after_block };
+    }
+  }
+  return document;
 }
+
+const visibleRich = (parts) => parts.map((part) => part.text ?? part.link).join('');
 
 export { TransferError };

@@ -18,7 +18,7 @@ broken document cannot reach a build.
 ## What this document is, and is not
 
 **It is a transfer, not a manuscript.** Every reader-facing sentence in it comes from
-[the approved essay](editorial/full-essay-v2.md) and [ordered handoff](editorial/full-essay-handoff-v2.json), whose content hashes the document
+[the approved essay](editorial/full-essay-v2.md) and [ordered handoff](editorial/full-essay-handoff-v2.json), plus the explicit [polish amendment](editorial/polish-amendment.json), whose content hashes the document
 records and `node src/tools/transfer.js --check` re-verifies. `src/content/transfer.js` builds the
 document from those approved files; nothing is typed into `content/content.json` by hand.
 
@@ -35,7 +35,7 @@ file's history and in [the storyboard](storyboard.md); nothing in the current bu
 ## What is in the repository today
 
 `content/content.json` is the **complete essay**: eight chapters, 31 parts (`s201`–`s231`) in their
-authored order, 26 numbered sources, and 20 inspected generated assets. It measures 8,595 main-path
+authored order, 26 numbered sources, and 34 inspected generated passage assets and two separate decorative UI bitmaps. It measures 8,595 main-path
 words under the rule it records. All 45 former scene addresses relocate to their corresponding new part; source identities keep their meanings.
 
 ## Document shape
@@ -44,12 +44,12 @@ words under the rule it records. All 45 former scene addresses relocate to their
 {
   "schema":      "happiness-essay-content/v3",
   "source":      { essay: { path, sha256 }, handoff: { path, sha256 }, supersedes: { path, sha256 } },           // the approved script, by content hash
-  "interface":   { ... },                    // the fourteen approved interface strings
+  "interface":   { ... },                    // the original fourteen interface strings plus the owner-approved Sound label
   "landing":     { title, beginLabel, beginSceneId, sourcesLabel, visual },
   "chapters":    [ ... ],
   "scenes":      [ ... ],
   "assets":      [ ... ],
-  "sourcesPage": { title, intro, classNote, credits, methodNote, returnLabel, sources },
+  "sourcesPage": { title, intro, classNote, credits, creditItems, methodNote, returnLabel, sources },
   "relocations": [ { from, to } ],           // all former addresses
   "measure":     { words, rule }
 }
@@ -66,7 +66,7 @@ reconstructs endorsed positions from group notes.
 | --- | --- |
 | Scene | `s201`–`s231`, matching `^s\d{3}$`, unique, in authored reading order |
 | Chapter | `c1`–`c8`, numbered by position, each anchored at the scene the approved script anchors it at |
-| Asset | A brief reference `A01`–`A18`, optionally suffixed `a`/`b` for a two-state comparison |
+| Asset | A brief reference `A01`–`A18` or `B01`–`B14`, optionally suffixed `a`/`b` for a two-state comparison |
 | Asset folder | A lowercase hyphenated id under `assets/generated/` |
 | Source | A register identity `R01`–`R32` from [the audit](research.md), carried in the data |
 
@@ -184,3 +184,7 @@ FAIL test/fixtures/invalid-content.json: 19 error(s)
 [`test/fixtures/invalid-content.json`](../test/fixtures/invalid-content.json) is a deliberately
 broken document carrying one of each kind of fault, so the command's own reporting is tested rather
 than assumed.
+
+## Explicit polish amendment
+
+Transfer verifies the immutable original essay and handoff hashes, then applies the separately hash-bound issue #20 amendment. Only its exact Sources removals, three rich-text credit list items, `Sound` label and fourteen originally text-only visual mappings may change. Every main-path block, speaker, scene title, chapter order, source identity and old-address relocation remains inherited verbatim. The amended Sources intro is an empty list; an unamended document still requires its original intro. Decorative UI assets are verified by the build from their own manifest and do not become passage illustrations.

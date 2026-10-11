@@ -63,6 +63,7 @@ export const DIST = join(repoRoot, 'dist');
 
 const STYLESHEET = 'src/runtime/styles.css';
 const READER_SCRIPT = 'src/runtime/reader.js';
+const TRUST_MANIFEST = 'assets/ui/trust/manifest.json';
 
 const read = (path) => readFile(join(repoRoot, path));
 const readText = (path) => readFile(join(repoRoot, path), 'utf8');
@@ -154,20 +155,52 @@ export async function buildOutputs(content) {
   ]);
 
   const artwork = await readSelectedArtwork(content);
+  const uiManifest = JSON.parse(await readText('assets/ui/polish/manifest.json'));
+  const uiToken = (image) => `__${image.id.replaceAll('-', '_').toUpperCase()}_URL__`;
+  // Only the bitmaps the stylesheet still asks for are published.
+  const uiImages = uiManifest.images.filter((image) => css.includes(uiToken(image)));
+  const uiArtwork = new Map();
+  for (const image of uiImages) {
+    const bytes = await read(image.path);
+    if (createHash('sha256').update(bytes).digest('hex') !== image.sha256) {
+      throw new ArtworkError(`UI artwork changed: ${image.path}`);
+    }
+    uiArtwork.set(image.path, bytes);
+  }
+  const withUi = (styles, inline) => uiImages.reduce((value, image) =>
+    value.replaceAll(uiToken(image),
+      inline ? toDataUri(uiArtwork.get(image.path), 'image/png') : image.path), styles);
+
+  // Nicky Case's scratch transition and speaker, copied unchanged and checked
+  // like the artwork: assets/ui/trust/README.md says where each came from.
+  const trustManifest = JSON.parse(await readText(TRUST_MANIFEST));
+  const trust = new Map();
+  for (const file of trustManifest.files) {
+    const bytes = await read(file.path);
+    if (createHash('sha256').update(bytes).digest('hex') !== file.sha256) {
+      throw new ArtworkError(`Trust UI asset changed: ${file.path}`);
+    }
+    trust.set(file.path, bytes);
+  }
+  const trustUrls = (inline) => Object.fromEntries(trustManifest.files.map((file) =>
+    [file.id, inline ? toDataUri(trust.get(file.path), file.mediaType) : file.path]));
+  const withTrust = (styles, inline) => Object.entries(trustUrls(inline)).reduce((value, [id, url]) =>
+    value.replaceAll(`__TRUST_${id.replaceAll('-', '_').toUpperCase()}_URL__`, url), styles);
 
   // Hosted: ordinary linked files, so the browser caches them between visits,
   // and the only output the project typeface is served from.
-  const hostedCss = withFontUrl(
+  const hostedCss = withTrust(withUi(withFontUrl(
     withFontUrl(css, FONT_URL_TOKEN, FALLBACK_FONT.published),
     PROJECT_FONT_URL_TOKEN,
     PROJECT_FONT.published,
-  );
+  ), false), false);
   const hostedOptions = {
     mode: 'hosted',
     stylesheetUrl: 'styles.css',
     scriptUrl: 'reader.js',
     sourcesHref: 'sources.html',
     sourceHref: hostedSourceHref,
+    trust: trustUrls(false),
   };
   const hosted = renderEssay(content, hostedOptions);
   const sources = renderSourcesPage(content, { ...hostedOptions, essayUrl: 'index.html' });
@@ -177,11 +210,11 @@ export async function buildOutputs(content) {
   // covers this site using the face, not a copy of the file travelling inside
   // a document handed to someone else, so the hosted-only region of the
   // stylesheet leaves here and the bundled fallback sets everything.
-  const offlineCss = withFontUrl(
+  const offlineCss = withTrust(withUi(withFontUrl(
     withoutHostedOnly(css, HOSTED_ONLY_CSS),
     FONT_URL_TOKEN,
     toDataUri(fontBytes, FALLBACK_FONT.mediaType),
-  );
+  ), true), true);
   const offline = renderEssay(content, {
     mode: 'offline',
     inlineStyles: offlineCss,
@@ -192,9 +225,10 @@ export async function buildOutputs(content) {
     sourceHref: (number) => `#${sourceAnchor(number)}`,
     fontLicense,
     fontNotice: FALLBACK_FONT.noticeAlone,
+    trust: trustUrls(true),
   });
 
-  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork };
+  return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork, trust };
 }
 
 /** Every check the build refuses to publish without. */
@@ -328,6 +362,8 @@ async function main() {
     written.push(await write(join(DIST, FALLBACK_FONT.published), outputs.fontBytes));
     written.push(await write(join(DIST, FALLBACK_FONT_LICENSE.published), outputs.fontLicense));
     for (const [path, bytes] of outputs.artwork) written.push(await write(join(DIST, path), bytes));
+    for (const [path, bytes] of outputs.uiArtwork) written.push(await write(join(DIST, path), bytes));
+    for (const [path, bytes] of outputs.trust) written.push(await write(join(DIST, path), bytes));
   }
 
   console.log(`Built ${content.chapters.length} chapter(s) and ${content.scenes.length} scene(s) `

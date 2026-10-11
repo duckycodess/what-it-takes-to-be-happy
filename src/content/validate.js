@@ -543,7 +543,10 @@ export function validateContent(doc) {
   errors.text('.sourcesPage.title', page.title);
   errors.text('.sourcesPage.returnLabel', page.returnLabel);
   for (const key of ['intro', 'classNote', 'credits', 'methodNote']) {
-    if (page[key] !== undefined) checkRichText(errors, `.sourcesPage.${key}`, page[key]);
+    if (page[key] !== undefined && !(key === 'intro' && Array.isArray(page[key]) && page[key].length === 0 && doc.source?.amendment)) checkRichText(errors, `.sourcesPage.${key}`, page[key]);
+  }
+  if (page.creditItems !== undefined) {
+    if (errors.list_('.sourcesPage.creditItems', page.creditItems)) page.creditItems.forEach((item, i) => checkRichText(errors, `.sourcesPage.creditItems[${i}]`, item));
   }
 
   const sources = Array.isArray(page.sources) ? page.sources : [];

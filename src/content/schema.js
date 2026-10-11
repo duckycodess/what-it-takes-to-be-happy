@@ -42,7 +42,7 @@ export const PART_KEY_PATTERN = /^v2-c[1-8]-p\d{1,2}$/;
 export const CHAPTER_ID_PATTERN = /^c[1-8]$/;
 
 /** An art reference as the approved brief table writes it. */
-export const ASSET_REF_PATTERN = /^A\d{2}[ab]?$/;
+export const ASSET_REF_PATTERN = /^[AB]\d{2}[ab]?$/;
 
 /** A generated asset's folder name under `assets/generated/`. */
 export const ASSET_ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

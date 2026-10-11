@@ -1,0 +1,35 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B04",
+  "id": "polish-pleasure-judgment",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "f5a740a1c9bde5d652403e624d3431099baccb912a28e7b58e1eb02ec57d3dc3",
+    "alt": "Fictional figures consider a game and a book while another carries their shared snacks.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "d8ae8aa46bc76fe20facce7d868c671bab8dcc5150fc86565b85f2346dcebd5d"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "plain fictional figures inspected; member hair removed",
+    "owner_inspected": false
+  }
+}

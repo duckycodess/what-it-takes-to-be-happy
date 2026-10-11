@@ -30,6 +30,131 @@
 
   var root = document.documentElement;
 
+  // Sound, on until the reader turns it off, as in The Evolution of Trust. No
+  // autoplay, remote samples or saved choice: nothing is heard before the
+  // reader presses, taps or types something. Every sound is one of Trust's
+  // own recordings: a button press plays one of its three clicks at random,
+  // and a page transition plays its two scratches. A browser that cannot play
+  // sound still offers the complete essay.
+  var soundButton = document.querySelector('[data-sound]');
+  var soundOn = true;
+  var audio = null;
+  var AudioContextType = window.AudioContext || window.webkitAudioContext;
+  var OfflineAudioContextType = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  var decoder = null;
+  var CLIPS = ['scratch-in', 'scratch-out', 'click-1', 'click-2', 'click-3'];
+  // Trust plays its recordings at full volume, which is loud beside a page
+  // of reading. Every clip is played at this fraction of it instead.
+  var SOUND_VOLUME = 0.3;
+  var clipBytes = {};
+  var clips = {};
+  var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function clipSource(name) {
+    return soundButton && soundButton.getAttribute('data-clip-' + name);
+  }
+  /* A page opened from disk cannot fetch its neighbours, and a browser
+     without Web Audio cannot decode them; both get plain audio elements. */
+  function clipElement(name) {
+    var url = clipSource(name);
+    if (!url || !window.Audio) return;
+    var element = new window.Audio(url);
+    element.preload = 'auto';
+    element.volume = SOUND_VOLUME;
+    clips[name] = element;
+  }
+  /* Fetched as the page loads, so the first press or move has its sound
+     ready rather than racing a download that only started when asked for. */
+  function preloadClips() {
+    CLIPS.forEach(function (name) {
+      var url = clipSource(name);
+      if (!url) return;
+      if (!window.fetch || !AudioContextType) { clipElement(name); return; }
+      window.fetch(url)
+        .then(function (response) {
+          if (!response.ok) throw new Error('Sound unavailable');
+          return response.arrayBuffer();
+        })
+        .then(function (data) { clipBytes[name] = data; decodeClips(); })
+        .catch(function () { clipElement(name); });
+    });
+  }
+  /* Decoded straight away by an offline context, which needs no gesture, so
+     a clip is ready before the press that plays it. A browser without one
+     decodes in the audio context the first gesture opens. */
+  function decodeClips() {
+    if (!decoder && !audio && OfflineAudioContextType) {
+      try { decoder = new OfflineAudioContextType(1, 1, 44100); } catch (error) { decoder = null; }
+    }
+    var context = decoder || audio;
+    if (!context) return;
+    Object.keys(clipBytes).forEach(function (name) {
+      var data = clipBytes[name];
+      delete clipBytes[name];
+      try {
+        var decoding = context.decodeAudioData(data, function (buffer) { clips[name] = buffer; },
+          function () { clipElement(name); });
+        if (decoding && decoding.catch) decoding.catch(function () {});
+      } catch (error) { clipElement(name); }
+    });
+  }
+  /* Browsers keep sound shut until the reader does something, and some shut
+     it again later. Every press, tap or key opens it, in time for the click
+     or move that gesture causes. */
+  function unlockAudio() {
+    if (!soundOn || !AudioContextType) return;
+    try {
+      if (!audio) {
+        audio = new AudioContextType();
+        decodeClips();
+      }
+      if (audio.state === 'suspended') {
+        var resumed = audio.resume();
+        if (resumed && resumed.catch) resumed.catch(function () {});
+      }
+    } catch (error) { audio = null; }
+  }
+  /** Plays a clip that has loaded; one that has not is skipped, never late. */
+  function play(name) {
+    var clip = soundOn && clips[name];
+    if (!clip) return;
+    try {
+      if (clip.play) {
+        clip.currentTime = 0;
+        var playing = clip.play();
+        if (playing && playing.catch) playing.catch(function () {});
+        return;
+      }
+      if (!audio) return;
+      var source = audio.createBufferSource();
+      var gain = audio.createGain();
+      gain.gain.value = SOUND_VOLUME;
+      source.buffer = clip;
+      source.connect(gain);
+      gain.connect(audio.destination);
+      source.onended = function () { source.disconnect(); gain.disconnect(); };
+      source.start();
+    } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
+  }
+  /** As Trust's Button.js: one of its three clicks, chosen at random. */
+  function click() {
+    play('click-' + (1 + Math.floor(Math.random() * 3)));
+  }
+  function playScratch(phase) {
+    play('scratch-' + phase);
+  }
+  preloadClips();
+  ['pointerdown', 'touchend', 'keydown', 'click'].forEach(function (type) {
+    document.addEventListener(type, unlockAudio, true);
+  });
+  if (soundButton) soundButton.addEventListener('click', function () {
+    soundOn = !soundOn;
+    soundButton.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
+    if (soundOn) { unlockAudio(); click(); }
+  });
+  document.addEventListener('click', function (event) {
+    if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) click();
+  });
+
   /** Reads one parameter out of a query string without URLSearchParams. */
   function param(search, name) {
     var pairs = String(search || '').replace(/^\?/, '').split('&');
@@ -86,6 +211,163 @@
   var railRestore = document.querySelector('[data-rail-restore]');
   var launcher = document.querySelector('.rail-launcher');
   var landing = document.getElementById('landing');
+  var essayBody = document.querySelector('.essay-body');
+  var scratcher = document.querySelector('[data-scratcher]');
+
+  /* --- The scratch transition --------------------------------------------
+     Nicky Case's erase-and-redraw from The Evolution of Trust
+     (js/core/Scratcher.js), with its own sprite sheet and sounds. The left
+     column of the sheet scribbles over the page a frame every 40 ms; once the
+     page is covered the move is made underneath; the right column then rubs
+     the scribble away to show where the reader arrived. Each phase's sound
+     starts 100 ms in. As in the original, a move asked for while one is being
+     drawn is ignored rather than stacked.
+
+     Only the reading area is drawn over: the rail, footer, launcher and Sound
+     button stay put. The move is made at once, as it always was, whenever the
+     transition cannot be drawn properly: reduced motion, a hidden tab, a page
+     with no layout, or a sheet that has not finished loading. */
+
+  var SCRATCH_FRAMES = 20;
+  var SCRATCH_FRAME_MS = 40;
+  var SCRATCH_SOUND_MS = 100;
+  var sheetReady = false;
+  var scratch = null;
+
+  // Loaded up front, and only put on the overlay once it has arrived, so a
+  // transition never shows a half-loaded sheet. Decoding it early as well
+  // keeps the first transition from waiting on a bitmap; the first frame of
+  // the scribble is blank in any case.
+  if (scratcher && window.Image) {
+    var sheet = new window.Image();
+    var sheetUrl = scratcher.getAttribute('data-sheet');
+    sheet.onload = function () {
+      sheetReady = true;
+      scratcher.style.backgroundImage = 'url("' + sheetUrl + '")';
+      if (sheet.decode) sheet.decode().catch(function () {});
+    };
+    sheet.src = sheetUrl;
+  }
+
+  /** The visible reading area, above the footer: what the scribble covers. */
+  function scratchArea() {
+    var content = view === 'landing' ? landing : essayBody;
+    if (!content || !content.getBoundingClientRect) return null;
+    var box = content.getBoundingClientRect();
+    var top = Math.max(0, box.top);
+    var bottom = controls && !controls.hidden
+      ? controls.getBoundingClientRect().top
+      : (window.innerHeight || root.clientHeight);
+    if (!(box.width > 0) || !(bottom > top)) return null;
+    return { left: box.left, right: box.right, top: top, bottom: bottom };
+  }
+
+  function fitScratcher(area) {
+    scratch.area = area;
+    scratcher.style.left = area.left + 'px';
+    scratcher.style.top = area.top + 'px';
+    scratcher.style.width = (area.right - area.left) + 'px';
+    scratcher.style.height = (area.bottom - area.top) + 'px';
+  }
+
+  /** One phase: the sheet's left column scribbling in, or its right rubbing out. */
+  function scratchPhase(scribble, then) {
+    var frame = 0;
+    var column = scribble ? 0 : -100;
+    scratcher.style.backgroundPosition = column + '% 0%';
+    scratch.voice = setTimeout(function () { playScratch(scribble ? 'in' : 'out'); }, SCRATCH_SOUND_MS);
+    scratch.timer = setInterval(function () {
+      frame += 1;
+      if (frame >= SCRATCH_FRAMES) {
+        clearInterval(scratch.timer);
+        scratch.timer = null;
+        then();
+        return;
+      }
+      // As the original writes it: on a repeating background a negative
+      // percentage wraps, so this shows row `frame` of the column.
+      scratcher.style.backgroundPosition = column + '% ' + (frame * -100) + '%';
+    }, SCRATCH_FRAME_MS);
+  }
+
+  /**
+   * Makes `move` -- a function that changes the page -- behind the scratch
+   * transition, or at once when there is no transition to draw.
+   */
+  function scratchTo(move) {
+    if (scratch) return;
+    var area = scratcher && sheetReady && !(reduced && reduced.matches) && !document.hidden ? scratchArea() : null;
+    if (!area) { move(); return; }
+    scratch = { move: move, area: null, timer: null, voice: null, swapping: false };
+    fitScratcher(area);
+    scratcher.hidden = false;
+    scratchPhase(true, function () {
+      swapUnderScratch();
+      scratchPhase(false, endScratch);
+    });
+  }
+
+  /** The move itself, made while the page is completely covered. */
+  function swapUnderScratch() {
+    var move = scratch.move;
+    var failure = null;
+    scratch.move = null;
+    scratch.swapping = true;
+    try { move(); } catch (error) { failure = error; }
+    scratch.swapping = false;
+    // The destination can be laid out differently -- after Begin the essay
+    // sits beside the rail, where the landing did not -- so the cover moves
+    // to the new reading area while it is still solid. Anything it leaves is
+    // blank paper or the rail, never the passage being revealed.
+    var area = scratchArea();
+    if (area) fitScratcher(area);
+    // A move that failed still leaves a page to reveal. The error is reported
+    // rather than left to strand the reader under the scribble.
+    if (failure) setTimeout(function () { throw failure; }, 0);
+  }
+
+  /** Removes the overlay and its timers. A move not yet made is dropped. */
+  function endScratch() {
+    if (!scratch || scratch.swapping) return;
+    clearInterval(scratch.timer);
+    clearTimeout(scratch.voice);
+    scratch = null;
+    scratcher.hidden = true;
+  }
+
+  /** Completes a transition at once: the move it was drawing, without the drawing. */
+  function finishScratch() {
+    if (!scratch || scratch.swapping) return;
+    var move = scratch.move;
+    endScratch();
+    if (move) move();
+  }
+
+  window.addEventListener('beforeprint', finishScratch);
+  window.addEventListener('resize', function () {
+    if (!scratch) return;
+    var area = scratchArea();
+    if (area) fitScratcher(area);
+    else finishScratch();
+  });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) finishScratch(); });
+  if (reduced && reduced.addEventListener) reduced.addEventListener('change', finishScratch);
+
+  // Illustration responds; title and actions never move. No information is
+  // hidden behind the decorative pointer/tap reaction.
+  var cover = landing && landing.querySelector('.art');
+  if (cover) {
+    landing.addEventListener('pointermove', function (event) {
+      if ((reduced && reduced.matches) || event.pointerType === 'touch') return;
+      var box = landing.getBoundingClientRect();
+      cover.style.setProperty('--cover-x', ((event.clientX - box.left) / box.width - 0.5) * 12 + 'px');
+      cover.style.setProperty('--cover-y', ((event.clientY - box.top) / box.height - 0.5) * 8 + 'px');
+    });
+    landing.addEventListener('pointerleave', function () { cover.style.removeProperty('--cover-x'); cover.style.removeProperty('--cover-y'); });
+    cover.addEventListener('pointerdown', function () {
+      if (!(reduced && reduced.matches) && cover.animate) cover.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-7px)', offset: 0.5 }, { transform: 'translateY(0)' }], { duration: 400, easing: 'ease-out' });
+    });
+  }
 
   /* Every link to Sources & Credits, with the address it was written with.
      The shared control has to carry where the reader is, exactly as a
@@ -348,6 +630,9 @@
     scenes.forEach(function (scene, index) {
       scene.toggleAttribute('data-current', index === current && view === 'beat');
     });
+    Array.prototype.slice.call(document.querySelectorAll('.chapter')).forEach(function (chapter) {
+      chapter.toggleAttribute('data-current-chapter', chapter.getAttribute('data-chapter') === scenes[current].getAttribute('data-chapter'));
+    });
     applyPlace(place());
 
     // The first scene's Back is the way out to the landing, and the last
@@ -382,7 +667,7 @@
 
   /* What the drawer is laid over. Not the skip link, which sits above it and
      is still a reasonable way out. */
-  var behindDrawer = [landing, document.querySelector('.essay-body'), controls]
+  var behindDrawer = [landing, document.querySelector('.essay-body'), controls, soundButton]
     .filter(function (element) { return !!element; });
 
   /**
@@ -531,6 +816,7 @@
      bar, where taking focus would be rude rather than helpful. */
 
   function showLanding(options) {
+    endScratch();
     var settings = options || {};
     setView('landing');
     window.scrollTo(0, 0);
@@ -542,6 +828,7 @@
   }
 
   function showScene(index, options) {
+    endScratch();
     var settings = options || {};
     if (index < 0) { showLanding(); return; }
     current = Math.min(Math.max(index, 0), last);
@@ -552,6 +839,7 @@
   }
 
   function showReading(options) {
+    endScratch();
     var settings = options || {};
     setView('reading');
     var target = settings.target || scenes[current];
@@ -579,6 +867,7 @@
    * menu's `#chapters` are landmarks the browser already handles.
    */
   function applyFragment(options) {
+    endScratch();
     var settings = options || {};
     // Arriving at an address -- a deep link, the browser's Back button, the
     // way back from Sources & Credits -- is not a keypress, whatever the
@@ -617,7 +906,7 @@
     beginLink.addEventListener('click', function (event) {
       event.preventDefault();
       markMove(event);
-      showScene(0);
+      scratchTo(function () { showScene(0); });
     });
   }
 
@@ -640,7 +929,7 @@
       showReading({ target: scenes[index] });
       return;
     }
-    showScene(index);
+    scratchTo(function () { showScene(index); });
   }
 
   chapterLinks.forEach(function (link) {
@@ -693,17 +982,23 @@
     });
   }
 
+  /* Read when the page is covered, not when the move was asked for. */
+  function moveBack() {
+    if (current === 0) showLanding();
+    else showScene(current - 1);
+  }
+  function moveNext() { showScene(current + 1); }
+
   if (backButton) {
     backButton.addEventListener('click', function (event) {
       markMove(event);
-      if (current === 0) showLanding();
-      else showScene(current - 1);
+      scratchTo(moveBack);
     });
   }
   if (nextButton) {
     nextButton.addEventListener('click', function (event) {
       markMove(event);
-      showScene(current + 1);
+      scratchTo(moveNext);
     });
   }
 
@@ -711,7 +1006,7 @@
     readAgain.addEventListener('click', function (event) {
       event.preventDefault();
       markMove(event);
-      showScene(0);
+      scratchTo(function () { showScene(0); });
     });
   }
 
@@ -750,12 +1045,11 @@
     if (event.key === 'ArrowRight') {
       event.preventDefault();
       markMove();
-      if (current < last) showScene(current + 1);
+      if (current < last) scratchTo(moveNext);
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
       markMove();
-      if (current === 0) showLanding();
-      else showScene(current - 1);
+      scratchTo(moveBack);
     }
   });
 

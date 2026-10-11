@@ -1,0 +1,47 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B01",
+  "id": "polish-three-answers",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "34eddd2175c3a075bfa968d2904726110620367a4550971cd9e294091652eb64",
+    "alt": "TJ enjoys a game, Koj works on a small craft and Vier considers two alternatives.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.2,
+        "y_fraction": 0.1
+      },
+      {
+        "name": "Koj",
+        "x_fraction": 0.5,
+        "y_fraction": 0.1
+      },
+      {
+        "name": "Vier",
+        "x_fraction": 0.81,
+        "y_fraction": 0.1
+      }
+    ],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "f2c1c711fc9a209e408bce739ef23897728ded9c8369f7c3911e6b36f03d7e52"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "named cast inspected",
+    "owner_inspected": false
+  }
+}

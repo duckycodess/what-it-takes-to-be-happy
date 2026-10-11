@@ -1,0 +1,35 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B06",
+  "id": "polish-chosen-company",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "cd699a160ce4d3ddfc2b5a1867c757cea1c7e132846303ea6da4739ca0e10c60",
+    "alt": "Fictional friends enjoy a meal while another person comfortably reads alone.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "055603332d930cefe655a4966bcf109e5560f05d25fbfd2d1bab091a7706f986"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "plain fictional figures inspected; member hair removed",
+    "owner_inspected": false
+  }
+}

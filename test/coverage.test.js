@@ -161,7 +161,7 @@ test('every source row names the entry, its register identity and where it is ci
 test('every artwork row is an inspected asset, used where the matrix says', () => {
   const table = rows(section('Artwork'));
   assert.equal(table.length, content.assets.length);
-  assert.equal(table.length, 20);
+  assert.equal(table.length, 34);
 
   table.forEach(([ref, id, where, cutouts, labels], index) => {
     const asset = content.assets[index];

@@ -1,0 +1,35 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B13",
+  "id": "polish-many-parts-of-life",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "a1e066c6ce77d76648d57629f2b7e5757168807ffd52b0f47e913412be8a5421",
+    "alt": "A fictional person reflects among objects representing play, valued work, company and rest.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "fb8ba262347fc163d0c2b1b109346916f0074e03d1b3b020692177b21670afe7"
+    },
+    {
+      "path": "cleanup.prompt.txt",
+      "sha256": "50ab8b27ad48c6381fdc37b62e498906af7a65ba680447efb0359b2db845e224"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "plain fictional figures inspected; member hair removed",
+    "owner_inspected": false
+  }
+}

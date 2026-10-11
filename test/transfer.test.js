@@ -249,7 +249,8 @@ test('every control name is the one the approved handoff supplies', () => {
 
 test('the Sources & Credits page carries only approved copy', () => {
   const page = content.sourcesPage;
-  const approved = handoff.source_page_markdown;
+  const amendment = JSON.parse(readFileSync(join(repoRoot, 'docs/editorial/polish-amendment.json'), 'utf8'));
+  const approved = handoff.source_page_markdown + '\n' + amendment.credit_items.join('\n');
   const html = renderSourcesPage(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
 
   assert.ok(html.includes(esc(page.title)));

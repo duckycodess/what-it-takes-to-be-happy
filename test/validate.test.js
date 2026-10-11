@@ -161,6 +161,7 @@ test('a scene cannot show a drawing that was never delivered', () => {
 
 test('a text scene carries no decorative substitute', () => {
   assert.ok(codes(broken((doc) => {
+    scene(doc, 's202').visual.layout = 'text';
     scene(doc, 's202').visual.views = [{ ref: 'A01', image: 0, label: null }];
   })).includes('TEXT_SCENE_HAS_ART'));
 });

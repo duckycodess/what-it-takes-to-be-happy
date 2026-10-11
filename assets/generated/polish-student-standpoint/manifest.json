@@ -1,0 +1,47 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B02",
+  "id": "polish-student-standpoint",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "97f5d67ec71670632d8749503a92511f2675e780d9261c0de93a6d89314a3ac6",
+    "alt": "TJ, Koj and Vier reflect together over a notebook and laptop, with a basketball and travel ticket nearby.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.2,
+        "y_fraction": 0.1
+      },
+      {
+        "name": "Koj",
+        "x_fraction": 0.5,
+        "y_fraction": 0.1
+      },
+      {
+        "name": "Vier",
+        "x_fraction": 0.81,
+        "y_fraction": 0.1
+      }
+    ],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "2b637411cb49795563d3cb585d7e2ec415f01e4e102fb70ee6cdc7c2bc67e4f6"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "named cast inspected",
+    "owner_inspected": false
+  }
+}
