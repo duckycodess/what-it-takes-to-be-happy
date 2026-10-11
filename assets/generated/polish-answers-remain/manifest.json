@@ -1,0 +1,47 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B14",
+  "id": "polish-answers-remain",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "65a6a3dddafd4530c6d705ce5a870728e288ff98cad6c047fc6d727ed7392c19",
+    "alt": "TJ rests with a game, Koj holds a craft and Vier considers an invitation; their perspectives remain distinct.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.2,
+        "y_fraction": 0.1
+      },
+      {
+        "name": "Koj",
+        "x_fraction": 0.5,
+        "y_fraction": 0.1
+      },
+      {
+        "name": "Vier",
+        "x_fraction": 0.81,
+        "y_fraction": 0.1
+      }
+    ],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "b3a5603e9a136ac0dc09e566e0e74b5a1a23062b3db3caab9ad8040163838b7c"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "named cast inspected",
+    "owner_inspected": false
+  }
+}

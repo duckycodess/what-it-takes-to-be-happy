@@ -1,0 +1,31 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B10",
+  "id": "polish-unequal-room",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "pending-character-cleanup",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "b95eca6a6e80005c6a2189aad556839ebcb543cca2dfb898fe0ffff64cb4af59",
+    "alt": "Fictional people face different obstacles on their paths toward shared space.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "1cd4c1a0d72cb3f41b073b31de977b0c680deddc20a9125acbcfd8e99f8292ae"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "fictional head cleanup pending",
+    "owner_inspected": false
+  }
+}

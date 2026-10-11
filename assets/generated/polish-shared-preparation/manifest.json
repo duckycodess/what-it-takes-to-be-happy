@@ -1,0 +1,31 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B11",
+  "id": "polish-shared-preparation",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "pending-character-cleanup",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "f24bada8c327eca8ec54c601bfd09de2d4299693b28066975274884b3c8bf5e6",
+    "alt": "Fictional friends share preparation, seating and timing for a gathering.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "6d71925450dbc507f668c0e3ce0e5d3bc786863710387be565aca3a066351f85"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "fictional head cleanup pending",
+    "owner_inspected": false
+  }
+}

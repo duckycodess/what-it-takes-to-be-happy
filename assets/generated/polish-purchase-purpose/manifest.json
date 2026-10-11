@@ -1,0 +1,37 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B05",
+  "id": "polish-purchase-purpose",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "9d1c6dfa505cb54be0f5d714fff7d8bf180df166fe2b8c6bdaaacb991556100c",
+    "alt": "TJ considers how a laptop, its cost and travel needs fit the life he wants.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.47,
+        "y_fraction": 0.1
+      }
+    ],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "134fc30c18a0c3181cfba29438173ceade06fdb57575d7ee81ab888900ba01c1"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "named cast inspected",
+    "owner_inspected": false
+  }
+}

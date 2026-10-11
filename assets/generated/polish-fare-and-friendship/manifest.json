@@ -1,0 +1,31 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B07",
+  "id": "polish-fare-and-friendship",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "pending-character-cleanup",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "d6534febff5a008a443033f010d50d8d2dc75e7511d86c8f8aff7e527fabf616",
+    "alt": "A fictional friend considers the fare while looking toward a welcoming group.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "3f7e1c08e02e998afc56fa75a82b831d5eecad2c5488c28a22718e6b82f5efa3"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "fictional head cleanup pending",
+    "owner_inspected": false
+  }
+}
