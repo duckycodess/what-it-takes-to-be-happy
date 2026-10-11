@@ -1,0 +1,24 @@
+{
+  "schema": "polish-ui-assets/v1",
+  "asset_branch": "codex/art-polish-v1",
+  "images": [
+    {
+      "id": "button-highlight",
+      "path": "assets/ui/polish/button-highlight.png",
+      "width": 2172,
+      "height": 724,
+      "sha256": "819bb51f075ce2213f0cc33e0a6bb0441766c763146c719b2af9882ed1a097ed",
+      "status": "provider-inspected",
+      "method": "built-in image generation"
+    },
+    {
+      "id": "scratch-paper",
+      "path": "assets/ui/polish/scratch-paper.png",
+      "width": 1254,
+      "height": 1254,
+      "sha256": "67b1e5841f86843bf1c525173afd63b96b7618f535bd636e28a196f22e95bb18",
+      "status": "provider-inspected",
+      "method": "built-in image generation"
+    }
+  ]
+}

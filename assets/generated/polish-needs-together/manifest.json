@@ -1,0 +1,31 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B03",
+  "id": "polish-needs-together",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "pending-character-cleanup",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "a9cdbab164666c91e149c4d2bed011df0640c62ac335a0b2ee1be0568f7e2479",
+    "alt": "Fictional friends share food and connection while a home key sits nearby.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "27b4790842c0f99a820b715c17f906fd58f231df0de25ba882ddbe420da3b79c"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "fictional head cleanup pending",
+    "owner_inspected": false
+  }
+}

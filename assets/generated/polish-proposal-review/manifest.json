@@ -1,0 +1,31 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B12",
+  "id": "polish-proposal-review",
+  "asset_branch": "codex/art-polish-v1",
+  "status": "pending-character-cleanup",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "1d51ceb8f214152c8051b9f4cee63153a07152d0c1d32df94e6415990cedc873",
+    "alt": "Fictional visitors and staff consider a seating area, maintenance demands and hours.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "365219dab4fe7829bb7ebee206fea6e4c774dd2b74ebf188f8b37cc68d0d83c2"
+    }
+  ],
+  "inspection": {
+    "composition": "supporting passage illustration",
+    "identity": "fictional head cleanup pending",
+    "owner_inspected": false
+  }
+}
