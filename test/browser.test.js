@@ -429,7 +429,11 @@ test('a whole scene is ringed only when the browser judges the move a keyboard o
   assert.equal(value.read, true, 'the browser could not read the stylesheet it parsed');
   const outlining = value.outlining.flatMap((selector) => selector.split(',').map((part) => part.trim()));
   assert.ok(!outlining.includes('.scene:focus'), `a rule still forces a ring on every scene: ${outlining.join(', ')}`);
-  assert.ok(outlining.includes('.scene:focus-visible'), 'a keyboard reader lost the ring entirely');
+  assert.ok(!outlining.includes('.scene:focus-visible'),
+    'a deep link or a return from Sources would ring the whole scene');
+  const sceneRing = outlining.find((selector) => selector.endsWith('.scene:focus-visible'));
+  assert.ok(sceneRing, 'a keyboard reader lost the ring entirely');
+  assert.match(sceneRing, /\[data-move="keyboard"\]/);
   assert.ok(outlining.includes('.source:focus'), 'a citation no longer marks the entry it landed on');
   assert.ok(outlining.includes(':focus-visible'), 'interactive controls lost their focus ring');
 });

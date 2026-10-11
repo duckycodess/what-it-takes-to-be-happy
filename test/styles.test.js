@@ -344,7 +344,17 @@ test('a source entry is ringed on arrival, and a whole scene no longer is', () =
     !selectors.includes('.scene:focus'),
     'a whole scene is ringed on :focus, which is the outline the amendment removed',
   );
-  assert.ok(selectors.includes('.scene:focus-visible'), 'a keyboard reader still needs to see where they are');
+  // And not on `:focus-visible` alone either: a browser treats the fragment
+  // target it focuses on arrival as focus-visible, so a deep link and the way
+  // back from Sources & Credits would draw the same box. The ring asks for
+  // the page's own record of a keyboard move as well.
+  assert.ok(
+    !selectors.includes('.scene:focus-visible'),
+    'a deep link would ring the whole scene, which is the outline the amendment removed',
+  );
+  const sceneRing = selectors.find((selector) => selector.endsWith('.scene:focus-visible'));
+  assert.ok(sceneRing, 'a keyboard reader still needs to see where they are');
+  assert.match(sceneRing, /\[data-move="keyboard"\]/, 'the ring is not tied to how the move was made');
 
   // Every interactive control keeps a visible ring, through the one rule that
   // covers all of them.

@@ -236,7 +236,14 @@ a {
   outline-offset: 3px;
 }
 
-.scene:focus-visible {
+/* Both conditions, because neither alone is the question. `:focus-visible` is
+   the browser's judgement that the reader is not using a pointer, and
+   `data-move` is this page's own record of how the last move was actually
+   made: a browser treats the fragment target it focuses on arrival as
+   focus-visible too, so a deep link, a shared URL and the way back from
+   Sources & Credits each drew the box the amendment removed. A ring is for a
+   reader who pressed a key to get here and has to find where that put them. */
+html.js[data-move="keyboard"] .scene:focus-visible {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }

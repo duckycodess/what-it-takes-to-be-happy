@@ -112,6 +112,56 @@ test('focus moves to the scene a reader asked for, so the move is announced once
   assert.equal(page.focused(), 's089');
 });
 
+/* --- How the move was made ----------------------------------------------
+   The one thing the scene's focus ring depends on. The stylesheet asks for
+   this and for `:focus-visible` together, because a browser treats the
+   fragment target it focuses on arrival as focus-visible too, and a deep link
+   or the way back from Sources & Credits would otherwise draw the red box
+   around the whole scene that the amendment removed. */
+
+test('arriving at an address is not recorded as a keyboard move', () => {
+  const moved = (page) => page.find('html').getAttribute('data-move');
+
+  // A deep link, which is also what returning from Sources & Credits is.
+  assert.equal(moved(open({ hash: '#s105' })), 'address');
+  assert.equal(moved(openDocument(essay, { hash: '#s105', search: '?view=continuous' })), 'address');
+  assert.equal(moved(open()), 'address', 'and so is opening the landing');
+
+  // The browser's Back button is an address too, not a keypress.
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  page.click(page.find('[data-next]'));
+  page.goBack();
+  assert.equal(moved(page), 'address');
+});
+
+test('a pointer move and a keyboard move are told apart', () => {
+  const moved = (page) => page.find('html').getAttribute('data-move');
+
+  // A real click reports a `detail` of at least one; Enter and Space on a
+  // control report zero, which is how a browser says the keyboard did it.
+  const pointer = open({ hash: '#s090' });
+  pointer.find('[data-next]').dispatchEvent({ type: 'click', detail: 1 });
+  assert.equal(moved(pointer), 'pointer');
+  assert.equal(pointer.currentSceneId(), 's091');
+
+  const keyboard = open({ hash: '#s090' });
+  keyboard.find('[data-next]').dispatchEvent({ type: 'click', detail: 0 });
+  assert.equal(moved(keyboard), 'keyboard');
+  assert.equal(keyboard.currentSceneId(), 's091');
+
+  // Arrow keys are a keyboard move by definition.
+  const arrows = open({ hash: '#s090' });
+  arrows.press('ArrowRight');
+  assert.equal(moved(arrows), 'keyboard');
+
+  // And a part chosen with a pointer is a pointer move, wherever it is.
+  const rail = open({ hash: '#s090' });
+  rail.find('[data-part-link="s120"]').dispatchEvent({ type: 'click', detail: 1 });
+  assert.equal(moved(rail), 'pointer');
+  assert.equal(rail.currentSceneId(), 's120');
+});
+
 /* --- Keyboard ------------------------------------------------------------ */
 
 test('arrow keys move between scenes, and left at the first one leaves to the landing', () => {

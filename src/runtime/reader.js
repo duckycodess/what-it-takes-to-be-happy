@@ -131,6 +131,22 @@
 
   var railOpen = !isDrawer();
 
+  /* --- How the reader made their last move --------------------------------
+     The one thing a scene's focus ring needs to know. Focus moves to a scene
+     on every move, and `:focus-visible` alone is not enough to decide whether
+     to paint it: a browser also treats the fragment target it focuses on
+     arrival as focus-visible, so a deep link, a shared URL and the way back
+     from Sources & Credits all drew a red box around the whole scene -- which
+     is the thing the 11 October amendment removed.
+
+     So the ring asks for both: the browser's own judgement, and this, which
+     is true only when the reader pressed a key to get here. A click reports
+     `detail` of at least 1; Enter and Space on a control report 0. */
+
+  function markMove(event) {
+    root.setAttribute('data-move', !event || event.detail === 0 ? 'keyboard' : 'pointer');
+  }
+
   /* A chapter's parts are expanded when the reader is reading that chapter,
      unless the reader has said otherwise about that chapter. Their own choice
      wins and is remembered; everything they have not touched follows the
@@ -525,6 +541,10 @@
    */
   function applyFragment(options) {
     var settings = options || {};
+    // Arriving at an address -- a deep link, the browser's Back button, the
+    // way back from Sources & Credits -- is not a keypress, whatever the
+    // browser makes of the focus it gives the fragment's target.
+    root.setAttribute('data-move', 'address');
     var focus = settings.focus !== false;
     var id = readFragment();
     appliedFragment = id;
@@ -552,6 +572,7 @@
   if (beginLink) {
     beginLink.addEventListener('click', function (event) {
       event.preventDefault();
+      markMove(event);
       showScene(0);
     });
   }
@@ -565,8 +586,9 @@
    * dismissed on the way, so the destination is not behind it when they
    * arrive.
    */
-  function goTo(index) {
+  function goTo(index, event) {
     if (index < 0) return;
+    markMove(event);
     dismissDrawer();
     if (view === 'reading') {
       current = index;
@@ -582,7 +604,7 @@
       var index = firstSceneOfChapter(link.getAttribute('data-chapter-link'));
       if (index < 0) return;
       event.preventDefault();
-      goTo(index);
+      goTo(index, event);
     });
   });
 
@@ -591,7 +613,7 @@
       var index = indexOfSceneId(link.getAttribute('data-part-link'));
       if (index < 0) return;
       event.preventDefault();
-      goTo(index);
+      goTo(index, event);
     });
   });
 
@@ -628,22 +650,30 @@
   }
 
   if (backButton) {
-    backButton.addEventListener('click', function () {
+    backButton.addEventListener('click', function (event) {
+      markMove(event);
       if (current === 0) showLanding();
       else showScene(current - 1);
     });
   }
-  if (nextButton) nextButton.addEventListener('click', function () { showScene(current + 1); });
+  if (nextButton) {
+    nextButton.addEventListener('click', function (event) {
+      markMove(event);
+      showScene(current + 1);
+    });
+  }
 
   if (readAgain) {
     readAgain.addEventListener('click', function (event) {
       event.preventDefault();
+      markMove(event);
       showScene(0);
     });
   }
 
   if (viewToggle) {
-    viewToggle.addEventListener('click', function () {
+    viewToggle.addEventListener('click', function (event) {
+      markMove(event);
       // Leaving continuous reading goes to the passage on screen, not to the
       // scene the reader entered continuous reading at. They have scrolled
       // since, and the script was not involved in that, so `current` is only
@@ -675,9 +705,11 @@
     if (target && target.nodeType === 1 && (target.isContentEditable || (target.closest && target.closest(OWNS_ARROWS)))) return;
     if (event.key === 'ArrowRight') {
       event.preventDefault();
+      markMove();
       if (current < last) showScene(current + 1);
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
+      markMove();
       if (current === 0) showLanding();
       else showScene(current - 1);
     }
