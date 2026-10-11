@@ -580,6 +580,173 @@ test('a name sits over its own head, inside the drawing, as selectable text', { 
   }
 });
 
+/** Every box of a pair scene's figure, at one layout width. */
+function pairBoxes(width, { printRulesOnScreen = false } = {}) {
+  // Print cannot be emulated without a DevTools socket, which a Windows
+  // browser driven from WSL cannot be given. Rewriting the print block to
+  // `@media all` and rendering it is the honest way to see what those rules
+  // actually do to a layout; it is the same technique that caught a print
+  // fault in the superseded build.
+  const files = printRulesOnScreen
+    ? { ...hostedFiles, 'styles.css': built.hostedCss.replace('@media print', '@media all') }
+    : hostedFiles;
+
+  const { value } = runInChrome({
+    html: hosted,
+    files,
+    width,
+    height: 1000,
+    hash: '#s097',
+    driver: `
+      var report = {};
+      probe.step(function () {
+        var figure = probe.q('.art[data-layout="pair"]', probe.q('#s097'));
+        report.views = probe.all('.art-view', figure).map(function (view) {
+          var anchor = probe.q('.art-anchor', view);
+          var label = probe.q('.art-view-label', view);
+          var a = anchor.getBoundingClientRect();
+          var l = label.getBoundingClientRect();
+          return {
+            state: view.getAttribute('data-state'),
+            label: label.textContent,
+            image: { top: Math.round(a.top), left: Math.round(a.left), right: Math.round(a.right), bottom: Math.round(a.bottom), width: Math.round(a.width) },
+            caption: { top: Math.round(l.top), left: Math.round(l.left), right: Math.round(l.right), width: Math.round(l.width) },
+          };
+        });
+      }).run(function () { probe.done(report); });`,
+  });
+  return value.views;
+}
+
+test('a pair shows its two drawings side by side, each above its own label', { skip }, () => {
+  const scene = content.scenes.find((entry) => entry.id === 's097');
+  const labels = scene.visual.views.map((view) => view.label);
+
+  for (const printRulesOnScreen of [false, true]) {
+    const where = printRulesOnScreen ? 'with the print rules applied' : 'on screen';
+    const views = pairBoxes(1200, { printRulesOnScreen });
+    assert.equal(views.length, 2);
+    assert.deepEqual(views.map((view) => view.label), labels, `the labels are out of authored order ${where}`);
+
+    const [first, second] = views;
+    // Side by side: the drawings share a row and sit in different columns.
+    assert.equal(first.image.top, second.image.top, `the drawings do not share a row ${where}`);
+    assert.ok(
+      first.image.right <= second.image.left,
+      `the drawings overlap or are stacked ${where}: ${JSON.stringify([first.image, second.image])}`,
+    );
+
+    // Each label belongs to the drawing above it, not to the one beside it.
+    for (const view of views) {
+      assert.ok(
+        view.caption.top >= view.image.bottom,
+        `"${view.label}" is beside its drawing rather than under it ${where}`,
+      );
+      assert.equal(view.caption.left, view.image.left, `"${view.label}" is not aligned with its drawing ${where}`);
+    }
+    // And the second label is under the second drawing, which is what
+    // auto-placement got wrong: it put the first label where the second
+    // drawing belonged.
+    assert.ok(second.caption.left > first.caption.left, `both labels are in one column ${where}`);
+  }
+});
+
+test('a pair stacks in label order on a phone', { skip }, () => {
+  const views = pairBoxes(375);
+  const [first, second] = views;
+
+  assert.equal(first.image.left, second.image.left, 'one column');
+  assert.ok(first.caption.top >= first.image.bottom, 'the first label is under the first drawing');
+  assert.ok(second.image.top >= first.caption.top, 'and the second drawing follows that label');
+  assert.ok(second.caption.top >= second.image.bottom);
+  assert.ok(first.image.width > 0 && second.image.width > 0);
+});
+
+test('the landing offers only what the approved landing lists', { skip }, () => {
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    driver: `
+      var report = {};
+      function controls() {
+        return probe.all('.reader-controls button, .reader-controls .button')
+          .filter(probe.visible)
+          .map(function (control) { return control.textContent.trim(); });
+      }
+      probe
+        .step(function () {
+          report.onLanding = {
+            view: document.documentElement.getAttribute('data-view'),
+            controls: controls(),
+            landingActions: probe.all('.landing-actions a').filter(probe.visible).map(function (a) { return a.textContent; }),
+          };
+        })
+        .step(function () { probe.q('[data-begin]').click(); })
+        .step(function () { report.reading = controls(); })
+        .step(function () { probe.q('[data-back]').click(); })
+        .step(function () { report.backOnLanding = { view: document.documentElement.getAttribute('data-view'), controls: controls() }; })
+        .run(function () { probe.done(report); });`,
+  });
+
+  // Read continuously and Print would let a first-time visitor switch view or
+  // print the essay without ever meeting it. Sources & Credits is on the
+  // approved landing, so it stays.
+  assert.equal(value.onLanding.view, 'landing');
+  assert.deepEqual(value.onLanding.controls, [content.interface.sources]);
+  assert.deepEqual(value.onLanding.landingActions, [content.landing.beginLabel, content.landing.sourcesLabel]);
+
+  assert.ok(value.reading.includes(content.interface.continuous), 'they arrive once there is something to read');
+  assert.ok(value.reading.includes(content.interface.print));
+
+  assert.equal(value.backOnLanding.view, 'landing');
+  assert.deepEqual(value.backOnLanding.controls, [content.interface.sources], 'and go again on the way out');
+});
+
+test('the shared Sources control returns the reader to where they were', { skip }, () => {
+  const last = ORDER.at(-1);
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    hash: `#${last}`,
+    driver: `
+      var report = {};
+      probe
+        .step(function () {
+          report.atLastScene = probe.q('.reader-controls [data-sources]').getAttribute('href');
+          report.citationsHere = probe.all('.citation', probe.q('[data-scene][data-current]')).length;
+        })
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () { report.continuous = probe.q('.reader-controls [data-sources]').getAttribute('href'); })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.citationsHere, 0, 'the final scene cites nothing, so this control is the only route');
+  assert.equal(value.atLastScene, `sources.html?from=${last}&view=scene`);
+  assert.equal(value.continuous, `sources.html?from=${last}&view=continuous`);
+
+  // And following it really does come back, in the mode it was left in.
+  for (const [query, expected] of [
+    [`?from=${last}&view=scene`, `index.html#${last}`],
+    [`?from=${last}&view=continuous`, `index.html?view=continuous#${last}`],
+  ]) {
+    const { value: page } = runInChrome({
+      html: sources,
+      files: { ...hostedFiles, 'index.html': hosted },
+      query,
+      width: 1024,
+      height: 900,
+      driver: `
+        var report = {};
+        probe.step(function () {
+          report.href = probe.q('[data-return]').getAttribute('href');
+          report.label = probe.q('[data-return]').textContent;
+        }).run(function () { probe.done(report); });`,
+    });
+    assert.equal(page.href, expected);
+    assert.equal(page.label, content.sourcesPage.returnLabel);
+  }
+});
+
 test('an optional comparison switches between two drawn states', { skip }, () => {
   const optional = content.scenes.filter((scene) => scene.visual.control !== null);
   for (const scene of optional) {
@@ -701,6 +868,9 @@ test('a citation leads to the entry it names, and the way back to the scene', { 
     const { value: entry } = sourcesPage({
       width: 1024,
       height: 900,
+      // The whole address the citation leads to, not just its fragment: the
+      // query is what the return control is rewritten from.
+      query: `?from=${id}&view=scene`,
       hash: `#${sourceAnchor(number)}`,
       driver: `
         var report = {};
@@ -718,6 +888,7 @@ test('a citation leads to the entry it names, and the way back to the scene', { 
     assert.equal(entry.outlineStyle, 'solid', 'the entry the reader landed on is ringed, not just focused');
     assert.notEqual(entry.outlineWidth, '0px');
     assert.equal(entry.returnLabel, content.sourcesPage.returnLabel);
+    assert.equal(entry.returnHref, `index.html#${id}`, `the way back from source ${number} lost the scene`);
 
     // 3. And the way back restores the scene it was left from.
     const { value: back } = essayPage({

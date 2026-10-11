@@ -76,8 +76,14 @@ test('the last scene drops Next and offers Read again', () => {
   assert.equal(page.find('[data-next]').hidden, true);
   assert.equal(page.find('[data-read-again]').hidden, false);
   // Sources & Credits is in the shared controls at every scene, including
-  // this one.
-  assert.equal(page.find('[data-sources]').getAttribute('href'), 'sources.html');
+  // this one, and from here it is the only route to the register. It carries
+  // the scene, so "Back to reading" has somewhere to come back to.
+  assert.equal(
+    page.find('.reader-controls [data-sources]').getAttribute('href'),
+    'sources.html?from=s132&view=scene',
+  );
+  // The landing's own copy is never rewritten: nothing has been read yet.
+  assert.equal(page.find('.landing-actions [data-sources]').getAttribute('href'), 'sources.html');
 
   page.click(page.find('[data-read-again]'));
   assert.equal(page.currentSceneId(), 's088');
@@ -225,6 +231,59 @@ test('a citation link carries the scene and the current reading mode', () => {
   assert.equal(link.getAttribute('href'), 'sources.html?from=s105&view=scene#source-9');
 });
 
+test('the shared Sources control carries the place too, not only a citation', () => {
+  const page = open();
+  const shared = () => page.find('.reader-controls [data-sources]').getAttribute('href');
+
+  // Nothing has been read yet, so there is nowhere to come back to.
+  assert.equal(page.view(), 'landing');
+  assert.equal(shared(), 'sources.html');
+  assert.equal(page.find('.landing-actions [data-sources]').getAttribute('href'), 'sources.html');
+
+  page.click(page.find('[data-begin]'));
+  assert.equal(shared(), 'sources.html?from=s088&view=scene');
+  page.click(page.find('[data-next]'));
+  assert.equal(shared(), 'sources.html?from=s089&view=scene');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(shared(), 'sources.html?from=s089&view=continuous');
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(shared(), 'sources.html?from=s089&view=scene');
+
+  // The last scene is where this matters most: the shared control is the only
+  // route to the register from there, and s132 cites nothing.
+  const end = open({ hash: '#s132' });
+  assert.equal(end.find('[data-scene="s132"] .citation'), null, 's132 carries no citation');
+  assert.equal(
+    end.find('.reader-controls [data-sources]').getAttribute('href'),
+    'sources.html?from=s132&view=scene',
+  );
+});
+
+test('the reading controls are not offered before the reader has begun', () => {
+  const page = open();
+  // The approved landing is the title, the drawing, Begin and Sources &
+  // Credits. Read continuously and Print would let someone switch view or
+  // print the essay without meeting it.
+  assert.equal(page.find('[data-view-toggle]').hidden, true);
+  assert.equal(page.find('[data-print]').hidden, true);
+  assert.equal(page.find('[data-back]').hidden, true);
+  assert.equal(page.find('[data-next]').hidden, true);
+  assert.equal(page.find('[data-read-again]').hidden, true);
+  // Sources & Credits is on the approved landing, so it stays reachable.
+  assert.equal(page.find('.reader-controls [data-sources]').hidden, false);
+
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.find('[data-view-toggle]').hidden, false);
+  assert.equal(page.find('[data-print]').hidden, false);
+
+  // And they go again if the reader leaves the first scene back to the landing.
+  page.click(page.find('[data-back]'));
+  assert.equal(page.view(), 'landing');
+  assert.equal(page.find('[data-view-toggle]').hidden, true);
+  assert.equal(page.find('[data-print]').hidden, true);
+});
+
 test('the sources page sends the reader back to the scene and mode they left', () => {
   const html = renderSourcesPage(content, {
     mode: 'hosted',
@@ -243,6 +302,15 @@ test('the sources page sends the reader back to the scene and mode they left', (
   // honest destination when there is no place to return to.
   const direct = openDocument(html, {});
   assert.equal(direct.find('[data-return]').getAttribute('href'), 'index.html');
+
+  // The shared control carries the same two parameters a citation does, and
+  // with no fragment, because it names no entry. The last scene cites nothing,
+  // so this is the only way the register is reached from there.
+  const shared = openDocument(html, { search: '?from=s132&view=scene' });
+  assert.equal(shared.find('[data-return]').getAttribute('href'), 'index.html#s132');
+
+  const sharedContinuous = openDocument(html, { search: '?from=s132&view=continuous' });
+  assert.equal(sharedContinuous.find('[data-return]').getAttribute('href'), 'index.html?view=continuous#s132');
 });
 
 /*

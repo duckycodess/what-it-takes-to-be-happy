@@ -172,6 +172,14 @@ class Element {
     return null;
   }
 
+  /** `node.contains(node)` is true in a browser, so it is true here. */
+  contains(other) {
+    for (let node = other; node; node = node.parentNode) {
+      if (node === this) return true;
+    }
+    return false;
+  }
+
   querySelectorAll(selector) {
     const groups = parseSelector(selector);
     const found = [];

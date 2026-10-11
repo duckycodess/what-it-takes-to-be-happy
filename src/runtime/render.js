@@ -34,7 +34,9 @@ const percent = (value) => `${Math.round(value * 1000) / 10}%`;
  * The link is written into the sentence where the author put it, which is
  * sometimes mid-paragraph. Its visible label is `[9]` and its accessible name
  * is `Source 9`: the same two strings the approved interface section names,
- * so a reader hearing the page is told what the bracketed number is for.
+ * so a reader hearing the page is told what the bracketed number is for. Both
+ * are taken from that source's own register entry, which is where the
+ * approved copy for them lives.
  *
  * The destination carries where the reader was. A hosted citation link goes to
  * the separate page with the originating scene and reading mode in its query,
@@ -46,8 +48,11 @@ function renderParts(parts, context, sceneId) {
     .map((part) => {
       if (part.text !== undefined) return esc(part.text);
       const href = context.sourceHref(part.citation, sceneId);
+      const strings = context.sourceStrings.get(part.citation)
+        ?? { label: `[${part.citation}]`, accessibleName: `Source ${part.citation}` };
       return `<a class="citation" href="${esc(href)}" data-citation="${part.citation}"`
-        + `${sceneId ? ` data-from="${esc(sceneId)}"` : ''} aria-label="Source ${part.citation}">[${part.citation}]</a>`;
+        + `${sceneId ? ` data-from="${esc(sceneId)}"` : ''}`
+        + ` aria-label="${esc(strings.accessibleName)}">${esc(strings.label)}</a>`;
     })
     .join('');
 }
@@ -87,7 +92,7 @@ function renderBlock(block, context, sceneId) {
  * into the asset.
  *
  * Only the first illustration a reader can reach is eager. The rest are lazy
- * and decoded off the main thread: 21 selected cutouts are 21.4 MB, and
+ * and decoded off the main thread: the 22 selected cutouts are 20.4 MB, and
  * fetching all of them on a phone before the first scene is read would be a
  * cost paid for nothing.
  */
@@ -335,11 +340,19 @@ function context(content, options) {
   const positions = new Map();
   content.chapters.flatMap((chapter) => chapter.sceneIds).forEach((id, index) => positions.set(id, index + 1));
 
+  // The register's own strings, so a citation is written from the approved
+  // copy rather than composed again here. The validator already requires each
+  // entry's label and accessible name to agree with its number, so this is
+  // the same two strings with one origin instead of two.
+  const sourceStrings = new Map(content.sourcesPage.sources
+    .map((source) => [source.number, { label: source.label, accessibleName: source.accessibleName }]));
+
   let eager = true;
   return {
     sceneById,
     assetsByRef,
     positions,
+    sourceStrings,
     takeEager: () => {
       if (!eager) return false;
       eager = false;

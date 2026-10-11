@@ -98,6 +98,47 @@ test('a name is positioned against the image box, so it cannot drift off the hea
   assert.match(art.body, /padding-top:\s*2\.2em/, 'the reserve is in em, so larger type gets more room');
 });
 
+test('a pair gives every item its own cell, so the drawings share the first row', () => {
+  // `.art-view` is `display: contents`, which flattens each view into four
+  // grid items in DOM order: image, label, image, label. Auto-placement puts
+  // the first label in the slot meant for the second drawing, so the pair
+  // reads as one column with captions beside it. Each item is placed
+  // explicitly instead, and these are the four cells.
+  const cell = (state, part) => {
+    const rule = screen.find((entry) => entry.selector
+      === `.art[data-layout="pair"] .art-view[data-state="${state}"] ${part}`);
+    assert.ok(rule, `no explicit cell for state ${state}'s ${part}`);
+    return rule.body.replace(/\s+/g, ' ');
+  };
+
+  assert.match(cell(0, '.art-anchor'), /grid-column: 1;.*grid-row: 1;/);
+  assert.match(cell(1, '.art-anchor'), /grid-column: 2;.*grid-row: 1;/);
+  assert.match(cell(0, '.art-view-label'), /grid-column: 1;.*grid-row: 2;/);
+  assert.match(cell(1, '.art-view-label'), /grid-column: 2;.*grid-row: 2;/);
+
+  // Nothing in the print block undoes the flattening, so the same placement
+  // is what paper gets; the print block only restates the two columns.
+  assert.ok(
+    !print.some((rule) => /\.art-view\b/.test(rule.selector) && /display:/.test(rule.body)
+      && !rule.selector.includes('art-comparison')),
+    'print must not change what a pair view is displayed as',
+  );
+  assert.ok(
+    print.some((rule) => rule.selector === '.art[data-layout="pair"] .art-views'
+      && /grid-template-columns: 1fr 1fr/.test(rule.body)),
+  );
+});
+
+test('a phone takes a pair out of the grid, so it stacks in label order', () => {
+  // On one column the explicit cells would fight the stack, so the phone rule
+  // stops the views being flattened at all: each view becomes an ordinary
+  // block, and the four items keep their authored order.
+  const phone = css.slice(css.indexOf('@media (max-width: 38rem)'));
+  const block = phone.slice(0, phone.indexOf('\n}\n') + 2);
+  assert.match(block, /\.art\[data-layout="pair"\] \.art-view \{\s*display: block;/);
+  assert.match(block, /\.art\[data-layout="pair"\] \.art-views \{[^}]*grid-template-columns: 1fr;/);
+});
+
 test('everything a view hides on screen is either restored in print or is screen apparatus', () => {
   // Apparatus: controls and shortcuts that carry no part of the argument.
   // Anything new that hides content has to be added to the print restore

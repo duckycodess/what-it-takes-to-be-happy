@@ -81,13 +81,18 @@ function workspace(binary) {
  *   links to, by the path it links them at — a stylesheet, a script, a font.
  *   The hosted output is a page plus linked files, and a question about a
  *   linked font cannot be asked of a document that has none.
+ * @param {string} [options.query] a query string, as a citation or the shared
+ *   Sources control would supply. It is part of the address the browser is
+ *   given, because `history.replaceState` with a relative URL is refused on a
+ *   `file:` origin -- the same refusal the reader script has to cope with.
  * @param {string} [options.hash] a fragment, as a deep link would supply
  * @param {number} [options.width] layout width in CSS pixels
  * @param {number} [options.height] layout height in CSS pixels
  * @param {string[]} [options.flags] extra browser flags
  * @returns {{value: unknown, dom: string}}
  */
-export function runInChrome({ html, driver, files = {}, hash = '', width = 360, height = 780, flags = [] }) {
+export function runInChrome({ html, driver, files = {}, query = '', hash = '', width = 360, height = 780, flags = [] }) {
+  const address = `${query}${hash}`;
   const binary = findChrome();
   if (!binary) throw new Error('No browser is installed; callers should have skipped.');
 
@@ -118,7 +123,7 @@ export function runInChrome({ html, driver, files = {}, hash = '', width = 360, 
   // event; this is the same guarantee for the unframed one.
   const injected = `<script>\n${PROBE}\nwindow.addEventListener('load', function () {\n${driver}\n});\n</script>`;
   writeFileSync(join(space.directory, 'page.html'), framed ? html : html.replace('</body>', `${injected}\n</body>`));
-  if (framed) writeFileSync(join(space.directory, 'host.html'), hostPage({ width, height, hash, driver }));
+  if (framed) writeFileSync(join(space.directory, 'host.html'), hostPage({ width, height, address, driver }));
 
   try {
     const dom = execFileSync(binary, [
@@ -135,7 +140,7 @@ export function runInChrome({ html, driver, files = {}, hash = '', width = 360, 
       ...(framed ? ['--allow-file-access-from-files'] : []),
       ...flags,
       '--dump-dom',
-      framed ? space.url('host.html') : `${space.url('page.html')}${hash}`,
+      framed ? space.url('host.html') : `${space.url('page.html')}${address}`,
     ], { encoding: 'utf8', timeout: 120000, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
 
     const match = dom.match(/data-probe="([A-Za-z0-9+/=]*)"/);
@@ -332,12 +337,12 @@ const FRAME_MARGIN = 80;
  * to run the driver inside it. The driver still sees the page's own `window`
  * and `document`, so it is written the same way either side of this.
  */
-const hostPage = ({ width, height, hash, driver }) => `<!doctype html>
+const hostPage = ({ width, height, address, driver }) => `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;padding:0;background:#fff}
 iframe{width:${width}px;height:${height}px;border:0;display:block}
 </style></head><body>
-<iframe id="frame" src="page.html${hash}"></iframe>
+<iframe id="frame" src="page.html${address}"></iframe>
 <script>
 (function () {
   var frame = document.getElementById('frame');

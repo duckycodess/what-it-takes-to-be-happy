@@ -398,6 +398,32 @@ button[aria-pressed="true"] {
   display: contents;
 }
 
+/* `display: contents` flattens each view, so the four items -- image, label,
+   image, label -- are auto-placed in DOM order and the first label lands in
+   the slot meant for the second drawing. Each item is therefore given its own
+   cell: the drawings share the first row and each label sits directly under
+   the one it names. Auto-placement cannot be relied on here, and the failure
+   it produces is a pair that reads as one column with captions beside it. */
+.art[data-layout="pair"] .art-view[data-state="0"] .art-anchor {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.art[data-layout="pair"] .art-view[data-state="0"] .art-view-label {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.art[data-layout="pair"] .art-view[data-state="1"] .art-anchor {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.art[data-layout="pair"] .art-view[data-state="1"] .art-view-label {
+  grid-column: 2;
+  grid-row: 2;
+}
+
 .art[data-layout="pair"] .art-anchor {
   align-self: end;
 }

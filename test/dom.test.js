@@ -111,3 +111,16 @@ test('reflected properties read and write the attribute', () => {
   paragraph.hidden = true;
   assert.equal(paragraph.getAttribute('hidden'), '');
 });
+
+test('an element contains its descendants, itself, and nothing else', () => {
+  const document = parseHtml('<!doctype html><html><body><div id="a"><p id="b"><span id="c">x</span></p></div><div id="d"></div></body></html>');
+  const a = document.getElementById('a');
+  const c = document.getElementById('c');
+  const d = document.getElementById('d');
+
+  assert.equal(a.contains(c), true, 'a descendant at any depth');
+  assert.equal(a.contains(a), true, 'itself, as a browser answers');
+  assert.equal(a.contains(d), false, 'a sibling is not inside it');
+  assert.equal(c.contains(a), false, 'and an ancestor is not inside its own child');
+  assert.equal(a.contains(null), false);
+});

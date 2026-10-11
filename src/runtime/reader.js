@@ -80,6 +80,19 @@
   var printButton = document.querySelector('[data-print]');
   var landing = document.getElementById('landing');
 
+  /* Every link to Sources & Credits, with the address it was written with.
+     The shared control has to carry where the reader is, exactly as a
+     numbered citation does, or the register's "Back to reading" has nowhere
+     to return to -- which is most visible at the end of the essay, where the
+     shared control is the only way there. The base is read from the markup
+     rather than retyped, so the hosted page and the single-file export each
+     keep their own. */
+  var sourcesLinks = Array.prototype.slice.call(document.querySelectorAll('[data-sources]'))
+    // Not the landing's own copy: a reader who has not started has no place
+    // to be brought back to, and that link is only reachable from there.
+    .filter(function (link) { return !landing || !landing.contains(link); })
+    .map(function (link) { return { link: link, base: link.getAttribute('href') || '' }; });
+
   var last = scenes.length - 1;
   var current = 0;
   var view = 'landing';
@@ -196,6 +209,14 @@
       nextButton.hidden = view !== 'beat' || current === last;
     }
     if (readAgain) readAgain.hidden = !(view === 'beat' && current === last);
+
+    // The approved landing carries the title, the opening drawing, Begin and
+    // Sources & Credits, and nothing else. Reading controls belong to a
+    // reader who has started reading: offered on the landing they would let
+    // someone print or switch view before meeting the essay at all. The
+    // landing's own Begin and Sources & Credits are in the page, not here.
+    if (viewToggle) viewToggle.hidden = view === 'landing';
+    if (printButton) printButton.hidden = view === 'landing';
   }
 
   function setView(nextView) {
@@ -206,10 +227,33 @@
     }
     applyCitationMode();
     applySceneState();
+    writeSourcesLinks();
   }
 
   function scrollToElement(element) {
     if (element && element.scrollIntoView) element.scrollIntoView({ block: 'start' });
+  }
+
+  /**
+   * Points the shared Sources & Credits links at the place being read.
+   *
+   * On the landing there is no place to come back to, so the link stays as
+   * authored. In the single-file export the register is in the same document
+   * and the address is a fragment, so nothing is added to it: the reader
+   * never leaves the page and so never loses their position.
+   */
+  function writeSourcesLinks() {
+    var scene = scenes[current] ? scenes[current].getAttribute('data-scene') : '';
+    sourcesLinks.forEach(function (entry) {
+      if (entry.base.charAt(0) === '#') return;
+      if (view === 'landing' || scene === '') {
+        entry.link.setAttribute('href', entry.base);
+        return;
+      }
+      entry.link.setAttribute('href', entry.base
+        + '?from=' + encodeURIComponent(scene)
+        + '&view=' + (view === 'reading' ? 'continuous' : 'scene'));
+    });
   }
 
   /* --- Moves -------------------------------------------------------------

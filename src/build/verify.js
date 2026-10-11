@@ -183,7 +183,7 @@ export function auditSourcesCoverage(html, content) {
  * is told what it shows and the layout reserves its box before it arrives.
  *
  * Only the first illustration a reader reaches is eager. Every other one waits,
- * which is what keeps 21.4 MB of selected cutouts off a phone's first screen.
+ * which is what keeps 20.4 MB of selected cutouts off a phone's first screen.
  *
  * @param {string} html
  * @param {object} content

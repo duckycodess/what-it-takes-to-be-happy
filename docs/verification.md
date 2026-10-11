@@ -301,9 +301,9 @@ treated as evidence of anything; it is the reason the hosted site links the same
 ### Looked at, in a real browser
 
 Headless Chrome on Windows, driven from WSL, against the built hosted site — `index.html` and
-`sources.html` with their stylesheet, script, both fonts and all 21 selected PNGs beside them at the
+`sources.html` with their stylesheet, script, both fonts and all 22 selected PNGs beside them at the
 paths they are linked at, so every drawing and both faces are fetched over real requests. All
-eighteen browser tests ran; none skipped.
+twenty-two browser tests ran; none skipped.
 
 - **The phone journey at 375px**: the landing shows the landing; Begin, Next, chapter shortcuts, the
   continuous view and the way back all behave; a scene arrives at the top of the window; every
@@ -371,6 +371,39 @@ unframed measurement was being taken from a page whose reader script had not run
 assertion that a deep link takes no focus had been passing. The driver now waits for `load`, and
 that assertion was corrected to what a browser actually does: it focuses the fragment's target
 itself, because a scene is focusable so the script can send a reader to it.
+
+### What the exact-head review found
+
+An automated review of the pushed head, plus an independent reviewer, raised four further
+defects. All are fixed, each with a regression test, and all four were things assertions had
+agreed with rather than caught.
+
+1. **The pair layout was not a pair.** `.art-view` is `display: contents`, so the four items —
+   image, label, image, label — were auto-placed in DOM order and the first label took the cell the
+   second drawing was meant for. All four `pair` scenes rendered as one column of drawings with a
+   caption beside each, on screen and on paper. Measured in Chrome at 1200px before the fix: the
+   drawings at `top: 212` and `top: 476`, the first label at `left: 596` beside the first drawing.
+   Each item now has an explicit cell. Measured after: both drawings at `top: 212`, `left: 200` and
+   `left: 596`, each label directly under its own drawing — and the same with the print rules
+   rendered, checked by rewriting the print block to `@media all` and measuring it.
+2. **The landing offered reading controls.** `Read continuously` and `Print` sat in the fixed bar
+   before Begin had been pressed, so a first-time visitor could switch view or print the essay
+   without meeting it. The approved landing is the title, the opening drawing, Begin and Sources &
+   Credits. Both controls are now hidden in the landing view and return when there is something to
+   read. Sources & Credits stays, because it is on that approved list.
+3. **The shared Sources & Credits control discarded the reader's place.** Only numbered citations
+   carried `from` and `view`, so following the shared control left `Back to reading` pointed at a
+   bare `index.html`. That is worst at `s132`, which cites nothing and where the shared control is
+   the only route to the register. The control now carries the scene and the reading mode exactly as
+   a citation does. The landing's own copy is deliberately left bare — nothing has been read yet —
+   and the single-file export is left alone, because its register is in the same document.
+4. **A count was wrong.** Twenty assets supply **22** selected PNGs, not 21: `A16` and `A18` each
+   carry two cutouts. Corrected in the renderer, the build, the audit and this document.
+
+One nit was taken as well: a citation's visible label and accessible name are now read from that
+source's own register entry rather than composed again in the renderer. The validator already
+requires the two to agree with the number, so the markup is unchanged and the approved copy has one
+origin instead of two.
 
 ### Not checked, and by what
 

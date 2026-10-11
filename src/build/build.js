@@ -8,7 +8,7 @@
  * The hosted website is the deliverable: `index.html`, the separate
  * `sources.html`, the stylesheet, the script, the two fonts and the selected
  * generated artwork as linked files. Linking the drawings rather than
- * inlining them is deliberate — the 21 selected cutouts are 21.4 MB, and a
+ * inlining them is deliberate — the 22 selected cutouts are 20.4 MB, and a
  * phone should fetch the one it is looking at.
  *
  * `dist/offline.html` is retained tooling, not a release gate. It inlines
