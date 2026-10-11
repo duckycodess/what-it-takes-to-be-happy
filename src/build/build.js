@@ -82,6 +82,57 @@ export const selectedImages = (content) =>
 const hostedSourceHref = (number, sceneId) =>
   `sources.html${sceneId ? `?from=${sceneId}&view=scene` : ''}#${sourceAnchor(number)}`;
 
+/** A selected drawing whose bytes are not the inspected ones. */
+export class ArtworkError extends Error {}
+
+/**
+ * Reads every selected drawing, and refuses any whose bytes have changed.
+ *
+ * The content document records the SHA-256 the provider's manifest was
+ * inspected at. Nothing downstream re-reads it: `auditArtwork` works on the
+ * rendered markup — the path, the dimensions, the alternative text — so a file
+ * replaced or corrupted in place would be published with its manifest and its
+ * content entry still agreeing with each other and with the page.
+ *
+ * `npm test` does compare these digests, but a deployment runs `npm run build`
+ * and nothing else, so the comparison has to happen on this path. Bytes that
+ * fail it never enter the output map.
+ */
+async function readSelectedArtwork(content) {
+  const recorded = new Map();
+  for (const asset of content.assets) {
+    for (const image of asset.images) recorded.set(image.path, image.sha256);
+  }
+
+  const artwork = new Map();
+  const problems = [];
+
+  await Promise.all([...recorded.keys()].map(async (path) => {
+    let bytes;
+    try {
+      bytes = await read(path);
+    } catch (error) {
+      problems.push({ kind: 'artwork', value: path, message: `The selected drawing could not be read: ${error.code ?? error.message}.` });
+      return;
+    }
+    const digest = createHash('sha256').update(bytes).digest('hex');
+    if (digest !== recorded.get(path)) {
+      problems.push({
+        kind: 'artwork',
+        value: path,
+        message: `The file is ${digest}, not the inspected ${recorded.get(path)}.`,
+      });
+      return;
+    }
+    artwork.set(path, bytes);
+  }));
+
+  if (problems.length > 0) {
+    throw new ArtworkError(`The selected artwork is not the artwork that was inspected:\n${formatProblems(problems)}`);
+  }
+  return artwork;
+}
+
 /**
  * Renders every output in memory. Exported so tests can build without writing
  * to disk and can compare the documents directly.
@@ -95,8 +146,7 @@ export async function buildOutputs(content) {
     readText(FALLBACK_FONT_LICENSE.source),
   ]);
 
-  const artwork = new Map();
-  await Promise.all(selectedImages(content).map(async (path) => artwork.set(path, await read(path))));
+  const artwork = await readSelectedArtwork(content);
 
   // Hosted: ordinary linked files, so the browser caches them between visits,
   // and the only output the project typeface is served from.
@@ -236,7 +286,15 @@ async function main() {
     process.exit(1);
   }
 
-  const outputs = await buildOutputs(content);
+  let outputs;
+  try {
+    outputs = await buildOutputs(content);
+  } catch (error) {
+    if (!(error instanceof ArtworkError)) throw error;
+    console.error('Artwork verification failed; nothing was built.');
+    console.error(error.message);
+    process.exit(1);
+  }
   auditOutputs(outputs, content);
 
   if (!onlyOffline) {

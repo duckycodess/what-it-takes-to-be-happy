@@ -826,6 +826,67 @@ test('reading continuously, the shared Sources control follows the scroll', { sk
     'scrolling back to the top should follow the reader back');
 });
 
+test('leaving continuous reading keeps the passage, not the way in', { skip }, () => {
+  // A reader enters continuous reading at one scene, reads on by scrolling,
+  // then presses Scene view. Scene view has to open the passage in front of
+  // them. Opening the scene they came in at would silently undo the reading
+  // they just did -- here, thirty scenes of it.
+  const entered = ORDER[4];
+  const target = ORDER[34];
+
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    hash: `#${entered}`,
+    driver: `
+      var report = {};
+      probe
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () {
+          report.entered = { view: document.documentElement.getAttribute('data-view'), hash: location.hash };
+          var scene = probe.q('#${target}');
+          window.scrollTo(0, scene.getBoundingClientRect().top + window.scrollY + 10);
+        })
+        .wait(250)
+        .step(function () { probe.q('[data-view-toggle]').click(); })
+        .step(function () {
+          report.afterToggle = {
+            view: document.documentElement.getAttribute('data-view'),
+            scene: probe.sceneId(),
+            hash: location.hash,
+            focused: probe.activeId(),
+            onScreen: probe.inViewport(probe.q('[data-scene][data-current]')),
+            topOfWindow: Math.round(probe.q('[data-scene][data-current]').getBoundingClientRect().top),
+            scrolledAsFarAsItGoes: Math.ceil(window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 1,
+            visibleScenes: probe.all('[data-scene]').filter(probe.visible).length,
+          };
+        })
+        .step(function () { probe.q('[data-next]').click(); })
+        .step(function () { report.afterNext = probe.sceneId(); })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.entered.view, 'reading');
+  assert.equal(value.entered.hash, `#${entered}`);
+
+  assert.equal(value.afterToggle.view, 'beat');
+  assert.equal(value.afterToggle.scene, target,
+    'Scene view reopened the scene continuous reading was entered at, not the one being read');
+  assert.equal(value.afterToggle.hash, `#${target}`, 'and the address bar says so');
+  assert.equal(value.afterToggle.visibleScenes, 1);
+  assert.equal(value.afterToggle.onScreen, true);
+  // Brought to the top of the window, unless the page has already run out of
+  // room to scroll -- a short scene near the end of a one-scene document.
+  assert.ok(
+    value.afterToggle.topOfWindow === 0 || value.afterToggle.scrolledAsFarAsItGoes,
+    `the scene sits ${value.afterToggle.topOfWindow}px down a page that could still scroll`,
+  );
+  assert.equal(value.afterToggle.focused, target, 'and focus moves with the reader, as it does on any move they make');
+
+  // Reading continues from there rather than from where they came in.
+  assert.equal(value.afterNext, ORDER[35]);
+});
+
 test('the shared control returns to the scrolled-to passage, in continuous mode', { skip }, () => {
   // The other half of the journey: the address the control produced really
   // does bring the reader back to that passage, still reading continuously.

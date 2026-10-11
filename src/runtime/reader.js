@@ -403,7 +403,11 @@
 
   if (viewToggle) {
     viewToggle.addEventListener('click', function () {
-      if (view === 'reading') showScene(current);
+      // Leaving continuous reading goes to the passage on screen, not to the
+      // scene the reader entered continuous reading at. They have scrolled
+      // since, and the script was not involved in that, so `current` is only
+      // where they came in; sending them back there would undo their reading.
+      if (view === 'reading') showScene(visibleSceneIndex());
       else showReading();
     });
   }

@@ -9,11 +9,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
 
-import { buildOutputs, auditOutputs, selectedImages } from '../src/build/build.js';
+import { buildOutputs, auditOutputs, selectedImages, ArtworkError } from '../src/build/build.js';
 import { auditSelfContainedHtml, auditArtwork, auditBundledLicence } from '../src/build/verify.js';
 import { PROJECT_FONT, FALLBACK_FONT, FALLBACK_FONT_LICENSE } from '../src/build/assets.js';
 import { createPreviewServer } from '../src/tools/preview.js';
@@ -64,6 +64,62 @@ test('the build produces outputs that pass every packaging check', async () => {
   const outputs = await buildOutputs(content);
   assert.doesNotThrow(() => auditOutputs(outputs, content));
   assert.deepEqual(auditSelfContainedHtml(outputs.offline), []);
+});
+
+test('the deployment build refuses artwork whose bytes are not the inspected ones', async () => {
+  // A selected PNG replaced or corrupted in place leaves its manifest and its
+  // content entry agreeing with each other and with the page, so nothing in
+  // the rendered markup can catch it. `npm test` compares these digests; a
+  // deployment runs `npm run build` and nothing else, so the comparison has
+  // to be on that path.
+  //
+  // No real asset is touched. The byte-level fault is reproduced on a copy in
+  // a scratch directory under the git-ignored `dist/`, pointed at by a copy of
+  // the content document, so nothing another suite reads is ever mutated.
+  const content = loadValidContent();
+  const original = content.assets.find((asset) => asset.ref === 'A14').images[0];
+  const scratch = join(DIST, 'artwork-digest-check');
+  const copied = 'dist/artwork-digest-check/scene.png';
+  const bytes = readFileSync(join(repoRoot, original.path));
+
+  try {
+    mkdirSync(scratch, { recursive: true });
+    writeFileSync(join(repoRoot, copied), bytes);
+
+    const pointed = loadValidContent();
+    pointed.assets.find((asset) => asset.ref === 'A14').images[0].path = copied;
+
+    // The same bytes under a different name still build: the check is on the
+    // digest, not on where the file sits.
+    await assert.doesNotReject(() => buildOutputs(pointed));
+
+    // One byte different is enough, and the build says which file and what it
+    // found rather than failing vaguely.
+    const corrupted = Buffer.from(bytes);
+    corrupted[corrupted.length - 1] ^= 0xff;
+    writeFileSync(join(repoRoot, copied), corrupted);
+
+    await assert.rejects(
+      () => buildOutputs(pointed),
+      (error) => {
+        assert.ok(error instanceof ArtworkError, 'the build should name this as an artwork fault');
+        assert.match(error.message, /is not the artwork that was inspected/);
+        assert.ok(error.message.includes(copied), 'the message names the file');
+        assert.ok(error.message.includes(original.sha256), 'and the digest it was inspected at');
+        return true;
+      },
+    );
+
+    // A file that has gone missing is refused the same way rather than
+    // publishing a page with a drawing that is not there.
+    rmSync(join(repoRoot, copied));
+    await assert.rejects(() => buildOutputs(pointed), ArtworkError);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+
+  // And the real document, with its real files, still builds.
+  await assert.doesNotReject(() => buildOutputs(loadValidContent()));
 });
 
 test('the deployment build refuses copy the owner did not approve', () => {
