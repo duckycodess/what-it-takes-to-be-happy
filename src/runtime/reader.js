@@ -70,6 +70,9 @@
   if (scenes.length === 0) return;
 
   var chapterLinks = Array.prototype.slice.call(document.querySelectorAll('[data-chapter-link]'));
+  var partLinks = Array.prototype.slice.call(document.querySelectorAll('[data-part-link]'));
+  var chapterToggles = Array.prototype.slice.call(document.querySelectorAll('[data-chapter-toggle]'));
+  var partLists = Array.prototype.slice.call(document.querySelectorAll('[data-rail-parts]'));
   var citations = Array.prototype.slice.call(document.querySelectorAll('.citation'));
   var comparisons = Array.prototype.slice.call(document.querySelectorAll('.art-comparison'));
   var beginLink = document.querySelector('[data-begin]');
@@ -77,8 +80,11 @@
   var nextButton = document.querySelector('[data-next]');
   var readAgain = document.querySelector('[data-read-again]');
   var viewToggle = document.querySelector('[data-view-toggle]');
-  var printButton = document.querySelector('[data-print]');
   var controls = document.querySelector('.reader-controls');
+  var rail = document.getElementById('chapters');
+  var railToggle = document.querySelector('[data-rail-toggle]');
+  var railRestore = document.querySelector('[data-rail-restore]');
+  var launcher = document.querySelector('.rail-launcher');
   var landing = document.getElementById('landing');
 
   /* Every link to Sources & Credits, with the address it was written with.
@@ -99,8 +105,58 @@
   var view = 'landing';
 
   /** The two view-switch labels, taken from the markup rather than retyped. */
-  var toggleLabels = { scene: viewToggle ? viewToggle.textContent : '', continuous: '' };
+  var toggleLabels = { parts: viewToggle ? viewToggle.textContent : '', continuous: '' };
   if (viewToggle) toggleLabels.continuous = viewToggle.getAttribute('data-scene-label') || '';
+
+  /* --- The chapter rail ---------------------------------------------------
+     One list of chapters and parts, in the markup, shown two ways. On a wide
+     screen it stands beside the essay and can be collapsed to give the prose
+     the whole window; at phone width the same element is a drawer the reader
+     opens from the launcher and dismisses again. The stylesheet decides which
+     of the two it is; this script only records whether the reader has it open,
+     and asks the stylesheet which arrangement is in force before choosing the
+     behaviour that differs between them.
+
+     The only difference in behaviour is dismissal. A drawer covers what is
+     being read, so choosing a part closes it and Escape closes it; a rail
+     beside the essay hides nothing and stays where the reader put it. */
+
+  var DRAWER_WIDTH = '(max-width: 59.99rem)';
+  var drawerQuery = window.matchMedia ? window.matchMedia(DRAWER_WIDTH) : null;
+
+  /** True while the stylesheet is presenting the rail as a drawer. */
+  function isDrawer() {
+    return !!(drawerQuery && drawerQuery.matches);
+  }
+
+  var railOpen = !isDrawer();
+
+  /* --- How the reader made their last move --------------------------------
+     The one thing a scene's focus ring needs to know. Focus moves to a scene
+     on every move, and `:focus-visible` alone is not enough to decide whether
+     to paint it: a browser also treats the fragment target it focuses on
+     arrival as focus-visible, so a deep link, a shared URL and the way back
+     from Sources & Credits all drew a red box around the whole scene -- which
+     is the thing the 11 October amendment removed.
+
+     So the ring asks for both: the browser's own judgement, and this, which
+     is true only when the reader pressed a key to get here. A click reports
+     `detail` of at least 1; Enter and Space on a control report 0. */
+
+  function markMove(event) {
+    root.setAttribute('data-move', !event || event.detail === 0 ? 'keyboard' : 'pointer');
+  }
+
+  /* A chapter's parts are expanded when the reader is reading that chapter,
+     unless the reader has said otherwise about that chapter. Their own choice
+     wins and is remembered; everything they have not touched follows the
+     reading. That is what lets another chapter be opened without closing the
+     current one, and what stops the rail growing to all 45 parts as the
+     reader works through the essay. */
+  var chapterChoice = {};
+
+  var partsById = {};
+  partLists.forEach(function (list) { partsById[list.getAttribute('data-rail-parts')] = list; });
 
   /* --- Optional comparisons ----------------------------------------------
      Two drawings that are both in the markup. In the scene view one is shown
@@ -127,6 +183,27 @@
   function indexOfSceneId(id) {
     for (var i = 0; i < scenes.length; i += 1) {
       if (scenes[i].getAttribute('data-scene') === id) return i;
+    }
+    return -1;
+  }
+
+  /**
+   * An address the superseded script published.
+   *
+   * The copy at `s088`–`s132` is gone, and those identifiers were deliberately
+   * not reused, so a link somebody shared before the rewrite would otherwise
+   * resolve to nothing. The approved handoff relocates each of them to the
+   * part that now carries the related passage, and the renderer writes that
+   * mapping onto the part. A reader following an old link lands on the
+   * passage, and the address bar is corrected to the part they actually
+   * reached rather than left saying something that is no longer true.
+   */
+  function relocatedSceneIndex(id) {
+    for (var i = 0; i < scenes.length; i += 1) {
+      var answers = (scenes[i].getAttribute('data-relocates') || '').split(' ');
+      for (var j = 0; j < answers.length; j += 1) {
+        if (answers[j] === id) return i;
+      }
     }
     return -1;
   }
@@ -220,22 +297,63 @@
 
   /* --- State ------------------------------------------------------------- */
 
-  function applySceneState() {
-    scenes.forEach(function (scene, index) {
-      scene.toggleAttribute('data-current', index === current && view === 'beat');
-    });
+  /**
+   * Marks the chapter and the part a reader is in, and opens that chapter.
+   *
+   * `aria-current` on the one part link is the whole indication: no counter,
+   * no progress line, and no live region, because the move itself is already
+   * announced by the focus it moves. `index` is -1 on the landing, where the
+   * reader is in no part of the essay yet.
+   */
+  function applyPlace(index) {
+    var sceneId = index < 0 ? '' : scenes[index].getAttribute('data-scene');
+    var chapterId = index < 0 ? '' : scenes[index].getAttribute('data-chapter');
+
     chapterLinks.forEach(function (link) {
-      var chapterId = scenes[current].getAttribute('data-chapter');
-      if (view === 'beat' && link.getAttribute('data-chapter-link') === chapterId) {
+      if (chapterId !== '' && link.getAttribute('data-chapter-link') === chapterId) {
         link.setAttribute('aria-current', 'true');
       } else {
         link.removeAttribute('aria-current');
       }
     });
 
+    partLinks.forEach(function (link) {
+      if (sceneId !== '' && link.getAttribute('data-part-link') === sceneId) {
+        link.setAttribute('aria-current', 'true');
+      } else {
+        link.removeAttribute('aria-current');
+      }
+    });
+
+    chapterToggles.forEach(function (button) {
+      var id = button.getAttribute('data-chapter-toggle');
+      var open = Object.prototype.hasOwnProperty.call(chapterChoice, id)
+        ? chapterChoice[id]
+        : id === chapterId;
+      button.setAttribute('aria-expanded', open ? 'true' : 'false');
+      // Hidden rather than styled shut, so a collapsed chapter's parts are
+      // out of the tab order and out of the accessibility tree as well as off
+      // the screen. With no script nothing is hidden and every part is listed.
+      if (partsById[id]) partsById[id].hidden = !open;
+    });
+  }
+
+  /** Where the reader is: the scene on screen, or the one being scrolled past. */
+  function place() {
+    if (view === 'landing') return -1;
+    return view === 'reading' ? visibleSceneIndex() : current;
+  }
+
+  function applySceneState() {
+    scenes.forEach(function (scene, index) {
+      scene.toggleAttribute('data-current', index === current && view === 'beat');
+    });
+    applyPlace(place());
+
     // The first scene's Back is the way out to the landing, and the last
-    // scene has no Next: it offers Read again instead. Saying so by changing
-    // what is offered is clearer than a disabled button that explains nothing.
+    // scene has no Next: it offers Read again instead, with the final passage
+    // rather than in the footer. Saying so by changing what is offered is
+    // clearer than a disabled button that explains nothing.
     if (backButton) backButton.hidden = view !== 'beat';
     if (nextButton) {
       nextButton.hidden = view !== 'beat' || current === last;
@@ -243,26 +361,106 @@
     if (readAgain) readAgain.hidden = !(view === 'beat' && current === last);
 
     // The approved landing carries the title, the opening drawing, Begin and
-    // Sources & Credits, and nothing else. Reading controls belong to a
-    // reader who has started reading: offered on the landing they would let
-    // someone print or switch view before meeting the essay at all.
-    //
-    // The whole bar goes, not only those two. Its Sources & Credits link is a
-    // second copy of the one the landing itself renders, and the approved
-    // landing lists one of each action; the landing's own Begin and Sources &
-    // Credits are in the page, where the script does not touch them. Once the
-    // reader is reading, the landing is off screen and the bar's copy is the
-    // only one they can reach.
+    // Sources & Credits, and nothing else. The rail, its launcher and the
+    // reading footer belong to a reader who has started reading: offered on
+    // the landing they would let someone switch view, or meet a second copy
+    // of Sources & Credits, before meeting the essay at all. The landing's
+    // own Begin and Sources & Credits are in the page, where the script does
+    // not touch them.
     if (viewToggle) viewToggle.hidden = view === 'landing';
-    if (printButton) printButton.hidden = view === 'landing';
     if (controls) controls.hidden = view === 'landing';
+    if (rail) rail.hidden = view === 'landing';
+    if (launcher) launcher.hidden = view === 'landing';
+    // The view decides whether the drawer is covering anything, so the rail's
+    // own state is reapplied with it. Reaching the landing with a drawer
+    // still open -- the browser's Back button can do it -- would otherwise
+    // leave the landing inert behind a rail nothing is showing.
+    applyRailState();
+  }
+
+  /* --- Opening and dismissing the rail ------------------------------------ */
+
+  /* What the drawer is laid over. Not the skip link, which sits above it and
+     is still a reasonable way out. */
+  var behindDrawer = [landing, document.querySelector('.essay-body'), controls]
+    .filter(function (element) { return !!element; });
+
+  /**
+   * The name each rail control carries, for the arrangement it is in.
+   *
+   * The approved interface names the two arrangements separately, because
+   * they are different actions: a rail beside the essay is hidden and shown,
+   * and a drawer laid over it is opened and closed. Both names are written
+   * into the markup, so neither is composed here.
+   */
+  function applyRailLabels() {
+    var attribute = isDrawer() ? 'data-drawer-label' : 'data-rail-label';
+    [railToggle, railRestore].forEach(function (control) {
+      if (!control) return;
+      var label = control.getAttribute(attribute);
+      if (label && control.textContent !== label) control.textContent = label;
+    });
+  }
+
+  function applyRailState() {
+    root.setAttribute('data-rail', railOpen ? 'open' : 'closed');
+    applyRailLabels();
+    // Both controls answer for the same region, so both report the same
+    // state; only one of them is ever on screen at a time.
+    if (railToggle) railToggle.setAttribute('aria-expanded', railOpen ? 'true' : 'false');
+    if (railRestore) railRestore.setAttribute('aria-expanded', railOpen ? 'true' : 'false');
+
+    // Beside the essay the rail covers nothing and the reader can move
+    // between the two freely. As a drawer it covers the reading column, so
+    // what is behind it is made `inert`: out of the tab order and out of the
+    // accessibility tree, which is the guard something modal owes. That is
+    // the browser's own mechanism rather than a focus trap written here, so
+    // there is no keyboard loop to get wrong and nothing to undo if the
+    // drawer is dismissed in some way this script did not anticipate.
+    var covered = railOpen && isDrawer() && view !== 'landing';
+    behindDrawer.forEach(function (element) { element.toggleAttribute('inert', covered); });
+  }
+
+  /**
+   * Opens or closes the rail.
+   *
+   * Focus follows the control that disappears: collapsing the rail moves it to
+   * the launcher, which is where the way back now is, and opening it moves it
+   * into the rail, onto the control that closes it again. Either way the
+   * reader's focus is somewhere they can act from rather than lost to the
+   * body.
+   *
+   * On a wide screen the reading column reflows when the rail comes or goes,
+   * so the scene being read is brought back under the reader's eye afterwards.
+   * A pixel offset would not survive the reflow; the scene is the thing worth
+   * keeping.
+   *
+   * @param {boolean} open
+   * @param {{focus?: boolean, anchor?: boolean}} [options]
+   */
+  function setRail(open, options) {
+    var settings = options || {};
+    if (railOpen === open) return;
+    var anchor = view === 'landing' ? null : scenes[place()];
+    railOpen = open;
+    applyRailState();
+    if (settings.focus !== false) {
+      if (open && railToggle && railToggle.focus) railToggle.focus();
+      if (!open && railRestore && railRestore.focus) railRestore.focus();
+    }
+    if (settings.anchor !== false && anchor) scrollToElement(anchor);
+  }
+
+  /** Closes the drawer before a move, so the reader is not navigating blind. */
+  function dismissDrawer() {
+    if (isDrawer() && railOpen) setRail(false, { focus: false, anchor: false });
   }
 
   function setView(nextView) {
     view = nextView;
     root.setAttribute('data-view', nextView);
     if (viewToggle) {
-      viewToggle.textContent = nextView === 'reading' ? toggleLabels.continuous : toggleLabels.scene;
+      viewToggle.textContent = nextView === 'reading' ? toggleLabels.continuous : toggleLabels.parts;
     }
     applyCitationMode();
     applySceneState();
@@ -312,8 +510,8 @@
    * never leaves the page and so never loses their position.
    */
   function writeSourcesLinks() {
-    var place = scenes[visibleSceneIndex()];
-    var scene = place ? place.getAttribute('data-scene') : '';
+    var here = scenes[visibleSceneIndex()];
+    var scene = here ? here.getAttribute('data-scene') : '';
     sourcesLinks.forEach(function (entry) {
       if (entry.base.charAt(0) === '#') return;
       if (view === 'landing' || scene === '') {
@@ -360,6 +558,11 @@
     scrollToElement(target);
     if (settings.focus !== false && target && target.focus) target.focus({ preventScroll: true });
     if (settings.record !== false) writeFragment(scenes[current].getAttribute('data-scene'), settings.replace);
+    // `setView` ran before the page had been scrolled, so the part it marked
+    // was read from the old position. Now that the move has happened, the
+    // rail is told again where the reader is.
+    applyPlace(place());
+    writeSourcesLinks();
   }
 
   /**
@@ -377,6 +580,10 @@
    */
   function applyFragment(options) {
     var settings = options || {};
+    // Arriving at an address -- a deep link, the browser's Back button, the
+    // way back from Sources & Credits -- is not a keypress, whatever the
+    // browser makes of the focus it gives the fragment's target.
+    root.setAttribute('data-move', 'address');
     var focus = settings.focus !== false;
     var id = readFragment();
     appliedFragment = id;
@@ -384,6 +591,11 @@
 
     var index = indexOfSceneId(id);
     if (index < 0) index = firstSceneOfChapter(id);
+    var relocated = false;
+    if (index < 0) {
+      index = relocatedSceneIndex(id);
+      relocated = index >= 0;
+    }
     if (index < 0) {
       if (id !== '' && !settings.initial) return;
       setView(wanted === 'reading' ? 'reading' : 'landing');
@@ -393,10 +605,10 @@
     if (wanted === 'reading') {
       current = index;
       applySceneState();
-      showReading({ record: false, focus: focus });
+      showReading({ record: relocated, replace: true, focus: focus });
       return;
     }
-    showScene(index, { record: false, focus: focus });
+    showScene(index, { record: relocated, replace: true, focus: focus });
   }
 
   /* --- Wiring ------------------------------------------------------------ */
@@ -404,8 +616,31 @@
   if (beginLink) {
     beginLink.addEventListener('click', function (event) {
       event.preventDefault();
+      markMove(event);
       showScene(0);
     });
+  }
+
+  /**
+   * Going to a place in the essay, from the rail.
+   *
+   * A chapter title leads to that chapter's first scene; a part leads to
+   * itself. Either way the reading mode is left alone -- the reader asked to
+   * go somewhere, not to change how they are reading -- and a drawer is
+   * dismissed on the way, so the destination is not behind it when they
+   * arrive.
+   */
+  function goTo(index, event) {
+    if (index < 0) return;
+    markMove(event);
+    dismissDrawer();
+    if (view === 'reading') {
+      current = index;
+      applySceneState();
+      showReading({ target: scenes[index] });
+      return;
+    }
+    showScene(index);
   }
 
   chapterLinks.forEach(function (link) {
@@ -413,35 +648,76 @@
       var index = firstSceneOfChapter(link.getAttribute('data-chapter-link'));
       if (index < 0) return;
       event.preventDefault();
-      // Revisiting a chapter from the continuous view keeps that view: the
-      // reader asked to go somewhere, not to change how they are reading.
-      if (view === 'reading') {
-        current = index;
-        applySceneState();
-        showReading({ target: scenes[index] });
-        return;
-      }
-      showScene(index);
+      goTo(index, event);
     });
   });
 
+  partLinks.forEach(function (link) {
+    link.addEventListener('click', function (event) {
+      var index = indexOfSceneId(link.getAttribute('data-part-link'));
+      if (index < 0) return;
+      event.preventDefault();
+      goTo(index, event);
+    });
+  });
+
+  /* A chapter the reader opens or closes themselves stays that way. The
+     expansion is recorded against the chapter rather than applied to the
+     element here, so the one rule that decides what is expanded stays in
+     `applyPlace`. */
+  chapterToggles.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var id = button.getAttribute('data-chapter-toggle');
+      chapterChoice[id] = button.getAttribute('aria-expanded') !== 'true';
+      applyPlace(place());
+    });
+  });
+
+  if (railToggle) railToggle.addEventListener('click', function () { setRail(false); });
+  if (railRestore) railRestore.addEventListener('click', function () { setRail(true); });
+
+  /* The arrangement is the stylesheet's answer, so a window that crosses the
+     width at which the rail becomes a drawer gets that arrangement's default:
+     a rail beside the essay, or a drawer that is shut. Carrying the old answer
+     across would leave a drawer standing open over the prose after a rotation,
+     or an essay with no rail on a screen wide enough for one. */
+  if (drawerQuery && drawerQuery.addEventListener) {
+    drawerQuery.addEventListener('change', function () {
+      // Written directly rather than through `setRail`: the reader did not
+      // ask to be moved, the browser keeps the scroll position across a
+      // resize on its own, and the state has to be reapplied even when the
+      // open/closed answer happens to be the same one -- a drawer that was
+      // open becomes a rail beside the essay, which covers nothing.
+      railOpen = !isDrawer();
+      applyRailState();
+    });
+  }
+
   if (backButton) {
-    backButton.addEventListener('click', function () {
+    backButton.addEventListener('click', function (event) {
+      markMove(event);
       if (current === 0) showLanding();
       else showScene(current - 1);
     });
   }
-  if (nextButton) nextButton.addEventListener('click', function () { showScene(current + 1); });
+  if (nextButton) {
+    nextButton.addEventListener('click', function (event) {
+      markMove(event);
+      showScene(current + 1);
+    });
+  }
 
   if (readAgain) {
     readAgain.addEventListener('click', function (event) {
       event.preventDefault();
+      markMove(event);
       showScene(0);
     });
   }
 
   if (viewToggle) {
-    viewToggle.addEventListener('click', function () {
+    viewToggle.addEventListener('click', function (event) {
+      markMove(event);
       // Leaving continuous reading goes to the passage on screen, not to the
       // scene the reader entered continuous reading at. They have scrolled
       // since, and the script was not involved in that, so `current` is only
@@ -449,10 +725,6 @@
       if (view === 'reading') showScene(visibleSceneIndex());
       else showReading();
     });
-  }
-
-  if (printButton) {
-    printButton.addEventListener('click', function () { window.print(); });
   }
 
   /* --- Keyboard ----------------------------------------------------------
@@ -463,15 +735,25 @@
   var OWNS_ARROWS = 'input, textarea, select, button, a[href], summary, details, [contenteditable]';
 
   document.addEventListener('keydown', function (event) {
+    // Escape shuts the drawer and gives focus back to the control that opened
+    // it. Only the drawer: a rail standing beside the essay covers nothing,
+    // and Escape has no business collapsing it out from under a reader.
+    if (event.key === 'Escape' && railOpen && isDrawer()) {
+      event.preventDefault();
+      setRail(false, { anchor: false });
+      return;
+    }
     if (view !== 'beat') return;
     if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     var target = event.target;
     if (target && target.nodeType === 1 && (target.isContentEditable || (target.closest && target.closest(OWNS_ARROWS)))) return;
     if (event.key === 'ArrowRight') {
       event.preventDefault();
+      markMove();
       if (current < last) showScene(current + 1);
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
+      markMove();
       if (current === 0) showLanding();
       else showScene(current - 1);
     }
@@ -479,24 +761,29 @@
 
   /* --- Reading position ---------------------------------------------------
      In the continuous view the reader moves by scrolling, which the script is
-     otherwise uninvolved in. The only thing that needs to keep up is the
-     shared Sources & Credits link, so that leaving for the register and
-     coming back returns to the passage they left rather than to wherever the
-     continuous view was entered. This listens passively, writes one attribute
-     and does nothing else: no focus, no scrolling, no history entry. */
+     otherwise uninvolved in. Two things have to keep up with it: the shared
+     Sources & Credits link, so that leaving for the register and coming back
+     returns to the passage they left rather than to wherever the continuous
+     view was entered, and the rail, so the part it marks is the part being
+     read. This listens passively and writes attributes: no focus, no
+     scrolling, no history entry. */
 
   var scrollPending = false;
-  function refreshSourcesLinks() {
+  function refreshReadingPosition() {
     if (view !== 'reading' || scrollPending) return;
     scrollPending = true;
     // Coalesced on a timer rather than a frame. A scroll fires many events
-    // per frame and this only writes one attribute, so it does not need to be
-    // frequent; it does need to happen in a document that is never painted,
+    // per frame and this only writes a few attributes, so it does not need to
+    // be frequent; it does need to happen in a document that is never painted,
     // which is exactly where `requestAnimationFrame` never runs.
-    setTimeout(function () { scrollPending = false; writeSourcesLinks(); }, 100);
+    setTimeout(function () {
+      scrollPending = false;
+      writeSourcesLinks();
+      applyPlace(place());
+    }, 100);
   }
 
-  window.addEventListener('scroll', refreshSourcesLinks, { passive: true });
+  window.addEventListener('scroll', refreshReadingPosition, { passive: true });
 
   // And once more as the link is used, for a reader whose browser coalesced
   // the last scroll frame away, or who reached it by keyboard.
@@ -523,6 +810,7 @@
      `view=continuous` query is a reader coming back from the sources page
      having been reading continuously, so that is the mode they come back to. */
 
+  applyRailState();
   var returning = param(window.location.search, 'view') === 'continuous' ? 'reading' : null;
   applyFragment({ focus: false, initial: true, view: returning });
 })();

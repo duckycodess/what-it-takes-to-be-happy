@@ -22,7 +22,7 @@ import { loadValidContent, byId, codes } from './helpers.js';
 
 const readingOrder = (doc) => doc.chapters.flatMap((chapter) => chapter.sceneIds);
 
-test('register numbers follow first appearance in the reading order', () => {
+test('register numbers are the ones the register already had', () => {
   const doc = loadValidContent();
   const sceneById = new Map(doc.scenes.map((scene) => [scene.id, scene]));
 
@@ -35,11 +35,21 @@ test('register numbers follow first appearance in the reading order', () => {
     }
   }
 
-  // The approved script says numbering follows first appearance. Reading the
-  // essay through and writing down each new number as it arrives must produce
-  // 1 to 26 in order; anything else means a number was assigned by hand.
-  assert.deepEqual(firstSeen, doc.sourcesPage.sources.map((source) => source.number));
-  assert.deepEqual(firstSeen, Array.from({ length: 26 }, (unused, index) => index + 1));
+  // The superseded script numbered by first appearance. The approved essay
+  // does not renumber: its `source_numbering` rule is to retain the existing
+  // 1-26 numbers and R identities, so a link anybody has to `[9]` still means
+  // the work it always meant. The new reading order therefore introduces them
+  // slightly out of sequence -- [7] arrives before [4] -- and that is the
+  // approved decision rather than a number assigned by hand.
+  assert.deepEqual([...firstSeen].sort((a, b) => a - b),
+    Array.from({ length: 26 }, (unused, index) => index + 1),
+    'every register entry is cited exactly once somewhere');
+  assert.notDeepEqual(firstSeen, [...firstSeen].sort((a, b) => a - b),
+    'if first appearance has become ascending again, the retention rule has been lost');
+
+  // The register itself is still stored and shown in number order.
+  assert.deepEqual(doc.sourcesPage.sources.map((source) => source.number),
+    Array.from({ length: 26 }, (unused, index) => index + 1));
 });
 
 test('a drawing is found by its brief reference, not by where it is stored', () => {
@@ -48,27 +58,28 @@ test('a drawing is found by its brief reference, not by where it is stored', () 
   doc.assets.reverse();
   assert.deepEqual(validateContent(doc).errors, []);
 
-  const scene = byId(doc.scenes, 's088');
+  const scene = doc.scenes.find((entry) => entry.visual.views.length > 0);
   const asset = doc.assets.find((entry) => entry.ref === scene.visual.views[0].ref);
-  assert.equal(asset.ref, 'A01');
+  assert.equal(asset.ref, scene.visual.views[0].ref);
+  assert.ok(asset.images[scene.visual.views[0].image], 'the drawing it names is one the asset carries');
 });
 
-test('the authored scene order is now the contract, and changing it is reported', () => {
+test('the authored part order is the contract, and changing it is reported', () => {
+  // Moving a part into the next chapter without telling the part about it.
+  // The chapter a passage reads under is part of the argument, so a part that
+  // disagrees with the chapter listing it is reported rather than published.
   const moved = loadValidContent();
   const from = byId(moved.chapters, 'c5');
   const to = byId(moved.chapters, 'c6');
-  from.sceneIds = from.sceneIds.filter((id) => id !== 's113');
-  to.sceneIds.unshift('s113');
-  byId(moved.scenes, 's113').chapterId = 'c6';
+  const last = from.sceneIds.at(-1);
+  from.sceneIds = from.sceneIds.filter((id) => id !== last);
+  to.sceneIds.unshift(last);
 
-  // Every identifier agrees and the sentences still read in the same order,
-  // because s113 was last in its chapter and is now first in the next one.
-  // It is still a different essay: chapter 6 is anchored at s114 in the
-  // approved script, and the chapter a scene reads under is part of the
-  // argument. That is what the anchor check is for.
   const reported = codes(validateContent(moved).errors);
-  assert.ok(reported.includes('ANCHOR_MISMATCH'));
-  assert.deepEqual(readingOrder(moved), loadValidContent().scenes.map((scene) => scene.id));
+  assert.ok(reported.includes('CHAPTER_MISMATCH'),
+    `moving a part between chapters should be reported, got ${reported.join(', ')}`);
+  assert.deepEqual(readingOrder(moved), loadValidContent().scenes.map((scene) => scene.id),
+    'the sentences still read in the same order, which is why this needs its own check');
 
   const stored = loadValidContent();
   stored.scenes.reverse();
@@ -78,5 +89,5 @@ test('the authored scene order is now the contract, and changing it is reported'
 test('the reading order is the stored scene order, with every scene reached once', () => {
   const doc = loadValidContent();
   assert.deepEqual(readingOrder(doc), doc.scenes.map((scene) => scene.id));
-  assert.equal(new Set(readingOrder(doc)).size, 45);
+  assert.equal(new Set(readingOrder(doc)).size, 31);
 });

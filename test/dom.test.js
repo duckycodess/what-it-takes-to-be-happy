@@ -8,7 +8,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { parseHtml } from './support/dom.js';
+import { openDocument, parseHtml } from './support/dom.js';
 
 const parse = (html) => parseHtml(`<html><body>${html}</body></html>`);
 
@@ -123,4 +123,28 @@ test('an element contains its descendants, itself, and nothing else', () => {
   assert.equal(a.contains(d), false, 'a sibling is not inside it');
   assert.equal(c.contains(a), false, 'and an ancestor is not inside its own child');
   assert.equal(a.contains(null), false);
+});
+
+test('the one media query the script asks about is answered, and can change', () => {
+  // There is no layout here, so the answer is given rather than measured. It
+  // still has to behave as a `MediaQueryList` does: keep answering, and tell
+  // its listener when the answer flips, which is how a test turns a desktop
+  // window into a phone.
+  const page = openDocument(
+    `<!doctype html><html><body>
+<nav id="chapters"><button data-rail-toggle aria-expanded="true"><span>Chapters</span></button></nav>
+<p class="rail-launcher"><button data-rail-restore aria-expanded="true">Chapters</button></p>
+<section class="scene" data-scene="s001" data-chapter="c1" tabindex="-1"><h3>One</h3></section>
+</body></html>`,
+    { narrow: true },
+  );
+
+  assert.deepEqual(page.mediaQueries, ['(max-width: 59.99rem)'], 'the script asked about one width');
+  assert.equal(page.rail(), 'closed', 'a narrow window starts with the drawer shut');
+
+  page.resizeTo(false);
+  assert.equal(page.rail(), 'open', 'the listener was told the answer changed');
+
+  page.resizeTo(false);
+  assert.equal(page.rail(), 'open', 'and an answer that did not change fires nothing');
 });

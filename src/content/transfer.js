@@ -1,60 +1,83 @@
 /**
- * Structural transfer of the approved scene script into the content document.
+ * Structural transfer of the approved essay into the content document.
  *
- * The owner approved one artefact: `docs/redesign/approved-scene-script.md`,
- * SHA-256 `a9bd21f3…`. Retyping its 45 scenes into JSON would be a second
- * transcription, and a second transcription is a second chance to drift. So
- * the reader copy is never retyped: it is parsed out of that file, and
- * `npm run content:transfer` rewrites `content/content.json` from it. A test
- * reruns the parse and compares, so a content document that stops matching
- * the approved script fails rather than ships.
+ * The owner approved two artefacts on 11 October 2026 and asked for them to be
+ * integrated exactly: `docs/editorial/full-essay-v2.md`, which is the essay as
+ * a reader-legible document, and `docs/editorial/full-essay-handoff-v2.json`,
+ * which is the same copy in machine form with paragraph boundaries, per-part
+ * checksums, artwork anchors and the approved interface strings. Retyping
+ * either into JSON would be a second transcription, and a second transcription
+ * is a second chance to drift. So the reader copy is never retyped: it is read
+ * out of those files, and `npm run content:transfer` rewrites
+ * `content/content.json` from them. A test reruns the transfer and compares, so
+ * a content document that stops matching the approved essay fails rather than
+ * ships.
+ *
+ * Four things are checked rather than trusted, on every transfer:
+ *
+ *   Both approved files hash to the checksums the authorization record binds.
+ *   Every part's copy hashes to the checksum the handoff records for it.
+ *   Every part's copy appears verbatim in the Markdown document as well, so
+ *     the two approved files cannot disagree without the transfer failing.
+ *   Every citation's destination is the URL the register records for that
+ *     number, so a marker cannot point somewhere the source audit does not.
  *
  * Nothing here writes prose. Every reader-visible string this module produces
- * is a substring of the approved script, of a verified asset manifest, or of
- * the audited source register. The two exceptions are both structural: a
- * citation's `[^07]` marker becomes the visible `[7]` and the accessible
- * `Source 7`, which the script's interface section specifies by name.
+ * is a substring of the approved essay, of a verified asset manifest, or of the
+ * audited source register. The one exception is structural: a `[7](url)` marker
+ * becomes the visible `[7]` and the accessible `Source 7`, which the approved
+ * interface specifies by name.
+ *
+ * The superseded 45-scene script is still in the repository as provenance —
+ * `docs/redesign/approved-scene-script.md`, and the relocation table below maps
+ * each of its addresses to the part that now carries the related passage — but
+ * it is no longer what the website is built from.
  */
 
 import { createHash } from 'node:crypto';
 
-export const SCHEMA_ID = 'happiness-essay-content/v2';
+export const SCHEMA_ID = 'happiness-essay-content/v3';
 
-/** The approved script this content is transferred from. */
-export const APPROVED_SCRIPT = {
+/** The approved essay this content is transferred from, in both its forms. */
+export const APPROVED_ESSAY = {
+  markdown: {
+    path: 'docs/editorial/full-essay-v2.md',
+    sha256: 'b96ca8697becf3f62203341302dddb24f4050257cfc602ef89e78fb6995c524c',
+  },
+  handoff: {
+    path: 'docs/editorial/full-essay-handoff-v2.json',
+    sha256: '35a56e6e5aaafce5ba7456f51d68cf72837351b2123ba61952507e506c872c87',
+  },
+};
+
+/** The superseded script, kept as provenance and as the relocation source. */
+export const SUPERSEDED_SCRIPT = {
   path: 'docs/redesign/approved-scene-script.md',
   sha256: 'a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f',
 };
 
-/** The speaker labels the script fixes; a narrator block carries no label. */
+/** The speaker labels the essay may use; a narrator block carries no label. */
 export const SPEAKERS = ['TJ', 'Koj', 'Vier'];
 
-/** The chapter anchors the script's navigation contract names. */
-export const CHAPTER_ANCHORS = ['s088', 's092', 's097', 's103', 's109', 's114', 's122', 's128'];
-
-/** The layouts the script assigns to scenes. */
-export const LAYOUTS = ['group', 'single', 'pair', 'text'];
+/** The layouts the approved handoff assigns to parts. */
+export const LAYOUTS = ['support', 'pair', 'comparison', 'text'];
 
 /**
- * Interface strings, each asserted to appear as a backticked token in the
- * script's own interface section rather than trusted from here. Declaring
- * them is what lets the assertion exist: a value parsed out of prose could
- * not be checked against anything.
+ * How an authoring key becomes an application identifier.
+ *
+ * The handoff's `id_policy` is explicit: `v2-cN-pN` are stable authoring keys,
+ * the integration chooses compatible unused application identifiers, and
+ * `s088`–`s132` are never reused for changed copy. The 31 parts therefore take
+ * `s201` upward, which is the same `s\d{3}` shape every earlier address had and
+ * is clear of every identifier this project has published. The mapping is kept
+ * in the content document, so an authoring key can always be traced to the
+ * address a reader sees.
  */
-export const INTERFACE = {
-  title: 'What it takes to be happy',
-  begin: 'Begin',
-  sources: 'Sources & Credits',
-  chapters: 'Chapters',
-  continuous: 'Read continuously',
-  scene: 'Scene view',
-  print: 'Print',
-  skip: 'Skip to scene',
-  back: 'Back',
-  next: 'Next',
-  readAgain: 'Read again',
-  backToReading: 'Back to reading',
-};
+export const FIRST_PART_NUMBER = 201;
+export const partId = (index) => `s${FIRST_PART_NUMBER + index}`;
+
+/** Chapter identifiers stay positional: `#c6` still means the sixth chapter. */
+export const chapterId = (number) => `c${number}`;
 
 /** How a citation marker reaches the reader. */
 export const citationLabel = (number) => `[${number}]`;
@@ -66,53 +89,63 @@ const fail = (message) => {
   throw new TransferError(message);
 };
 
+const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+
 /* --------------------------------------------------------------------------
  * Reader copy
  * ----------------------------------------------------------------------- */
 
-const CITATION = /\[\^(\d{2})\]/g;
+/**
+ * A citation as the approved copy writes it: `[7](https://…)`.
+ *
+ * The number is what a reader sees and the destination is the work itself. On
+ * the page the marker links to the register entry rather than to the work,
+ * because the entry is where the access note and the limitation are; the URL
+ * here is checked against that entry and then belongs to it.
+ */
+const CITATION = /\[(\d{1,2})\]\((https?:\/\/[^\s)]+)\)/g;
 
 /**
  * One authored paragraph, split into exactly the parts a renderer needs.
  *
  * Citation markers sit mid-paragraph as often as they end one, so a paragraph
- * cannot be a single string with a list of numbers beside it. The parts are
- * the paragraph cut at each marker: joining the text parts back with the
- * markers restored returns the authored line character for character, which
- * is what `plainText` asserts for every block.
+ * cannot be a single string with a list of numbers beside it. The parts are the
+ * paragraph cut at each marker: joining the text parts back with the markers
+ * restored returns the authored paragraph character for character, which is
+ * what every block is checked against.
  */
-function splitParts(line) {
+function splitParts(line, onCitation) {
   const parts = [];
   let cursor = 0;
   for (const match of line.matchAll(CITATION)) {
     if (match.index > cursor) parts.push({ text: line.slice(cursor, match.index) });
-    parts.push({ citation: Number.parseInt(match[1], 10) });
+    const number = Number.parseInt(match[1], 10);
+    onCitation(number, match[2]);
+    parts.push({ citation: number });
     cursor = match.index + match[0].length;
   }
   if (cursor < line.length) parts.push({ text: line.slice(cursor) });
   return parts;
 }
 
-/** The sentence a reader sees: authored text with `[^07]` shown as `[7]`. */
+/** The sentence a reader sees: authored text with the marker shown as `[7]`. */
 export const visibleText = (parts) =>
   parts.map((part) => (part.text === undefined ? citationLabel(part.citation) : part.text)).join('');
 
-/** The authored line, reassembled, so a transfer can be checked against it. */
-const authoredText = (parts) =>
-  parts.map((part) => (part.text === undefined ? `[^${String(part.citation).padStart(2, '0')}]` : part.text)).join('');
+/* --------------------------------------------------------------------------
+ * Main-path words
+ * ----------------------------------------------------------------------- */
 
 /**
- * Main-path words.
- *
  * The rule, recorded rather than tuned: count the reader-visible narration and
- * dialogue of all 45 scenes, excluding speaker labels, citation markers, scene
+ * dialogue of all 31 parts, excluding speaker labels, citation markers, part
  * and chapter titles, interface strings and everything on the Sources &
  * Credits page. A word is a run of characters separated by whitespace, so a
  * hyphenated or apostrophised word counts once.
  */
 export const WORD_COUNT_RULE =
-  'Reader-visible narration and dialogue of the 45 main-path scenes, whitespace-separated, '
-  + 'excluding speaker labels, citation markers, scene and chapter titles, interface strings '
+  'Reader-visible narration and dialogue of the 31 main-path parts, whitespace-separated, '
+  + 'excluding speaker labels, citation markers, part and chapter titles, interface strings '
   + 'and the Sources & Credits page.';
 
 export function countWords(scenes) {
@@ -137,9 +170,9 @@ export function countWords(scenes) {
  * older shape: an `x_fraction` for each name beside a single
  * `name_y_fraction_desktop`/`name_y_fraction_phone` pair for all of them.
  * A02–A18 give every anchor its own `y_fraction`, which is the same number at
- * both widths. Normalising here rather than branching in the renderer means
- * the older manifest is handled, not skipped, and the test suite checks both
- * shapes arrive with the same fields.
+ * both widths. Normalising here rather than branching in the renderer means the
+ * older manifest is handled, not skipped, and the test suite checks both shapes
+ * arrive with the same fields.
  */
 export function readAsset(manifest) {
   const ref = manifest.ref ?? 'A01';
@@ -194,191 +227,135 @@ export function readAsset(manifest) {
 }
 
 /* --------------------------------------------------------------------------
- * The script
+ * Interface
  * ----------------------------------------------------------------------- */
 
-const BACKTICKED = /`([^`]+)`/g;
+/**
+ * The approved control names, read out of the handoff's own interface section.
+ *
+ * Each is taken from the field the handoff puts it in rather than retyped, so
+ * a control this build renders is a string the owner approved. The two pairs
+ * are the two arrangements of one list: a rail beside the essay is hidden and
+ * shown, and a drawer over it is opened and closed.
+ */
+function readInterface(handoff) {
+  const ui = handoff.interface ?? fail('the approved handoff has no interface section');
+  const at = (value, where) => (typeof value === 'string' && value !== ''
+    ? value
+    : fail(`the approved handoff has no interface string at ${where}`));
 
-function parseInterface(markdown) {
-  const section = markdown.slice(
-    markdown.indexOf('### Landing and shared interface copy'),
-    markdown.indexOf('### Art status and boundaries'),
-  );
-  if (!section) fail('the approved script has no interface section');
-  const tokens = new Set(Array.from(section.matchAll(BACKTICKED), (match) => match[1]));
-  for (const [key, value] of Object.entries(INTERFACE)) {
-    if (!tokens.has(value)) fail(`interface string ${key} (${value}) is not named in the approved script`);
-  }
-  return { ...INTERFACE };
+  const footer = ui.footer ?? [];
+  const sidebar = ui.desktop_sidebar_toggle ?? [];
+  const drawer = ui.phone_drawer ?? [];
+  const secondary = ui.secondary_sidebar ?? [];
+
+  return {
+    title: at(handoff.website_title, 'website_title'),
+    begin: at(ui.landing_action, 'interface.landing_action'),
+    sources: at(secondary[1], 'interface.secondary_sidebar[1]'),
+    continuous: at(secondary[0], 'interface.secondary_sidebar[0]'),
+    partView: at(ui.continuous_mode_return, 'interface.continuous_mode_return'),
+    chapters: at(drawer[0], 'interface.phone_drawer[0]'),
+    closeChapters: at(drawer[1], 'interface.phone_drawer[1]'),
+    hideChapters: at(sidebar[0], 'interface.desktop_sidebar_toggle[0]'),
+    showChapters: at(sidebar[1], 'interface.desktop_sidebar_toggle[1]'),
+    skip: at(ui.skip_link, 'interface.skip_link'),
+    back: at(footer[0], 'interface.footer[0]'),
+    next: at(footer[1], 'interface.footer[1]'),
+    readAgain: at(ui.end_content_action, 'interface.end_content_action'),
+    backToReading: at(ui.source_return, 'interface.source_return'),
+  };
 }
 
-/** `A03 and A06` / `A09a/A09b` / `A12` — the refs a production note assigns. */
-const refsIn = (text) => Array.from(text.matchAll(/\bA\d{2}[ab]?\b/g), (match) => match[0]);
+/* --------------------------------------------------------------------------
+ * Parts
+ * ----------------------------------------------------------------------- */
 
 /**
- * What a scene's production note settles: the layout, which assets it uses,
- * the exact view or control labels, and whether the two drawings are a pair
- * shown together or two states of one optional comparison.
+ * What a part's artwork entry settles: the layout, which inspected cutouts it
+ * shows, the exact view or state labels, and where in the part it sits.
  *
- * Parsing the note rather than retyping the assignment keeps the mapping in
- * the approved document. Every label is taken from the note's own backticks,
- * so a label the renderer shows is a string the owner approved.
+ * The anchor is read twice. `after_paragraph` says how many paragraphs come
+ * before the drawing, and `anchor_paragraph_markdown` says which paragraph it
+ * belongs to; they have to agree, so a part whose paragraphs were reordered is
+ * caught rather than silently re-illustrated.
  */
-function parseProduction(sceneId, note, assetsByRef) {
-  const layoutMatch = note.match(/`(group|single|pair|text)`/);
-  if (!layoutMatch) fail(`${sceneId}: production note names no layout`);
-  const layout = layoutMatch[1];
+function readArt(key, art, paragraphs, assetsByRef) {
+  if (!art) return { layout: 'text', views: [], control: null, afterBlock: 0 };
 
-  const head = note.slice(0, layoutMatch.index);
-  const refs = refsIn(head);
-
+  const layout = art.layout;
+  if (!LAYOUTS.includes(layout)) fail(`${key}: unknown layout ${layout}`);
   if (layout === 'text') {
-    if (refs.length > 0) fail(`${sceneId}: a text scene cannot be assigned artwork`);
-    return { layout, views: [], control: null };
+    if ((art.views ?? []).length > 0) fail(`${key}: a text part cannot be assigned artwork`);
+    return { layout, views: [], control: null, afterBlock: 0 };
   }
-  if (refs.length === 0) fail(`${sceneId}: ${layout} layout names no asset`);
 
-  const control = /optional art-state control/.test(note);
-  const labels = Array.from(note.slice(layoutMatch.index).matchAll(BACKTICKED), (match) => match[1])
-    .filter((value) => value !== layout);
+  const after = art.after_paragraph;
+  if (!Number.isInteger(after) || after < 1 || after > paragraphs.length) {
+    fail(`${key}: the drawing follows paragraph ${after}, which the part does not have`);
+  }
+  if (art.anchor_paragraph_markdown !== undefined
+    && art.anchor_paragraph_markdown !== paragraphs[after - 1].markdown) {
+    fail(`${key}: the anchor paragraph is not the paragraph the drawing is placed after`);
+  }
 
-  const view = (ref, image, label) => {
-    const asset = assetsByRef.get(ref) ?? fail(`${sceneId}: no delivered asset for ${ref}`);
-    if (!asset.images[image]) fail(`${sceneId}: ${ref} has no image ${image}`);
-    return { ref, image, label };
-  };
+  const views = (art.views ?? []).map((view) => {
+    const asset = assetsByRef.get(view.ref) ?? fail(`${key}: no delivered asset for ${view.ref}`);
+    const image = asset.images[view.image_index];
+    if (!image) fail(`${key}: ${view.ref} has no image ${view.image_index}`);
+    const selected = view.selected_image;
+    if (selected) {
+      if (selected.path !== image.path) fail(`${key}: ${view.ref} names a file the manifest does not select`);
+      if (selected.sha256 !== image.sha256) fail(`${key}: ${view.ref} names different bytes from the manifest`);
+    }
+    return { ref: view.ref, image: view.image_index, label: view.label ?? null };
+  });
+  if (views.length === 0) fail(`${key}: ${layout} layout names no asset`);
 
   if (layout === 'pair') {
-    const [first, second] = labels;
-    if (!first || !second) fail(`${sceneId}: a pair needs two exact view labels`);
-    // Two refs pair one drawing from each; one ref pairs its own two cutouts,
-    // which is how A16 and A18 were drawn and inspected.
-    const views = refs.length === 2
-      ? [view(refs[0], 0, first), view(refs[1], 0, second)]
-      : [view(refs[0], 0, first), view(refs[0], 1, second)];
-    return { layout, views, control: null };
+    if (views.length !== 2) fail(`${key}: a pair shows two drawings`);
+    if (!views[0].label || !views[1].label) fail(`${key}: a pair needs two exact view labels`);
+    if (art.control_labels) fail(`${key}: a pair is not an optional comparison`);
+    return { layout, views, control: null, afterBlock: after };
   }
 
-  if (control) {
-    if (refs.length !== 2) fail(`${sceneId}: an optional comparison needs two drawn states`);
-    const [first, second] = labels;
-    if (!first || !second) fail(`${sceneId}: an optional comparison needs both exact state labels`);
-    return {
-      layout,
-      views: [view(refs[0], 0, first), view(refs[1], 0, second)],
-      control: { labels: [first, second] },
-    };
+  if (layout === 'comparison') {
+    if (views.length !== 2) fail(`${key}: an optional comparison needs two drawn states`);
+    const labels = art.control_labels ?? fail(`${key}: an optional comparison needs both exact state labels`);
+    if (labels.length !== 2 || !labels[0] || !labels[1]) {
+      fail(`${key}: an optional comparison needs both exact state labels`);
+    }
+    return { layout, views, control: { labels: [...labels] }, afterBlock: after };
   }
 
-  if (refs.length !== 1) fail(`${sceneId}: ${layout} layout expects one asset, found ${refs.join(', ')}`);
-  return { layout, views: [view(refs[0], 0, null)], control: null };
+  if (views.length !== 1) fail(`${key}: a support drawing is one cutout, found ${views.length}`);
+  return { layout, views, control: null, afterBlock: after };
 }
 
-/**
- * Where the drawing sits inside a scene.
- *
- * The layout contract puts it after the first authored block in all three
- * illustrated layouts: a group opens with the narrator block above the art, a
- * pair the same, and a single opens with its first authored block, which is
- * sometimes that scene's opening line of dialogue.
- *
- * Five single notes add "art follows <speaker>'s dialogue". Both are read: the
- * position is computed from the blocks, and a note naming a speaker has to
- * agree with it, so a reordered scene is caught rather than silently
- * re-illustrated. A group or a pair has to open on the narrator, because that
- * is what its contract says it does.
- */
-function artPlacement(sceneId, note, blocks, layout) {
-  if (layout === 'text') return 0;
-
-  if (layout === 'group' || layout === 'pair') {
-    if (blocks[0].kind !== 'narration') {
-      fail(`${sceneId}: a ${layout} scene opens with its first narrator block above the art`);
-    }
+/** One paragraph of approved copy, as a block the renderer can write. */
+function readParagraph(key, paragraph, onCitation) {
+  const kind = paragraph.kind;
+  if (kind !== 'narration' && kind !== 'dialogue') fail(`${key}: unknown paragraph kind ${kind}`);
+  const speaker = paragraph.speaker ?? null;
+  if (kind === 'dialogue' && !SPEAKERS.includes(speaker)) {
+    fail(`${key}: ${speaker} is not one of the three members`);
   }
+  if (kind === 'narration' && speaker !== null) fail(`${key}: a narrator block carries no name`);
 
-  const named = note.match(/art follows ([A-Za-z]+)'s dialogue/);
-  if (named) {
-    const speaker = named[1];
-    const index = blocks.findIndex((block) => block.speaker === speaker);
-    if (index < 0) fail(`${sceneId}: production names ${speaker}'s dialogue, which the scene does not contain`);
-    if (index !== 0) fail(`${sceneId}: ${speaker}'s dialogue is not the first block`);
-  }
-  return 1;
-}
+  const markdown = paragraph.markdown;
+  if (typeof markdown !== 'string' || markdown.trim() === '') fail(`${key}: an empty paragraph`);
+  const parts = splitParts(markdown, onCitation);
 
-function parseScenes(markdown, assetsByRef) {
-  const lines = markdown.split('\n');
-  const chapters = [];
-  const scenes = [];
-  let chapter = null;
-  let scene = null;
-  let mode = null;
+  // The authored paragraph, reassembled from the parts, has to be the
+  // authored paragraph: a marker that did not round-trip would mean a
+  // sentence was cut in a place the author did not write.
+  const rebuilt = parts
+    .map((part) => (part.text === undefined ? null : part.text))
+    .join('');
+  const authored = markdown.replace(CITATION, '');
+  if (rebuilt !== authored) fail(`${key}: citation markers did not round-trip`);
 
-  const closeScene = () => {
-    if (!scene) return;
-    if (scene.blocks.length === 0) fail(`${scene.id}: no reader copy`);
-    if (!scene.production) fail(`${scene.id}: no production note`);
-    scenes.push(scene);
-    scene = null;
-  };
-
-  for (const raw of lines) {
-    const line = raw.trimEnd();
-
-    const chapterHead = line.match(/^## (\d)\. (.+)$/);
-    if (chapterHead) {
-      closeScene();
-      chapter = { id: `c${chapterHead[1]}`, number: Number.parseInt(chapterHead[1], 10), title: chapterHead[2], sceneIds: [] };
-      chapters.push(chapter);
-      continue;
-    }
-    // Any other second-level heading ends the scene run; the briefs, source
-    // page and provenance tables that follow are not reader copy.
-    if (/^## /.test(line)) {
-      closeScene();
-      chapter = null;
-      continue;
-    }
-
-    const sceneHead = line.match(/^### (s\d{3}) \| (.+)$/);
-    if (sceneHead) {
-      closeScene();
-      if (!chapter) fail(`${sceneHead[1]} appears before any chapter`);
-      scene = { id: sceneHead[1], title: sceneHead[2], chapterId: chapter.id, blocks: [], production: null };
-      chapter.sceneIds.push(scene.id);
-      mode = null;
-      continue;
-    }
-
-    if (!scene) continue;
-    if (line === '**Reader copy**') { mode = 'copy'; continue; }
-
-    const production = line.match(/^\*\*Production:\*\* (.+)$/);
-    if (production) { scene.production = production[1]; mode = null; continue; }
-
-    if (mode !== 'copy' || line === '') continue;
-
-    const spoken = line.match(/^(Narrator|TJ|Koj|Vier): (.+)$/);
-    if (!spoken) fail(`${scene.id}: unlabelled reader copy line: ${line}`);
-    const [, label, text] = spoken;
-    const parts = splitParts(text);
-    if (authoredText(parts) !== text) fail(`${scene.id}: citation markers did not round-trip`);
-    scene.blocks.push({
-      kind: label === 'Narrator' ? 'narration' : 'dialogue',
-      speaker: label === 'Narrator' ? null : label,
-      parts,
-    });
-  }
-  closeScene();
-
-  for (const entry of scenes) {
-    const visual = parseProduction(entry.id, entry.production, assetsByRef);
-    entry.visual = { ...visual, afterBlock: artPlacement(entry.id, entry.production, entry.blocks, visual.layout) };
-    delete entry.production;
-  }
-
-  return { chapters, scenes };
+  return { kind, speaker: kind === 'dialogue' ? speaker : null, parts };
 }
 
 /* --------------------------------------------------------------------------
@@ -400,18 +377,28 @@ function noteParts(text) {
   return parts;
 }
 
-function parseSources(markdown, sourceMap) {
-  const sources = [];
-  for (const match of markdown.matchAll(/^\[\^(\d{2})\]: (.+)$/gm)) {
-    const number = Number.parseInt(match[1], 10);
-    const body = match[2];
+function readSources(handoff, sourceMap) {
+  const entries = handoff.sources ?? [];
+  if (entries.length !== 26) fail(`expected 26 register entries, found ${entries.length}`);
+
+  return entries.map((entry, index) => {
+    const number = entry.number;
+    if (number !== index + 1) fail(`register entry ${index + 1} is numbered ${number}`);
+
+    const body = entry.entry_markdown;
     const citation = body.match(/^\[([^\]]+)\]\(([^)]+)\)\s*/);
     if (!citation) fail(`source ${number}: no bibliographic link`);
-    const register = sourceMap[match[1]] ?? fail(`source ${number}: not in the source map`);
-    if (register.url !== citation[2]) {
-      fail(`source ${number}: register URL ${register.url} does not match the script's ${citation[2]}`);
+
+    const register = sourceMap[String(number).padStart(2, '0')]
+      ?? fail(`source ${number}: not in the source map`);
+    if (register.source_id !== entry.id) {
+      fail(`source ${number}: the register calls it ${register.source_id}, the handoff ${entry.id}`);
     }
-    sources.push({
+    if (register.url !== citation[2] || register.url !== entry.original_url) {
+      fail(`source ${number}: register URL ${register.url} does not match the approved entry`);
+    }
+
+    return {
       number,
       sourceId: register.source_id,
       auditStatus: register.audit_status,
@@ -420,30 +407,92 @@ function parseSources(markdown, sourceMap) {
       citation: citation[1],
       url: citation[2],
       note: noteParts(body.slice(citation[0].length)),
-    });
-  }
-  if (sources.length !== 26) fail(`expected 26 register entries, found ${sources.length}`);
-  sources.forEach((source, index) => {
-    if (source.number !== index + 1) fail(`register entry ${index + 1} is numbered ${source.number}`);
+    };
   });
-  return sources;
 }
 
-const readerFacing = (markdown, label) => {
-  const match = markdown.match(new RegExp(`^\\*\\*Reader-facing ${label}:\\*\\* (.+)$`, 'm'));
-  return match ? match[1] : fail(`the approved script has no reader-facing ${label}`);
-};
+/**
+ * The Sources & Credits page, read out of the approved page copy.
+ *
+ * Its shape is fixed by the approved document: the heading, three paragraphs
+ * of introduction, class note and credits, a `### References` heading, the
+ * method note, and then the 26 numbered entries. The entries are not re-parsed
+ * here — they are the register above — so the only thing read out of this
+ * markdown is the prose around them, and each paragraph is checked to be
+ * exactly where the approved document puts it.
+ */
+function readSourcesPage(handoff, sources, ui) {
+  const lines = handoff.source_page_markdown.split('\n').map((line) => line.trim()).filter(Boolean);
 
-function parseSourcesPage(markdown, sources) {
+  const heading = lines[0] ?? '';
+  if (!heading.startsWith('## ')) fail('the approved source page does not open with its title');
+  const title = heading.slice(3);
+  if (title !== ui.sources) fail(`the source page is titled ${title}, not the approved ${ui.sources}`);
+
+  const referencesAt = lines.findIndex((line) => line === '### References');
+  if (referencesAt !== 4) fail('the approved source page does not carry three paragraphs before its references');
+
+  const numbered = lines.slice(referencesAt + 2);
+  if (numbered.length !== sources.length) {
+    fail(`the approved source page lists ${numbered.length} entries for ${sources.length} register numbers`);
+  }
+  numbered.forEach((line, index) => {
+    const expected = `${index + 1}. ${handoff.sources[index].entry_markdown}`;
+    if (line !== expected) fail(`source page entry ${index + 1} is not the approved register entry`);
+  });
+
   return {
-    title: readerFacing(markdown, 'page title'),
-    intro: noteParts(readerFacing(markdown, 'introduction')),
-    classNote: noteParts(readerFacing(markdown, 'class-material note')),
-    credits: noteParts(readerFacing(markdown, 'credits')),
-    methodNote: noteParts(readerFacing(markdown, 'method note')),
-    returnLabel: readerFacing(markdown, 'return control'),
+    title,
+    intro: noteParts(lines[1]),
+    classNote: noteParts(lines[2]),
+    credits: noteParts(lines[3]),
+    methodNote: noteParts(lines[referencesAt + 1]),
+    returnLabel: ui.backToReading,
     sources,
   };
+}
+
+/**
+ * Where a register entry says its work can be reached.
+ *
+ * The entry's own bibliographic link, and every extra access link its note
+ * carries. Two entries carry one: the World Happiness Report entry links the
+ * edition and then "Read Chapter 3", and the blog entry links the category
+ * index and then the post that was actually read.
+ */
+function sourceDestinations(source) {
+  return [source.url, ...source.note.filter((part) => part.url !== undefined).map((part) => part.url)];
+}
+
+/** The last two labels of a hostname: `pmc.ncbi.nlm.nih.gov` and `pubmed…` agree. */
+function registrableDomain(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '').split('.').slice(-2).join('.');
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Whether a marker's destination is one the register entry stands behind.
+ *
+ * In the approved copy a marker names the exact passage that was read, and the
+ * register entry names the work. Most of the time those are the same address.
+ * Three are not, and all three are the same work: `[16]` names the World
+ * Happiness Report chapter the entry's note links, `[17]` names the blog post
+ * the entry's note links, and `[21]` names the PubMed record for the article
+ * the entry catalogues at PMC. So a destination passes if the entry records it
+ * or if it is on the same site; anything else is a marker pointing at a work
+ * the source audit never looked at.
+ *
+ * None of these URLs reaches a reader. A rendered citation links to the
+ * register entry, because that is where the access note and the limitation
+ * are; the work's own address belongs to the entry.
+ */
+function reaches(recorded, url) {
+  if (recorded.includes(url)) return true;
+  const host = registrableDomain(url);
+  return host !== null && recorded.some((known) => registrableDomain(known) === host);
 }
 
 /* --------------------------------------------------------------------------
@@ -452,76 +501,147 @@ function parseSourcesPage(markdown, sources) {
 
 /**
  * @param {object} input
- * @param {string} input.markdown the approved script, verbatim
+ * @param {string} input.markdown the approved essay document, verbatim
+ * @param {string} input.handoffJson the approved handoff, verbatim
  * @param {object[]} input.manifests every delivered asset manifest
  * @param {object} input.sourceMap `docs/redesign/source-map.json`
  * @returns {object} a content document
  */
-export function transfer({ markdown, manifests, sourceMap }) {
-  const digest = createHash('sha256').update(markdown).digest('hex');
-  if (digest !== APPROVED_SCRIPT.sha256) {
-    fail(`the script at ${APPROVED_SCRIPT.path} is ${digest}, not the approved ${APPROVED_SCRIPT.sha256}`);
+export function transfer({ markdown, handoffJson, manifests, sourceMap }) {
+  const markdownDigest = sha256(markdown);
+  if (markdownDigest !== APPROVED_ESSAY.markdown.sha256) {
+    fail(`the essay at ${APPROVED_ESSAY.markdown.path} is ${markdownDigest}, `
+      + `not the approved ${APPROVED_ESSAY.markdown.sha256}`);
+  }
+  const handoffDigest = sha256(handoffJson);
+  if (handoffDigest !== APPROVED_ESSAY.handoff.sha256) {
+    fail(`the handoff at ${APPROVED_ESSAY.handoff.path} is ${handoffDigest}, `
+      + `not the approved ${APPROVED_ESSAY.handoff.sha256}`);
   }
 
+  const handoff = JSON.parse(handoffJson);
   const assets = manifests.map(readAsset).sort((a, b) => a.ref.localeCompare(b.ref));
   const assetsByRef = new Map(assets.map((asset) => [asset.ref, asset]));
 
-  const interfaceCopy = parseInterface(markdown);
-  const { chapters, scenes } = parseScenes(markdown, assetsByRef);
+  const ui = readInterface(handoff);
+  const sources = readSources(handoff, sourceMap);
+  const destinations = new Map(sources.map((source) => [source.number, sourceDestinations(source)]));
 
-  if (scenes.length !== 45) fail(`expected 45 scenes, found ${scenes.length}`);
-  if (chapters.length !== 8) fail(`expected 8 chapters, found ${chapters.length}`);
-  chapters.forEach((chapter, index) => {
-    if (chapter.sceneIds[0] !== CHAPTER_ANCHORS[index]) {
-      fail(`chapter ${chapter.number} starts at ${chapter.sceneIds[0]}, not the anchor ${CHAPTER_ANCHORS[index]}`);
+  /* --- Chapters and parts --- */
+
+  const chapters = [];
+  const scenes = [];
+  const keyToId = new Map();
+
+  (handoff.chapters ?? []).forEach((chapter, chapterIndex) => {
+    const number = chapterIndex + 1;
+    const id = chapterId(number);
+    const entry = { id, number, title: chapter.title, sceneIds: [] };
+    chapters.push(entry);
+
+    for (const part of chapter.parts ?? []) {
+      const key = part.key;
+      const index = scenes.length;
+      const scene = {
+        id: partId(index),
+        partKey: key,
+        chapterId: id,
+        title: part.title,
+        blocks: [],
+        visual: null,
+      };
+      keyToId.set(key, scene.id);
+      entry.sceneIds.push(scene.id);
+
+      // Every citation is checked as it is read: a marker may only point at
+      // the work the register records for that number.
+      const onCitation = (citation, url) => {
+        const known = destinations.get(citation);
+        if (!known) fail(`${key}: cites [${citation}], which the register does not define`);
+        if (!reaches(known, url)) {
+          fail(`${key}: [${citation}] points at ${url}, which entry ${citation} does not record`);
+        }
+      };
+
+      const paragraphs = part.paragraphs ?? [];
+      if (paragraphs.length === 0) fail(`${key}: no reader copy`);
+      scene.blocks = paragraphs.map((paragraph) => readParagraph(key, paragraph, onCitation));
+      scene.visual = readArt(key, part.art, paragraphs, assetsByRef);
+
+      // The copy, as approved: its own recorded checksum, and the same words
+      // present verbatim in the Markdown document the owner read.
+      const copy = part.reader_copy_markdown;
+      if (typeof copy !== 'string' || copy.trim() === '') fail(`${key}: no approved copy block`);
+      const digest = sha256(copy);
+      if (digest !== part.reader_copy_sha256) {
+        fail(`${key}: the copy hashes to ${digest}, not the approved ${part.reader_copy_sha256}`);
+      }
+      if (!markdown.includes(copy)) {
+        fail(`${key}: the approved copy is not in ${APPROVED_ESSAY.markdown.path} verbatim`);
+      }
+      if (!markdown.includes(part.title)) {
+        fail(`${key}: the title "${part.title}" is not in ${APPROVED_ESSAY.markdown.path}`);
+      }
+
+      scenes.push(scene);
     }
   });
 
-  const sources = parseSources(markdown, sourceMap);
+  if (chapters.length !== 8) fail(`expected 8 chapters, found ${chapters.length}`);
+  if (scenes.length !== 31) fail(`expected 31 parts, found ${scenes.length}`);
+
+  /* --- Citations --- */
+
   const cited = new Set(scenes.flatMap((scene) =>
-    scene.blocks.flatMap((block) => block.parts.filter((part) => part.text === undefined).map((part) => part.citation))));
+    scene.blocks.flatMap((block) =>
+      block.parts.filter((part) => part.text === undefined).map((part) => part.citation))));
   for (const source of sources) {
-    if (!cited.has(source.number)) fail(`source ${source.number} is never cited in a scene`);
-  }
-  for (const number of cited) {
-    if (!sources.some((source) => source.number === number)) fail(`scene cites [${number}], which the register does not define`);
+    if (!cited.has(source.number)) fail(`source ${source.number} is never cited in a part`);
   }
 
-  // Numbering follows first appearance, which the script states and which a
-  // reordered scene would silently break.
-  let expected = 1;
-  for (const scene of scenes) {
-    for (const block of scene.blocks) {
-      for (const part of block.parts) {
-        if (part.text !== undefined) continue;
-        if (part.citation > expected) fail(`${scene.id} cites [${part.citation}] before [${expected}] appears`);
-        if (part.citation === expected) expected += 1;
-      }
+  /* --- Old addresses --- */
+
+  const relocations = (handoff.proposed_old_address_relocations ?? []).map((entry) => {
+    const to = keyToId.get(entry.new_part_key)
+      ?? fail(`${entry.old_scene_id} relocates to ${entry.new_part_key}, which is not a part`);
+    if (!/^s\d{3}$/.test(entry.old_scene_id)) fail(`${entry.old_scene_id} is not an address this site published`);
+    return { from: entry.old_scene_id, to, partKey: entry.new_part_key };
+  });
+  if (relocations.length !== 45) {
+    fail(`expected a relocation for each of the 45 published addresses, found ${relocations.length}`);
+  }
+  for (const relocation of relocations) {
+    if (Number.parseInt(relocation.to.slice(1), 10) < FIRST_PART_NUMBER) {
+      fail(`${relocation.from} relocates to ${relocation.to}, which reuses a published address`);
     }
   }
 
-  // The landing shows the opening drawing and nothing the renderer invented.
+  /* --- The landing --- */
+
   const opening = assetsByRef.get('A01') ?? fail('the opening asset A01 was not delivered');
 
-  const document = {
+  return {
     schema: SCHEMA_ID,
-    source: { ...APPROVED_SCRIPT },
-    interface: interfaceCopy,
+    source: {
+      essay: { ...APPROVED_ESSAY.markdown },
+      handoff: { ...APPROVED_ESSAY.handoff },
+      supersedes: { ...SUPERSEDED_SCRIPT },
+    },
+    interface: ui,
     landing: {
-      title: interfaceCopy.title,
-      beginLabel: interfaceCopy.begin,
-      beginSceneId: CHAPTER_ANCHORS[0],
-      sourcesLabel: interfaceCopy.sources,
-      visual: { layout: 'group', views: [{ ref: opening.ref, image: 0, label: null }], control: null, afterBlock: 0 },
+      title: ui.title,
+      beginLabel: ui.begin,
+      beginSceneId: scenes[0].id,
+      sourcesLabel: ui.sources,
+      visual: { layout: 'support', views: [{ ref: opening.ref, image: 0, label: null }], control: null, afterBlock: 0 },
     },
     chapters,
     scenes,
+    relocations,
     assets,
-    sourcesPage: parseSourcesPage(markdown, sources),
+    sourcesPage: readSourcesPage(handoff, sources, ui),
     measure: { words: countWords(scenes), rule: WORD_COUNT_RULE },
   };
-
-  return document;
 }
 
 export { TransferError };

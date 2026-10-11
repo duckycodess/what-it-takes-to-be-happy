@@ -1,0 +1,15 @@
+{
+  "scope": "Read-only editorial conversion audit; no application/browser/deployment pass claimed",
+  "checkout": "/home/tj/.herdr/worktrees/what-it-takes-to-be-happy/codex-issue-17",
+  "handoff_sha256": "35a56e6e5aaafce5ba7456f51d68cf72837351b2123ba61952507e506c872c87",
+  "chapters": 8,
+  "parts": 31,
+  "paragraphs": 123,
+  "source_entries": 26,
+  "passed": true,
+  "errors": [],
+  "checked_at": "2026-10-11T08:20:30.123217+00:00",
+  "content_sha256": "dae4ce545082a7210d4df4550ff0475056abd0783fc12ee803a90dfa9964bc23",
+  "base_head": "54fad5ef1b26340f23df95db3259c9ea2db4833d",
+  "tree_status": "uncommitted worker conversion, not a reviewed or deployed revision"
+}

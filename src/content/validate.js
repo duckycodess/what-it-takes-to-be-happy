@@ -1,15 +1,15 @@
 /**
  * Validation for a content document.
  *
- * The document is transferred from the approved scene script rather than
+ * The document is transferred from the approved essay rather than
  * hand-written, so these checks are not spelling corrections for an editor.
- * They are the guarantees everything downstream depends on: that the 45 scenes
- * are present in the approved order under the approved chapter anchors, that
- * every citation resolves to a register entry whose audit status and R
- * identity were not quietly changed, that every drawing a scene asks for was
- * actually delivered with alternative text, and that the interface strings are
- * the approved ones. A build refuses to publish a document that fails any of
- * them.
+ * They are the guarantees everything downstream depends on: that the 31 parts
+ * are present in the approved order under their chapters, that every published
+ * address still relocates to a part, that every citation resolves to a
+ * register entry whose audit status and R identity were not quietly changed,
+ * that every drawing a part asks for was actually delivered with alternative
+ * text, and that the interface strings are the approved ones. A build refuses
+ * to publish a document that fails any of them.
  *
  * Errors are collected rather than thrown: an editor fixing a document wants
  * the whole list, not the first line of it.
@@ -19,9 +19,10 @@ import {
   SCHEMA_ID,
   LAYOUTS,
   SPEAKERS,
-  CHAPTER_ANCHORS,
   BLOCK_KINDS,
   SCENE_ID_PATTERN,
+  PART_KEY_PATTERN,
+  FIRST_PART_NUMBER,
   CHAPTER_ID_PATTERN,
   ASSET_REF_PATTERN,
   ASSET_ID_PATTERN,
@@ -35,6 +36,7 @@ import {
   SCENE_COUNT,
   CHAPTER_COUNT,
   SOURCE_COUNT,
+  RELOCATION_COUNT,
 } from './schema.js';
 
 const isObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -123,11 +125,11 @@ function checkBlock(errors, path, block, cited) {
 /**
  * A visual names the layout, the drawings it shows and the exact label on
  * each. The contract the approved script sets is enforced here rather than in
- * the renderer: a text scene carries no drawing, a pair carries two labelled
+ * the renderer: a text part carries no drawing, a pair carries two labelled
  * views, an optional comparison carries two states with the approved labels,
- * and anything else carries exactly one unlabelled drawing.
+ * and a supporting drawing is exactly one unlabelled cutout.
  */
-function checkVisual(errors, path, visual, assetsByRef) {
+function checkVisual(errors, path, visual, assetsByRef, options = {}) {
   if (!isObject(visual)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
 
   if (!LAYOUTS.includes(visual.layout)) {
@@ -172,14 +174,26 @@ function checkVisual(errors, path, visual, assetsByRef) {
       errors.add(`${path}.control.labels`, 'CONTROL_LABEL_MISMATCH', 'each control label names its own drawn state');
     }
   }
-  if (visual.layout === 'single' && visual.control === null && visual.views.length !== 1) {
-    errors.add(`${path}.views`, 'SINGLE_NEEDS_ONE', 'a single layout shows one drawing');
+  if (visual.layout === 'comparison' && visual.control === null) {
+    errors.add(`${path}.control`, 'COMPARISON_NEEDS_CONTROL', 'a comparison switches between its two states');
   }
-  if (visual.layout === 'group' && visual.views.length !== 1) {
-    errors.add(`${path}.views`, 'GROUP_NEEDS_ONE', 'a group layout shows one drawing');
+  if (visual.layout === 'support') {
+    if (visual.views.length !== 1) {
+      errors.add(`${path}.views`, 'SUPPORT_NEEDS_ONE', 'a supporting drawing is one cutout');
+    }
+    if (visual.control !== null) {
+      errors.add(`${path}.control`, 'SUPPORT_IS_NOT_OPTIONAL', 'a supporting drawing has nothing to switch');
+    }
   }
   if (!Number.isInteger(visual.afterBlock) || visual.afterBlock < 0) {
     errors.add(`${path}.afterBlock`, 'INVALID_PLACEMENT', 'must be the whole number of blocks the drawing follows');
+  } else if (options.anchored !== false && visual.layout !== 'text' && visual.afterBlock < 1) {
+    // The approved layout rule is that a drawing supports the passage it
+    // follows. One that opened a part would have nothing to support. The
+    // landing is the exception and says so: it has no paragraphs, and its
+    // opening illustration is the first thing a reader meets.
+    errors.add(`${path}.afterBlock`, 'ART_BEFORE_ITS_PASSAGE',
+      'a drawing follows the paragraph it belongs to');
   }
   return true;
 }
@@ -328,10 +342,17 @@ export function validateContent(doc) {
     errors.add('.schema', 'UNKNOWN_SCHEMA', `must be ${SCHEMA_ID}`);
   }
 
-  // The approved script this document was transferred from, by content hash.
-  // A document that names a different revision is not this essay.
-  if (!isObject(doc.source) || !/^[0-9a-f]{64}$/.test(doc.source?.sha256 ?? '')) {
-    errors.add('.source', 'MISSING_SOURCE', 'must record the approved script path and its SHA-256');
+  // The two approved documents this one was transferred from, by content
+  // hash. A document that names a different revision is not this essay.
+  if (!isObject(doc.source)) {
+    errors.add('.source', 'MISSING_SOURCE', 'must record the approved essay and its SHA-256');
+  } else {
+    for (const key of ['essay', 'handoff']) {
+      const entry = doc.source[key];
+      if (!isObject(entry) || !isText(entry.path) || !/^[0-9a-f]{64}$/.test(entry.sha256 ?? '')) {
+        errors.add(`.source.${key}`, 'MISSING_SOURCE', 'must record the approved path and its SHA-256');
+      }
+    }
   }
 
   if (!isObject(doc.interface)) {
@@ -357,7 +378,7 @@ export function validateContent(doc) {
     return { valid: false, errors: errors.list };
   }
   if (scenes.length !== SCENE_COUNT) {
-    errors.add('.scenes', 'SCENE_COUNT', `the approved argument has ${SCENE_COUNT} scenes, not ${scenes.length}`);
+    errors.add('.scenes', 'SCENE_COUNT', `the approved argument has ${SCENE_COUNT} parts, not ${scenes.length}`);
   }
   if (chapters.length !== CHAPTER_COUNT) {
     errors.add('.chapters', 'CHAPTER_COUNT', `the approved argument has ${CHAPTER_COUNT} chapters, not ${chapters.length}`);
@@ -369,11 +390,19 @@ export function validateContent(doc) {
     const path = `.scenes[${index}]`;
     if (!isObject(scene)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
     if (!SCENE_ID_PATTERN.test(scene.id ?? '')) {
-      errors.add(`${path}.id`, 'INVALID_ID', 'must keep its historical sNNN identifier');
+      errors.add(`${path}.id`, 'INVALID_ID', 'must keep the sNNN identifier shape');
     } else if (sceneIds.has(scene.id)) {
       errors.add(`${path}.id`, 'DUPLICATE_ID', `${scene.id} appears more than once`);
+    } else if (Number.parseInt(scene.id.slice(1), 10) < FIRST_PART_NUMBER) {
+      // The approved essay's own id policy: changed copy never reuses an
+      // address this site has already published.
+      errors.add(`${path}.id`, 'REUSED_ADDRESS',
+        `${scene.id} is an address the superseded script published; parts start at s${FIRST_PART_NUMBER}`);
     } else {
       sceneIds.add(scene.id);
+    }
+    if (!PART_KEY_PATTERN.test(scene.partKey ?? '')) {
+      errors.add(`${path}.partKey`, 'INVALID_PART_KEY', 'must keep the approved handoff authoring key');
     }
     errors.text(`${path}.title`, scene.title);
     if (!CHAPTER_ID_PATTERN.test(scene.chapterId ?? '')) {
@@ -381,7 +410,7 @@ export function validateContent(doc) {
     }
     if (errors.list_(`${path}.blocks`, scene.blocks)) {
       if (scene.blocks.length === 0) {
-        errors.add(`${path}.blocks`, 'EMPTY_SCENE', 'every scene completes its titled point');
+        errors.add(`${path}.blocks`, 'EMPTY_SCENE', 'every part completes its titled point');
       }
       scene.blocks.forEach((block, blockIndex) => checkBlock(errors, `${path}.blocks[${blockIndex}]`, block, cited));
       if (Array.isArray(scene.blocks) && isObject(scene.visual)
@@ -413,11 +442,7 @@ export function validateContent(doc) {
     errors.text(`${path}.title`, chapter.title);
     if (!errors.list_(`${path}.sceneIds`, chapter.sceneIds)) return false;
     if (chapter.sceneIds.length === 0) {
-      errors.add(`${path}.sceneIds`, 'EMPTY_CHAPTER', 'a chapter carries at least one scene');
-    }
-    if (chapter.sceneIds[0] !== CHAPTER_ANCHORS[index]) {
-      errors.add(`${path}.sceneIds[0]`, 'ANCHOR_MISMATCH',
-        `chapter ${index + 1} is anchored at ${CHAPTER_ANCHORS[index]}`);
+      errors.add(`${path}.sceneIds`, 'EMPTY_CHAPTER', 'a chapter carries at least one part');
     }
     chapter.sceneIds.forEach((id, sceneIndex) => {
       if (!sceneIds.has(id)) {
@@ -449,6 +474,43 @@ export function validateContent(doc) {
     }
   }
 
+  /* --- Old addresses ---
+     Every address the superseded script published still has to lead
+     somewhere. The copy at those addresses is gone, so each one names the
+     part that now carries the related passage; a reader following a link
+     somebody shared arrives at the passage rather than at nothing. */
+
+  // Reported, not returned on: an editor fixing a document wants the whole
+  // list, and a missing relocation table says nothing about the register.
+  const relocations = Array.isArray(doc.relocations) ? doc.relocations : [];
+  errors.list_('.relocations', doc.relocations);
+  if (Array.isArray(doc.relocations) && relocations.length !== RELOCATION_COUNT) {
+    errors.add('.relocations', 'RELOCATION_COUNT',
+      `${RELOCATION_COUNT} published addresses need a destination, not ${relocations.length}`);
+  }
+  const relocated = new Set();
+  relocations.forEach((entry, index) => {
+    const path = `.relocations[${index}]`;
+    if (!isObject(entry)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
+    if (!SCENE_ID_PATTERN.test(entry.from ?? '')) {
+      errors.add(`${path}.from`, 'INVALID_ID', 'must be an address this site published');
+    } else if (relocated.has(entry.from)) {
+      errors.add(`${path}.from`, 'DUPLICATE_ID', `${entry.from} is relocated more than once`);
+    } else {
+      relocated.add(entry.from);
+    }
+    if (sceneIds.has(entry.from)) {
+      errors.add(`${path}.from`, 'ADDRESS_STILL_IN_USE', `${entry.from} is a part in this document`);
+    }
+    if (!sceneIds.has(entry.to)) {
+      errors.add(`${path}.to`, 'UNKNOWN_SCENE', `${entry.to} is not a part in this document`);
+    }
+    if (!PART_KEY_PATTERN.test(entry.partKey ?? '')) {
+      errors.add(`${path}.partKey`, 'INVALID_PART_KEY', 'must keep the approved handoff authoring key');
+    }
+    return true;
+  });
+
   /* --- Landing --- */
 
   if (!isObject(doc.landing)) {
@@ -461,11 +523,11 @@ export function validateContent(doc) {
     errors.text('.landing.beginLabel', doc.landing.beginLabel);
     errors.text('.landing.sourcesLabel', doc.landing.sourcesLabel);
     if (!sceneIds.has(doc.landing.beginSceneId)) {
-      errors.add('.landing.beginSceneId', 'UNKNOWN_SCENE', 'Begin must open a scene in this document');
-    } else if (doc.landing.beginSceneId !== CHAPTER_ANCHORS[0]) {
-      errors.add('.landing.beginSceneId', 'ANCHOR_MISMATCH', `Begin opens ${CHAPTER_ANCHORS[0]}`);
+      errors.add('.landing.beginSceneId', 'UNKNOWN_SCENE', 'Begin must open a part in this document');
+    } else if (chapters[0] && doc.landing.beginSceneId !== chapters[0].sceneIds?.[0]) {
+      errors.add('.landing.beginSceneId', 'ANCHOR_MISMATCH', 'Begin opens the first part of the first chapter');
     }
-    checkVisual(errors, '.landing.visual', doc.landing.visual, assetsByRef);
+    checkVisual(errors, '.landing.visual', doc.landing.visual, assetsByRef, { anchored: false });
   }
 
   /* --- Sources --- */

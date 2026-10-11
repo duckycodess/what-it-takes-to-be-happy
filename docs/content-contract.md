@@ -6,7 +6,7 @@ reading and print view, and the retained single-file output are all generated fr
 document. Since [the 9 October amendment](decisions.md#owner-amendment--9-october-2026) the hosted
 site is the deliverable; one document still feeds every output.
 
-Schema identifier: `happiness-essay-content/v2`. The machine definition is
+Schema identifier: `happiness-essay-content/v3`. The machine definition is
 [`src/content/schema.js`](../src/content/schema.js) and
 [`src/content/validate.js`](../src/content/validate.js). This page is the editor's version of the
 same rules; changing one without the other is a contract break.
@@ -18,9 +18,9 @@ broken document cannot reach a build.
 ## What this document is, and is not
 
 **It is a transfer, not a manuscript.** Every reader-facing sentence in it comes from
-[the approved scene script](redesign/approved-scene-script.md), whose content hash the document
+[the approved essay](editorial/full-essay-v2.md) and [ordered handoff](editorial/full-essay-handoff-v2.json), whose content hashes the document
 records and `node src/tools/transfer.js --check` re-verifies. `src/content/transfer.js` builds the
-document from that script; nothing is typed into `content/content.json` by hand.
+document from those approved files; nothing is typed into `content/content.json` by hand.
 
 That is the single most important rule here, and most of the others follow from it: **no field in
 this contract asks for prose a renderer or an editor would have to write.** The earlier
@@ -34,22 +34,23 @@ file's history and in [the storyboard](storyboard.md); nothing in the current bu
 
 ## What is in the repository today
 
-`content/content.json` is the **complete essay**: eight chapters, 45 scenes (`s088`–`s132`) in their
-authored order, 26 numbered sources, and 20 inspected generated assets. It measures 4,137 main-path
-words under the rule it records. The historical scene and source identifiers keep their meanings.
+`content/content.json` is the **complete essay**: eight chapters, 31 parts (`s201`–`s231`) in their
+authored order, 26 numbered sources, and 20 inspected generated assets. It measures 8,595 main-path
+words under the rule it records. All 45 former scene addresses relocate to their corresponding new part; source identities keep their meanings.
 
 ## Document shape
 
 ```
 {
-  "schema":      "happiness-essay-content/v2",
-  "source":      { path, sha256 },           // the approved script, by content hash
-  "interface":   { ... },                    // the twelve approved control strings
+  "schema":      "happiness-essay-content/v3",
+  "source":      { essay: { path, sha256 }, handoff: { path, sha256 }, supersedes: { path, sha256 } },           // the approved script, by content hash
+  "interface":   { ... },                    // the fourteen approved interface strings
   "landing":     { title, beginLabel, beginSceneId, sourcesLabel, visual },
   "chapters":    [ ... ],
   "scenes":      [ ... ],
   "assets":      [ ... ],
   "sourcesPage": { title, intro, classNote, credits, methodNote, returnLabel, sources },
+  "relocations": [ { from, to } ],           // all former addresses
   "measure":     { words, rule }
 }
 ```
@@ -63,7 +64,7 @@ reconstructs endorsed positions from group notes.
 
 | Thing | Rule |
 | --- | --- |
-| Scene | `s088`–`s132`, matching `^s\d{3}$`, unique, in authored reading order |
+| Scene | `s201`–`s231`, matching `^s\d{3}$`, unique, in authored reading order |
 | Chapter | `c1`–`c8`, numbered by position, each anchored at the scene the approved script anchors it at |
 | Asset | A brief reference `A01`–`A18`, optionally suffixed `a`/`b` for a two-state comparison |
 | Asset folder | A lowercase hyphenated id under `assets/generated/` |
@@ -79,8 +80,8 @@ such as `assets`, may be stored in any order.
 
 ```
 {
-  "id": "s088",
-  "title": "No special occasion",
+  "id": "s201",
+  "title": "Nothing to show for it",
   "chapterId": "c1",
   "blocks": [ { kind, speaker, parts: [ { text } | { citation } ] } ],
   "visual": { layout, views: [ { ref, image, label } ], control, afterBlock }
@@ -98,20 +99,19 @@ such as `assets`, may be stored in any order.
 
 ### The drawing
 
-`layout` is `group`, `single`, `pair` or `text`.
+`layout` is `support`, `comparison`, `pair` or `text`.
 
 | Layout | What it means |
 | --- | --- |
-| `group` | One drawing of more than one figure, after the opening narrator block |
-| `single` | One drawing, after the scene's first authored block, which may be a line of dialogue |
+| `support` | One drawing beside its approved anchor paragraph on desktop and after that paragraph on phones |
+| `comparison` | Two optional states, each using its inspected image and browser labels |
 | `pair` | Two drawings with the exact view labels that scene specifies, side by side on desktop and stacked in label order on a phone |
 | `text` | No drawing at all. A theory- or source-heavy scene carries no decorative substitute. |
 
-`afterBlock` is how many blocks precede the drawing; it is computed from the blocks rather than
-authored, and a `group` or `pair` scene that does not open on narration is reported. A placement past
+`afterBlock` is how many blocks precede the drawing; it follows the ordered handoff's explicit anchor paragraph. A placement past
 the end of the scene is reported.
 
-`control` is `null` except on the two optional comparisons (`s105`, `s114`), where it holds the two
+`control` is `null` except on the two optional comparisons (`s213`, `s219`), where it holds the two
 exact approved state labels. A comparison is never a `pair`, a `pair` is never optional, and no
 sentence is hidden in either state.
 
@@ -135,7 +135,7 @@ normalised here, and both are checked — neither generation is silently skipped
 
 ## Sources
 
-The reader's page carries 26 entries, numbered by **first appearance** in the reading order. Each
+The reader's page carries 26 entries, numbered by **preserved source identity**, not renumbered by first appearance in the revised reading order. Each
 entry records:
 
 | Field | Rule |
@@ -160,7 +160,7 @@ and an uncited entry are both reported.
 
 `measure` records a number **and the rule that produced it**, because a number alone invites
 tuning. The rule is `WORD_COUNT_RULE` in `src/content/transfer.js`: reader-visible narration and
-dialogue of the 45 main-path scenes, whitespace-separated, excluding speaker labels, citation
+dialogue of the 31 main-path parts, whitespace-separated, excluding speaker labels, citation
 markers, scene and chapter titles, interface strings and the Sources & Credits page.
 
 `./tools/count-main-path.sh` recomputes it from the same function and fails if the document's

@@ -35,20 +35,24 @@ test('a document of the wrong shape is rejected before anything else', () => {
   for (const value of [null, 'content', 42, []]) {
     assert.equal(validateContent(value).valid, false);
   }
-  assert.ok(codes(broken((doc) => { doc.schema = 'happiness-essay-content/v1'; })).includes('UNKNOWN_SCHEMA'));
+  assert.ok(codes(broken((doc) => { doc.schema = 'happiness-essay-content/v2'; })).includes('UNKNOWN_SCHEMA'));
   assert.ok(codes(broken((doc) => { delete doc.source; })).includes('MISSING_SOURCE'));
+  assert.ok(codes(broken((doc) => { delete doc.source.handoff; })).includes('MISSING_SOURCE'));
 });
 
 /* --- Structure ---------------------------------------------------------- */
 
-test('the approved scene and chapter counts are fixed', () => {
+test('the approved part and chapter counts are fixed', () => {
   assert.ok(codes(broken((doc) => { doc.scenes.pop(); })).includes('SCENE_COUNT'));
   assert.ok(codes(broken((doc) => { doc.chapters.pop(); })).includes('CHAPTER_COUNT'));
 });
 
-test('a chapter must start at its approved anchor', () => {
+test('the landing must open the first part of the first chapter', () => {
+  // The approved essay sets no fixed chapter anchors -- a chapter starts
+  // wherever its first part is -- so what has to hold is that Begin opens
+  // the part a reader would otherwise reach first.
   const result = broken((doc) => {
-    const chapter = doc.chapters[2];
+    const chapter = doc.chapters[0];
     chapter.sceneIds = [...chapter.sceneIds.slice(1), chapter.sceneIds[0]];
   });
   assert.ok(codes(result).includes('ANCHOR_MISMATCH'));
@@ -66,40 +70,40 @@ test('scenes must stay in their authored reading order', () => {
 
 test('a scene in no chapter is unreachable, and one in two chapters is ambiguous', () => {
   assert.ok(codes(broken((doc) => {
-    doc.chapters[0].sceneIds = doc.chapters[0].sceneIds.filter((id) => id !== 's090');
+    doc.chapters[0].sceneIds = doc.chapters[0].sceneIds.filter((id) => id !== 's202');
   })).includes('SCENE_UNREACHABLE'));
 
   assert.ok(codes(broken((doc) => {
-    doc.chapters[1].sceneIds.push('s088');
+    doc.chapters[1].sceneIds.push('s201');
   })).includes('SCENE_ASSIGNED_TWICE'));
 });
 
 test('a scene that names a chapter which does not list it is reported', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's090').chapterId = 'c5'; })).includes('CHAPTER_MISMATCH'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's202').chapterId = 'c5'; })).includes('CHAPTER_MISMATCH'));
 });
 
 test('identifiers keep their historical form', () => {
   assert.ok(codesAt(broken((doc) => { doc.scenes[0].id = 'opening'; }), '.scenes[0].id').includes('INVALID_ID'));
-  assert.ok(codes(broken((doc) => { doc.scenes[1].id = 's088'; })).includes('DUPLICATE_ID'));
+  assert.ok(codes(broken((doc) => { doc.scenes[1].id = 's201'; })).includes('DUPLICATE_ID'));
 });
 
 /* --- Reader copy -------------------------------------------------------- */
 
 test('a block is narration or one of the three named speakers', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's088').blocks[1].speaker = 'Bob'; })).includes('UNKNOWN_SPEAKER'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's088').blocks[0].speaker = 'Narrator'; })).includes('NARRATOR_IS_UNLABELLED'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's088').blocks[0].kind = 'caption'; })).includes('UNKNOWN_KIND'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks[1].speaker = 'Bob'; })).includes('UNKNOWN_SPEAKER'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks[0].speaker = 'Narrator'; })).includes('NARRATOR_IS_UNLABELLED'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks[0].kind = 'caption'; })).includes('UNKNOWN_KIND'));
 });
 
 test('an empty scene or an empty block is rejected', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's090').blocks = []; })).includes('EMPTY_SCENE'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's090').blocks[0].parts = []; })).includes('EMPTY_BLOCK'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's090').blocks[0].parts = [{ citation: 1 }]; })).includes('CITATION_ONLY'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's202').blocks = []; })).includes('EMPTY_SCENE'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's202').blocks[0].parts = []; })).includes('EMPTY_BLOCK'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's202').blocks[0].parts = [{ citation: 1 }]; })).includes('CITATION_ONLY'));
 });
 
 test('a part is text or a citation, never both', () => {
   assert.ok(codes(broken((doc) => {
-    scene(doc, 's092').blocks[0].parts[0] = { text: 'both', citation: 1 };
+    scene(doc, 's204').blocks[0].parts[0] = { text: 'both', citation: 1 };
   })).includes('AMBIGUOUS_PART'));
 });
 
@@ -107,7 +111,7 @@ test('a part is text or a citation, never both', () => {
 
 test('a citation with no register entry is reported, and so is an entry nothing cites', () => {
   assert.ok(codes(broken((doc) => {
-    scene(doc, 's092').blocks[0].parts.push({ citation: 99 });
+    scene(doc, 's204').blocks[0].parts.push({ citation: 99 });
   })).includes('DANGLING_CITATION'));
 
   assert.ok(codes(broken((doc) => {
@@ -151,36 +155,36 @@ test('an entry without its access note is rejected', () => {
 /* --- Artwork ------------------------------------------------------------ */
 
 test('a scene cannot show a drawing that was never delivered', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's091').visual.views[0].ref = 'A99'; })).includes('UNKNOWN_ASSET'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's091').visual.views[0].image = 4; })).includes('UNKNOWN_IMAGE'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').visual.views[0].ref = 'A99'; })).includes('UNKNOWN_ASSET'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').visual.views[0].image = 4; })).includes('UNKNOWN_IMAGE'));
 });
 
 test('a text scene carries no decorative substitute', () => {
   assert.ok(codes(broken((doc) => {
-    scene(doc, 's090').visual.views = [{ ref: 'A01', image: 0, label: null }];
+    scene(doc, 's202').visual.views = [{ ref: 'A01', image: 0, label: null }];
   })).includes('TEXT_SCENE_HAS_ART'));
 });
 
 test('a pair shows two labelled drawings and is never optional', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's097').visual.views.pop(); })).includes('PAIR_NEEDS_TWO'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's097').visual.views[1].label = null; })).includes('PAIR_NEEDS_LABELS'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's208').visual.views.pop(); })).includes('PAIR_NEEDS_TWO'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's208').visual.views[1].label = null; })).includes('PAIR_NEEDS_LABELS'));
   assert.ok(codes(broken((doc) => {
-    scene(doc, 's097').visual.control = { labels: ['Chosen effort', 'Required work'] };
+    scene(doc, 's208').visual.control = { labels: ['Chosen effort', 'Required work'] };
   })).includes('PAIR_IS_NOT_OPTIONAL'));
 });
 
 test('an optional comparison needs two drawn states with the approved labels', () => {
   assert.ok(codes(broken((doc) => {
-    scene(doc, 's105').visual.control.labels = ['Connection'];
+    scene(doc, 's213').visual.control.labels = ['Connection'];
   })).includes('INVALID_CONTROL'));
   assert.ok(codes(broken((doc) => {
-    scene(doc, 's105').visual.control.labels = ['Connection', 'Something else'];
+    scene(doc, 's213').visual.control.labels = ['Connection', 'Something else'];
   })).includes('CONTROL_LABEL_MISMATCH'));
 });
 
 test('a drawing cannot follow a block the scene does not have', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's091').visual.afterBlock = 99; })).includes('PLACEMENT_PAST_END'));
-  assert.ok(codes(broken((doc) => { scene(doc, 's091').visual.afterBlock = -1; })).includes('INVALID_PLACEMENT'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').visual.afterBlock = 99; })).includes('PLACEMENT_PAST_END'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').visual.afterBlock = -1; })).includes('INVALID_PLACEMENT'));
 });
 
 test('a delivered asset must carry alternative text, dimensions and a checksum', () => {
@@ -209,7 +213,7 @@ test('a label anchor outside its image box is rejected', () => {
 /* --- Landing and interface ---------------------------------------------- */
 
 test('the landing opens the first scene and carries the approved strings', () => {
-  assert.ok(codes(broken((doc) => { doc.landing.beginSceneId = 's092'; })).includes('ANCHOR_MISMATCH'));
+  assert.ok(codes(broken((doc) => { doc.landing.beginSceneId = 's204'; })).includes('ANCHOR_MISMATCH'));
   assert.ok(codes(broken((doc) => { doc.landing.beginSceneId = 's999'; })).includes('UNKNOWN_SCENE'));
   assert.ok(codes(broken((doc) => { doc.landing.title = ''; })).includes('MISSING_TEXT'));
 });
@@ -225,7 +229,8 @@ test('the landing has no field for a subtitle, a byline or a reading time', () =
 });
 
 test('every approved interface string is required', () => {
-  for (const key of ['begin', 'sources', 'chapters', 'continuous', 'scene', 'print', 'skip', 'back', 'next', 'readAgain', 'backToReading']) {
+  for (const key of ['begin', 'sources', 'chapters', 'closeChapters', 'hideChapters', 'showChapters',
+    'continuous', 'partView', 'skip', 'back', 'next', 'readAgain', 'backToReading']) {
     assert.ok(codes(broken((doc) => { doc.interface[key] = ''; })).includes('MISSING_TEXT'), `interface.${key}`);
   }
 });

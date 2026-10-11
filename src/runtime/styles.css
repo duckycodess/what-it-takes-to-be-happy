@@ -38,7 +38,12 @@
   --rule-strong: #8d8071;
   --accent: #9c4420;
   --highlight: #fdf2d8;
-  --measure: 34rem;
+  --measure: 38rem;
+  /* How wide a drawing is allowed to be beside the prose on a wide screen.
+     The owner's 11 October amendment is that the illustrations dominated the
+     page: at 48rem they were wider than the sentences they supported. This is
+     what makes one contextual rather than the main event. */
+  --art-column: 18rem;
   --body-line-height: 1.6;
   --gap: 1.25rem;
   /* The stack without the project typeface, and the measure and leading drawn
@@ -79,10 +84,21 @@
      in Chrome at 16px rather than guessed.
 
      A 62-character sentence sets 453px in Futura Handwritten and 497px in the
-     fallback — 8.9% narrower. The 34rem column that held about 68 characters
-     would hold about 74 of them, past a comfortable line. 31rem puts the
-     measure back where the layout was drawn. */
-  --measure: 31rem;
+     fallback — 8.9% narrower, so the same column holds about 9% more of this
+     face than of that one and the two numbers cannot be the same.
+
+     The owner's 11 October amendment asked for a broader column than the
+     31rem this was: the prose read as a narrow strip. 35rem is 560px, which
+     Futura Handwritten sets at about 64 characters a line — measured in
+     Chrome against a long paragraph with the face loaded, not estimated —
+     against about 57 at the old width. That is a real widening and still
+     inside the band a reader's eye can track; going on until the line filled
+     a wide window would have cost more than it gave. The fallback's 38rem is
+     the same design in a face that sets 8.9% wider.
+     `test/browser.test.js` measures the characters per line in the face the
+     browser actually loaded, so neither number can drift into an unreadable
+     line without a test saying so. */
+  --measure: 35rem;
   /* Futura Handwritten's x-height is 8px at 16px against the fallback's 9px,
      so 1.6em of leading is 3.2 x-heights here where the page was read at 2.8.
      1.5 closes most of that without crowding the descenders, which are long. */
@@ -107,17 +123,52 @@ html {
 
 body {
   margin: 0;
-  /* The foot of the page clears the fixed control bar, which is two short
-     lines tall at its worst and must never cover the end of a scene. */
-  padding: 0 1rem 8rem;
+  /* The foot of the page clears the fixed reading footer, which is one short
+     line tall and must never cover the end of a scene. The head of the page
+     clears the launcher, which is fixed too and is only on screen in the
+     arrangements that reserve room for it below. */
+  padding: var(--top-bar) 1rem 8rem;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
+/* Wide enough for the chapter rail, a column of prose at its measure, and a
+   drawing beside the passage it belongs to, with nothing stretched to fill
+   the gap. The prose itself is still held to `--measure` wherever it sits. */
 body > * {
   width: 100%;
+  max-width: 74rem;
+}
+
+/* The approved landing is a title, a drawing and two actions. It keeps the
+   narrower column the essay had before the rail, because there is nothing
+   beside it to make room for. */
+.landing,
+.sources {
   max-width: 48rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* How much room the launcher needs at the top of the window. Zero wherever
+   the launcher is not shown, so the landing and a wide screen with the rail
+   open are not given a band of empty paper. The arrangements that do show it
+   set it below; `.scene` uses the same value as its scroll margin, so a scene
+   the script scrolls to arrives under the launcher rather than behind it. */
+:root {
+  --top-bar: 0rem;
+}
+
+html.js[data-rail="closed"] {
+  --top-bar: 3.75rem;
+}
+
+/* Nothing is offered on the landing but the approved landing, so nothing is
+   reserved for it either. Written after the rule above so it wins at equal
+   specificity. */
+html.js[data-view="landing"] {
+  --top-bar: 0rem;
 }
 
 p {
@@ -166,14 +217,28 @@ a {
   outline-offset: 3px;
 }
 
-/* The script moves focus to the scene, the register entry or the landing a
-   reader asked for. None of those is reached by tabbing, and a programmatic
-   move after a pointer click does not satisfy :focus-visible, so each is
-   ringed on :focus itself: the ring is how the move is announced to a reader
-   who is looking rather than listening. */
-.scene:focus,
+/* The script moves focus to the register entry or the landing title a reader
+   asked for. Neither is reached by tabbing, and a programmatic move after a
+   pointer click does not satisfy :focus-visible, so both are ringed on :focus
+   itself: a reader who followed [9] has to be able to see which entry they
+   landed on, and it is one line of a long list.
+
+   A scene is not. Focus still moves to it on every move, because that is how
+   the move is announced to a reader who is listening, but ringing a whole
+   scene outlined the entire reading column in red every time Next was
+   pressed. The owner asked for that to stop on 11 October. `:focus-visible`
+   below keeps the ring for the keyboard, where a reader has no pointer to
+   tell them where they are; after a press of Next or a click in the rail the
+   browser withholds it, which is exactly the case the amendment was about. */
 .source:focus,
 #landing-title:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* Keyboard moves mark the destination title. The passage itself stays unboxed;
+   deep links and pointer moves do not paint a whole-column red outline. */
+html.js[data-move="keyboard"] .scene:focus-visible .scene-title {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
@@ -192,7 +257,9 @@ a {
   background: var(--paper);
   padding: 0.6rem 1rem;
   border: 2px solid var(--accent);
-  z-index: 3;
+  /* Above the drawer, which is above everything else: a reader who tabs into
+     the skip link while the drawer is open has to be able to see it. */
+  z-index: 4;
 }
 
 .skip-link:focus {
@@ -248,6 +315,8 @@ button[aria-pressed="true"] {
   color: var(--ink);
 }
 
+/* Back and Next, and nothing else: no print control, no counter, no mode
+   switch. Everything else a reader can do is in the rail. */
 .reader-controls {
   position: fixed;
   left: 0;
@@ -265,28 +334,158 @@ button[aria-pressed="true"] {
   border-top: 1.5px solid var(--rule-strong);
 }
 
-.chapter-menu {
+/* --------------------------------------------------------------------------
+   The chapter rail
+
+   One element, two arrangements. Below 60rem it is a drawer: off screen until
+   the reader opens it, and covering the reading column while it is open,
+   which is why choosing a part or pressing Escape closes it again. At 60rem
+   and above it stands beside the essay and can be collapsed to give the prose
+   the whole window.
+
+   Nothing here hides a chapter or a part from a reader with no script: every
+   rule that closes something is written against `html.js`, and the parts of a
+   collapsed chapter are hidden by the `hidden` attribute the script writes,
+   which it never writes without running.
+   ----------------------------------------------------------------------- */
+
+.reader-shell {
+  display: block;
+}
+
+.chapter-rail {
   margin: 0 0 2rem;
   padding: 0 0 1.2rem;
   border-bottom: 1px solid var(--rule);
+  max-width: none;
 }
 
-.chapter-menu .label {
-  margin: 0 0 0.4em;
-  color: var(--ink-soft);
+.rail-toggle {
+  margin: 0 0 0.4rem;
 }
 
-.chapter-menu ol {
+.rail-chapters,
+.rail-parts {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem 1.1rem;
 }
 
-.chapter-menu a[aria-current] {
+.rail-chapter {
+  margin: 0 0 0.2rem;
+}
+
+.rail-chapter-head {
+  margin: 0;
+  max-width: none;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.rail-chapter-link {
+  flex: 1 1 auto;
+  padding: 0.45rem 0.4rem;
+  border-radius: 0.3rem;
+  text-decoration: none;
+}
+
+.rail-chapter-link:hover {
+  text-decoration: underline;
+}
+
+/* Named by the chapter title beside it, so it carries a mark rather than a
+   word. The mark is a triangle made of borders: it points along the list when
+   the chapter is shut and down into it when the chapter is open. There is no
+   transition on it, so it is the same drawing in both motion settings. */
+.rail-expand {
+  flex: 0 0 auto;
+  padding: 0.45rem 0.6rem;
+  border-color: transparent;
+  background: none;
+  min-height: 2.75rem;
+}
+
+.rail-marker {
+  display: block;
+  width: 0;
+  height: 0;
+  border-top: 0.32rem solid transparent;
+  border-bottom: 0.32rem solid transparent;
+  border-left: 0.42rem solid var(--ink-soft);
+}
+
+.rail-expand[aria-expanded="true"] .rail-marker {
+  transform: rotate(90deg);
+}
+
+.rail-parts {
+  margin: 0 0 0.6rem;
+  padding: 0 0 0 0.9rem;
+  border-left: 2px solid var(--rule);
+}
+
+.rail-parts a {
+  display: block;
+  padding: 0.35rem 0.4rem;
+  border-radius: 0.3rem;
+  color: var(--ink-soft);
+  font-size: 0.95em;
+  text-decoration: none;
+}
+
+.rail-parts a:hover {
+  text-decoration: underline;
+}
+
+.rail-chapter-link[aria-current],
+.rail-parts a[aria-current] {
   background: var(--highlight);
+  color: var(--ink);
+}
+
+/* Not places in the essay, so not in the list of them. */
+.rail-secondary {
+  margin: 1.2rem 0 0;
+  padding: 1rem 0 0;
+  border-top: 1px solid var(--rule);
+  max-width: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* The way back to the rail, and the way into the drawer. Fixed, so collapsing
+   the rail cannot scroll the only control that brings it back out of reach.
+   Shown in exactly the arrangements that reserve room for it at the top of
+   the page. */
+.rail-launcher {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0.45rem 0.6rem;
+  max-width: none;
+  width: auto;
+  display: none;
+  background: var(--paper);
+  border-bottom-right-radius: 0.4rem;
+}
+
+html.js[data-rail="closed"] .rail-launcher {
+  display: block;
+}
+
+html.js[data-rail="closed"] .chapter-rail {
+  display: none;
+}
+
+/* Read again belongs to the end of the essay, not to the footer, which holds
+   Back and Next alone. */
+.closing-actions {
+  margin: 0 0 3rem;
+  max-width: none;
 }
 
 /* --------------------------------------------------------------------------
@@ -295,6 +494,14 @@ button[aria-pressed="true"] {
 
 .landing {
   padding: 2.5rem 0 1rem;
+}
+
+/* The opening illustration is the one drawing a reader meets before any
+   prose, with nothing beside it to make room for, so it is given more than a
+   contextual drawing gets -- and still well under the full width of the
+   column, which is what the 11 October amendment was about. */
+.landing .art {
+  max-width: 34rem;
 }
 
 .landing-actions {
@@ -322,6 +529,15 @@ button[aria-pressed="true"] {
 
 .scene {
   margin: 0 0 3rem;
+  /* The launcher is fixed over the top of the window wherever it is shown, so
+     a scene the script scrolls to stops below it instead of behind it. Where
+     nothing is shown the reserve is zero and the scene reaches the top. */
+  scroll-margin-top: var(--top-bar);
+}
+
+.essay-body {
+  min-width: 0;
+  max-width: none;
 }
 
 .scene-title {
@@ -374,7 +590,10 @@ button[aria-pressed="true"] {
 
 .art {
   margin: 1.6rem 0 1.8rem;
-  max-width: none;
+  /* Held to something a sentence can sit beside. On a phone the column is
+     narrower than this and wins; on a laptop this is what stops a cutout
+     filling the window. A pair is two drawings and is given room for both. */
+  max-width: 24rem;
   /* The reserve for anchored names, in the same units the labels are set in,
      so a reader's larger type enlarges the room as well as the label. */
   padding-top: 2.2em;
@@ -384,6 +603,10 @@ button[aria-pressed="true"] {
   display: grid;
   gap: 1rem 1.5rem;
   align-items: end;
+}
+
+.art[data-layout="pair"] {
+  max-width: 44rem;
 }
 
 .art[data-layout="pair"] .art-views {
@@ -542,8 +765,7 @@ html.js[data-view="reading"] .art-control {
    block below.
    ----------------------------------------------------------------------- */
 
-html.js[data-view="landing"] .essay-body,
-html.js[data-view="landing"] .chapter-menu {
+html.js[data-view="landing"] .essay-body {
   display: none;
 }
 
@@ -594,6 +816,141 @@ html.js[data-view="beat"] .chapter-title {
 }
 
 /* --------------------------------------------------------------------------
+   The drawer, and the rail beside the essay
+
+   Below 60rem the window has no room for a column of navigation next to a
+   column of prose, so the rail becomes a drawer: off screen until the reader
+   presses the launcher, laid over the reading column while it is open, and
+   dismissed by Escape, by its own control, or by choosing a part. Above it,
+   the rail stands beside the essay and can be collapsed out of the way.
+
+   These are presentation only. The script keeps one piece of state -- whether
+   the reader has the rail open -- and asks this stylesheet, through the same
+   width below, which of the two arrangements is in force.
+   ----------------------------------------------------------------------- */
+
+@media (max-width: 59.99rem) {
+  /* Room for the launcher, which is fixed and would otherwise sit over the
+     first line of whatever is being read. Only on the essay, which is the
+     page that has a rail: the separate Sources & Credits page has no launcher
+     and would be given a band of empty paper above its title. */
+  html.js[data-rail] {
+    --top-bar: 3.75rem;
+  }
+
+  html.js[data-view="landing"] {
+    --top-bar: 0rem;
+  }
+
+  html.js .rail-launcher {
+    display: block;
+  }
+
+  /* While the drawer is open its own control is the way to close it, so the
+     launcher stands down rather than offering the same word twice. */
+  html.js[data-rail="open"] .rail-launcher {
+    display: none;
+  }
+
+  html.js .chapter-rail {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Above the reading footer, which is fixed too. While the drawer is open
+       the footer is `inert`, so leaving it showing through would offer a
+       control that cannot be used. */
+    z-index: 3;
+    margin: 0;
+    padding: 0.6rem 1rem 2rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--paper);
+    border-bottom: none;
+  }
+
+  /* A row a fingertip can hit, which the chapter and part links are not by
+     default: they are text, and text is as tall as it is. */
+  html.js .rail-chapter-link,
+  html.js .rail-parts a {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+}
+
+@media (min-width: 60rem) {
+  .reader-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+    column-gap: 2.5rem;
+    align-items: start;
+  }
+
+  /* Collapsed, the rail is not merely hidden: its column goes, and the essay
+     has the whole width. The script re-anchors on the scene being read once
+     the reflow has happened, because a pixel offset does not survive it. */
+  html.js[data-rail="closed"] .reader-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chapter-rail {
+    position: sticky;
+    top: 1.5rem;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+    margin: 0;
+    padding: 0 1rem 1rem 0;
+    border-bottom: none;
+    border-right: 1px solid var(--rule);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   A drawing beside the passage it belongs to
+
+   Only where there is room for a column of prose at its measure and a drawing
+   next to it without either being squeezed: 78rem of window, less the rail and
+   the page's own margins, is the first width at which that is true. Below it
+   the drawing stays where the markup puts it, under the passage, which is also
+   what a phone gets.
+
+   The figure is floated rather than placed in a grid cell, because a grid row
+   as tall as the drawing would open a hole in the prose beside it. Floated, the
+   paragraphs after it simply continue down their own column. The markup is
+   untouched either way: the drawing is after the block the production note puts
+   it after, so the reading order is the authored one in every arrangement.
+   ----------------------------------------------------------------------- */
+
+@media (min-width: 78rem) {
+  .scene {
+    display: flow-root;
+  }
+
+  .scene > .art {
+    float: right;
+    width: var(--art-column);
+    margin: 0 0 1.4rem 2rem;
+  }
+
+  /* A pair is a comparison between two drawings and needs them side by side,
+     so it keeps the full width under its passage rather than being squeezed
+     into the margin. */
+  .scene > .art[data-layout="pair"] {
+    float: none;
+    width: auto;
+    margin: 1.6rem 0 1.8rem;
+  }
+
+  /* A smaller drawing carries smaller names, or a long prop label would reach
+     past the edge of the image it is anchored over. */
+  .scene .art-label {
+    font-size: 0.85rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Motion
 
    The artwork is still, and a comparison switches between two drawings that
@@ -632,12 +989,28 @@ html.js[data-view="beat"] .chapter-title {
     display: block;
   }
 
+  /* Apparatus: everything that carries no part of the argument. The rail and
+     its launcher are navigation, Read again is an invitation to press
+     something, and paper has neither. Every one of them is answered by the
+     restore rules below, or carries nothing to restore. */
   .reader-controls,
   .skip-link,
   .art-control,
-  .chapter-menu,
+  .chapter-rail,
+  .rail-launcher,
+  .closing-actions,
   .sources-return {
     display: none !important;
+  }
+
+  /* Whatever arrangement the screen was in, paper is one column. */
+  .reader-shell {
+    display: block !important;
+  }
+
+  .scene > .art {
+    float: none !important;
+    width: auto !important;
   }
 
   /* Every view rule above, answered. Whatever the reader was looking at, the
@@ -657,6 +1030,7 @@ html.js[data-view="beat"] .chapter-title {
 
   /* A ring marks where a reader is looking. Paper has no such reader. */
   .scene:focus,
+  .scene:focus-visible .scene-title,
   .source:focus,
   #landing-title:focus {
     outline: none;

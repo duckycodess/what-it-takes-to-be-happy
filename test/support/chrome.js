@@ -145,7 +145,9 @@ export function runInChrome({ html, driver, files = {}, query = '', hash = '', w
 
     const match = dom.match(/data-probe="([A-Za-z0-9+/=]*)"/);
     if (!match) throw new Error('The driver did not finish; the page recorded nothing.');
-    return { value: JSON.parse(Buffer.from(match[1], 'base64').toString('utf8')), dom };
+    const value = JSON.parse(Buffer.from(match[1], 'base64').toString('utf8'));
+    if (value && value.driverError) throw new Error(`Browser driver step ${value.step}: ${value.driverError}`);
+    return { value, dom };
   } finally {
     rmSync(space.directory, { recursive: true, force: true });
   }
@@ -405,11 +407,17 @@ var probe = (function () {
     run: function (finish) {
       var index = 0;
       (function next() {
-        if (index >= steps.length) { finish(); return; }
+        if (index >= steps.length) {
+          try { finish(); } catch (error) { api.done({ driverError: error.stack || String(error), step: index }); }
+          return;
+        }
         var fn = steps[index];
         index += 1;
         if (fn && typeof fn.wait === 'number') { setTimeout(next, fn.wait); return; }
-        fn();
+        try { fn(); } catch (error) {
+          api.done({ driverError: error.stack || String(error), step: index });
+          return;
+        }
         setTimeout(next, 0);
       })();
     },

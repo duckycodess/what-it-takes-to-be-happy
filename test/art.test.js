@@ -21,11 +21,11 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
-import { readAsset, APPROVED_SCRIPT } from '../src/content/transfer.js';
+import { readAsset, SUPERSEDED_SCRIPT } from '../src/content/transfer.js';
 import { loadValidContent, repoRoot } from './helpers.js';
 
 const content = loadValidContent();
-const script = readFileSync(join(repoRoot, APPROVED_SCRIPT.path), 'utf8');
+const script = readFileSync(join(repoRoot, SUPERSEDED_SCRIPT.path), 'utf8');
 
 const manifests = readdirSync(join(repoRoot, 'assets/generated'), { withFileTypes: true })
   .filter((entry) => entry.isDirectory())
@@ -185,47 +185,54 @@ test('every scene that was briefed a drawing has one, and text scenes have none'
   const textOnly = content.scenes.filter((scene) => scene.visual.layout === 'text');
 
   assert.equal(withArt.length + textOnly.length, content.scenes.length);
-  assert.ok(withArt.length >= 20);
+  assert.equal(withArt.length, 17, 'the approved essay illustrates 17 of its 31 parts');
   for (const scene of textOnly) assert.equal(scene.visual.views.length, 0);
 
-  // Every delivered asset is actually used somewhere; a drawing nobody shows
-  // would mean a brief that quietly dropped out of the essay.
+  // Every drawing the essay shows is a delivered one. The reverse is no
+  // longer true: the approved essay is shorter than the script it replaced
+  // and places artwork against passages rather than against scenes, so two
+  // inspected briefs -- A04 and A11 -- are not shown anywhere in it. They are
+  // kept, committed and inspected; they are simply not in this revision. That
+  // is named here rather than left for someone to discover.
   const used = new Set([
     ...content.scenes.flatMap((scene) => scene.visual.views.map((view) => view.ref)),
     ...content.landing.visual.views.map((view) => view.ref),
   ]);
-  for (const asset of content.assets) {
-    assert.ok(used.has(asset.ref), `${asset.ref} was delivered but is never shown`);
+  const unused = content.assets.map((asset) => asset.ref).filter((ref) => !used.has(ref));
+  assert.deepEqual(unused, ['A04', 'A11'],
+    'the set of delivered drawings this revision does not show has changed');
+  for (const ref of used) {
+    assert.ok(content.assets.some((asset) => asset.ref === ref), `${ref} is shown but was never delivered`);
   }
 });
 
-test('the two optional comparisons are the ones the approved script names', () => {
+test('the two optional comparisons are the ones the approved essay names', () => {
   const comparisons = content.scenes.filter((scene) => scene.visual.control !== null);
-  assert.deepEqual(comparisons.map((scene) => scene.id), ['s105', 's114']);
+  assert.equal(comparisons.length, 2);
   assert.deepEqual(comparisons.map((scene) => scene.visual.control.labels), [
     ['Connection', 'Comparison'],
     ['Time available', 'Time claimed'],
   ]);
+  // Each layout says what it is, so nothing downstream has to infer it.
+  for (const scene of comparisons) assert.equal(scene.visual.layout, 'comparison');
 });
 
 test('every pair carries its exact approved view labels', () => {
   const pairs = content.scenes.filter((scene) => scene.visual.layout === 'pair');
   assert.deepEqual(
-    pairs.map((scene) => [scene.id, ...scene.visual.views.map((view) => view.label)]),
+    pairs.map((scene) => scene.visual.views.map((view) => view.label)),
     [
-      ['s097', 'Chosen effort', 'Required work'],
-      ['s100', 'Studying', 'Playing'],
-      ['s115', 'Time gained', 'Work performed'],
-      ['s126', 'Students using the space', 'Staff maintaining it'],
+      ['Chosen effort', 'Required work'],
+      ['Time gained', 'Work performed'],
+      ['Students using the space', 'Staff maintaining it'],
     ],
   );
 
-  // A16 and A18 pair their own two cutouts; the other two pair one drawing
-  // from each of two briefs.
+  // A16 and A18 pair their own two cutouts; the first pairs one drawing from
+  // each of two briefs.
   const refs = pairs.map((scene) => scene.visual.views.map((view) => `${view.ref}:${view.image}`));
   assert.deepEqual(refs, [
     ['A03:0', 'A06:0'],
-    ['A03:0', 'A05:0'],
     ['A16:0', 'A16:1'],
     ['A18:0', 'A18:1'],
   ]);

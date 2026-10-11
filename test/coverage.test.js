@@ -7,7 +7,7 @@
  * That is where the editorial promises were made.
  *
  * A matrix is worth nothing if it drifts from the thing it describes, and it
- * drifts silently: nobody re-reads a table of 45 rows. So every figure in it
+ * drifts silently: nobody re-reads a table of 31 rows. So every figure in it
  * is recomputed here from `content/content.json`, and a row that no longer
  * matches the published document fails rather than quietly misdescribing it.
  *
@@ -67,7 +67,7 @@ function scenesUsing(ref) {
 
 test('every scene the matrix names is in the published essay', () => {
   const named = new Set([...coverage.matchAll(/`(s\d{3})`/g)].map((match) => match[1]));
-  assert.equal(named.size, 45, `the matrix should name every scene, found ${named.size}`);
+  assert.equal(named.size, 31, `the matrix should name every scene, found ${named.size}`);
   for (const id of named) {
     assert.ok(sceneById.has(id), `docs/coverage.md names ${id}, which the site does not carry`);
   }
@@ -121,7 +121,7 @@ test('the chapter table is the chapters the document has', () => {
 
 test('the scene index is every scene, in reading order, with its real layout', () => {
   const table = rows(section('Scenes'));
-  assert.equal(table.length, 45);
+  assert.equal(table.length, 31);
 
   table.forEach(([id, title, layout], index) => {
     const scene = sceneById.get(readingOrder[index]);
@@ -199,13 +199,13 @@ test('an invented figure appears where the matrix says, and never speaks', () =>
     assert.ok(what.length > 20, `${figure} is listed without saying what it illustrates`);
   }
 
-  // The contract admits three speakers, so no invented figure can hold a
-  // position. This is the check that would catch one being given a line.
+  // The approved essay has one opening TJ line. Other member positions
+  // remain attributed prose; no invented figure receives dialogue.
   const speakers = new Set(content.scenes
     .flatMap((scene) => scene.blocks)
     .map((block) => block.speaker)
     .filter(Boolean));
-  assert.deepEqual([...speakers].sort(), ['Koj', 'TJ', 'Vier']);
+  assert.deepEqual([...speakers].sort(), ['TJ']);
 });
 
 test('the optional comparisons are the two the document has, with their approved labels', () => {

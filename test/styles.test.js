@@ -145,7 +145,9 @@ test('everything a view hides on screen is either restored in print or is screen
   // rules, or added here with a reason, rather than silently disappearing.
   const APPARATUS = new Set([
     'reader-controls',
-    'chapter-menu',
+    'chapter-rail',
+    'rail-launcher',
+    'closing-actions',
     'art-control',
     'sources-return',
     'skip-link',
@@ -200,6 +202,55 @@ test('both drawings of an optional comparison print, with their labels', () => {
 
   const hidden = print.find((rule) => /display:\s*none\s*!important/.test(rule.body));
   assert.ok(hidden.selector.includes('.art-control'), 'the control itself does not print');
+});
+
+test('print drops the navigation and the invitation to press something', () => {
+  // The apparatus allowlist above lets a class be hidden on screen without a
+  // print restore. That is a licence, so each thing it covers is named here
+  // and checked to be apparatus in fact: navigation, the way into it, and
+  // Read again, none of which carries a word of the argument.
+  const dropped = print
+    .filter((rule) => /display:\s*none\s*!important/.test(rule.body))
+    .map((rule) => rule.selector)
+    .join(' ');
+
+  for (const part of ['.chapter-rail', '.rail-launcher', '.closing-actions', '.reader-controls']) {
+    assert.ok(dropped.includes(part), `${part} would be printed`);
+  }
+
+  // And whatever the screen was doing with the rail, paper is one column with
+  // the drawing under the passage it belongs to rather than floated beside it.
+  const shell = print.find((rule) => rule.selector === '.reader-shell');
+  assert.match(shell.body, /display:\s*block\s*!important/);
+  const art = print.find((rule) => rule.selector === '.scene > .art');
+  assert.match(art.body, /float:\s*none\s*!important/);
+});
+
+test('the rail collapses and the drawer closes without hiding anything from paper', () => {
+  // Everything the rail hides is hidden by the `hidden` attribute the script
+  // writes, or by a rule keyed on `data-rail`, which is a state no printed
+  // page is in. Nothing is hidden by a rule keyed on the reading view, which
+  // is what the restore rules answer, so a chapter or a part can never be
+  // dropped from the printed essay by a navigation state.
+  const railRules = screen.filter((rule) => /\.chapter-rail/.test(rule.selector)
+    && /display:\s*none/.test(rule.body));
+  assert.ok(railRules.length > 0, 'the rail should be hidden in at least one state');
+  for (const rule of railRules) {
+    assert.ok(
+      /\[data-rail/.test(rule.selector),
+      `"${rule.selector}" hides navigation on something other than the rail's own state`,
+    );
+  }
+
+  // The launcher is the mirror image: hidden by default and shown only in the
+  // arrangements that reserve room for it, so it too is keyed on `data-rail`
+  // or on nothing at all, never on what the reader is looking at.
+  const shown = screen.filter((rule) => /\.rail-launcher/.test(rule.selector)
+    && /display:\s*(block|flex)/.test(rule.body));
+  assert.ok(shown.length > 0, 'the launcher is never shown');
+  for (const rule of shown) {
+    assert.ok(!/\[data-view/.test(rule.selector), `"${rule.selector}" ties the launcher to a reading view`);
+  }
 });
 
 /* --- Contrast ------------------------------------------------------------- */
@@ -271,21 +322,45 @@ test('a reader who asked for less motion is answered', () => {
   assert.match(block, /transition-duration:\s*0\.001ms\s*!important/);
 });
 
-test('every target the script focuses carries a ring without waiting for :focus-visible', () => {
-  // A programmatic focus move after a pointer click does not satisfy
-  // `:focus-visible`, so none of these can rely on it. Each one is somewhere
-  // the browser script sends the reader: a beat, the register, and the single
-  // source entry a citation links to.
-  const ringed = screen
-    .filter((rule) => /outline:\s*\d+px solid/.test(rule.body))
-    .map((rule) => rule.selector)
-    .join(' ');
-  for (const target of ['.scene:focus', '.source:focus', '#landing-title:focus']) {
-    // Not `:focus-visible`, which the browser withholds after a pointer click.
-    assert.ok(ringed.includes(target), `${target} is focused by the script but is never ringed`);
+test('a source entry is ringed on arrival, and a whole scene no longer is', () => {
+  const ringing = screen.filter((rule) => /outline:\s*\d+px solid/.test(rule.body));
+  const selectors = ringing.flatMap((rule) => rule.selector.split(',').map((part) => part.trim()));
+
+  // A citation lands the reader on one line of a long register, and the
+  // landing title is where Back from the first scene goes. Neither is reached
+  // by tabbing, and a programmatic move after a pointer click does not satisfy
+  // `:focus-visible`, so both are ringed on `:focus` itself.
+  for (const target of ['.source:focus', '#landing-title:focus']) {
+    assert.ok(selectors.includes(target), `${target} is focused by the script but is never ringed`);
   }
 
-  // Nothing may take the ring away again. The one element deliberately left
+  // A scene is not. Focus still moves to it on every move, because that is
+  // how the move is announced; what the 11 October amendment removed is the
+  // red outline drawn around the whole reading column every time Next was
+  // pressed. `:focus-visible` keeps the ring for a keyboard reader and the
+  // browser withholds it after a pointer move, which is the case the
+  // amendment was about.
+  assert.ok(
+    !selectors.includes('.scene:focus'),
+    'a whole scene is ringed on :focus, which is the outline the amendment removed',
+  );
+  // And not on `:focus-visible` alone either: a browser treats the fragment
+  // target it focuses on arrival as focus-visible, so a deep link and the way
+  // back from Sources & Credits would draw the same box. The ring asks for
+  // the page's own record of a keyboard move as well.
+  assert.ok(
+    !selectors.includes('.scene:focus-visible'),
+    'a deep link would ring the whole scene, which is the outline the amendment removed',
+  );
+  const sceneRing = selectors.find((selector) => selector.endsWith('.scene:focus-visible .scene-title'));
+  assert.ok(sceneRing, 'a keyboard reader still needs to see where they are');
+  assert.match(sceneRing, /\[data-move="keyboard"\]/, 'the ring is not tied to how the move was made');
+
+  // Every interactive control keeps a visible ring, through the one rule that
+  // covers all of them.
+  assert.ok(selectors.includes(':focus-visible'), 'interactive controls lost their focus ring');
+
+  // Nothing may take a ring away again. The one element deliberately left
   // unringed is the skip link's target, which is the whole essay: outlining
   // everything a reader skipped to marks nothing.
   const removed = screen.filter((rule) => /outline:\s*none/.test(rule.body)).map((rule) => rule.selector);
@@ -293,9 +368,44 @@ test('every target the script focuses carries a ring without waiting for :focus-
 
   // And a ring marks where a reader is looking, which paper does not have.
   const reset = print.filter((rule) => /outline:\s*none/.test(rule.body)).map((rule) => rule.selector).join(' ');
-  for (const target of ['.scene:focus', '.source:focus', '#landing-title:focus']) {
+  for (const target of ['.scene:focus-visible .scene-title', '.source:focus', '#landing-title:focus']) {
     assert.ok(reset.includes(target), `${target} would print its focus ring`);
   }
+});
+
+/* --- The rail, the drawer and the measure --------------------------------- */
+
+test('the rail becomes a drawer at one width, and both arrangements say so once', () => {
+  // The script asks the same question through `matchMedia`, so the two have
+  // to agree. A stylesheet that moved its breakpoint without the script being
+  // told would leave a drawer behaving like a rail, or the reverse.
+  const widths = [...css.matchAll(/@media \((?:min|max)-width: ([\d.]+)rem\)/g)].map((match) => match[1]);
+  assert.ok(widths.includes('59.99'), 'the drawer arrangement should be written against (max-width: 59.99rem)');
+  assert.ok(widths.includes('60'), 'and the rail arrangement against the width just above it');
+
+  const reader = readFileSync(join(repoRoot, 'src/runtime/reader.js'), 'utf8');
+  assert.match(reader, /\(max-width: 59\.99rem\)/, 'the script asks about a width the stylesheet does not use');
+});
+
+test('the prose is broader than it was, and still held to a measure', () => {
+  // Two numbers, one for each font stack, because the project typeface sets
+  // about 9% narrower than the packaged fallback. Neither may be removed:
+  // without a measure a paragraph would run the full width of a wide window.
+  const base = rules(css.slice(0, css.indexOf(HOSTED_ONLY_CSS.start)))
+    .find((rule) => rule.selector === ':root');
+  const hosted = rules(css.slice(css.indexOf(HOSTED_ONLY_CSS.start), css.indexOf(HOSTED_ONLY_CSS.end)))
+    .find((rule) => rule.selector === ':root');
+
+  const measure = (rule) => Number((rule.body.match(/--measure:\s*([\d.]+)rem/) || [])[1]);
+  assert.ok(measure(hosted) >= 34, 'the hosted measure is narrower than the amendment asked for');
+  assert.ok(measure(hosted) <= 40, 'and a line that long cannot be tracked across');
+  assert.ok(measure(base) > measure(hosted), 'the wider face needs the wider column to hold the same line');
+
+  // The drawing is held to a column of its own, so it supports the passage
+  // rather than filling the page, which is the other half of the amendment.
+  const art = screen.find((rule) => rule.selector === '.art');
+  const cap = Number((art.body.match(/max-width:\s*([\d.]+)rem/) || [])[1]);
+  assert.ok(cap > 0 && cap < measure(hosted), `a drawing may still be ${cap}rem wide, as wide as the prose`);
 });
 
 test('everything that depends on the project typeface is inside the region the offline file drops', () => {

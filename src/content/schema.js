@@ -6,15 +6,17 @@
  * contract.md` documents them for editors. Changing a value here is a contract
  * change and must be reflected in both.
  *
- * The contract describes a document transferred from the approved scene
- * script, not an editable manuscript. Nothing here asks for a field a
- * renderer would have to write prose to fill: the old mandatory chapter
- * question, project summary, reading-time estimate, chapter bridges and
- * disclosure-panel bodies are gone, because the approved script contains no
- * such copy and inventing it is exactly what this rewrite removed.
+ * The contract describes a document transferred from the approved essay, not
+ * an editable manuscript. Nothing here asks for a field a renderer would have
+ * to write prose to fill: the old mandatory chapter question, project summary,
+ * reading-time estimate, chapter bridges and disclosure-panel bodies are gone,
+ * because the approved essay contains no such copy and inventing it is exactly
+ * what the rewrite removed.
  */
 
-export { SCHEMA_ID, LAYOUTS, SPEAKERS, CHAPTER_ANCHORS, APPROVED_SCRIPT } from './transfer.js';
+export {
+  SCHEMA_ID, LAYOUTS, SPEAKERS, APPROVED_ESSAY, SUPERSEDED_SCRIPT, FIRST_PART_NUMBER,
+} from './transfer.js';
 
 /** Every registry stored in a content document, in document order. */
 export const REGISTRIES = ['chapters', 'scenes', 'assets'];
@@ -22,8 +24,19 @@ export const REGISTRIES = ['chapters', 'scenes', 'assets'];
 /** Stable identifiers: ASCII alphanumerics in hyphen-separated groups. */
 export const ID_PATTERN = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$/;
 
-/** A scene identifier keeps its historical `s088`–`s132` meaning. */
+/**
+ * A part identifier keeps the historical `s\d{3}` shape.
+ *
+ * The approved essay's own `id_policy` requires new identifiers for changed
+ * copy and forbids reusing `s088`–`s132`, so the 31 parts run from `s201`.
+ * Those earlier addresses are not gone: `relocations` maps each of the 45 to
+ * the part that now carries the related passage, so a link anyone has already
+ * shared still lands somewhere that makes sense.
+ */
 export const SCENE_ID_PATTERN = /^s\d{3}$/;
+
+/** The authoring key the approved handoff gives a part. */
+export const PART_KEY_PATTERN = /^v2-c[1-8]-p\d{1,2}$/;
 
 /** A chapter identifier is its number. */
 export const CHAPTER_ID_PATTERN = /^c[1-8]$/;
@@ -68,14 +81,18 @@ export const LABEL_KINDS = ['name', 'prop'];
 
 /** The interface strings every output must carry, exactly as approved. */
 export const INTERFACE_KEYS = [
-  'title', 'begin', 'sources', 'chapters', 'continuous', 'scene',
-  'print', 'skip', 'back', 'next', 'readAgain', 'backToReading',
+  'title', 'begin', 'sources', 'continuous', 'partView',
+  'chapters', 'closeChapters', 'hideChapters', 'showChapters',
+  'skip', 'back', 'next', 'readAgain', 'backToReading',
 ];
 
 /** The reader-facing blocks of the Sources & Credits page. */
 export const SOURCES_PAGE_KEYS = ['title', 'intro', 'classNote', 'credits', 'methodNote', 'returnLabel', 'sources'];
 
-/** How many scenes and chapters the approved argument has. */
-export const SCENE_COUNT = 45;
+/** How many parts, chapters and sources the approved argument has. */
+export const SCENE_COUNT = 31;
 export const CHAPTER_COUNT = 8;
 export const SOURCE_COUNT = 26;
+
+/** How many published addresses the approved handoff relocates. */
+export const RELOCATION_COUNT = 45;
