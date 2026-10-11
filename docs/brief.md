@@ -50,7 +50,7 @@ Source: [Instructions tab](https://docs.google.com/document/d/1NL3B3DEtVc3QeblkB
 
 ## Delivery and evolving contributions
 
-Vercel is the agreed hosting target and, since the 9 October amendment, the hosted site is the deliverable. The self-contained offline website file is discontinued: it is no longer a submission artifact and no longer a release gate. The build still emits one and the packaging tests still exercise it; both are retained tooling, and [the decisions record](decisions.md#still-open-and-owned-elsewhere) says who owns removing it from the published output.
+Vercel is the agreed hosting target and, since the 9 October amendment, the hosted site is the deliverable. It was released and tested on 11 October 2026; [delivery](delivery.md#the-released-site--11-october-2026) is the record. The self-contained offline website file is discontinued: it is no longer a submission artifact and no longer a release gate, and no build publishes it. `npm run export:offline` still writes one on request and the packaging tests still exercise it; both are retained tooling.
 
 Research is shared group material. Any avatar can draw on research another member found, provided citations remain attached to original sources and the spoken position matches what that member endorses. Future repo deltas can change or expand scenes without rebuilding the whole narrative architecture.
 

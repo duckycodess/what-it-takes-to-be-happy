@@ -69,11 +69,14 @@ under it was real work. Three kinds of reference to it survive, meaning three di
 
 ### Still open, and owned elsewhere
 
-- **The build still writes `dist/offline.html`.** As of this amendment `npm run build` emits it into
-  the publish directory and prints it as the offline submission file. Dropping it from the published
-  output, and ensuring no production page offers a download link to it, is a code change owned by
-  [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7). It has not happened yet,
-  and this documentation amendment did not change any application code.
+- **~~The build still writes `dist/offline.html`.~~ Done on 11 October 2026.** As of this amendment
+  `npm run build` emitted it into the publish directory and printed it as the offline submission
+  file; that documentation amendment changed no application code. Dropping it from the published
+  output, and ensuring no production page offers a download link to it, was a code change owned by
+  [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7), and it has now been made:
+  a normal build publishes the hosted site alone and only `npm run export:offline` writes the file.
+  The export and its packaging audits are retained exactly as this amendment says they should be —
+  every build still runs them, it simply does not publish their output.
 - **How the hosted essay reaches the class is unresolved.** [The instruction
   snapshot](notes/2026-10-08-instructions.md) asks for a digital file in the class Google Drive
   midterm folder, and nobody in this repository can withdraw that requirement. Retiring the offline
