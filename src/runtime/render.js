@@ -217,42 +217,112 @@ ${renderArt(content.landing.visual, context)}
 </section>`;
 }
 
-/** The eight chapter titles, as the menu and as working fragment links. */
-function renderChapterMenu(content) {
-  const items = content.chapters
-    .map((chapter) => `<li><a href="#${esc(chapter.id)}" data-chapter-link="${esc(chapter.id)}">${esc(chapter.title)}</a></li>`)
-    .join('\n');
-  return `<nav class="chapter-menu" id="chapters" aria-labelledby="chapter-menu-label">
-<p class="label" id="chapter-menu-label">${esc(content.interface.chapters)}</p>
-<ol>
-${items}
+/**
+ * The chapter rail: every chapter, and the parts inside it.
+ *
+ * The whole navigation is written into the markup rather than assembled by
+ * the script, for the same reason the essay is: a reader with no script and
+ * the continuous view both get a working list of chapters and parts, and the
+ * script only chooses what is on screen.
+ *
+ * Every reader-facing word here is already approved. The rail is named
+ * `Chapters`, which is the approved name for the chapter navigation; each part
+ * is labelled with that scene's own approved title; and each chapter's expand
+ * control takes its accessible name from the chapter title beside it through
+ * `aria-labelledby`, so no new string is invented for it. State is carried by
+ * `aria-expanded` rather than by a word.
+ *
+ * `Read continuously` and `Sources & Credits` sit in a separate secondary
+ * section below the chapters, because neither is a place in the essay.
+ */
+function renderChapterRail(content, context) {
+  const ui = content.interface;
+  const chapters = content.chapters
+    .map((chapter) => {
+      const parts = chapter.sceneIds
+        .map((id) => {
+          const scene = context.sceneById.get(id);
+          return `<li><a href="#${esc(scene.id)}" data-part-link="${esc(scene.id)}">${esc(scene.title)}</a></li>`;
+        })
+        .join('\n');
+      return `<li class="rail-chapter" data-rail-chapter="${esc(chapter.id)}">
+<p class="rail-chapter-head">
+<a class="rail-chapter-link" id="rail-${esc(chapter.id)}" href="#${esc(chapter.id)}" data-chapter-link="${esc(chapter.id)}">${esc(chapter.title)}</a>
+<button type="button" class="rail-expand js-only" data-chapter-toggle="${esc(chapter.id)}" aria-controls="rail-parts-${esc(chapter.id)}" aria-expanded="true" aria-labelledby="rail-${esc(chapter.id)}"><span class="rail-marker" aria-hidden="true"></span></button>
+</p>
+<ol class="rail-parts" id="rail-parts-${esc(chapter.id)}" data-rail-parts="${esc(chapter.id)}">
+${parts}
 </ol>
+</li>`;
+    })
+    .join('\n');
+
+  // The rail's own name lives inside the collapse control, so the approved
+  // word "Chapters" is written once. A reader with no script never sees that
+  // control -- there is nothing to collapse without one -- but the landmark
+  // still takes its name from the span, which `aria-labelledby` reads whether
+  // or not it is displayed.
+  return `<nav class="chapter-rail" id="chapters" aria-labelledby="chapter-rail-label">
+<button type="button" class="rail-toggle js-only" data-rail-toggle aria-controls="chapters" aria-expanded="true"><span id="chapter-rail-label">${esc(ui.chapters)}</span></button>
+<ol class="rail-chapters">
+${chapters}
+</ol>
+<p class="rail-secondary">
+<button type="button" class="js-only" data-view-toggle data-scene-label="${esc(ui.scene)}">${esc(ui.continuous)}</button>
+<a class="button quiet" href="${esc(context.sourcesHref)}" data-sources>${esc(ui.sources)}</a>
+</p>
 </nav>`;
 }
 
 /**
- * The shared controls.
+ * The control that brings the rail back, and opens it on a phone.
  *
- * Back and Next follow the consecutive scene order; Back at the first scene
- * returns to the landing, and the last scene drops Next and offers Read again
- * and Sources & Credits instead. The view switch names the view it moves to,
- * which is what the approved control names say. All of it is script-only: with
- * no script there is one continuous document and nothing to move between.
+ * One control doing both jobs, because they are the same job: the rail is
+ * either on screen or it is not, and this is how a reader asks for it. On a
+ * wide screen it appears only once the rail has been collapsed; at phone width
+ * the rail is a drawer and this is the way in while reading. It sits outside
+ * the rail, so collapsing the rail can never hide the way back.
  */
-function renderControls(content, context) {
+function renderRailLauncher(content) {
+  return `<p class="rail-launcher js-only">
+<button type="button" data-rail-restore aria-controls="chapters" aria-expanded="true">${esc(content.interface.chapters)}</button>
+</p>`;
+}
+
+/**
+ * The reading footer.
+ *
+ * Back and Next, and nothing else. Back at the first scene returns to the
+ * landing and the last scene drops Next, so the two controls say where the
+ * reader is by what they offer rather than by a counter. Everything that is
+ * not a step through the essay -- the chapters, the reading mode, the
+ * register -- is in the rail. It is script-only: with no script there is one
+ * continuous document and nothing to step between.
+ */
+function renderControls(content) {
   const ui = content.interface;
   // No `aria-label`: the only names this build may use are the approved
   // interface strings, and none of them names this group. Labelling it
-  // "Chapters" -- which is the chapter menu's name -- announced two different
-  // landmarks under one name and called Back, Next and Print a chapter list.
+  // "Chapters" -- which is the rail's name -- announced two different
+  // landmarks under one name and called Back and Next a chapter list.
   return `<nav class="reader-controls js-only">
 <button type="button" data-back>${esc(ui.back)}</button>
 <button type="button" data-next>${esc(ui.next)}</button>
-<a class="button" href="#${esc(content.landing.beginSceneId)}" data-read-again hidden>${esc(ui.readAgain)}</a>
-<button type="button" data-view-toggle data-scene-label="${esc(ui.scene)}">${esc(ui.continuous)}</button>
-<button type="button" data-print>${esc(ui.print)}</button>
-<a class="button quiet" href="${esc(context.sourcesHref)}" data-sources>${esc(ui.sources)}</a>
 </nav>`;
+}
+
+/**
+ * Read again, offered with the final passage rather than in the footer.
+ *
+ * The footer carries Back and Next alone, so the one control that belongs to
+ * the end of the essay is written at the end of the essay. The script reveals
+ * it on the last scene and hides it everywhere else; print drops it, because
+ * paper cannot be read again by pressing anything.
+ */
+function renderClosing(content) {
+  return `<p class="closing-actions js-only">
+<a class="button" href="#${esc(content.landing.beginSceneId)}" data-read-again hidden>${esc(content.interface.readAgain)}</a>
+</p>`;
 }
 
 /* --------------------------------------------------------------------------
@@ -404,15 +474,19 @@ ${head(content, options, content.landing.title)}
 </head>
 <body>
 <a class="skip-link" href="#essay">${esc(ui.skip)}</a>
+${renderRailLauncher(content)}
 <main id="essay" tabindex="-1">
 ${renderLanding(content, ctx)}
-${renderChapterMenu(content)}
+<div class="reader-shell">
+${renderChapterRail(content, ctx)}
 <div class="essay-body" data-essay>
 ${content.chapters.map((chapter) => renderChapter(chapter, ctx)).join('\n')}
+${renderClosing(content)}
+</div>
 </div>
 ${inlineSources}
 </main>
-${renderControls(content, ctx)}
+${renderControls(content)}
 ${exportColophon}
 ${script(options)}
 </body>

@@ -33,6 +33,11 @@ const essay = renderEssay(content, {
 
 const open = (options) => openDocument(essay, options);
 
+/* Whether one exact element holds focus. Compared as a boolean rather than
+   with `assert.equal`, because formatting a document element into a failure
+   diff is how a test run dies of heap exhaustion instead of reporting. */
+const focused = (page, selector) => page.document.activeElement === page.find(selector);
+
 /* --- Starting state ------------------------------------------------------ */
 
 test('the page opens on the landing with every scene still in the document', () => {
@@ -75,11 +80,11 @@ test('the last scene drops Next and offers Read again', () => {
   assert.equal(page.currentSceneId(), 's132');
   assert.equal(page.find('[data-next]').hidden, true);
   assert.equal(page.find('[data-read-again]').hidden, false);
-  // Sources & Credits is in the shared controls at every scene, including
-  // this one, and from here it is the only route to the register. It carries
-  // the scene, so "Back to reading" has somewhere to come back to.
+  // Sources & Credits is in the rail's secondary section at every scene,
+  // including this one, and from here it is the only route to the register.
+  // It carries the scene, so "Back to reading" has somewhere to come back to.
   assert.equal(
-    page.find('.reader-controls [data-sources]').getAttribute('href'),
+    page.find('.rail-secondary [data-sources]').getAttribute('href'),
     'sources.html?from=s132&view=scene',
   );
   // The landing's own copy is never rewritten: nothing has been read yet.
@@ -154,6 +159,227 @@ test('revisiting a chapter while reading continuously keeps the continuous view'
   assert.equal(page.focused(), 's109');
 });
 
+/* --- The chapter rail ----------------------------------------------------
+   Two arrangements of one list. On a wide window it stands beside the essay
+   and can be collapsed; below 60rem it is a drawer. The script keeps one
+   piece of state and asks the stylesheet, through a media query, which
+   arrangement it is in -- so these tests say which window they are in rather
+   than measuring one, and `test/browser.test.js` checks what each actually
+   looks like. */
+
+test('the rail opens beside the essay on a wide window and is a drawer on a phone', () => {
+  assert.equal(open().rail(), 'open', 'a wide window starts with the rail beside the essay');
+  assert.equal(open({ narrow: true }).rail(), 'closed', 'a phone starts with the drawer shut');
+
+  // One media query, asked once, and it is the width the stylesheet uses.
+  assert.deepEqual(open().mediaQueries, ['(max-width: 59.99rem)']);
+});
+
+test('only the chapter being read is expanded, and the rest can be opened one at a time', () => {
+  const page = open({ hash: '#s088' });
+  assert.deepEqual(page.expandedChapters(), ['c1']);
+  assert.deepEqual(page.visibleParts(), content.chapters[0].sceneIds);
+
+  // Reading on into another chapter follows the reader.
+  page.click(page.find('[data-part-link="s114"]'));
+  assert.equal(page.currentSceneId(), 's114');
+  assert.deepEqual(page.expandedChapters(), ['c6']);
+
+  // Opening another chapter does not close the one being read.
+  page.click(page.find('[data-chapter-toggle="c2"]'));
+  assert.deepEqual(page.expandedChapters(), ['c2', 'c6']);
+  assert.equal(page.find('[data-chapter-toggle="c2"]').getAttribute('aria-expanded'), 'true');
+
+  // And a chapter the reader opened themselves stays open as they read on.
+  page.click(page.find('[data-next]'));
+  assert.deepEqual(page.expandedChapters(), ['c2', 'c6']);
+
+  // Closing it again is equally their choice, including the current chapter.
+  page.click(page.find('[data-chapter-toggle="c2"]'));
+  page.click(page.find('[data-chapter-toggle="c6"]'));
+  assert.deepEqual(page.expandedChapters(), []);
+  assert.deepEqual(page.visibleParts(), [], 'a collapsed chapter cannot be tabbed into');
+});
+
+test('the rail marks the part being read, and nothing else announces the move', () => {
+  const page = open({ hash: '#s094' });
+  assert.equal(page.currentPart(), 's094');
+  assert.equal(page.find('[data-chapter-link="c2"]').getAttribute('aria-current'), 'true');
+
+  page.click(page.find('[data-next]'));
+  assert.equal(page.currentPart(), 's095');
+  assert.equal(page.find('[data-part-link="s094"]').getAttribute('aria-current'), null);
+
+  // One mark, never two.
+  assert.equal(page.find('[data-part-link][aria-current]').getAttribute('data-part-link'), 's095');
+  assert.equal(page.scenes().filter((scene) => scene.hasAttribute('data-current')).length, 1);
+
+  // Nothing on the page is a live region: the move is announced by the focus
+  // that goes with it, once.
+  assert.equal(page.find('[aria-live]'), null);
+  assert.equal(page.find('[role="status"]'), null);
+});
+
+test('a part opens its own scene, and keeps the reading mode it was chosen from', () => {
+  const page = open({ hash: '#s088' });
+  page.click(page.find('[data-part-link="s120"]'));
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.currentSceneId(), 's120');
+  assert.equal(page.focused(), 's120');
+  assert.equal(page.address(), '#s120');
+
+  // In continuous reading a part is a place on the page, not a reason to
+  // leave the mode.
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'reading');
+  page.click(page.find('[data-part-link="s109"]'));
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.scrolledInto(), 's109');
+  assert.equal(page.focused(), 's109');
+});
+
+test('collapsing the rail keeps the reader on the scene, and the way back is focused', () => {
+  const page = open({ hash: '#s117' });
+  assert.equal(page.rail(), 'open');
+  assert.equal(page.find('[data-rail-toggle]').getAttribute('aria-expanded'), 'true');
+
+  page.click(page.find('[data-rail-toggle]'));
+  assert.equal(page.rail(), 'closed');
+  assert.equal(page.find('[data-rail-toggle]').getAttribute('aria-expanded'), 'false');
+  assert.equal(page.find('[data-rail-restore]').getAttribute('aria-expanded'), 'false');
+  // The control that just disappeared had focus; the one that replaced it has
+  // it now, rather than focus falling back to the body.
+  assert.ok(focused(page, '[data-rail-restore]'), 'focus fell back to the body');
+  // The reading column reflows, so the scene is brought back under the eye.
+  assert.equal(page.scrolledInto(), 's117');
+  assert.equal(page.currentSceneId(), 's117', 'and the reader has not been moved off it');
+
+  page.click(page.find('[data-rail-restore]'));
+  assert.equal(page.rail(), 'open');
+  assert.equal(page.find('[data-rail-toggle]').getAttribute('aria-expanded'), 'true');
+  assert.equal(page.currentSceneId(), 's117');
+});
+
+/* --- The phone drawer ---------------------------------------------------- */
+
+test('the drawer opens into itself and gives focus back to the trigger', () => {
+  const page = open({ hash: '#s103', narrow: true });
+  assert.equal(page.rail(), 'closed');
+
+  page.click(page.find('[data-rail-restore]'));
+  assert.equal(page.rail(), 'open');
+  // Focus moves inside, onto the control that closes it again.
+  assert.ok(focused(page, '[data-rail-toggle]'), 'opening the drawer left focus outside it');
+
+  page.click(page.find('[data-rail-toggle]'));
+  assert.equal(page.rail(), 'closed');
+  assert.ok(focused(page, '[data-rail-restore]'), 'closing the drawer did not return focus to the trigger');
+  assert.equal(page.currentSceneId(), 's103', 'and dismissing it is not a move through the essay');
+});
+
+test('Escape dismisses the drawer, and leaves a rail beside the essay alone', () => {
+  const page = open({ hash: '#s103', narrow: true });
+  page.click(page.find('[data-rail-restore]'));
+  assert.equal(page.rail(), 'open');
+
+  page.press('Escape');
+  assert.equal(page.rail(), 'closed');
+  assert.ok(focused(page, '[data-rail-restore]'), 'Escape did not return focus to the trigger');
+
+  // On a wide window the rail covers nothing, so Escape has no business
+  // collapsing it out from under a reader.
+  const wide = open({ hash: '#s103' });
+  assert.equal(wide.rail(), 'open');
+  wide.press('Escape');
+  assert.equal(wide.rail(), 'open');
+});
+
+test('choosing a part closes the drawer before the destination takes focus', () => {
+  const page = open({ hash: '#s088', narrow: true });
+  page.click(page.find('[data-rail-restore]'));
+  assert.equal(page.rail(), 'open');
+
+  page.click(page.find('[data-part-link="s126"]'));
+  assert.equal(page.rail(), 'closed', 'the drawer was left over the scene it navigated to');
+  assert.equal(page.currentSceneId(), 's126');
+  assert.equal(page.focused(), 's126', 'and focus is on the destination, not on the trigger');
+
+  // A chapter title does the same.
+  page.click(page.find('[data-rail-restore]'));
+  page.click(page.find('[data-chapter-link="c3"]'));
+  assert.equal(page.rail(), 'closed');
+  assert.equal(page.currentSceneId(), 's097');
+  assert.equal(page.focused(), 's097');
+});
+
+test('an open drawer makes what it covers inert, and gives it back on every exit', () => {
+  const covered = (page) => ['#landing', '.essay-body', '.reader-controls']
+    .filter((selector) => page.find(selector).hasAttribute('inert'));
+  const all = ['#landing', '.essay-body', '.reader-controls'];
+
+  const page = open({ hash: '#s103', narrow: true });
+  assert.deepEqual(covered(page), [], 'nothing is inert while the drawer is shut');
+
+  page.click(page.find('[data-rail-restore]'));
+  assert.deepEqual(covered(page), all, 'the reading column is still tabbable behind the drawer');
+
+  // Every way out gives it back: Escape, the close control, and a part.
+  page.press('Escape');
+  assert.deepEqual(covered(page), []);
+
+  page.click(page.find('[data-rail-restore]'));
+  page.click(page.find('[data-rail-toggle]'));
+  assert.deepEqual(covered(page), []);
+
+  page.click(page.find('[data-rail-restore]'));
+  page.click(page.find('[data-part-link="s126"]'));
+  assert.deepEqual(covered(page), [], 'the destination was left inert after the drawer closed');
+  assert.ok(focused(page, '[data-scene="s126"]'));
+
+  // And a window that grows past the drawer width, where the same element
+  // stops covering anything without ever being closed.
+  page.click(page.find('[data-rail-restore]'));
+  assert.deepEqual(covered(page), all);
+  page.resizeTo(false);
+  assert.equal(page.rail(), 'open', 'the rail is still open, as a rail');
+  assert.deepEqual(covered(page), [], 'a rail beside the essay covers nothing');
+
+  // Beside the essay it never makes anything inert in the first place.
+  const wide = open({ hash: '#s103' });
+  assert.deepEqual(covered(wide), []);
+});
+
+test('reaching the landing with the drawer open does not leave the landing inert', () => {
+  // The browser's Back button can do it: the drawer is dismissed by choosing
+  // a part, not by going back, so the state has to be answered by the view
+  // as well as by the controls.
+  const page = open({ narrow: true });
+  page.click(page.find('[data-begin]'));
+  page.click(page.find('[data-rail-restore]'));
+  assert.equal(page.rail(), 'open');
+  assert.equal(page.find('#landing').hasAttribute('inert'), true);
+
+  page.goBack();
+  assert.equal(page.view(), 'landing');
+  assert.equal(page.find('#landing').hasAttribute('inert'), false, 'the landing cannot be reached');
+  assert.equal(page.find('[data-begin]').hasAttribute('inert'), false);
+});
+
+test('a window that crosses the drawer width gets that arrangement default', () => {
+  // A rotated phone or a dragged window edge. Carrying the old answer across
+  // would leave a drawer standing open over the prose, or a wide window with
+  // no rail at all.
+  const page = open({ hash: '#s103', narrow: true });
+  assert.equal(page.rail(), 'closed');
+
+  page.resizeTo(false);
+  assert.equal(page.rail(), 'open', 'a window wide enough for a rail is given one');
+
+  page.resizeTo(true);
+  assert.equal(page.rail(), 'closed', 'and a phone is not left with a drawer standing open');
+  assert.equal(page.currentSceneId(), 's103', 'neither move takes the reader anywhere');
+});
+
 /* --- Views --------------------------------------------------------------- */
 
 test('the view switch names the view it moves to', () => {
@@ -176,11 +402,13 @@ test('the continuous view keeps the reader where they were', () => {
   assert.equal(page.currentSceneId(), 's117');
 });
 
-test('Print asks the browser to print rather than changing the argument', () => {
+test('there is no print control left for the script to wire up', () => {
+  // The 11 October amendment removed it. A browser's own print command still
+  // produces the complete essay, which is what the print rules in the
+  // stylesheet are for and what `test/browser.test.js` prints to check.
   const page = open({ hash: '#s117' });
-  const before = page.scenes().length;
-  assert.equal(page.pressPrint(), 1);
-  assert.equal(page.scenes().length, before);
+  assert.equal(page.find('[data-print]'), null);
+  assert.equal(page.scenes().length, 45, 'and nothing about the argument changed with it');
 });
 
 /* --- Optional comparisons ------------------------------------------------ */
@@ -233,7 +461,7 @@ test('a citation link carries the scene and the current reading mode', () => {
 
 test('the shared Sources control carries the place too, not only a citation', () => {
   const page = open();
-  const shared = () => page.find('.reader-controls [data-sources]').getAttribute('href');
+  const shared = () => page.find('.rail-secondary [data-sources]').getAttribute('href');
 
   // Nothing has been read yet, so there is nowhere to come back to.
   assert.equal(page.view(), 'landing');
@@ -255,25 +483,24 @@ test('the shared Sources control carries the place too, not only a citation', ()
   const end = open({ hash: '#s132' });
   assert.equal(end.find('[data-scene="s132"] .citation'), null, 's132 carries no citation');
   assert.equal(
-    end.find('.reader-controls [data-sources]').getAttribute('href'),
+    end.find('.rail-secondary [data-sources]').getAttribute('href'),
     'sources.html?from=s132&view=scene',
   );
 });
 
-test('the reading controls are not offered before the reader has begun', () => {
+test('the rail, its launcher and the footer are not offered before the reader has begun', () => {
   const page = open();
   // The approved landing is the title, the drawing, Begin and Sources &
-  // Credits. Read continuously and Print would let someone switch view or
-  // print the essay without meeting it.
+  // Credits. Read continuously would let someone switch view without meeting
+  // the essay, and the rail's Sources & Credits is a second copy of the one
+  // the landing itself renders.
   assert.equal(page.find('[data-view-toggle]').hidden, true);
-  assert.equal(page.find('[data-print]').hidden, true);
   assert.equal(page.find('[data-back]').hidden, true);
   assert.equal(page.find('[data-next]').hidden, true);
   assert.equal(page.find('[data-read-again]').hidden, true);
-  // The bar goes with them: its Sources & Credits link is a second copy of
-  // the one the landing itself renders, and the approved landing lists one of
-  // each action.
   assert.equal(page.find('.reader-controls').hidden, true);
+  assert.equal(page.find('#chapters').hidden, true);
+  assert.equal(page.find('.rail-launcher').hidden, true);
   assert.equal(page.find('.landing-actions [data-sources]').hidden, false, 'the landing keeps its own');
   assert.deepEqual(
     page.find('.landing-actions').querySelectorAll('a').map((link) => link.textContent),
@@ -282,18 +509,19 @@ test('the reading controls are not offered before the reader has begun', () => {
 
   page.click(page.find('[data-begin]'));
   assert.equal(page.find('.reader-controls').hidden, false);
+  assert.equal(page.find('#chapters').hidden, false);
   assert.equal(page.find('[data-view-toggle]').hidden, false);
-  assert.equal(page.find('[data-print]').hidden, false);
-  // And now the bar's copy is the only one a reader can reach, because the
+  // And now the rail's copy is the only one a reader can reach, because the
   // landing is off screen.
-  assert.equal(page.find('.reader-controls [data-sources]').hidden, false);
+  assert.equal(page.find('.rail-secondary [data-sources]').hidden, false);
 
   // And they go again if the reader leaves the first scene back to the landing.
   page.click(page.find('[data-back]'));
   assert.equal(page.view(), 'landing');
   assert.equal(page.find('.reader-controls').hidden, true);
+  assert.equal(page.find('#chapters').hidden, true);
+  assert.equal(page.find('.rail-launcher').hidden, true);
   assert.equal(page.find('[data-view-toggle]').hidden, true);
-  assert.equal(page.find('[data-print]').hidden, true);
 });
 
 test('the sources page sends the reader back to the scene and mode they left', () => {

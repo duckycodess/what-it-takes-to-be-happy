@@ -82,13 +82,96 @@ test('all 45 scenes are in the document, in reading order', () => {
   }
 });
 
-test('the eight chapter titles are the menu and the headings', () => {
-  const menu = document.querySelectorAll('.chapter-menu a');
-  assert.deepEqual(menu.map((link) => link.textContent), content.chapters.map((chapter) => chapter.title));
+test('the eight chapter titles are the rail and the headings', () => {
+  const rail = document.querySelectorAll('.rail-chapter-link');
+  assert.deepEqual(rail.map((link) => link.textContent), content.chapters.map((chapter) => chapter.title));
   assert.deepEqual(
     document.querySelectorAll('.chapter-title').map((node) => node.textContent),
     content.chapters.map((chapter) => chapter.title),
   );
+});
+
+/* --- The chapter rail ---------------------------------------------------- */
+
+test('the rail lists every chapter and every part, in reading order', () => {
+  const rail = document.querySelector('#chapters');
+  assert.equal(rail.localName, 'nav', 'the rail is a landmark, not a div of links');
+  assert.equal(rail.getAttribute('class'), 'chapter-rail');
+
+  // Every one of the 45 scenes is reachable by name, under its own chapter.
+  assert.deepEqual(
+    rail.querySelectorAll('[data-part-link]').map((link) => link.getAttribute('data-part-link')),
+    content.chapters.flatMap((chapter) => chapter.sceneIds),
+  );
+
+  for (const chapter of content.chapters) {
+    const list = rail.querySelector(`[data-rail-parts="${chapter.id}"]`);
+    assert.ok(list, `chapter ${chapter.id} has no list of parts`);
+    assert.equal(list.getAttribute('id'), `rail-parts-${chapter.id}`);
+    assert.deepEqual(
+      list.querySelectorAll('a').map((link) => link.getAttribute('data-part-link')),
+      chapter.sceneIds,
+    );
+    // A part is labelled with that scene's own approved title, and links to
+    // the scene's own stable identifier.
+    for (const link of list.querySelectorAll('a')) {
+      const id = link.getAttribute('data-part-link');
+      const scene = content.scenes.find((entry) => entry.id === id);
+      assert.equal(link.textContent, scene.title);
+      assert.equal(link.getAttribute('href'), `#${id}`);
+    }
+  }
+});
+
+test('the rail is named Chapters once, and its state is an attribute not a word', () => {
+  const rail = document.querySelector('#chapters');
+  assert.equal(rail.getAttribute('aria-labelledby'), 'chapter-rail-label');
+  assert.equal(document.querySelector('#chapter-rail-label').textContent, content.interface.chapters);
+
+  // The collapse control, inside the rail, and the control that brings it
+  // back, outside it. Both answer for the rail; both carry the approved word
+  // and no other, and both say what they do through `aria-expanded`.
+  const collapse = rail.querySelector('[data-rail-toggle]');
+  assert.equal(collapse.localName, 'button');
+  assert.equal(collapse.getAttribute('type'), 'button');
+  assert.equal(collapse.textContent, content.interface.chapters);
+  assert.equal(collapse.getAttribute('aria-controls'), 'chapters');
+  assert.equal(collapse.getAttribute('aria-expanded'), 'true');
+
+  const restore = document.querySelector('[data-rail-restore]');
+  assert.ok(!rail.contains(restore), 'the way back must not be inside the thing it brings back');
+  assert.equal(restore.textContent, content.interface.chapters);
+  assert.equal(restore.getAttribute('aria-controls'), 'chapters');
+  assert.ok(document.querySelector('.rail-launcher').getAttribute('class').includes('js-only'));
+});
+
+test('a chapter expands without a word of its own', () => {
+  for (const chapter of content.chapters) {
+    const button = document.querySelector(`[data-chapter-toggle="${chapter.id}"]`);
+    assert.equal(button.localName, 'button');
+    assert.equal(button.getAttribute('type'), 'button');
+    assert.equal(button.getAttribute('aria-controls'), `rail-parts-${chapter.id}`);
+    // Named by the chapter title beside it, which is approved copy, rather
+    // than by a word this build would have had to invent.
+    assert.equal(button.getAttribute('aria-labelledby'), `rail-${chapter.id}`);
+    assert.equal(document.querySelector(`#rail-${chapter.id}`).textContent, chapter.title);
+    assert.equal(button.textContent.trim(), '', 'the control carries a mark, not a label');
+    assert.equal(button.querySelector('.rail-marker').getAttribute('aria-hidden'), 'true');
+    // Expanded in the markup, so a reader with no script sees every part.
+    assert.equal(button.getAttribute('aria-expanded'), 'true');
+    assert.equal(document.querySelector(`[data-rail-parts="${chapter.id}"]`).getAttribute('hidden'), null);
+  }
+});
+
+test('Read continuously and Sources & Credits are a separate section of the rail', () => {
+  const secondary = document.querySelector('.rail-secondary');
+  assert.ok(document.querySelector('#chapters').contains(secondary));
+  // Neither is a place in the essay, so neither is in the list of places.
+  assert.equal(secondary.querySelectorAll('[data-part-link]').length, 0);
+  assert.equal(secondary.querySelector('[data-view-toggle]').textContent, content.interface.continuous);
+  assert.equal(secondary.querySelector('[data-view-toggle]').getAttribute('data-scene-label'), content.interface.scene);
+  assert.equal(secondary.querySelector('[data-sources]').textContent, content.interface.sources);
+  assert.equal(secondary.querySelector('[data-sources]').getAttribute('href'), 'sources.html');
 });
 
 test('a drawing sits where the production note puts it', () => {
@@ -223,29 +306,54 @@ test('every paragraph of a comparison scene sits outside the figure', () => {
 
 /* --- Controls ------------------------------------------------------------ */
 
-test('the shared controls use the approved names and are script-only', () => {
+test('the reading footer is Back and Next, and nothing else', () => {
   const controls = document.querySelector('.reader-controls');
   assert.ok(controls.getAttribute('class').includes('js-only'));
 
-  // Only the chapter menu is named, and it is named by its own visible
-  // heading. Naming this group too would mean writing a reader-facing word
-  // the approved script does not contain.
+  // Only the rail is named, and it is named by its own heading. Naming this
+  // group too would mean writing a reader-facing word the approved script
+  // does not contain.
   assert.equal(controls.getAttribute('aria-label'), null);
-  const menu = document.querySelector('.chapter-menu');
-  assert.equal(menu.getAttribute('aria-labelledby'), 'chapter-menu-label');
-  assert.equal(document.querySelector('#chapter-menu-label').textContent, 'Chapters');
-  assert.equal(controls.querySelector('[data-back]').textContent, 'Back');
-  assert.equal(controls.querySelector('[data-next]').textContent, 'Next');
-  assert.equal(controls.querySelector('[data-read-again]').textContent, 'Read again');
-  assert.equal(controls.querySelector('[data-print]').textContent, 'Print');
-  assert.equal(controls.querySelector('[data-sources]').textContent, 'Sources & Credits');
+  assert.deepEqual(
+    controls.querySelectorAll('button, a').map((node) => node.textContent),
+    ['Back', 'Next'],
+  );
+});
 
-  const toggle = controls.querySelector('[data-view-toggle]');
-  assert.equal(toggle.textContent, 'Read continuously');
-  assert.equal(toggle.getAttribute('data-scene-label'), 'Scene view');
+test('no print control and no scene counter is rendered anywhere', () => {
+  // The 11 October amendment removed the visible Print control: a browser
+  // prints the complete essay with its own command, and the stylesheet's
+  // print rules are what make that worth doing. The approved string stays in
+  // the content document, which is a transfer of the script rather than a
+  // record of this interface.
+  assert.equal(document.querySelector('[data-print]'), null);
+  assert.ok(!essay.includes('>Print<'), 'a Print control survived in the markup');
+  assert.ok(content.interface.print === 'Print', 'and the approved string is still in the contract');
 
-  // Read again is offered only at the end; the script reveals it there.
-  assert.notEqual(controls.querySelector('[data-read-again]').getAttribute('hidden'), null);
+  // `Scene view` is the approved name of the reading mode and stays; what
+  // must not appear is a count of where the reader is.
+  for (const phrase of [' of 45', 'Scene 1', 'Part 1', '1 / 45']) {
+    assert.ok(!essay.includes(phrase), `the essay shows "${phrase}"`);
+  }
+});
+
+test('Read again is offered with the final passage, not in the footer', () => {
+  const closing = document.querySelector('.closing-actions');
+  const body = document.querySelector('.essay-body');
+  assert.ok(body.contains(closing), 'Read again belongs to the end of the essay');
+  assert.ok(!document.querySelector('.reader-controls').contains(closing));
+
+  const link = closing.querySelector('[data-read-again]');
+  assert.equal(link.textContent, 'Read again');
+  assert.equal(link.getAttribute('href'), `#${content.landing.beginSceneId}`);
+  // Offered only at the end; the script reveals it there.
+  assert.notEqual(link.getAttribute('hidden'), null);
+
+  // It follows the last chapter, so in the scene view it sits under the last
+  // scene and nowhere else.
+  const children = body.childNodes.filter((node) => node.nodeType === 1);
+  assert.equal(children.at(-1), closing);
+  assert.equal(children.at(-2).getAttribute('data-chapter'), content.chapters.at(-1).id);
 });
 
 test('the skip link uses the approved wording', () => {

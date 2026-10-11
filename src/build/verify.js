@@ -129,10 +129,21 @@ export function auditContentCoverage(html, content) {
   }
 
   // Every control name the approved interface section fixes for the essay.
-  // `backToReading` belongs to the Sources & Credits page and is required
-  // there, by `auditSourcesCoverage`, rather than on every output.
+  //
+  // Two are excluded, and for different reasons. `backToReading` belongs to
+  // the Sources & Credits page and is required there, by
+  // `auditSourcesCoverage`, rather than on every output.
+  //
+  // `print` names a control the 11 October owner amendment removed: the
+  // reading footer carries Back and Next alone, and a browser's own print
+  // command still prints the complete essay, which is what the Print button
+  // did. The string stays in the content document because the document is a
+  // transfer of the approved script and nothing is quietly deleted from it;
+  // what changed is the interface, not the script. Nothing else here may be
+  // dropped, so a control that goes missing by accident still fails a build.
+  const RETIRED = new Set(['backToReading', 'print']);
   for (const [key, value] of Object.entries(content.interface)) {
-    if (key === 'backToReading') continue;
+    if (RETIRED.has(key)) continue;
     if (!html.includes(esc(value))) missing(`interface.${key}`, value);
   }
 

@@ -450,12 +450,19 @@ class HtmlDocument {
  * Loads a rendered document and runs the real browser script against it.
  *
  * @param {string} html the renderer's output
- * @param {{hash?: string, history?: boolean|'throws'}} [options]
+ * @param {{hash?: string, history?: boolean|'throws', narrow?: boolean}} [options]
  *   `history` models the two ways a browser can refuse the History API on a
  *   file:// document: `false` removes `pushState` altogether, and `'throws'`
  *   keeps it but makes every call raise a `SecurityError`, which is what a
  *   browser that dislikes the document's origin actually does. The script has
  *   to reach the same fallback either way.
+ *
+ *   `narrow` is the one thing the script asks the *stylesheet*: whether the
+ *   window is narrow enough that the chapter rail is being presented as a
+ *   drawer. There is no layout here to measure, so the answer is given rather
+ *   than computed, and `page.resizeTo(narrow)` changes it afterwards the way a
+ *   rotated phone or a dragged window edge would. What the two arrangements
+ *   then look like is a question for `test/browser.test.js`.
  */
 export function openDocument(html, options = {}) {
   const document = parseHtml(html);
@@ -468,6 +475,7 @@ export function openDocument(html, options = {}) {
     scrollPositions: [],
     historyRefusals: 0,
     prints: 0,
+    mediaQueries: [],
   };
 
   const location = {
@@ -542,6 +550,20 @@ export function openDocument(html, options = {}) {
     history.replaceState = refuse;
   }
 
+  /**
+   * The one media query the browser script asks about, as a live object.
+   *
+   * A real `MediaQueryList` keeps answering as the window changes and tells
+   * its listeners when the answer flips. So does this, which is what lets a
+   * test turn a desktop window into a phone and watch what the script does
+   * about it.
+   */
+  const media = {
+    matches: options.narrow === true,
+    listeners: [],
+    addEventListener(type, handler) { if (type === 'change') this.listeners.push(handler); },
+  };
+
   const window = {
     document,
     location,
@@ -551,7 +573,10 @@ export function openDocument(html, options = {}) {
     listeners: new Map(),
     scrollTo(x, y) { page.scrollPositions.push([x, y]); },
     print() { page.prints += 1; },
-    matchMedia: () => ({ matches: false, addEventListener() {} }),
+    matchMedia: (query) => {
+      page.mediaQueries.push(query);
+      return media;
+    },
   };
 
   page.window = window;
@@ -599,10 +624,12 @@ export function openDocument(html, options = {}) {
     page.settle();
   };
 
-  /** The reader pressing the Print control. */
-  page.pressPrint = () => {
-    page.click(document.querySelector('[data-print]'));
-    return page.prints;
+  /** The window crossing the width at which the rail becomes a drawer. */
+  page.resizeTo = (narrow) => {
+    if (media.matches === narrow) return;
+    media.matches = narrow;
+    for (const handler of [...media.listeners]) handler({ matches: narrow });
+    page.settle();
   };
 
   /* --- Reading the page -------------------------------------------------- */
@@ -617,6 +644,26 @@ export function openDocument(html, options = {}) {
   };
   page.scenes = () => document.querySelectorAll('[data-scene]');
   page.comparisons = () => document.querySelectorAll('.art-comparison');
+
+  /** Whether the reader has the chapter rail open, as the script records it. */
+  page.rail = () => document.documentElement.getAttribute('data-rail');
+
+  /** The chapters whose parts are expanded, in rail order. */
+  page.expandedChapters = () => document.querySelectorAll('[data-chapter-toggle]')
+    .filter((button) => button.getAttribute('aria-expanded') === 'true')
+    .map((button) => button.getAttribute('data-chapter-toggle'));
+
+  /** The parts a reader could tab to: those of an expanded chapter. */
+  page.visibleParts = () => document.querySelectorAll('[data-rail-parts]')
+    .filter((list) => !list.hidden)
+    .flatMap((list) => list.querySelectorAll('[data-part-link]'))
+    .map((link) => link.getAttribute('data-part-link'));
+
+  /** The part the rail marks as the one being read. */
+  page.currentPart = () => {
+    const link = document.querySelector('[data-part-link][aria-current]');
+    return link ? link.getAttribute('data-part-link') : null;
+  };
 
   /**
    * What holds focus, and what was last scrolled to, as short strings.

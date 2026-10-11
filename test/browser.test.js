@@ -96,7 +96,8 @@ probe
     report.landing = {
       landingVisible: probe.visible(probe.q('.landing')),
       essayVisible: probe.visible(probe.q('.essay-body')),
-      menuVisible: probe.visible(probe.q('.chapter-menu')),
+      railVisible: probe.visible(probe.q('.chapter-rail')),
+      launcherVisible: probe.visible(probe.q('.rail-launcher')),
       horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       title: probe.q('h1').textContent,
       actions: probe.all('.landing-actions a').map(function (a) { return a.textContent; }),
@@ -110,11 +111,17 @@ probe
       scene: probe.sceneId(),
       onlyCurrentVisible: probe.all('[data-scene]').filter(probe.visible).length,
       topOfWindow: Math.round(scene.getBoundingClientRect().top),
+      launcherBottom: Math.round(probe.q('.rail-launcher').getBoundingClientRect().bottom),
       hash: location.hash,
       backVisible: probe.visible(probe.q('[data-back]')),
       nextVisible: probe.visible(probe.q('[data-next]')),
       readAgainVisible: probe.visible(probe.q('[data-read-again]')),
+      launcherVisible: probe.visible(probe.q('.rail-launcher')),
+      railVisible: probe.visible(probe.q('.chapter-rail')),
       horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      footerControls: probe.all('.reader-controls button, .reader-controls .button')
+        .filter(probe.visible)
+        .map(function (control) { return control.textContent.trim(); }),
       controlHeights: probe.all('.reader-controls button, .reader-controls .button')
         .filter(probe.visible)
         .map(function (control) { return Math.round(control.getBoundingClientRect().height); }),
@@ -132,11 +139,24 @@ probe
       horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
   })
+  .step(function () { probe.q('[data-rail-restore]').click(); })
+  .step(function () {
+    report.drawerOpen = {
+      rail: document.documentElement.getAttribute('data-rail'),
+      railVisible: probe.visible(probe.q('.chapter-rail')),
+      coversTheScene: probe.q('.chapter-rail').getBoundingClientRect().height
+        >= document.documentElement.clientHeight * 0.8,
+      focusedInside: probe.q('.chapter-rail').contains(document.activeElement),
+      partsReachable: probe.all('[data-part-link]').filter(probe.visible).length,
+    };
+  })
   .step(function () { probe.q('[data-chapter-link="c6"]').click(); })
   .step(function () {
     report.afterChapterJump = {
       scene: probe.sceneId(),
       hash: location.hash,
+      rail: document.documentElement.getAttribute('data-rail'),
+      railVisible: probe.visible(probe.q('.chapter-rail')),
       visibleScenes: probe.all('[data-scene]').filter(probe.visible).length,
     };
   })
@@ -173,7 +193,8 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
 
   assert.equal(value.landing.landingVisible, true);
   assert.equal(value.landing.essayVisible, false, 'the landing is the landing, not the whole essay');
-  assert.equal(value.landing.menuVisible, false);
+  assert.equal(value.landing.railVisible, false, 'the approved landing lists no chapter navigation');
+  assert.equal(value.landing.launcherVisible, false, 'nor a way to open it');
   assert.equal(value.landing.title, content.landing.title);
   assert.deepEqual(value.landing.actions, ['Begin', 'Sources & Credits']);
   assert.equal(value.landing.horizontalOverflow, 0, 'the landing does not scroll sideways at 375px');
@@ -181,11 +202,22 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   assert.equal(value.firstScene.view, 'beat');
   assert.equal(value.firstScene.scene, ORDER[0]);
   assert.equal(value.firstScene.onlyCurrentVisible, 1, 'one scene is on screen at a time');
-  assert.equal(value.firstScene.topOfWindow, 0, 'the scene is at the top of the window, not below the chapter list');
+  // At phone width the launcher is fixed across the top of the window, so the
+  // scene stops under it rather than behind it. That is the whole point of
+  // the scroll margin; a scene at 0 would be reading its first line through
+  // the launcher.
+  assert.equal(value.firstScene.launcherVisible, true, 'a phone needs the way into the chapter drawer');
+  assert.equal(value.firstScene.railVisible, false, 'and the drawer itself starts shut');
+  assert.ok(value.firstScene.topOfWindow >= value.firstScene.launcherBottom,
+    `the scene's first line is ${value.firstScene.launcherBottom - value.firstScene.topOfWindow}px behind the launcher`);
+  assert.ok(value.firstScene.topOfWindow - value.firstScene.launcherBottom <= 12,
+    `the scene starts ${value.firstScene.topOfWindow}px down with the launcher ending at ${value.firstScene.launcherBottom}`);
   assert.equal(value.firstScene.hash, `#${ORDER[0]}`);
   assert.equal(value.firstScene.backVisible, true);
   assert.equal(value.firstScene.nextVisible, true);
   assert.equal(value.firstScene.readAgainVisible, false, 'Read again belongs at the end, not the beginning');
+  assert.deepEqual(value.firstScene.footerControls, [content.interface.back, content.interface.next],
+    'the reading footer carries Back and Next and nothing else');
   assert.equal(value.firstScene.horizontalOverflow, 0);
   for (const height of value.firstScene.controlHeights) {
     assert.ok(height >= 44, `a control is ${height}px tall, under the 44px a finger needs`);
@@ -203,9 +235,19 @@ test('the reader behaves in a real browser at phone width', { skip }, () => {
   );
   assert.equal(value.afterNext.horizontalOverflow, 0);
 
+  // The drawer: opened from the launcher, covering the reading column, with
+  // focus inside it and every part of the current chapter reachable.
+  assert.equal(value.drawerOpen.rail, 'open');
+  assert.equal(value.drawerOpen.railVisible, true);
+  assert.equal(value.drawerOpen.coversTheScene, true, 'a drawer that covers nothing is not a drawer');
+  assert.equal(value.drawerOpen.focusedInside, true, 'opening the drawer left focus behind it');
+  assert.ok(value.drawerOpen.partsReachable > 0, 'the drawer offers no parts to choose');
+
   const chapterSix = content.chapters.find((chapter) => chapter.id === 'c6');
   assert.equal(value.afterChapterJump.scene, chapterSix.sceneIds[0]);
   assert.equal(value.afterChapterJump.hash, `#${chapterSix.sceneIds[0]}`);
+  assert.equal(value.afterChapterJump.rail, 'closed', 'the drawer stayed over the scene it navigated to');
+  assert.equal(value.afterChapterJump.railVisible, false);
   assert.equal(value.afterChapterJump.visibleScenes, 1);
 
   assert.equal(value.continuous.view, 'reading');
@@ -236,6 +278,7 @@ test('the end of the essay offers Read again rather than a dead Next', { skip },
         report.backVisible = probe.visible(probe.q('[data-back]'));
         report.readAgain = probe.visible(probe.q('[data-read-again]'))
           ? probe.q('[data-read-again]').getAttribute('href') : null;
+        report.readAgainInFooter = probe.q('.reader-controls [data-read-again]') !== null;
         report.sources = probe.q('[data-sources]').getAttribute('href');
       }).run(function () { probe.done(report); });`,
   });
@@ -244,6 +287,7 @@ test('the end of the essay offers Read again rather than a dead Next', { skip },
   assert.equal(value.nextVisible, false, 'there is nothing after the last scene');
   assert.equal(value.backVisible, true);
   assert.equal(value.readAgain, `#${ORDER[0]}`);
+  assert.equal(value.readAgainInFooter, false, 'the footer carries Back and Next alone');
   assert.equal(value.sources, 'sources.html');
 });
 
@@ -296,7 +340,7 @@ test('a deep link opens that scene, and the script takes no focus of its own', {
   assert.equal(plain.focused, 'body', 'a reader who has just arrived keeps their focus');
 });
 
-test('focus moves with the reader, and the move is painted', { skip }, () => {
+test('focus moves with the reader, and the keyboard still sees where it went', { skip }, () => {
   const { value } = essayPage({
     width: 1024,
     height: 900,
@@ -307,6 +351,7 @@ test('focus moves with the reader, and the move is painted', { skip }, () => {
           id: element.getAttribute('data-scene') || element.getAttribute('id'),
           style: probe.style(element, 'outlineStyle'),
           width: probe.style(element, 'outlineWidth'),
+          focusVisible: element.matches(':focus-visible'),
         };
       }
       probe
@@ -324,13 +369,14 @@ test('focus moves with the reader, and the move is painted', { skip }, () => {
         .step(function () { report.afterArrowLeft = probe.sceneId(); })
         .step(function () { probe.q('[data-chapter-link="c8"]').click(); })
         .step(function () { report.afterChapterJump = ring(document.activeElement); })
+        .step(function () { probe.q('[data-part-link="s131"]').click(); })
+        .step(function () { report.afterPart = { scene: probe.sceneId(), focused: ring(document.activeElement) }; })
         .run(function () { probe.done(report); });`,
   });
 
+  // Every move puts focus on the scene it opened, which is what announces the
+  // move once to a reader who is listening.
   assert.equal(value.afterBegin.id, ORDER[0], 'Begin moves focus into the scene it opened');
-  assert.equal(value.afterBegin.style, 'solid', 'and the move is painted, not just announced');
-  assert.notEqual(value.afterBegin.width, '0px');
-
   assert.equal(value.afterNext.id, ORDER[1]);
   assert.equal(value.afterArrowRight.scene, ORDER[2], 'the arrow keys walk the scenes');
   assert.equal(value.afterArrowRight.focused.id, ORDER[2]);
@@ -338,7 +384,54 @@ test('focus moves with the reader, and the move is painted', { skip }, () => {
 
   const chapterEight = content.chapters.find((chapter) => chapter.id === 'c8');
   assert.equal(value.afterChapterJump.id, chapterEight.sceneIds[0]);
-  assert.equal(value.afterChapterJump.style, 'solid');
+  assert.equal(value.afterPart.scene, 's131', 'a part in the rail opens its own scene');
+  assert.equal(value.afterPart.focused.id, 's131');
+
+  // A keyboard reader has no pointer to tell them where they are, so the ring
+  // is still painted when the browser judges the move to be a keyboard one.
+  assert.equal(value.afterArrowRight.focused.focusVisible, true);
+  assert.equal(value.afterArrowRight.focused.style, 'solid', 'the keyboard move is painted');
+  assert.notEqual(value.afterArrowRight.focused.width, '0px');
+});
+
+test('a whole scene is ringed only when the browser judges the move a keyboard one', { skip }, () => {
+  // The honest limit of this harness, stated rather than worked around: every
+  // click it can make is `element.click()`, which is a script call and not a
+  // pointer interaction, so Chrome keeps its keyboard modality and reports
+  // `:focus-visible` for the scene afterwards. A real mouse press would not,
+  // and driving one needs a DevTools socket this setup cannot open -- see
+  // test/support/chrome.js.
+  //
+  // What can be checked for real, in the browser that parsed the file, is the
+  // rule that decides it: after the 11 October amendment there is no rule
+  // ringing `.scene:focus`, so whether a scene is outlined is entirely the
+  // browser's `:focus-visible` judgement rather than something this
+  // stylesheet forces on every move. The pointer case is that judgement.
+  const { value } = essayPage({
+    width: 1024,
+    height: 900,
+    flags: ['--allow-file-access-from-files'],
+    driver: `
+      var report = { outlining: [] };
+      probe.step(function () {
+        var sheet = Array.prototype.slice.call(document.styleSheets).filter(function (candidate) {
+          return (candidate.href || '').indexOf('styles.css') >= 0;
+        })[0];
+        report.read = !!sheet;
+        Array.prototype.slice.call(sheet.cssRules).forEach(function (rule) {
+          if (rule.constructor.name !== 'CSSStyleRule') return;
+          if (!rule.style.getPropertyValue('outline')) return;
+          report.outlining.push(rule.selectorText);
+        });
+      }).run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.read, true, 'the browser could not read the stylesheet it parsed');
+  const outlining = value.outlining.flatMap((selector) => selector.split(',').map((part) => part.trim()));
+  assert.ok(!outlining.includes('.scene:focus'), `a rule still forces a ring on every scene: ${outlining.join(', ')}`);
+  assert.ok(outlining.includes('.scene:focus-visible'), 'a keyboard reader lost the ring entirely');
+  assert.ok(outlining.includes('.source:focus'), 'a citation no longer marks the entry it landed on');
+  assert.ok(outlining.includes(':focus-visible'), 'interactive controls lost their focus ring');
 });
 
 test('an in-page landmark moves the reader within the scene, not out of it', { skip }, () => {
@@ -387,6 +480,292 @@ test('an in-page landmark moves the reader within the scene, not out of it', { s
 
   assert.equal(value.afterUnknownFragment.view, 'beat', 'an unrecognised fragment is not a reason to move anyone');
   assert.equal(value.afterUnknownFragment.scene, value.before.scene);
+});
+
+/* --- The chapter rail, in both arrangements ------------------------------- */
+
+test('on a wide screen the rail stands beside the essay and collapses out of it', { skip }, () => {
+  const scene = ORDER[20];
+  const { value } = essayPage({
+    width: 1280,
+    height: 900,
+    hash: `#${scene}`,
+    driver: `
+      var report = {};
+      function shape(label) {
+        var rail = probe.q('.chapter-rail');
+        var current = probe.q('[data-scene][data-current]');
+        var paragraph = probe.q('p.narration, p.line', current);
+        return {
+          label: label,
+          rail: document.documentElement.getAttribute('data-rail'),
+          railVisible: probe.visible(rail),
+          railLeft: probe.visible(rail) ? Math.round(rail.getBoundingClientRect().left) : null,
+          railRight: probe.visible(rail) ? Math.round(rail.getBoundingClientRect().right) : null,
+          launcherVisible: probe.visible(probe.q('.rail-launcher')),
+          proseLeft: Math.round(paragraph.getBoundingClientRect().left),
+          proseWidth: Math.round(paragraph.getBoundingClientRect().width),
+          sceneOnScreen: probe.inViewport(current),
+          scene: probe.sceneId(),
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          expanded: probe.all('[data-chapter-toggle]')
+            .filter(function (b) { return b.getAttribute('aria-expanded') === 'true'; })
+            .map(function (b) { return b.getAttribute('data-chapter-toggle'); }),
+          currentPart: probe.q('[data-part-link][aria-current]')
+            ? probe.q('[data-part-link][aria-current]').getAttribute('data-part-link') : null,
+          partsReachable: probe.all('[data-part-link]').filter(probe.visible).length,
+        };
+      }
+      probe
+        .step(function () { report.open = shape('open'); })
+        .step(function () { probe.q('[data-rail-toggle]').click(); })
+        .step(function () {
+          report.collapsed = shape('collapsed');
+          report.focusedOnLauncher = document.activeElement === probe.q('[data-rail-restore]');
+          report.restoreExpanded = probe.q('[data-rail-restore]').getAttribute('aria-expanded');
+        })
+        .step(function () { probe.q('[data-rail-restore]').click(); })
+        .step(function () {
+          report.restored = shape('restored');
+          report.focusedInRail = probe.q('.chapter-rail').contains(document.activeElement);
+        })
+        .run(function () { probe.done(report); });`,
+  });
+
+  // Open: a column of navigation to the left of a column of prose.
+  assert.equal(value.open.rail, 'open');
+  assert.equal(value.open.railVisible, true);
+  assert.equal(value.open.launcherVisible, false, 'the way back is not offered while the rail is there');
+  assert.ok(value.open.railRight <= value.open.proseLeft,
+    `the rail overlaps the prose: rail ends at ${value.open.railRight}, prose starts at ${value.open.proseLeft}`);
+  assert.equal(value.open.overflow, 0);
+
+  // Only the chapter being read is expanded, and the part being read is marked.
+  assert.deepEqual(value.open.expanded, [sceneById.get(scene).chapterId]);
+  assert.equal(value.open.currentPart, scene);
+  assert.equal(value.open.partsReachable,
+    content.chapters.find((chapter) => chapter.id === sceneById.get(scene).chapterId).sceneIds.length,
+    'a collapsed chapter should offer no parts to tab through');
+
+  // Collapsed: the rail's column goes, the launcher appears, and the reader
+  // is still looking at the scene they were reading.
+  assert.equal(value.collapsed.rail, 'closed');
+  assert.equal(value.collapsed.railVisible, false);
+  assert.equal(value.collapsed.partsReachable, 0, 'a collapsed rail is out of the keyboard order with it');
+  assert.equal(value.collapsed.launcherVisible, true);
+  assert.equal(value.restoreExpanded, 'false', 'the restore control misreports the rail as open');
+  assert.equal(value.focusedOnLauncher, true, 'collapsing the rail dropped focus to the body');
+  assert.equal(value.collapsed.scene, scene);
+  assert.equal(value.collapsed.sceneOnScreen, true, 'the reflow left the scene off screen');
+  assert.ok(value.collapsed.proseLeft < value.open.proseLeft, 'the essay did not take the room the rail gave up');
+  assert.equal(value.collapsed.overflow, 0);
+
+  // Restored, with focus on the control that closes it again.
+  assert.equal(value.restored.rail, 'open');
+  assert.equal(value.restored.railVisible, true);
+  assert.equal(value.restored.launcherVisible, false);
+  assert.equal(value.focusedInRail, true);
+  assert.equal(value.restored.scene, scene);
+  assert.equal(value.restored.sceneOnScreen, true);
+});
+
+test('at phone width the drawer opens, dismisses on Escape, and gives focus back', { skip }, () => {
+  const scene = ORDER[12];
+  const { value } = essayPage({
+    width: 375,
+    height: 780,
+    hash: `#${scene}`,
+    driver: `
+      var report = {};
+      function shape() {
+        var rail = probe.q('.chapter-rail');
+        return {
+          rail: document.documentElement.getAttribute('data-rail'),
+          railVisible: probe.visible(rail),
+          launcherVisible: probe.visible(probe.q('.rail-launcher')),
+          partsReachable: probe.all('[data-part-link]').filter(probe.visible).length,
+          scene: probe.sceneId(),
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      }
+      probe
+        .step(function () { report.shut = shape(); })
+        .step(function () { probe.q('[data-rail-restore]').click(); })
+        .step(function () {
+          report.opened = shape();
+          report.focusedInside = probe.q('.chapter-rail').contains(document.activeElement);
+          report.closeIsInside = probe.q('.chapter-rail [data-rail-toggle]') !== null;
+          // What the drawer covers must not be reachable behind it. The
+          // browser's own inert attribute is the guard; this is whether the
+          // browser honours it, which no assertion about the attribute can
+          // answer.
+          var inside = document.activeElement;
+          probe.q('[data-next]').focus();
+          report.footerTookFocus = document.activeElement === probe.q('[data-next]');
+          probe.q('.citation').focus();
+          report.essayTookFocus = document.activeElement === probe.q('.citation');
+          report.focusStayedInside = probe.q('.chapter-rail').contains(document.activeElement);
+          inside.focus();
+          var box = probe.q('.chapter-rail').getBoundingClientRect();
+          report.covers = Math.round(box.width) >= document.documentElement.clientWidth
+            && Math.round(box.height) >= document.documentElement.clientHeight * 0.8;
+          report.rowHeights = probe.all('.chapter-rail a').filter(probe.visible)
+            .map(function (link) { return Math.round(link.getBoundingClientRect().height); });
+        })
+        .step(function () {
+          document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+        })
+        .step(function () {
+          report.afterEscape = shape();
+          report.focusedOnTrigger = document.activeElement === probe.q('[data-rail-restore]');
+        })
+        .step(function () { probe.q('[data-rail-restore]').click(); })
+        .step(function () { probe.q('[data-rail-toggle]').click(); })
+        .step(function () {
+          report.afterCloseControl = shape();
+          report.focusedOnTriggerAgain = document.activeElement === probe.q('[data-rail-restore]');
+        })
+        .step(function () { probe.q('[data-rail-restore]').click(); })
+        .step(function () { probe.q('[data-part-link="s127"]').click(); })
+        .step(function () {
+          report.afterPart = shape();
+          report.focusedOnScene = document.activeElement === probe.q('#s127');
+        })
+        .run(function () { probe.done(report); });`,
+  });
+
+  assert.equal(value.shut.rail, 'closed');
+  assert.equal(value.shut.railVisible, false, 'the drawer starts shut on a phone');
+  assert.equal(value.shut.launcherVisible, true, 'and the way in is on screen');
+  assert.equal(value.shut.partsReachable, 0, 'a shut drawer must not be tabbable');
+
+  assert.equal(value.opened.rail, 'open');
+  assert.equal(value.opened.railVisible, true);
+  assert.equal(value.covers, true, 'the drawer should cover the reading column, not sit in the margin');
+  assert.equal(value.opened.launcherVisible, false, 'the same word must not be offered twice at once');
+  assert.equal(value.closeIsInside, true, 'the control that closes the drawer is inside it');
+  assert.equal(value.focusedInside, true, 'opening the drawer left focus behind it');
+  assert.equal(value.footerTookFocus, false, 'the reading footer is reachable behind the open drawer');
+  assert.equal(value.essayTookFocus, false, 'the covered essay is reachable behind the open drawer');
+  assert.equal(value.focusStayedInside, true, 'focus escaped the drawer onto something covered');
+  assert.ok(value.opened.partsReachable > 0);
+  assert.equal(value.opened.overflow, 0, 'the drawer scrolls the page sideways');
+  for (const height of value.rowHeights) {
+    assert.ok(height >= 44, `a drawer row is ${height}px tall, under the 44px a fingertip needs`);
+  }
+
+  assert.equal(value.afterEscape.rail, 'closed', 'Escape did not dismiss the drawer');
+  assert.equal(value.focusedOnTrigger, true, 'Escape dropped focus instead of returning it');
+  assert.equal(value.afterEscape.scene, scene, 'and dismissing is not a move through the essay');
+
+  assert.equal(value.afterCloseControl.rail, 'closed');
+  assert.equal(value.focusedOnTriggerAgain, true);
+
+  assert.equal(value.afterPart.rail, 'closed', 'choosing a part left the drawer over the destination');
+  assert.equal(value.afterPart.scene, 's127');
+  assert.equal(value.focusedOnScene, true, 'and focus belongs on the destination, not the trigger');
+});
+
+/* --- A drawing beside the passage, and prose at a measure ----------------- */
+
+test('on a wide screen the drawing sits beside its passage, smaller than the prose', { skip }, () => {
+  // The scenes with a drawing in the authored position, at a width where
+  // there is room for a column of prose and a drawing next to it.
+  const scenes = ORDER.filter((id) => {
+    const visual = sceneById.get(id).visual;
+    return visual.layout === 'single' || visual.layout === 'group';
+  }).slice(0, 6);
+
+  for (const id of scenes) {
+    const { value } = essayPage({
+      width: 1440,
+      height: 900,
+      hash: `#${id}`,
+      driver: `
+        var report = {};
+        probe.step(function () {
+          var scene = probe.q('[data-scene][data-current]');
+          var anchor = probe.q('.art-anchor', scene);
+          var art = anchor.getBoundingClientRect();
+          report.art = { left: Math.round(art.left), right: Math.round(art.right), width: Math.round(art.width) };
+          report.prose = probe.all('p.narration, p.line', scene).map(function (p) {
+            var box = p.getBoundingClientRect();
+            return { left: Math.round(box.left), right: Math.round(box.right), width: Math.round(box.width) };
+          });
+          report.overflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+          report.labels = probe.all('.art-label', scene).map(function (label) {
+            var box = label.getBoundingClientRect();
+            return {
+              text: label.textContent,
+              inside: box.left >= art.left - 1 && box.right <= art.right + 1,
+              inViewport: probe.inViewport(label),
+            };
+          });
+          // The authored order is the reading order: the drawing comes after
+          // the block the production note puts it after, whatever the layout
+          // does with it.
+          var children = Array.prototype.slice.call(scene.children);
+          report.domPosition = children.indexOf(probe.q('figure.art', scene));
+          report.blocksBefore = children.slice(0, report.domPosition)
+            .filter(function (node) { return node.tagName === 'P'; }).length;
+        }).run(function () { probe.done(report); });`,
+    });
+
+    const widest = Math.max(...value.prose.map((paragraph) => paragraph.width));
+    assert.ok(value.art.width < widest,
+      `${id}: the drawing is ${value.art.width}px beside ${widest}px of prose, which is not supporting it`);
+    assert.ok(value.art.left >= Math.max(...value.prose.map((paragraph) => paragraph.right)) - 1,
+      `${id}: the drawing overlaps the sentences it should sit beside`);
+    assert.equal(value.overflow, 0, `${id} scrolls sideways at 1440px`);
+    assert.equal(value.blocksBefore, sceneById.get(id).visual.afterBlock,
+      `${id}: the drawing moved out of its authored position in the reading order`);
+
+    for (const label of value.labels) {
+      assert.equal(label.inside, true, `${id}: "${label.text}" hangs outside the smaller drawing`);
+      assert.equal(label.inViewport, true, `${id}: "${label.text}" is clipped out of the window`);
+    }
+  }
+});
+
+test('a line of prose stays a length a reader can track, in the face that sets it', { skip }, () => {
+  // Measured against a fixture paragraph built in the browser, never against
+  // the approved manuscript: what is being checked is the column, and a
+  // website sentence is whatever length the author wrote it.
+  for (const width of [375, 1024, 1440]) {
+    const { value } = essayPage({
+      width,
+      height: 900,
+      hash: `#${ORDER[0]}`,
+      driver: afterFonts(`
+        var scene = probe.q('[data-scene][data-current]');
+        var sample = document.createElement('p');
+        sample.className = 'narration';
+        var filler = 'the quick brown fox jumps over a lazy dog and then considers whether an ordinary afternoon counts as a good one ';
+        sample.textContent = filler + filler + filler + filler;
+        scene.appendChild(sample);
+        var box = sample.getBoundingClientRect();
+        var lines = Math.round(box.height / parseFloat(probe.style(sample, 'lineHeight')));
+        report.width = Math.round(box.width);
+        report.lines = lines;
+        report.charsPerLine = Math.round(sample.textContent.trim().length / lines);
+        report.family = probe.style(sample, 'fontFamily');
+        sample.remove();
+      `),
+    });
+
+    assert.match(value.family, new RegExp(PROJECT_FONT.family), 'measured in the fallback, which proves nothing');
+    assert.ok(value.lines > 3, `the fixture wrapped onto ${value.lines} lines, too few to average`);
+    assert.ok(
+      value.charsPerLine >= 35 && value.charsPerLine <= 75,
+      `at ${width}px a line holds ${value.charsPerLine} characters, outside the band a reader can track`,
+    );
+    if (width >= 1024) {
+      assert.ok(
+        value.charsPerLine >= 55,
+        `at ${width}px the column is still a strip: ${value.charsPerLine} characters a line`,
+      );
+    }
+  }
 });
 
 /* --- Reflow --------------------------------------------------------------- */
@@ -685,32 +1064,40 @@ test('the landing offers only what the approved landing lists', { skip }, () => 
         .step(function () { probe.q('[data-begin]').click(); })
         .step(function () {
           report.reading = controls();
+          report.railWhileReading = probe.all('.rail-secondary button, .rail-secondary .button')
+            .filter(probe.visible)
+            .map(function (control) { return control.textContent.trim(); });
           report.readingSourcesActions = probe.all('[data-sources]').filter(probe.visible).length;
         })
         .step(function () { probe.q('[data-back]').click(); })
-        .step(function () { report.backOnLanding = { view: document.documentElement.getAttribute('data-view'), controls: controls() }; })
+        .step(function () {
+          report.backOnLanding = {
+            view: document.documentElement.getAttribute('data-view'),
+            controls: controls(),
+            rail: probe.all('.chapter-rail a, .chapter-rail button').filter(probe.visible)
+              .map(function (control) { return control.textContent.trim(); }),
+          };
+        })
         .run(function () { probe.done(report); });`,
   });
 
-  // Read continuously and Print would let a first-time visitor switch view or
-  // print the essay without ever meeting it. Sources & Credits is on the
-  // approved landing, so it stays.
+  // Read continuously would let a first-time visitor switch view without ever
+  // meeting the essay. Sources & Credits is on the approved landing, so it
+  // stays there and nowhere else until there is something to read.
   assert.equal(value.onLanding.view, 'landing');
-  // One Begin and one Sources & Credits, which is what the approved landing
-  // lists. The bar's own Sources link is a second copy of the same
-  // destination, so the whole bar is withheld until there is something to
-  // read; otherwise a reader meets two identical actions.
   assert.deepEqual(value.onLanding.controls, []);
   assert.deepEqual(value.onLanding.landingActions, [content.landing.beginLabel, content.landing.sourcesLabel]);
   assert.equal(value.onLanding.sourcesActions, 1, 'the landing offers one route to the register, not two');
 
-  assert.ok(value.reading.includes(content.interface.continuous), 'they arrive once there is something to read');
-  assert.ok(value.reading.includes(content.interface.print));
-  assert.ok(value.reading.includes(content.interface.sources), 'including the way to the register');
+  // The reading footer is Back and Next. Everything else a reader can do is
+  // in the rail, which the next report covers.
+  assert.deepEqual(value.reading, [content.interface.back, content.interface.next]);
+  assert.deepEqual(value.railWhileReading, [content.interface.continuous, content.interface.sources]);
   assert.equal(value.readingSourcesActions, 1, 'and still one route to it, because the landing is off screen');
 
   assert.equal(value.backOnLanding.view, 'landing');
-  assert.deepEqual(value.backOnLanding.controls, [], 'and the bar goes again on the way out');
+  assert.deepEqual(value.backOnLanding.controls, [], 'and the footer goes again on the way out');
+  assert.deepEqual(value.backOnLanding.rail, [], 'and so does the rail');
 });
 
 test('the shared Sources control returns the reader to where they were', { skip }, () => {
@@ -723,11 +1110,11 @@ test('the shared Sources control returns the reader to where they were', { skip 
       var report = {};
       probe
         .step(function () {
-          report.atLastScene = probe.q('.reader-controls [data-sources]').getAttribute('href');
+          report.atLastScene = probe.q('.rail-secondary [data-sources]').getAttribute('href');
           report.citationsHere = probe.all('.citation', probe.q('[data-scene][data-current]')).length;
         })
         .step(function () { probe.q('[data-view-toggle]').click(); })
-        .step(function () { report.continuous = probe.q('.reader-controls [data-sources]').getAttribute('href'); })
+        .step(function () { report.continuous = probe.q('.rail-secondary [data-sources]').getAttribute('href'); })
         .run(function () { probe.done(report); });`,
   });
 
@@ -777,7 +1164,7 @@ test('reading continuously, the shared Sources control follows the scroll', { sk
         .step(function () { probe.q('[data-view-toggle]').click(); })
         .step(function () {
           report.view = document.documentElement.getAttribute('data-view');
-          report.beforeScroll = probe.q('.reader-controls [data-sources]').getAttribute('href');
+          report.beforeScroll = probe.q('.rail-secondary [data-sources]').getAttribute('href');
           report.focusedBefore = document.activeElement === document.body ? 'body' : probe.activeId();
         })
         .step(function () {
@@ -791,7 +1178,7 @@ test('reading continuously, the shared Sources control follows the scroll', { sk
         .step(function () {})
         .wait(250)
         .step(function () {
-          report.afterScroll = probe.q('.reader-controls [data-sources]').getAttribute('href');
+          report.afterScroll = probe.q('.rail-secondary [data-sources]').getAttribute('href');
           report.hash = location.hash;
           report.focusedAfter = document.activeElement === document.body ? 'body' : probe.activeId();
           report.stillContinuous = document.documentElement.getAttribute('data-view');
@@ -807,7 +1194,7 @@ test('reading continuously, the shared Sources control follows the scroll', { sk
           // the link fresh while scrolling, and the link recomputes as it is
           // used, which is the path that matters and the one a browser that
           // coalesced the last scroll event away still takes.
-          var link = probe.q('.reader-controls [data-sources]');
+          var link = probe.q('.rail-secondary [data-sources]');
           report.afterScrollBackPassive = link.getAttribute('href');
           link.focus();
           report.afterScrollBack = link.getAttribute('href');
@@ -1288,6 +1675,17 @@ test('a reader with no scripting receives the whole essay as one document', { sk
       report.landingVisible = doc.querySelector('.landing').getClientRects().length > 0;
       report.sourcesLink = doc.querySelector('[data-sources]').getAttribute('href');
       report.text = doc.body.innerText.length;
+      // The rail is written into the markup, not assembled by a script, so a
+      // reader with none still gets a working list of chapters and parts --
+      // with every chapter expanded, because nothing collapsed any of them.
+      report.railVisible = doc.querySelector('.chapter-rail').getClientRects().length > 0;
+      report.parts = Array.prototype.slice.call(doc.querySelectorAll('[data-part-link]'))
+        .filter(function (link) { return link.getClientRects().length > 0; }).length;
+      report.railChapters = Array.prototype.slice.call(doc.querySelectorAll('.rail-chapter-link'))
+        .filter(function (link) { return link.getClientRects().length > 0; }).length;
+      report.railToggles = Array.prototype.slice.call(doc.querySelectorAll('[data-chapter-toggle], [data-rail-toggle], [data-rail-restore]'))
+        .filter(function (control) { return control.getClientRects().length > 0; }).length;
+      report.readAgain = doc.querySelector('[data-read-again]').getClientRects().length > 0;
     `,
   });
 
@@ -1302,6 +1700,66 @@ test('a reader with no scripting receives the whole essay as one document', { sk
   assert.equal(report.comparisonStatesVisible, 4, 'both drawings of both comparisons are simply there');
   assert.equal(report.sourcesLink, 'sources.html', 'and the register is an ordinary link');
   assert.ok(report.text > 20000, `the whole argument should be readable, measured ${report.text} characters`);
+
+  assert.equal(report.railVisible, true, 'the chapter navigation needs no script to be a list of links');
+  assert.equal(report.railChapters, content.chapters.length);
+  assert.equal(report.parts, ORDER.length, 'every part is listed, because nothing collapsed a chapter');
+  assert.equal(report.railToggles, 0, 'a control that only works with a script is not offered without one');
+  assert.equal(report.readAgain, false, 'and neither is Read again, which only a script can place');
+});
+
+test('the print rules drop the navigation and keep every scene, from either view', { skip }, () => {
+  // Print cannot be emulated without a DevTools socket this setup cannot
+  // open, so the print block is rewritten to `@media all` and rendered. It is
+  // the same technique the pair test uses, and the only way to see what those
+  // rules actually do to a layout rather than trusting that they exist.
+  const printRules = { ...hostedFiles, 'styles.css': built.hostedCss.replace('@media print', '@media all') };
+
+  for (const [label, driver] of [
+    ['from a scene', ''],
+    ['from continuous reading', "probe.q('[data-view-toggle]').click();"],
+  ]) {
+    const { value } = runInChrome({
+      html: hosted,
+      files: printRules,
+      width: 1024,
+      height: 900,
+      hash: `#${ORDER[20]}`,
+      driver: `
+        var report = {};
+        probe
+          .step(function () { ${driver} })
+          .step(function () {
+            report.scenes = probe.all('[data-scene]').filter(probe.visible).length;
+            report.chapterTitles = probe.all('.chapter-title').filter(probe.visible).length;
+            report.landing = probe.visible(probe.q('.landing'));
+            report.comparisonStates = probe.all('.art-comparison .art-view').filter(probe.visible).length;
+            report.comparisonLabels = probe.all('.art-comparison .art-view-label').filter(probe.visible).length;
+            report.rail = probe.visible(probe.q('.chapter-rail'));
+            report.launcher = probe.visible(probe.q('.rail-launcher'));
+            report.readAgain = probe.visible(probe.q('[data-read-again]'));
+            report.footer = probe.visible(probe.q('.reader-controls'));
+            report.comparisonControls = probe.all('.art-control').filter(probe.visible).length;
+            report.parts = probe.all('[data-part-link]').filter(probe.visible).length;
+          })
+          .run(function () { probe.done(report); });`,
+    });
+
+    assert.equal(value.scenes, ORDER.length, `${label}: the printed pages are missing scenes`);
+    assert.equal(value.chapterTitles, content.chapters.length, `${label}: a chapter heading is missing`);
+    assert.equal(value.landing, true, `${label}: the title page is missing`);
+    assert.equal(value.comparisonStates, 4, `${label}: a comparison printed one of its two drawings`);
+    assert.equal(value.comparisonLabels, 4, `${label}: and one of them unlabelled`);
+
+    // And none of the apparatus. The rail and its launcher are navigation; a
+    // printed page has nowhere to navigate to.
+    assert.equal(value.rail, false, `${label}: the chapter rail was printed`);
+    assert.equal(value.parts, 0, `${label}: 45 part links were printed`);
+    assert.equal(value.launcher, false, `${label}: the drawer launcher was printed`);
+    assert.equal(value.readAgain, false, `${label}: Read again was printed, and paper cannot be pressed`);
+    assert.equal(value.footer, false, `${label}: the reading footer was printed`);
+    assert.equal(value.comparisonControls, 0, `${label}: a comparison control was printed`);
+  }
 });
 
 test('the printed pages carry the argument, not whatever was on screen', { skip }, () => {
