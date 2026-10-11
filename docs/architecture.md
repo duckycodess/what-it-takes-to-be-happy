@@ -4,6 +4,14 @@ Status: implementation-neutral architecture for the confirmed experience. This d
 
 > **Amended on 9 October 2026.** The hosted Vercel output is the deliverable; the self-contained offline HTML file is discontinued. [The owner amendment](decisions.md#owner-amendment--9-october-2026) is canonical. The offline path is still described here because the code still produces it and the packaging rules it imposes are still what keeps the hosted page self-sufficient — but nothing below is a release gate any more.
 
+> **Amended again on 11 October 2026, by the approved rewrite.** The website is now a transfer of [the approved 45-scene script](redesign/approved-scene-script.md), and three things this document described are superseded by it:
+>
+> - **The landing carries only the approved title, the opening drawing, Begin and Sources & Credits.** There is no working question, no byline, no member-name list and no reading-time estimate. The main path is still measured — `./tools/count-main-path.sh` reports 4,137 words — but no figure is shown to a reader.
+> - **The drawings are generated bitmaps, not browser-drawn line art.** Twenty inspected PNGs are linked as files, with every name and label anchored over them as browser text. `src/art/` is gone, and with it the figure, composition and storyboard-map modules; [the drawing system](art-system.md) is the superseded build's record.
+> - **The sources are a separate page**, and optional detail panels are gone. Two optional comparisons remain, and neither hides a sentence.
+>
+> The content contract below described the earlier document's entities. [The content contract](content-contract.md) is the current one and takes precedence where the two disagree.
+
 ## Overall shape
 
 The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel. The build also still emits a self-contained offline HTML file from the same content and renderer; since the 9 October amendment that file is retained tooling rather than a deliverable. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.
@@ -24,12 +32,12 @@ flowchart LR
 | Part | Responsibility |
 | --- | --- |
 | Editorial inputs | Preserve source snapshots, record deltas, distinguish member reflection from hypothetical examples |
-| Story content | Ordered chapters and scenes, essential prose, dialogue, concept application, evidence, limits, optional detail |
+| Story content | Ordered chapters and scenes, essential prose, dialogue, concept application, evidence, limits, optional detail *(as built: narration and dialogue blocks; no separate concept or optional-detail registry)* |
 | Reference registry | Stable source identifiers, bibliographic detail when verified, links, claim roles and limitations |
-| Cast registry | Stable member/friend identifiers, display names, original appearances, emotional states |
+| Cast registry | Stable member/friend identifiers, display names, original appearances, emotional states *(superseded: the rewrite has no cast registry; [the cast registry](cast.md) is historical and who appears where is in [the coverage matrix](coverage.md))* |
 | Reader | Landing, Begin, Next/Back, chapter navigation, reading mode, focus and presentation state |
 | Scene renderer | Draw/reuse/replace scenes, synchronize explanatory changes with the visible argument |
-| Detail surfaces | Optional sources, extra examples, and supplementary thoughts without hiding essential content |
+| Detail surfaces | Optional sources, extra examples, and supplementary thoughts without hiding essential content *(as built: two optional comparisons, and no disclosure panels at all)* |
 | Packaging | Generate the hosted files from the authored material, and the retained single-file output from the same render |
 
 There is no current requirement for accounts, a database, a live feed, voting, a happiness score, or a complex simulation. Do not introduce them to satisfy static presentation needs.
@@ -54,11 +62,11 @@ Content validation should catch broken references, duplicate or missing identifi
 
 ## Reading behavior
 
-- Landing opens with the working question, emotional original stickmen, Begin, member names, and an honest reading-time estimate once measured.
+- Landing opens with the approved title, the opening drawing with the three names over it, Begin, and Sources & Credits. *(Superseded detail: it previously carried the working question, member names and a measured reading-time estimate. The approved script lists what the landing contains, and none of those is on the list.)*
 - Begin enters the first authored scene. Next and Back traverse the complete sequence; boundary behavior is explicit and keyboard accessible.
 - Chapter shortcuts revisit the beginning of a chosen chapter. Readers do not need to repeat earlier optional interactions.
 - Presentation and full reading views contain the same essential prose, dialogue, findings, caveats, and conclusion.
-- Source links/details can be inspected and dismissed without losing the current scene or keyboard focus.
+- A source link leads to the separate Sources & Credits page, carrying the scene and the reading mode so returning restores both. *(Superseded detail: the earlier build opened the register inside the essay, to be dismissed without leaving the scene.)*
 - Optional comparisons/reveals never gate progression or contain the sole explanation of a major perspective.
 - No timer advances prose automatically. Scene motion follows explanation and allows reading at the visitor's pace.
 
@@ -88,7 +96,23 @@ The foundation implementation documents the actual local preview, validation, ho
 
 ## The implemented foundation
 
-The foundation package filled in the implementation choices this document left open. What follows records what exists, not what is planned.
+> **Read this section with its dates.** It was written as the foundation, reader and artwork
+> packages were built, between 8 and 10 October 2026, and it recorded what existed *then*. The
+> approved rewrite of 11 October replaced the content document, the reader's behaviour and the
+> artwork, so parts of it now describe a build that is gone.
+>
+> **Still accurate:** the tooling and why there are no dependencies, the repository layout, the
+> commands, the principle that one render produces every output, how the fragment carries the
+> reader's place, and how the two fonts are handled.
+>
+> **Historical, and marked as such below:** `scenes[].mainPath`, optional disclosure panels, the
+> progress line, `reviewStatus` and its four evidence levels, inline-SVG compositions, and
+> everything counted in 87 beats. None of those exists. Do not implement from them.
+>
+> What is current instead: [the content contract](content-contract.md) for the document,
+> [the coverage matrix](coverage.md) for what the essay carries, [the asset
+> workflow](asset-workflow.md) for the artwork, and [verification](verification.md) for what has
+> actually been checked.
 
 ### Tooling, and why it is this small
 
@@ -102,7 +126,7 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 | --- | --- |
 | `content/content.json` | The single content document. See [the content contract](content-contract.md). |
 | `src/content/` | Schema constants, the validator, and the loader. |
-| `src/art/` | The original drawings: figures, expressions, postures, scene compositions, and the storyboard coverage map. See [the drawing system](art-system.md). |
+| `assets/generated/` | The inspected generated illustrations, one folder per approved brief, with the manifests and prompts they were delivered with. See [the asset workflow](asset-workflow.md). *(`src/art/` held the superseded build's browser-drawn figures and compositions; it was removed by the rewrite and is recorded in [the drawing system](art-system.md).)* |
 | `src/runtime/` | The shared renderer, the stylesheet, and the browser script. |
 | `src/build/` | Asset declarations, data-URI inlining, the output audits, and the build. |
 | `src/tools/` | The validation command and the local preview server. |
@@ -123,15 +147,30 @@ Consequences worth knowing: there is no linter, formatter, or type checker confi
 
 ### One render, three outputs
 
-`src/runtime/render.js` renders the **entire** essay into the markup — every chapter, every beat, every optional panel — and the browser script only decides what is on screen. That single decision is what makes the rest hold together:
+`src/runtime/render.js` renders the **entire** essay into the markup — every chapter, every scene, both drawings of every optional comparison — and the browser script only decides what is on screen. That single decision is what makes the rest hold together:
 
-- Print carries the complete argument whichever view is open, and optional panels are reopened before printing.
-- A browser with scripting unavailable shows the continuous reading view, which is the same thing the print route needs.
+- Print carries the complete argument whichever view is open, including both states of each comparison with their labels. *(Historical: the superseded build also had disclosure panels, which print reopened. There are none now.)*
+- A browser with scripting unavailable shows the whole essay in one document, which is the same thing the print route needs.
 - The hosted page and the single-file output differ only in whether their resources are linked or embedded; a build check asserts their visible text is identical. That check now guards the renderer against dropping content in one path, not a parity requirement between two deliverables.
 
 The build refuses to publish an output that drops essential content, and refuses a single-file output that references anything it does not carry. External source destinations stay as ordinary links: their labels, roles, and limitations are readable without following them, and only following the link needs a connection.
 
 ### The implemented reader
+
+> **Historical.** This records the 87-beat reader. `scenes[].mainPath`, the optional disclosure
+> panels and the progress line were all removed by the rewrite, and the register is now a separate
+> page rather than a section reached by fragment. What the reader does now is specified by
+> [the approved script](redesign/approved-scene-script.md) and checked by `test/reader.test.js` and
+> `test/browser.test.js`.
+>
+> The one idea below that still holds is **the fragment is the state** — with one carve-out in that
+> paragraph that does not: the script no longer resolves any fragment to the register. On the hosted
+> site `sources` and the individual source anchors live on a separate page, reached by a link that
+> carries the scene and the reading mode in its query instead. The retained single-file export still
+> holds the register in the same document, but it is reached by the browser's own anchor jump, not
+> by this script, which leaves a fragment it does not recognise alone. The rest of that paragraph — a scene identifier,
+> a chapter identifier, `pushState` with the view in the entry and the `location.hash` fallback,
+> and leaving an unrecognised fragment alone — is how the reader still works.
 
 The reader package filled in the behaviour this document described. Three decisions carry most of it.
 
@@ -152,6 +191,11 @@ Styling is one stylesheet with no fixed stage, since the finished artwork does n
 
 ### Evidence levels reach the reader
 
+> **Historical, for the first paragraph only.** The field is now `auditStatus`, it has three levels
+> rather than four, and a work nobody opened is no longer published at all: the renderer shows the
+> approved access note rather than phrasing a claim against a level. See [the content
+> contract](content-contract.md). The two paragraphs on fonts below are current.
+
 A source's `reviewStatus` is the level the audit actually reached: read in full, abstract only, publisher or catalogue description only, or not opened. The contract will not let a source state what it supports at a level where nothing inside the work was read, and the renderer phrases every supported claim against its level, so an abstract or a publisher's description is never presented as a passage from the work. [The content contract](content-contract.md) holds the table; [the register](research.md) holds the audit itself.
 
 The bundled font's licence is rendered into the document rather than left beside it, because any output that embeds the font is a copy of the font software and the licence requires its notice to travel with every copy. A build check fails if either output loses it.
@@ -159,6 +203,11 @@ The bundled font's licence is rendered into the document rather than left beside
 The project typeface is handled differently, because its permission is different. Futura Handwritten is used under the author's own note granting use, which is not a named licence and carries no licence text to travel with the file. Serving it is still sending it: the hosted page delivers the font to every reader's browser, so that use rests on the author's grant rather than on linking instead of embedding. What the build enforces is a narrower scope than the grant — the face is **served** by the hosted site from this origin and is **kept out** of an output that would circulate on its own. One stylesheet carries both faces, with everything that depends on the project typeface inside a marked region the hosted output keeps and the offline file drops; a build check fails the offline output if the font's bytes, a URL pointing at it, or even its family name survive into it. Each output credits the fonts it actually carries and no others, which is also a build check — a credit for a face a reader is not looking at would be a false statement about the page.
 
 ### Illustration, as built
+
+> **Historical.** The drawings are no longer authored geometry: they are twenty inspected generated
+> illustrations linked as files, described in [the asset workflow](asset-workflow.md). `src/art/`
+> and every identifier below it were removed by the rewrite. What survives the change is the rule
+> that names over heads are browser text, never lettering inside the image.
 
 The artwork package filled in the illustration side of this contract. The drawings are authored
 geometry generated into the markup as inline SVG, so a scene costs the page no request and
@@ -171,6 +220,10 @@ correct — which is what makes rapid Next/Back and reduced motion safe rather t
 why `s087` is drawn by nobody on purpose.
 
 ### What is still open
+
+> **Historical.** This counted the superseded build's 87 beats. The essay is now the approved 45
+> scenes with twenty delivered assets, and what remains open is the deployment, recorded in
+> [delivery](delivery.md) and owned by #7. The paragraph on the typeface below is still accurate.
 
 The prose and the scene set are no longer open: the content document carries the storyboard's 87
 beats and the drawings for 86 of them. What is still open is the reader's finished visual design,
@@ -186,9 +239,9 @@ browser text, so nothing in the argument depends on the face.
 
 ### How the reader is tested
 
-Two suites, because they answer different questions. `test/reader.test.js` runs the real browser script against the real rendered markup in a small DOM built for the purpose, and always runs. `test/browser.test.js` runs the same journeys in Chrome and answers what the *stylesheet* does — what a view hides, whether a focus ring is painted, where focus goes when a native disclosure is clicked, whether a phone-width window scrolls sideways. It skips with a stated reason where no browser is installed, and [verification](verification.md) records which happened.
+Two suites, because they answer different questions. `test/reader.test.js` runs the real browser script against the real rendered markup in a small DOM built for the purpose, and always runs. `test/browser.test.js` runs the same journeys in Chrome and answers what the *stylesheet* does — what a view hides, whether a focus ring is painted, whether a drawing really loaded, whether two names collide, whether a phone-width window scrolls sideways. It skips with a stated reason where no browser is installed, and [verification](verification.md) records which happened.
 
-The journeys are driven against `dist/offline.html`, because one file is the cheapest thing a browser can open without a server and it is the same renderer. The typography is driven against the hosted build instead — `index.html` with its stylesheet, script, and both fonts written beside it at the paths it links them at — because a webfont the browser never had to fetch proves nothing. That suite checks the loaded `FontFace`, that what the page draws measures as the project typeface rather than the fallback, and that withholding the font file alone makes the page fall back, which is what rules out a `local()` lookup standing in for the file whose provenance is recorded. Serving the same tree over HTTP would be closer still; a Windows browser driven from WSL cannot reach a loopback port inside it, so what a real HTTP response carries is checked against the preview server in `test/build.test.js`. `test/fonts.test.js` pins each font file's size and digest and checks, against both `cmap` tables, that every character the essay prints is one a packaged face can draw.
+Every journey is driven against the hosted build — `index.html` and `sources.html` with their stylesheet, script, both fonts and all 22 selected PNGs written beside them at the paths they are linked at — because the hosted website is the deliverable, and a webfont or a drawing the browser never had to fetch proves nothing. *(Historical: until the rewrite the journeys were driven against `dist/offline.html`, which was one file a browser could open without a server; only the typography used the hosted tree.)* That suite checks the loaded `FontFace`, that what the page draws measures as the project typeface rather than the fallback, and — by reading the rules the browser actually parsed — that the face is asked for from this site with no `local()` source and no third party, which is what rules out a lookalike the reader happens to have installed standing in for the file whose provenance is recorded. Serving the same tree over HTTP would be closer still; a Windows browser driven from WSL cannot reach a loopback port inside it, so what a real HTTP response carries is checked against the preview server in `test/build.test.js`. `test/fonts.test.js` pins each font file's size and digest and checks, against both `cmap` tables, that every character the essay prints is one a packaged face can draw.
 
 Both harnesses are deliberately small and dependency-free: `test/support/dom.js` implements exactly the subset the browser script asks for and throws on anything outside it, and `test/support/chrome.js` drives Chrome through `--dump-dom` with no socket and no client library. `test/dom.test.js` pins down the first harness's own behaviour, because a reader suite is only worth as much as the harness under it.
 

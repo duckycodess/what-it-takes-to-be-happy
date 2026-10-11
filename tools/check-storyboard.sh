@@ -5,6 +5,15 @@
 #   ./tools/check-storyboard.sh
 #
 # Exits non-zero and prints every failure it finds.
+#
+# HISTORICAL. docs/storyboard.md is the superseded 87-beat build's editorial
+# corpus, and this script keeps that record internally consistent. The website
+# is now the approved 45-scene script in content/content.json; what describes
+# *it* is docs/coverage.md, checked by test/coverage.test.js, and
+# ./tools/count-main-path.sh, which measures the published document. This
+# script deliberately no longer reads either of them: a storyboard check that
+# reached into the current build would report the rewrite as a storyboard
+# fault.
 
 set -u
 cd "$(dirname "$0")/.." || exit 2
@@ -17,7 +26,7 @@ fail=0
 problem() { printf 'FAIL: %s\n' "$*"; fail=1; }
 ok()      { printf 'ok:   %s\n' "$*"; }
 
-for f in "$STORYBOARD" "$CAST" "$RESEARCH" docs/coverage.md; do
+for f in "$STORYBOARD" "$CAST" "$RESEARCH"; do
   [ -f "$f" ] || { problem "missing $f"; exit 1; }
 done
 
@@ -295,7 +304,7 @@ awk '
   ch != "" && /^  - `[a-z-]+` — / { sp = $2; gsub(/`/, "", sp); n[ch "|" sp]++ }
   END { for (k in n) { split(k, a, "|"); printf "%s %s %d\n", a[1], a[2], n[k] } }
 ' "$STORYBOARD" | sort > /tmp/.sb_speak.$$
-for f in "$STORYBOARD" docs/coverage.md; do
+for f in "$STORYBOARD"; do
   awk -F'|' '/^\| `c[0-9]` \| [0-9]+ \| [0-9]+ \| [0-9]+ \|/ {
       ch = $2; gsub(/[ `]/, "", ch)
       k = $3; gsub(/[ ]/, "", k); t = $4; gsub(/[ ]/, "", t); v = $5; gsub(/[ ]/, "", v)
@@ -314,30 +323,34 @@ for f in "$STORYBOARD" docs/coverage.md; do
 done
 rm -f /tmp/.sb_speak.$$ /tmp/.sb_claim.$$
 
-# --- the reader-facing reading estimate matches the measured one --------------
-if [ -x tools/count-main-path.sh ]; then
-  measured=$(./tools/count-main-path.sh | awk -F'~' '/reading estimate/ { print $2 }' | tr -d ' minutes')
-  m_lo=${measured%%-*}
-  m_hi=${measured##*-}
-  stated=$(grep -oE 'Roughly [0-9]+ to [0-9]+ minutes' "$STORYBOARD" | head -1)
-  s_lo=$(printf '%s' "$stated" | awk '{print $2}')
-  s_hi=$(printf '%s' "$stated" | awk '{print $4}')
-  cov=$(grep -oE 'roughly [0-9]+.[0-9]+ minutes' docs/coverage.md | head -1 | grep -oE '[0-9]+' | tr '\n' '-' | sed 's/-$//')
-  if [ -z "$stated" ]; then
-    problem "no reading estimate found on the landing scene of $STORYBOARD"
-  elif [ "$s_lo" != "$m_lo" ] || [ "$s_hi" != "$m_hi" ]; then
-    problem "landing scene says ${s_lo}-${s_hi} minutes but tools/count-main-path.sh measures ${m_lo}-${m_hi}"
-  elif [ "$cov" != "${m_lo}-${m_hi}" ]; then
-    problem "docs/coverage.md states ${cov} minutes but tools/count-main-path.sh measures ${m_lo}-${m_hi}"
-  else
-    ok "reading estimate agrees across the tool, the landing scene, and the coverage matrix (${m_lo}-${m_hi} min)"
-  fi
+# --- the storyboard's stated reading estimate matches its own prose ----------
+# Measured here rather than by ./tools/count-main-path.sh, which now measures
+# the published website. The rule is the storyboard's: every blockquote line
+# inside a scene block, at 200 and 250 words a minute.
+sb_words=$(awk '
+  /^#### `s[0-9][0-9][0-9]`/ { inscenes = 1 }
+  inscenes && /^[[:space:]]*> / {
+    line = $0
+    sub(/^[[:space:]]*> /, "", line)
+    gsub(/\*\*/, "", line); gsub(/\*/, "", line)
+    print line
+  }
+' "$STORYBOARD" | wc -w)
+m_lo=$(( (sb_words + 249) / 250 ))
+m_hi=$(( (sb_words + 199) / 200 ))
+stated=$(grep -oE 'Roughly [0-9]+ to [0-9]+ minutes' "$STORYBOARD" | head -1)
+s_lo=$(printf '%s' "$stated" | awk '{print $2}')
+s_hi=$(printf '%s' "$stated" | awk '{print $4}')
+if [ -z "$stated" ]; then
+  problem "no reading estimate found on the landing scene of $STORYBOARD"
+elif [ "$s_lo" != "$m_lo" ] || [ "$s_hi" != "$m_hi" ]; then
+  problem "landing scene says ${s_lo}-${s_hi} minutes but its own prose measures ${m_lo}-${m_hi}"
 else
-  problem "tools/count-main-path.sh is missing or not executable"
+  ok "reading estimate on the landing scene matches the storyboard's own prose (${m_lo}-${m_hi} min)"
 fi
 
 # --- relative links resolve --------------------------------------------------
-for f in "$STORYBOARD" "$CAST" docs/coverage.md; do
+for f in "$STORYBOARD" "$CAST"; do
   grep -oE '\]\(([^)#:]+)(#[^)]*)?\)' "$f" | sed -E 's/^\]\(//; s/\)$//; s/#.*$//' | sort -u |
   while read -r target; do
     [ -n "$target" ] || continue
@@ -346,7 +359,7 @@ for f in "$STORYBOARD" "$CAST" docs/coverage.md; do
   done
 done | tee /tmp/.sb_links.$$
 [ -s /tmp/.sb_links.$$ ] && fail=1
-[ -s /tmp/.sb_links.$$ ] || ok "relative links in the storyboard, cast registry and coverage matrix resolve"
+[ -s /tmp/.sb_links.$$ ] || ok "relative links in the storyboard and cast registry resolve"
 rm -f /tmp/.sb_links.$$
 
 echo

@@ -1,5 +1,15 @@
 # Cast registry
 
+> **HISTORICAL, as of 11 October 2026.** This registry belongs to the superseded 87-beat build,
+> whose figures were drawn from geometry in `src/art/` and placed by the `artId` fields of a content
+> document that no longer has them. The rewritten essay carries no cast registry: its figures come
+> from twenty inspected generated illustrations, and who appears where is recorded in
+> [the coverage matrix](coverage.md) and [the asset workflow](asset-workflow.md).
+>
+> It is kept, unaltered, because the identities below are the ones the generated drawings continue:
+> TJ's tuft, Koj's curl, Vier's angular tuft, and Bob as a fictional stand-in rather than a member.
+> That is provenance for the current artwork, not a specification to implement from.
+
 Stable identifiers for every figure the storyboard can place on screen. The reader and the
 artwork package both consume this registry; [the storyboard](storyboard.md) refers to these
 identifiers and never to a numeric position.

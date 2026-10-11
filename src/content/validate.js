@@ -1,762 +1,527 @@
 /**
- * Content validation for the illustrated happiness essay.
+ * Validation for a content document.
  *
- * `validateContent` never throws on malformed input and never stops at the
- * first problem: it returns every error it can locate so one run tells an
- * editor everything to fix. Each error carries a JSON-ish `path`, a stable
- * machine `code`, and a sentence a human can act on.
+ * The document is transferred from the approved scene script rather than
+ * hand-written, so these checks are not spelling corrections for an editor.
+ * They are the guarantees everything downstream depends on: that the 45 scenes
+ * are present in the approved order under the approved chapter anchors, that
+ * every citation resolves to a register entry whose audit status and R
+ * identity were not quietly changed, that every drawing a scene asks for was
+ * actually delivered with alternative text, and that the interface strings are
+ * the approved ones. A build refuses to publish a document that fails any of
+ * them.
+ *
+ * Errors are collected rather than thrown: an editor fixing a document wants
+ * the whole list, not the first line of it.
  */
 
 import {
   SCHEMA_ID,
-  ID_PATTERN,
-  DIALOGUE_STANCES,
-  SOURCE_REVIEW_STATUSES,
-  SOURCE_EVIDENCE_LEVELS,
+  LAYOUTS,
+  SPEAKERS,
+  CHAPTER_ANCHORS,
+  BLOCK_KINDS,
+  SCENE_ID_PATTERN,
+  CHAPTER_ID_PATTERN,
+  ASSET_REF_PATTERN,
+  ASSET_ID_PATTERN,
   SOURCE_URL_PATTERN,
-  CAST_ROLES,
-  CONCEPT_STATUSES,
-  INTERACTION_SURFACES,
-  MAIN_PATH_KINDS,
-  ART_ABSENCE_REASONS,
-  ART_STATES,
+  SOURCE_ID_PATTERN,
+  SOURCE_AUDIT_LEVELS,
+  MANIFEST_GENERATIONS,
+  LABEL_KINDS,
+  INTERFACE_KEYS,
+  SOURCES_PAGE_KEYS,
+  SCENE_COUNT,
+  CHAPTER_COUNT,
+  SOURCE_COUNT,
 } from './schema.js';
-import {
-  COMPOSITION_IDS,
-  EXPRESSION_IDS,
-  FIGURES,
-  FIGURE_IDS,
-  compositionHasReveal,
-  figureRange,
-  hasComposition,
-  hasExpression,
-  hasFigure,
-} from '../art/index.js';
 
-const FIELDS = {
-  root: ['schema', 'status', 'project', 'chapters', 'scenes', 'cast', 'sources', 'concepts', 'details', 'interactions', 'provenance'],
-  status: ['final', 'label', 'notice'],
-  project: ['title', 'question', 'summary', 'readingTimeEstimate', 'visual'],
-  chapter: ['id', 'title', 'question', 'number', 'opening', 'closing', 'sceneIds'],
-  scene: ['id', 'chapterId', 'title', 'narration', 'dialogue', 'mainPath', 'visual', 'conceptIds', 'sourceIds', 'limitations', 'detailIds', 'interactionIds'],
-  mainPath: ['kind', 'index'],
-  visual: ['description', 'artId', 'artState', 'artAbsence', 'cast'],
-  visualCast: ['characterId', 'expressionId'],
-  dialogue: ['id', 'speakerId', 'text', 'stance', 'sourceIds', 'provenanceId'],
-  castMember: ['id', 'role', 'displayName', 'appearance', 'artId', 'expressions'],
-  expression: ['id', 'label', 'artId'],
-  source: ['id', 'label', 'url', 'type', 'intendedRole', 'limitation', 'reviewStatus', 'evidenceBasis', 'citation', 'supportedClaim'],
-  concept: ['id', 'name', 'status', 'explanation', 'application', 'question', 'sourceIds'],
-  detail: ['id', 'title', 'body', 'sourceIds'],
-  interaction: ['id', 'surface', 'purpose', 'trigger', 'keyboard', 'staticEquivalent', 'detailId'],
-  provenance: ['id', 'appliesTo', 'note', 'sourceNote'],
-};
+const isObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
+const isText = (value) => typeof value === 'string' && value.trim().length > 0;
 
-class ErrorBag {
+class Errors {
   constructor() {
-    this.errors = [];
+    this.list = [];
   }
 
   add(path, code, message) {
-    this.errors.push({ path, code, message });
-  }
-}
-
-const isPlainObject = (value) => typeof value === 'object' && value !== null && !Array.isArray(value);
-
-function checkObject(bag, value, path, allowedFields) {
-  if (!isPlainObject(value)) {
-    bag.add(path, 'NOT_AN_OBJECT', `Expected an object at ${path}.`);
+    this.list.push({ path, code, message });
     return false;
   }
-  for (const key of Object.keys(value)) {
-    if (!allowedFields.includes(key)) {
-      bag.add(`${path}.${key}`, 'UNKNOWN_FIELD', `Unknown field "${key}". The contract allows: ${allowedFields.join(', ')}.`);
-    }
+
+  /** Records a missing or empty string and reports whether one was there. */
+  text(path, value, code = 'MISSING_TEXT') {
+    return isText(value) ? true : this.add(path, code, 'must be a non-empty string');
   }
-  for (const key of allowedFields) {
-    if (!(key in value)) {
-      bag.add(`${path}.${key}`, 'MISSING_FIELD', `Required field "${key}" is missing.`);
-    }
+
+  list_(path, value) {
+    return Array.isArray(value) ? true : this.add(path, 'NOT_A_LIST', 'must be an array');
   }
-  return true;
 }
 
-function checkString(bag, value, path, { label } = {}) {
-  if (value === undefined) return false; // already reported as MISSING_FIELD
-  if (typeof value !== 'string') {
-    bag.add(path, 'NOT_A_STRING', `${label ?? path} must be a string.`);
-    return false;
-  }
-  if (value.trim() === '') {
-    bag.add(path, 'EMPTY_STRING', `${label ?? path} must not be empty. The contract requires meaningful text here.`);
-    return false;
-  }
-  return true;
-}
-
-function checkNullableString(bag, value, path) {
-  if (value === undefined || value === null) return true;
-  return checkString(bag, value, path);
-}
-
-function checkArray(bag, value, path, { allowEmpty = true } = {}) {
-  if (value === undefined) return false;
-  if (!Array.isArray(value)) {
-    bag.add(path, 'NOT_AN_ARRAY', `${path} must be an array.`);
-    return false;
-  }
-  if (!allowEmpty && value.length === 0) {
-    bag.add(path, 'EMPTY_ARRAY', `${path} must list at least one entry.`);
-    return false;
-  }
-  return true;
-}
-
-function checkStringArray(bag, value, path, options) {
-  if (!checkArray(bag, value, path, options)) return false;
-  let ok = true;
-  value.forEach((entry, index) => {
-    if (!checkString(bag, entry, `${path}[${index}]`)) ok = false;
-  });
-  return ok;
-}
-
-function checkEnum(bag, value, path, allowed) {
-  if (value === undefined) return false;
-  if (!allowed.includes(value)) {
-    bag.add(path, 'INVALID_ENUM', `${path} must be one of: ${allowed.join(', ')}. Found ${JSON.stringify(value)}.`);
-    return false;
-  }
-  return true;
-}
+/* --------------------------------------------------------------------------
+ * Reader copy
+ * ----------------------------------------------------------------------- */
 
 /**
- * Registers one globally unique identifier. Expression identifiers are scoped
- * to their character and deliberately stay out of this namespace.
+ * A block is narration or one speaker's line, and its text is a list of parts
+ * so a citation can sit mid-paragraph without the paragraph being split into
+ * two. Both halves are checked: a part is either text or a citation, never
+ * both and never neither, and a dialogue block names one of the three fixed
+ * speakers while a narrator block names nobody.
  */
-function registerId(bag, ids, value, path, kind) {
-  if (!checkString(bag, value, path)) return null;
-  if (!ID_PATTERN.test(value)) {
-    bag.add(path, 'INVALID_ID', `Identifier ${JSON.stringify(value)} must be alphanumeric groups joined by hyphens, for example "ch-what-counts".`);
-    return null;
+function checkBlock(errors, path, block, cited) {
+  if (!isObject(block)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
+
+  if (!BLOCK_KINDS.includes(block.kind)) {
+    errors.add(`${path}.kind`, 'UNKNOWN_KIND', `must be one of ${BLOCK_KINDS.join(', ')}`);
   }
-  const existing = ids.get(value);
-  if (existing) {
-    bag.add(path, 'DUPLICATE_ID', `Identifier ${JSON.stringify(value)} is already used by ${existing.kind} at ${existing.path}. Identifiers must be unique across the whole document.`);
-    return null;
+  if (block.kind === 'dialogue') {
+    if (!SPEAKERS.includes(block.speaker)) {
+      errors.add(`${path}.speaker`, 'UNKNOWN_SPEAKER', `must be one of ${SPEAKERS.join(', ')}`);
+    }
+  } else if (block.speaker !== null) {
+    errors.add(`${path}.speaker`, 'NARRATOR_IS_UNLABELLED', 'narration carries no visible speaker label');
   }
-  ids.set(value, { kind, path });
-  return value;
+
+  if (!errors.list_(`${path}.parts`, block.parts)) return false;
+  if (block.parts.length === 0) {
+    return errors.add(`${path}.parts`, 'EMPTY_BLOCK', 'a block must carry text');
+  }
+
+  let hasText = false;
+  block.parts.forEach((part, index) => {
+    const at = `${path}.parts[${index}]`;
+    if (!isObject(part)) return errors.add(at, 'NOT_AN_OBJECT', 'must be an object');
+    const isCitation = part.citation !== undefined;
+    if (isCitation && part.text !== undefined) {
+      return errors.add(at, 'AMBIGUOUS_PART', 'a part is either text or a citation, not both');
+    }
+    if (isCitation) {
+      if (!Number.isInteger(part.citation) || part.citation < 1) {
+        return errors.add(`${at}.citation`, 'INVALID_CITATION', 'must be a positive whole number');
+      }
+      cited.add(part.citation);
+      return true;
+    }
+    if (typeof part.text !== 'string' || part.text.length === 0) {
+      return errors.add(`${at}.text`, 'MISSING_TEXT', 'must be a non-empty string');
+    }
+    hasText = true;
+    return true;
+  });
+
+  if (!hasText) errors.add(`${path}.parts`, 'CITATION_ONLY', 'a block cannot be citation markers alone');
+  return true;
 }
 
-function checkReference(bag, ids, value, path, expectedKinds, { what } = {}) {
-  if (!checkString(bag, value, path)) return false;
-  const target = ids.get(value);
-  if (!target) {
-    bag.add(path, 'UNKNOWN_REFERENCE', `${what ?? 'Reference'} ${JSON.stringify(value)} does not exist. Add the entry or correct the identifier.`);
-    return false;
+/* --------------------------------------------------------------------------
+ * Artwork
+ * ----------------------------------------------------------------------- */
+
+/**
+ * A visual names the layout, the drawings it shows and the exact label on
+ * each. The contract the approved script sets is enforced here rather than in
+ * the renderer: a text scene carries no drawing, a pair carries two labelled
+ * views, an optional comparison carries two states with the approved labels,
+ * and anything else carries exactly one unlabelled drawing.
+ */
+function checkVisual(errors, path, visual, assetsByRef) {
+  if (!isObject(visual)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
+
+  if (!LAYOUTS.includes(visual.layout)) {
+    errors.add(`${path}.layout`, 'UNKNOWN_LAYOUT', `must be one of ${LAYOUTS.join(', ')}`);
   }
-  if (!expectedKinds.includes(target.kind)) {
-    bag.add(path, 'WRONG_REFERENCE_KIND', `${what ?? 'Reference'} ${JSON.stringify(value)} points at a ${target.kind}, but a ${expectedKinds.join(' or ')} is required here.`);
-    return false;
+  if (!errors.list_(`${path}.views`, visual.views)) return false;
+
+  visual.views.forEach((view, index) => {
+    const at = `${path}.views[${index}]`;
+    if (!isObject(view)) return errors.add(at, 'NOT_AN_OBJECT', 'must be an object');
+    const asset = assetsByRef.get(view.ref);
+    if (!asset) return errors.add(`${at}.ref`, 'UNKNOWN_ASSET', `no delivered asset is registered as ${view.ref}`);
+    if (!Number.isInteger(view.image) || !asset.images[view.image]) {
+      return errors.add(`${at}.image`, 'UNKNOWN_IMAGE', `${view.ref} has no image at index ${view.image}`);
+    }
+    if (view.label !== null && !isText(view.label)) {
+      return errors.add(`${at}.label`, 'MISSING_TEXT', 'a view label is either absent or a non-empty string');
+    }
+    return true;
+  });
+
+  if (visual.layout === 'text' && visual.views.length > 0) {
+    errors.add(`${path}.views`, 'TEXT_SCENE_HAS_ART', 'a text scene carries no drawing');
+  }
+  if (visual.layout === 'pair') {
+    if (visual.views.length !== 2) {
+      errors.add(`${path}.views`, 'PAIR_NEEDS_TWO', 'a pair shows exactly two drawings');
+    }
+    if (visual.views.some((view) => !isText(view.label))) {
+      errors.add(`${path}.views`, 'PAIR_NEEDS_LABELS', 'each view of a pair carries its exact approved label');
+    }
+    if (visual.control !== null) {
+      errors.add(`${path}.control`, 'PAIR_IS_NOT_OPTIONAL', 'a pair shows both drawings and has no control');
+    }
+  }
+  if (visual.control !== null) {
+    if (!isObject(visual.control) || !Array.isArray(visual.control.labels) || visual.control.labels.length !== 2) {
+      errors.add(`${path}.control`, 'INVALID_CONTROL', 'an optional comparison carries exactly two state labels');
+    } else if (visual.views.length !== 2) {
+      errors.add(`${path}.views`, 'CONTROL_NEEDS_TWO_STATES', 'an optional comparison switches between two drawn states');
+    } else if (visual.control.labels.some((label, index) => label !== visual.views[index].label)) {
+      errors.add(`${path}.control.labels`, 'CONTROL_LABEL_MISMATCH', 'each control label names its own drawn state');
+    }
+  }
+  if (visual.layout === 'single' && visual.control === null && visual.views.length !== 1) {
+    errors.add(`${path}.views`, 'SINGLE_NEEDS_ONE', 'a single layout shows one drawing');
+  }
+  if (visual.layout === 'group' && visual.views.length !== 1) {
+    errors.add(`${path}.views`, 'GROUP_NEEDS_ONE', 'a group layout shows one drawing');
+  }
+  if (!Number.isInteger(visual.afterBlock) || visual.afterBlock < 0) {
+    errors.add(`${path}.afterBlock`, 'INVALID_PLACEMENT', 'must be the whole number of blocks the drawing follows');
   }
   return true;
 }
 
-function checkReferenceList(bag, ids, list, path, expectedKinds, options) {
-  if (!checkArray(bag, list, path, options)) return;
-  const seen = new Set();
-  list.forEach((value, index) => {
-    const itemPath = `${path}[${index}]`;
-    if (typeof value === 'string' && seen.has(value)) {
-      bag.add(itemPath, 'DUPLICATE_REFERENCE', `${JSON.stringify(value)} is listed more than once in ${path}.`);
-      return;
-    }
-    if (typeof value === 'string') seen.add(value);
-    checkReference(bag, ids, value, itemPath, expectedKinds, options);
-  });
-}
-
 /**
- * First pass: collect identifiers so later passes can resolve references
- * regardless of the order registries appear in the document.
- */
-function collectIds(bag, doc) {
-  const ids = new Map();
-  const expressionsByCharacter = new Map();
-
-  const collect = (registry, kind) => {
-    const list = doc?.[registry];
-    if (!Array.isArray(list)) return;
-    list.forEach((entry, index) => {
-      if (!isPlainObject(entry)) return;
-      registerId(bag, ids, entry.id, `${registry}[${index}].id`, kind);
-    });
-  };
-
-  collect('chapters', 'chapter');
-  collect('scenes', 'scene');
-  collect('cast', 'character');
-  collect('sources', 'source');
-  collect('concepts', 'concept');
-  collect('details', 'detail');
-  collect('interactions', 'interaction');
-  collect('provenance', 'provenance record');
-
-  if (Array.isArray(doc?.scenes)) {
-    doc.scenes.forEach((scene, sceneIndex) => {
-      if (!isPlainObject(scene) || !Array.isArray(scene.dialogue)) return;
-      scene.dialogue.forEach((line, lineIndex) => {
-        if (!isPlainObject(line)) return;
-        registerId(bag, ids, line.id, `scenes[${sceneIndex}].dialogue[${lineIndex}].id`, 'dialogue line');
-      });
-    });
-  }
-
-  if (Array.isArray(doc?.cast)) {
-    doc.cast.forEach((character, index) => {
-      if (!isPlainObject(character) || typeof character.id !== 'string') return;
-      const expressionIds = new Set();
-      if (!Array.isArray(character.expressions)) return;
-      character.expressions.forEach((expression, expressionIndex) => {
-        if (!isPlainObject(expression) || typeof expression.id !== 'string') return;
-        const path = `cast[${index}].expressions[${expressionIndex}].id`;
-        if (expressionIds.has(expression.id)) {
-          bag.add(path, 'DUPLICATE_ID', `Expression ${JSON.stringify(expression.id)} is listed twice for ${character.id}.`);
-          return;
-        }
-        expressionIds.add(expression.id);
-      });
-      expressionsByCharacter.set(character.id, expressionIds);
-    });
-  }
-
-  return { ids, expressionsByCharacter };
-}
-
-function validateStatus(bag, doc) {
-  if (!checkObject(bag, doc.status, 'status', FIELDS.status)) return;
-  if (typeof doc.status.final !== 'boolean') {
-    bag.add('status.final', 'NOT_A_BOOLEAN', 'status.final must be true or false so the reader can show an honest draft notice.');
-  }
-  checkString(bag, doc.status.label, 'status.label');
-  if (doc.status.final === false) {
-    checkString(bag, doc.status.notice, 'status.notice', {
-      label: 'status.notice (required while status.final is false)',
-    });
-  } else {
-    checkNullableString(bag, doc.status.notice, 'status.notice');
-  }
-}
-
-function validateProject(bag, doc, ids, expressionsByCharacter) {
-  if (!checkObject(bag, doc.project, 'project', FIELDS.project)) return;
-  checkString(bag, doc.project.title, 'project.title');
-  checkString(bag, doc.project.question, 'project.question');
-  checkString(bag, doc.project.summary, 'project.summary');
-  // The reading-time estimate stays null until real prose can be measured.
-  checkNullableString(bag, doc.project.readingTimeEstimate, 'project.readingTimeEstimate');
-  // The landing illustration is authored content like any other beat's, so it
-  // obeys the same rules: a drawing the artwork can produce, a state it can
-  // settle into, a cast it can place, and a description that stands in for it.
-  validateVisual(bag, doc.project.visual, 'project.visual', ids, expressionsByCharacter, isFinal(doc));
-}
-
-function validateCast(bag, doc) {
-  if (!checkArray(bag, doc.cast, 'cast', { allowEmpty: false })) return;
-  doc.cast.forEach((character, index) => {
-    const path = `cast[${index}]`;
-    if (!checkObject(bag, character, path, FIELDS.castMember)) return;
-    checkEnum(bag, character.role, `${path}.role`, CAST_ROLES);
-    checkString(bag, character.displayName, `${path}.displayName`);
-    checkString(bag, character.appearance, `${path}.appearance`);
-    validateCharacterArt(bag, character, path);
-    if (!checkArray(bag, character.expressions, `${path}.expressions`, { allowEmpty: false })) return;
-    character.expressions.forEach((expression, expressionIndex) => {
-      const expressionPath = `${path}.expressions[${expressionIndex}]`;
-      if (!checkObject(bag, expression, expressionPath, FIELDS.expression)) return;
-      if (checkString(bag, expression.id, `${expressionPath}.id`) && !ID_PATTERN.test(expression.id)) {
-        bag.add(`${expressionPath}.id`, 'INVALID_ID', `Expression identifier ${JSON.stringify(expression.id)} must be alphanumeric groups joined by hyphens.`);
-      }
-      checkString(bag, expression.label, `${expressionPath}.label`);
-      if (checkString(bag, expression.artId, `${expressionPath}.artId`) && !hasExpression(expression.artId)) {
-        bag.add(`${expressionPath}.artId`, 'UNKNOWN_ART_REFERENCE', `The artwork package draws no expression ${JSON.stringify(expression.artId)}. Drawable states: ${EXPRESSION_IDS.join(', ')}.`);
-      }
-    });
-  });
-}
-
-/**
- * A character is drawn by one of the artwork package's figures, and the figure
- * has to be the right kind. An invented friend may not be drawn as one of the
- * three contributors, a contributor may not be drawn as an invented friend, and
- * neither may be drawn with the unnamed outline the essay uses for figures it
- * has deliberately not named.
- */
-function validateCharacterArt(bag, character, path) {
-  if (!checkString(bag, character.artId, `${path}.artId`)) return;
-  if (!hasFigure(character.artId)) {
-    bag.add(`${path}.artId`, 'UNKNOWN_ART_REFERENCE', `The artwork package draws no figure ${JSON.stringify(character.artId)}. Drawable figures: ${FIGURE_IDS.join(', ')}.`);
-    return;
-  }
-  const drawnRole = FIGURES[character.artId].role;
-  if (CAST_ROLES.includes(character.role) && drawnRole !== character.role) {
-    bag.add(`${path}.artId`, 'ART_ROLE_MISMATCH', `Figure ${JSON.stringify(character.artId)} is drawn as a ${drawnRole}, but this cast entry is a ${character.role}. A contributor and an invented friend must stay visibly different people.`);
-  }
-}
-
-function validateSources(bag, doc) {
-  if (!checkArray(bag, doc.sources, 'sources')) return;
-  doc.sources.forEach((source, index) => {
-    const path = `sources[${index}]`;
-    if (!checkObject(bag, source, path, FIELDS.source)) return;
-    checkString(bag, source.label, `${path}.label`);
-    checkString(bag, source.type, `${path}.type`);
-    checkString(bag, source.intendedRole, `${path}.intendedRole`);
-    checkString(bag, source.limitation, `${path}.limitation`);
-
-    // A citation needs a destination a reader can actually follow.
-    if (checkString(bag, source.url, `${path}.url`) && !SOURCE_URL_PATTERN.test(source.url)) {
-      bag.add(`${path}.url`, 'INVALID_SOURCE_URL', `A source destination must be an http:// or https:// address. Found ${JSON.stringify(source.url)}.`);
-    }
-
-    if (!checkEnum(bag, source.reviewStatus, `${path}.reviewStatus`, SOURCE_REVIEW_STATUSES)) return;
-
-    // What a source may assert depends on what was actually opened. An
-    // unopened work supports nothing; a publisher's description or an abstract
-    // supports only what it itself states, which the reader is told.
-    const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
-    const required = [
-      ['citation', level.requiresRecord],
-      ['evidenceBasis', level.requiresRecord],
-      ['supportedClaim', level.requiresSupportedClaim],
-    ];
-
-    for (const [field, isRequired] of required) {
-      if (isRequired) {
-        checkString(bag, source[field], `${path}.${field}`, {
-          label: `${path}.${field} (required at evidence level "${source.reviewStatus}")`,
-        });
-      } else if (source[field] !== null && source[field] !== undefined) {
-        const code = field === 'supportedClaim' ? 'UNSUPPORTED_SOURCE_CLAIM' : 'UNVERIFIED_SOURCE_RECORD';
-        const why = field === 'supportedClaim'
-          ? `Nothing inside this work was read at evidence level ${JSON.stringify(source.reviewStatus)}, so it supports no claim. Raise the level once a passage is read, or move the material into the limitation.`
-          : `Record this only once something has actually been opened; the evidence level is ${JSON.stringify(source.reviewStatus)}.`;
-        bag.add(`${path}.${field}`, code, `${path}.${field} must be null. ${why}`);
-      }
-    }
-  });
-}
-
-function validateConcepts(bag, doc, ids) {
-  if (!checkArray(bag, doc.concepts, 'concepts')) return;
-  doc.concepts.forEach((concept, index) => {
-    const path = `concepts[${index}]`;
-    if (!checkObject(bag, concept, path, FIELDS.concept)) return;
-    checkString(bag, concept.name, `${path}.name`);
-    checkEnum(bag, concept.status, `${path}.status`, CONCEPT_STATUSES);
-    checkReferenceList(bag, ids, concept.sourceIds, `${path}.sourceIds`, ['source'], { what: 'Source' });
-
-    // "Explain, apply, and question" is the agreed treatment, so a drafted
-    // concept carries all three and a planned one carries none of them.
-    const treatment = ['explanation', 'application', 'question'];
-    if (concept.status === 'drafted') {
-      for (const field of treatment) {
-        checkString(bag, concept[field], `${path}.${field}`, {
-          label: `${path}.${field} (required once status is "drafted")`,
-        });
-      }
-    } else if (concept.status === 'planned') {
-      for (const field of treatment) {
-        if (concept[field] !== null && concept[field] !== undefined) {
-          bag.add(`${path}.${field}`, 'UNDRAFTED_CONCEPT_TEXT', `${path}.${field} must be null while status is "planned". Set status to "drafted" when the explanation, application, and criticism are written.`);
-        }
-      }
-    }
-  });
-}
-
-function validateDetailsAndInteractions(bag, doc, ids) {
-  if (checkArray(bag, doc.details, 'details')) {
-    doc.details.forEach((detail, index) => {
-      const path = `details[${index}]`;
-      if (!checkObject(bag, detail, path, FIELDS.detail)) return;
-      checkString(bag, detail.title, `${path}.title`);
-      checkStringArray(bag, detail.body, `${path}.body`, { allowEmpty: false });
-      checkReferenceList(bag, ids, detail.sourceIds, `${path}.sourceIds`, ['source'], { what: 'Source' });
-    });
-  }
-
-  if (checkArray(bag, doc.interactions, 'interactions')) {
-    doc.interactions.forEach((interaction, index) => {
-      const path = `interactions[${index}]`;
-      if (!checkObject(bag, interaction, path, FIELDS.interaction)) return;
-      checkEnum(bag, interaction.surface, `${path}.surface`, INTERACTION_SURFACES);
-      checkString(bag, interaction.purpose, `${path}.purpose`);
-      checkString(bag, interaction.trigger, `${path}.trigger`);
-      // Keyboard behaviour and a readable static equivalent are the agreed
-      // accessibility floor: an optional reveal may never be the only route to
-      // its explanation.
-      checkString(bag, interaction.keyboard, `${path}.keyboard`, {
-        label: `${path}.keyboard (every optional interaction needs keyboard behaviour)`,
-      });
-      checkString(bag, interaction.staticEquivalent, `${path}.staticEquivalent`, {
-        label: `${path}.staticEquivalent (every optional interaction needs a readable static equivalent)`,
-      });
-      checkReference(bag, ids, interaction.detailId, `${path}.detailId`, ['detail'], { what: 'Detail' });
-    });
-  }
-}
-
-function validateProvenance(bag, doc, ids) {
-  if (!checkArray(bag, doc.provenance, 'provenance')) return;
-  doc.provenance.forEach((record, index) => {
-    const path = `provenance[${index}]`;
-    if (!checkObject(bag, record, path, FIELDS.provenance)) return;
-    checkReference(bag, ids, record.appliesTo, `${path}.appliesTo`, ['chapter', 'scene', 'dialogue line', 'source', 'concept', 'detail'], {
-      what: 'Provenance subject',
-    });
-    checkString(bag, record.note, `${path}.note`);
-    checkString(bag, record.sourceNote, `${path}.sourceNote`);
-  });
-}
-
-function validateScenes(bag, doc, ids, expressionsByCharacter) {
-  if (!checkArray(bag, doc.scenes, 'scenes', { allowEmpty: false })) return;
-  doc.scenes.forEach((scene, index) => {
-    const path = `scenes[${index}]`;
-    if (!checkObject(bag, scene, path, FIELDS.scene)) return;
-    checkString(bag, scene.title, `${path}.title`);
-    checkReference(bag, ids, scene.chapterId, `${path}.chapterId`, ['chapter'], { what: 'Chapter' });
-
-    // The main path is the essential reading route: narrator paragraphs, spoken
-    // lines, and visible caveats, in the order `mainPath` gives them. All three
-    // are in every output, so a beat carried by dialogue alone still reads in
-    // print and with motion reduced. What a beat may not be is empty.
-    if (checkArray(bag, scene.narration, `${path}.narration`)) {
-      scene.narration.forEach((paragraph, paragraphIndex) => {
-        checkString(bag, paragraph, `${path}.narration[${paragraphIndex}]`);
-      });
-    }
-    const essential = [
-      ...(Array.isArray(scene.narration) ? scene.narration : []),
-      ...(Array.isArray(scene.limitations) ? scene.limitations : []),
-      ...(Array.isArray(scene.dialogue) ? scene.dialogue.map((line) => (isPlainObject(line) ? line.text : null)) : []),
-    ];
-    if (!essential.some((text) => typeof text === 'string' && text.trim() !== '')) {
-      bag.add(`${path}.mainPath`, 'EMPTY_ESSENTIAL_SCENE', `Scene ${JSON.stringify(scene.id ?? index)} has nothing on the main path: no narration, no dialogue, and no visible caveat. Every beat must read without optional detail or illustration.`);
-    }
-
-    checkStringArray(bag, scene.limitations, `${path}.limitations`);
-    checkReferenceList(bag, ids, scene.conceptIds, `${path}.conceptIds`, ['concept'], { what: 'Concept' });
-    checkReferenceList(bag, ids, scene.sourceIds, `${path}.sourceIds`, ['source'], { what: 'Source' });
-    checkReferenceList(bag, ids, scene.detailIds, `${path}.detailIds`, ['detail'], { what: 'Detail' });
-    checkReferenceList(bag, ids, scene.interactionIds, `${path}.interactionIds`, ['interaction'], { what: 'Interaction' });
-
-    validateVisual(bag, scene.visual, `${path}.visual`, ids, expressionsByCharacter, isFinal(doc));
-    validateSceneDialogue(bag, scene, path, ids);
-    validateMainPath(bag, scene, path);
-
-    // An optional interaction must reveal a detail the same scene already
-    // carries statically, so the explanation survives with the reveal unused.
-    if (Array.isArray(scene.interactionIds) && Array.isArray(scene.detailIds) && Array.isArray(doc.interactions)) {
-      scene.interactionIds.forEach((interactionId, interactionIndex) => {
-        const interaction = doc.interactions.find((entry) => isPlainObject(entry) && entry.id === interactionId);
-        if (!interaction || typeof interaction.detailId !== 'string') return;
-        if (!scene.detailIds.includes(interaction.detailId)) {
-          bag.add(`${path}.interactionIds[${interactionIndex}]`, 'INTERACTION_DETAIL_NOT_IN_SCENE', `Interaction ${JSON.stringify(interactionId)} reveals detail ${JSON.stringify(interaction.detailId)}, which this scene does not list in detailIds. The detail must also be readable without the interaction.`);
-        }
-      });
-    }
-  });
-}
-
-/** Whether the document declares itself finished. Unset counts as not final. */
-const isFinal = (doc) => doc?.status?.final === true;
-
-/**
- * The order a reader actually meets a beat's essential blocks.
+ * A delivered asset: where its files are, what each one says in words, and
+ * where its browser labels are anchored.
  *
- * `narration`, `dialogue` and `limitations` stay three arrays, because they are
- * three different presentations. `mainPath` is the sequence, and it must be a
- * complete permutation of them: every paragraph, every line, and every visible
- * caveat exactly once. Anything less would let a block exist in the document
- * and never be read; anything more would print it twice.
+ * Both manifest generations arrive here with the same fields. A01 was
+ * inspected first and records one vertical anchor per width for all its names;
+ * A02–A18 record one per anchor. The transfer normalises them, and this check
+ * runs over both rather than exempting the older one.
  */
-function validateMainPath(bag, scene, path) {
-  const mainPathPath = `${path}.mainPath`;
-  if (!checkArray(bag, scene.mainPath, mainPathPath, { allowEmpty: false })) return;
+function checkAsset(errors, path, asset) {
+  if (!isObject(asset)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
 
-  const blocks = {
-    narration: Array.isArray(scene.narration) ? scene.narration.length : 0,
-    dialogue: Array.isArray(scene.dialogue) ? scene.dialogue.length : 0,
-    limitations: Array.isArray(scene.limitations) ? scene.limitations.length : 0,
-  };
-  const seen = { narration: new Set(), dialogue: new Set(), limitations: new Set() };
+  if (!ASSET_REF_PATTERN.test(asset.ref ?? '')) {
+    errors.add(`${path}.ref`, 'INVALID_REF', 'must be an approved brief reference such as A09a');
+  }
+  if (!ASSET_ID_PATTERN.test(asset.id ?? '')) {
+    errors.add(`${path}.id`, 'INVALID_ID', 'must be the generated asset folder name');
+  }
+  if (!MANIFEST_GENERATIONS.includes(asset.manifestGeneration)) {
+    errors.add(`${path}.manifestGeneration`, 'UNKNOWN_GENERATION',
+      `must be one of ${MANIFEST_GENERATIONS.join(', ')}; both are handled, neither is skipped`);
+  }
+  errors.text(`${path}.assetBranch`, asset.assetBranch);
 
-  scene.mainPath.forEach((entry, index) => {
-    const entryPath = `${mainPathPath}[${index}]`;
-    if (!checkObject(bag, entry, entryPath, FIELDS.mainPath)) return;
-    if (!checkEnum(bag, entry.kind, `${entryPath}.kind`, MAIN_PATH_KINDS)) return;
-    if (!Number.isInteger(entry.index) || entry.index < 0) {
-      bag.add(`${entryPath}.index`, 'MAIN_PATH_INDEX', `${entryPath}.index must be a whole number naming a position in ${entry.kind}.`);
-      return;
-    }
-    if (entry.index >= blocks[entry.kind]) {
-      bag.add(`${entryPath}.index`, 'MAIN_PATH_OUT_OF_RANGE', `${entryPath} points at ${entry.kind}[${entry.index}], but this scene has ${blocks[entry.kind]} ${entry.kind} entries.`);
-      return;
-    }
-    if (seen[entry.kind].has(entry.index)) {
-      bag.add(`${entryPath}.index`, 'MAIN_PATH_DUPLICATE', `${entry.kind}[${entry.index}] is already placed earlier in ${mainPathPath}. Each essential block is read once.`);
-      return;
-    }
-    seen[entry.kind].add(entry.index);
-  });
-
-  for (const kind of MAIN_PATH_KINDS) {
-    for (let index = 0; index < blocks[kind]; index += 1) {
-      if (!seen[kind].has(index)) {
-        bag.add(`${path}.${kind}[${index}]`, 'MAIN_PATH_INCOMPLETE', `${kind}[${index}] is never placed in ${mainPathPath}, so no reader would meet it. Add it where it belongs in the reading order.`);
+  if (errors.list_(`${path}.images`, asset.images)) {
+    if (asset.images.length === 0) errors.add(`${path}.images`, 'NO_IMAGE', 'a delivered asset has at least one selected image');
+    asset.images.forEach((image, index) => {
+      const at = `${path}.images[${index}]`;
+      if (!isObject(image)) return errors.add(at, 'NOT_AN_OBJECT', 'must be an object');
+      if (!/^assets\/generated\/[^/]+\/[^/]+\.png$/.test(image.path ?? '')) {
+        errors.add(`${at}.path`, 'INVALID_PATH', 'must point at a selected PNG under assets/generated/');
       }
-    }
-  }
-}
-
-/**
- * A drawing and the figures in it. Scenes use this, and so does the landing:
- * one rule set, so the opening cannot quietly become a special case that
- * invents a cast or claims a drawing nobody made.
- */
-function validateVisual(bag, visual, visualPath, ids, expressionsByCharacter, final) {
-  if (!checkObject(bag, visual, visualPath, FIELDS.visual)) return;
-  // The visual description doubles as the text alternative and as the static
-  // equivalent when motion is reduced, so it is never optional.
-  checkString(bag, visual.description, `${visualPath}.description`, {
-    label: `${visualPath}.description (also the text alternative and reduced-motion equivalent)`,
-  });
-  if (!checkArray(bag, visual.cast, `${visualPath}.cast`)) return;
-  validateSceneArt(bag, visual, visualPath, final);
-  visual.cast.forEach((appearance, appearanceIndex) => {
-    const appearancePath = `${visualPath}.cast[${appearanceIndex}]`;
-    if (!checkObject(bag, appearance, appearancePath, FIELDS.visualCast)) return;
-    const known = checkReference(bag, ids, appearance.characterId, `${appearancePath}.characterId`, ['character'], { what: 'Character' });
-    if (!checkString(bag, appearance.expressionId, `${appearancePath}.expressionId`)) return;
-    if (!known) return;
-    const available = expressionsByCharacter.get(appearance.characterId);
-    if (available && !available.has(appearance.expressionId)) {
-      bag.add(`${appearancePath}.expressionId`, 'UNKNOWN_EXPRESSION', `Character ${JSON.stringify(appearance.characterId)} has no expression ${JSON.stringify(appearance.expressionId)}. Available: ${[...available].join(', ') || 'none'}.`);
-    }
-  });
-}
-
-/**
- * A scene either names a drawing or declares that it has none. Both are
- * legitimate: the written description is the text alternative, the
- * reduced-motion equivalent, and the print illustration, so a beat without a
- * composition still carries its meaning. What is rejected is a scene asking for
- * a drawing that does not exist, a layer a composition cannot show, or more
- * figures than it can place.
- */
-function validateSceneArt(bag, visual, visualPath, final) {
-  const { artId, artState, artAbsence } = visual;
-
-  if (artId === null || artId === undefined) {
-    if (artState !== null && artState !== undefined) {
-      bag.add(`${visualPath}.artState`, 'ART_STATE_UNAVAILABLE', `${visualPath}.artState must be null while this scene has no composition. The written description is what carries the beat.`);
-    }
-    // An undrawn beat has to say which kind of undrawn it is. "Nobody has made
-    // it yet" and "this one is deliberately not a picture" read the same in a
-    // document and must not read the same to a reader.
-    if (!ART_ABSENCE_REASONS.includes(artAbsence)) {
-      bag.add(`${visualPath}.artAbsence`, 'ART_ABSENCE_UNDECLARED', `${visualPath}.artAbsence must be one of: ${ART_ABSENCE_REASONS.join(', ')}, because this beat has no drawing. Declare whether one is still to be made or whether this beat is intentionally text-only.`);
-    } else if (final && artAbsence === 'pending') {
-      bag.add(`${visualPath}.artAbsence`, 'PENDING_ART_IN_FINAL_CONTENT', `${visualPath}.artAbsence is "pending", which finished content may not contain. Draw the beat, or declare it "text-only" if it is deliberately not an illustrated situation.`);
-    }
-
-    // A text-only beat is rendered without a frame at all, so a cast listed on
-    // one would be named nowhere: the document would say somebody is in a
-    // drawing the reader is never shown. A beat whose art is merely pending
-    // still has its frame and still names them.
-    if (artAbsence === 'text-only' && Array.isArray(visual.cast) && visual.cast.length > 0) {
-      bag.add(`${visualPath}.cast`, 'TEXT_ONLY_CAST', `${visualPath} is declared text-only, which is rendered with no frame and no names, so it may not place ${visual.cast.length} figure(s). Draw the beat, or move who is in it into the description.`);
-    }
-    return;
-  }
-
-  if (artAbsence !== null && artAbsence !== undefined) {
-    bag.add(`${visualPath}.artAbsence`, 'ART_ABSENCE_DECLARED', `${visualPath}.artAbsence must be null while this beat names a drawing. A reason is only recorded where there is no drawing.`);
-  }
-
-  if (!checkString(bag, artId, `${visualPath}.artId`)) return;
-  if (!hasComposition(artId)) {
-    bag.add(`${visualPath}.artId`, 'UNKNOWN_ART_REFERENCE', `The artwork package draws no composition ${JSON.stringify(artId)}. Available compositions: ${COMPOSITION_IDS.join(', ')}. Use null to declare that this beat has no drawing yet.`);
-    return;
-  }
-
-  if (checkEnum(bag, artState, `${visualPath}.artState`, ART_STATES) && artState === 'revealed' && !compositionHasReveal(artId)) {
-    bag.add(`${visualPath}.artState`, 'ART_STATE_UNAVAILABLE', `Composition ${JSON.stringify(artId)} has no condition layer to reveal, so it can only be shown as "situation".`);
-  }
-
-  const range = figureRange(artId);
-  const placed = Array.isArray(visual.cast) ? visual.cast.length : 0;
-  if (placed < range.min || placed > range.max) {
-    bag.add(`${visualPath}.cast`, 'ART_FIGURE_COUNT', `Composition ${JSON.stringify(artId)} places ${range.min} to ${range.max} figures, but this scene lists ${placed}. Choose a composition that fits the cast, or change the cast.`);
-  }
-}
-
-function validateSceneDialogue(bag, scene, path, ids) {
-  const dialoguePath = `${path}.dialogue`;
-  if (!checkArray(bag, scene.dialogue, dialoguePath)) return;
-  scene.dialogue.forEach((line, lineIndex) => {
-    const linePath = `${dialoguePath}[${lineIndex}]`;
-    if (!checkObject(bag, line, linePath, FIELDS.dialogue)) return;
-    checkReference(bag, ids, line.speakerId, `${linePath}.speakerId`, ['character'], { what: 'Speaker' });
-    checkString(bag, line.text, `${linePath}.text`);
-    checkEnum(bag, line.stance, `${linePath}.stance`, DIALOGUE_STANCES);
-    checkReferenceList(bag, ids, line.sourceIds, `${linePath}.sourceIds`, ['source'], { what: 'Source' });
-
-    // A line spoken as a contributor's own position must point at the note or
-    // delta that records it. Without that, it would be an invented opinion.
-    if (line.stance === 'member-endorsed') {
-      if (typeof line.provenanceId !== 'string' || line.provenanceId.trim() === '') {
-        if (line.provenanceId !== undefined) {
-          bag.add(`${linePath}.provenanceId`, 'UNSUPPORTED_MEMBER_POSITION', `This line speaks for a contributor but records no provenance. Link the note or delta showing that the member endorses it, or mark the line as "fictional-illustration".`);
+      if (image.path && !image.path.startsWith(`assets/generated/${asset.id}/`)) {
+        errors.add(`${at}.path`, 'FOREIGN_ASSET', `must live in this asset's own folder`);
+      }
+      for (const dimension of ['width', 'height']) {
+        if (!Number.isInteger(image[dimension]) || image[dimension] <= 0) {
+          errors.add(`${at}.${dimension}`, 'INVALID_DIMENSION', 'must be a positive whole number of pixels');
         }
-      } else {
-        checkReference(bag, ids, line.provenanceId, `${linePath}.provenanceId`, ['provenance record'], { what: 'Provenance record' });
       }
-    } else if (line.provenanceId !== null && line.provenanceId !== undefined) {
-      checkReference(bag, ids, line.provenanceId, `${linePath}.provenanceId`, ['provenance record'], { what: 'Provenance record' });
-    }
-  });
+      if (!/^[0-9a-f]{64}$/.test(image.sha256 ?? '')) {
+        errors.add(`${at}.sha256`, 'INVALID_CHECKSUM', 'must be the inspected SHA-256 of the selected file');
+      }
+      // Alternative text is the approved per-cutout string. A drawing with
+      // none would be a drawing a reader who cannot see it is never told about.
+      errors.text(`${at}.alt`, image.alt, 'MISSING_ALT');
+      return true;
+    });
+  }
+
+  if (errors.list_(`${path}.labels`, asset.labels)) {
+    asset.labels.forEach((label, index) => {
+      const at = `${path}.labels[${index}]`;
+      if (!isObject(label)) return errors.add(at, 'NOT_AN_OBJECT', 'must be an object');
+      if (!LABEL_KINDS.includes(label.kind)) {
+        errors.add(`${at}.kind`, 'UNKNOWN_LABEL_KIND', `must be one of ${LABEL_KINDS.join(', ')}`);
+      }
+      errors.text(`${at}.text`, label.text);
+      for (const axis of ['x', 'yDesktop', 'yPhone']) {
+        if (typeof label[axis] !== 'number' || label[axis] < 0 || label[axis] > 1) {
+          errors.add(`${at}.${axis}`, 'INVALID_ANCHOR', 'must be a fraction of the image box between 0 and 1');
+        }
+      }
+      return true;
+    });
+  }
+  return true;
 }
+
+/* --------------------------------------------------------------------------
+ * Sources
+ * ----------------------------------------------------------------------- */
+
+/** A run of parts that may carry links, as the approved page copy does. */
+function checkRichText(errors, path, parts) {
+  if (!errors.list_(path, parts)) return false;
+  if (parts.length === 0) return errors.add(path, 'MISSING_TEXT', 'must carry the approved copy');
+  parts.forEach((part, index) => {
+    const at = `${path}[${index}]`;
+    if (!isObject(part)) return errors.add(at, 'NOT_AN_OBJECT', 'must be an object');
+    if (part.link !== undefined) {
+      errors.text(`${at}.link`, part.link);
+      if (!SOURCE_URL_PATTERN.test(part.url ?? '')) {
+        errors.add(`${at}.url`, 'INVALID_URL', 'must be an http(s) destination');
+      }
+      return true;
+    }
+    if (typeof part.text !== 'string' || part.text.length === 0) {
+      return errors.add(`${at}.text`, 'MISSING_TEXT', 'must be a non-empty string');
+    }
+    return true;
+  });
+  return true;
+}
+
+function checkSource(errors, path, source, expectedNumber) {
+  if (!isObject(source)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
+
+  if (source.number !== expectedNumber) {
+    errors.add(`${path}.number`, 'OUT_OF_ORDER',
+      `register entries are numbered by first appearance; expected ${expectedNumber}`);
+  }
+  if (!SOURCE_ID_PATTERN.test(source.sourceId ?? '')) {
+    errors.add(`${path}.sourceId`, 'INVALID_SOURCE_ID', 'must keep its existing R identifier');
+  }
+  if (!SOURCE_AUDIT_LEVELS.includes(source.auditStatus)) {
+    errors.add(`${path}.auditStatus`, 'UNKNOWN_AUDIT_STATUS',
+      `must be one of ${SOURCE_AUDIT_LEVELS.join(', ')}; an abstract is not a full reading`);
+  }
+  if (source.label !== `[${source.number}]`) {
+    errors.add(`${path}.label`, 'LABEL_MISMATCH', 'the visible label is the entry number in square brackets');
+  }
+  if (source.accessibleName !== `Source ${source.number}`) {
+    errors.add(`${path}.accessibleName`, 'NAME_MISMATCH', 'the accessible name is "Source" and the entry number');
+  }
+  errors.text(`${path}.citation`, source.citation);
+  if (!SOURCE_URL_PATTERN.test(source.url ?? '')) {
+    errors.add(`${path}.url`, 'INVALID_URL', 'must be an http(s) destination');
+  }
+  // Every entry states what was actually opened. Without it an abstract and a
+  // full reading look the same on the page.
+  checkRichText(errors, `${path}.note`, source.note);
+  return true;
+}
+
+/* --------------------------------------------------------------------------
+ * The document
+ * ----------------------------------------------------------------------- */
 
 /**
- * Chapters own scenes by identifier. Reading order comes from `sceneIds`, so a
- * later editorial delta can reorder beats without touching array positions.
- */
-function validateOwnershipAndOrder(bag, doc, ids) {
-  if (!checkArray(bag, doc.chapters, 'chapters', { allowEmpty: false })) return;
-
-  const claims = new Map(); // scene id -> { chapterId, path }
-  const numbers = new Map(); // displayed chapter number -> where it was claimed
-
-  doc.chapters.forEach((chapter, index) => {
-    const path = `chapters[${index}]`;
-    if (!checkObject(bag, chapter, path, FIELDS.chapter)) return;
-    checkString(bag, chapter.title, `${path}.title`);
-    checkString(bag, chapter.question, `${path}.question`);
-    // A chapter the reader counts carries its own number, so an opening that is
-    // not one of the shared questions is not silently counted as the first of
-    // them. `null` is the declared "this chapter is not numbered".
-    if (chapter.number !== null && chapter.number !== undefined) {
-      if (!Number.isInteger(chapter.number) || chapter.number < 1) {
-        bag.add(`${path}.number`, 'INVALID_CHAPTER_NUMBER', `${path}.number must be a whole number of at least 1, or null for a chapter the reader does not count.`);
-      } else if (numbers.has(chapter.number)) {
-        bag.add(`${path}.number`, 'DUPLICATE_CHAPTER_NUMBER', `Chapter number ${chapter.number} is already used at ${numbers.get(chapter.number)}.`);
-      } else {
-        numbers.set(chapter.number, `${path}.number`);
-      }
-    }
-    // Opening and closing connections are what keep six questions reading as
-    // one argument instead of six separate essays.
-    checkString(bag, chapter.opening, `${path}.opening`, {
-      label: `${path}.opening (the connection into this chapter)`,
-    });
-    checkString(bag, chapter.closing, `${path}.closing`, {
-      label: `${path}.closing (the connection out of this chapter)`,
-    });
-
-    if (!checkArray(bag, chapter.sceneIds, `${path}.sceneIds`, { allowEmpty: false })) return;
-    chapter.sceneIds.forEach((sceneId, sceneIndex) => {
-      const scenePath = `${path}.sceneIds[${sceneIndex}]`;
-      if (!checkReference(bag, ids, sceneId, scenePath, ['scene'], { what: 'Scene' })) return;
-      const existing = claims.get(sceneId);
-      if (existing) {
-        bag.add(scenePath, 'SCENE_CLAIMED_TWICE', `Scene ${JSON.stringify(sceneId)} is already listed at ${existing.path}. Each scene belongs to exactly one chapter and appears once in its order.`);
-        return;
-      }
-      claims.set(sceneId, { chapterId: chapter.id, path: scenePath });
-    });
-  });
-
-  if (!Array.isArray(doc.scenes)) return;
-  doc.scenes.forEach((scene, index) => {
-    if (!isPlainObject(scene) || typeof scene.id !== 'string') return;
-    const claim = claims.get(scene.id);
-    if (!claim) {
-      bag.add(`scenes[${index}].id`, 'SCENE_ORPHANED', `Scene ${JSON.stringify(scene.id)} is not listed in any chapter's sceneIds, so it would never be read. Add it to its chapter's order.`);
-      return;
-    }
-    if (typeof scene.chapterId === 'string' && scene.chapterId !== claim.chapterId) {
-      bag.add(`scenes[${index}].chapterId`, 'SCENE_CHAPTER_MISMATCH', `Scene ${JSON.stringify(scene.id)} declares chapter ${JSON.stringify(scene.chapterId)} but is ordered inside ${JSON.stringify(claim.chapterId)} at ${claim.path}.`);
-    }
-  });
-}
-
-/** Details and interactions are scene-scoped; an unused one is dead content. */
-function validateUsage(bag, doc) {
-  const usage = (registry, field, kind) => {
-    if (!Array.isArray(doc[registry]) || !Array.isArray(doc.scenes)) return;
-    const owners = new Map();
-    doc.scenes.forEach((scene) => {
-      if (!isPlainObject(scene) || !Array.isArray(scene[field]) || typeof scene.id !== 'string') return;
-      for (const id of new Set(scene[field])) {
-        if (typeof id !== 'string') continue;
-        if (!owners.has(id)) owners.set(id, []);
-        owners.get(id).push(scene.id);
-      }
-    });
-    doc[registry].forEach((entry, index) => {
-      if (!isPlainObject(entry) || typeof entry.id !== 'string') return;
-      const claimedBy = owners.get(entry.id) ?? [];
-      if (claimedBy.length === 0) {
-        bag.add(`${registry}[${index}].id`, 'UNUSED_ENTRY', `${kind} ${JSON.stringify(entry.id)} is not referenced by any scene, so no reader would ever reach it. Reference it or remove it.`);
-      } else if (claimedBy.length > 1) {
-        bag.add(`${registry}[${index}].id`, 'ENTRY_CLAIMED_TWICE', `${kind} ${JSON.stringify(entry.id)} is referenced by several scenes (${claimedBy.join(', ')}). Each belongs to a single scene.`);
-      }
-    });
-  };
-
-  usage('details', 'detailIds', 'Detail');
-  usage('interactions', 'interactionIds', 'Interaction');
-}
-
-/**
- * Validates a parsed content document.
- *
- * @param {unknown} doc Parsed JSON, trusted to be nothing more than JSON.
- * @returns {{ valid: boolean, errors: Array<{path: string, code: string, message: string}> }}
+ * @param {unknown} doc a parsed content document
+ * @returns {{valid: boolean, errors: Array<{path: string, code: string, message: string}>}}
  */
 export function validateContent(doc) {
-  const bag = new ErrorBag();
+  const errors = new Errors();
 
-  if (!checkObject(bag, doc, 'content', FIELDS.root)) {
-    return { valid: false, errors: bag.errors };
+  if (!isObject(doc)) {
+    errors.add('.', 'NOT_AN_OBJECT', 'a content document must be an object');
+    return { valid: false, errors: errors.list };
   }
-
   if (doc.schema !== SCHEMA_ID) {
-    bag.add('content.schema', 'SCHEMA_MISMATCH', `Expected schema ${JSON.stringify(SCHEMA_ID)} but found ${JSON.stringify(doc.schema)}.`);
+    errors.add('.schema', 'UNKNOWN_SCHEMA', `must be ${SCHEMA_ID}`);
   }
 
-  const { ids, expressionsByCharacter } = collectIds(bag, doc);
+  // The approved script this document was transferred from, by content hash.
+  // A document that names a different revision is not this essay.
+  if (!isObject(doc.source) || !/^[0-9a-f]{64}$/.test(doc.source?.sha256 ?? '')) {
+    errors.add('.source', 'MISSING_SOURCE', 'must record the approved script path and its SHA-256');
+  }
 
-  validateStatus(bag, doc);
-  validateProject(bag, doc, ids, expressionsByCharacter);
-  validateCast(bag, doc);
-  validateSources(bag, doc);
-  validateConcepts(bag, doc, ids);
-  validateDetailsAndInteractions(bag, doc, ids);
-  validateScenes(bag, doc, ids, expressionsByCharacter);
-  validateOwnershipAndOrder(bag, doc, ids);
-  validateProvenance(bag, doc, ids);
-  validateUsage(bag, doc);
+  if (!isObject(doc.interface)) {
+    errors.add('.interface', 'NOT_AN_OBJECT', 'must be an object');
+  } else {
+    for (const key of INTERFACE_KEYS) errors.text(`.interface.${key}`, doc.interface[key]);
+  }
 
-  return { valid: bag.errors.length === 0, errors: bag.errors };
+  const assets = Array.isArray(doc.assets) ? doc.assets : [];
+  if (!errors.list_('.assets', doc.assets)) return { valid: false, errors: errors.list };
+  assets.forEach((asset, index) => checkAsset(errors, `.assets[${index}]`, asset));
+
+  const assetsByRef = new Map(assets.filter(isObject).map((asset) => [asset.ref, asset]));
+  if (assetsByRef.size !== assets.length) {
+    errors.add('.assets', 'DUPLICATE_REF', 'each brief reference is registered once');
+  }
+
+  /* --- Chapters and scenes --- */
+
+  const scenes = Array.isArray(doc.scenes) ? doc.scenes : [];
+  const chapters = Array.isArray(doc.chapters) ? doc.chapters : [];
+  if (!errors.list_('.scenes', doc.scenes) || !errors.list_('.chapters', doc.chapters)) {
+    return { valid: false, errors: errors.list };
+  }
+  if (scenes.length !== SCENE_COUNT) {
+    errors.add('.scenes', 'SCENE_COUNT', `the approved argument has ${SCENE_COUNT} scenes, not ${scenes.length}`);
+  }
+  if (chapters.length !== CHAPTER_COUNT) {
+    errors.add('.chapters', 'CHAPTER_COUNT', `the approved argument has ${CHAPTER_COUNT} chapters, not ${chapters.length}`);
+  }
+
+  const sceneIds = new Set();
+  const cited = new Set();
+  scenes.forEach((scene, index) => {
+    const path = `.scenes[${index}]`;
+    if (!isObject(scene)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
+    if (!SCENE_ID_PATTERN.test(scene.id ?? '')) {
+      errors.add(`${path}.id`, 'INVALID_ID', 'must keep its historical sNNN identifier');
+    } else if (sceneIds.has(scene.id)) {
+      errors.add(`${path}.id`, 'DUPLICATE_ID', `${scene.id} appears more than once`);
+    } else {
+      sceneIds.add(scene.id);
+    }
+    errors.text(`${path}.title`, scene.title);
+    if (!CHAPTER_ID_PATTERN.test(scene.chapterId ?? '')) {
+      errors.add(`${path}.chapterId`, 'INVALID_ID', 'must name one of the eight chapters');
+    }
+    if (errors.list_(`${path}.blocks`, scene.blocks)) {
+      if (scene.blocks.length === 0) {
+        errors.add(`${path}.blocks`, 'EMPTY_SCENE', 'every scene completes its titled point');
+      }
+      scene.blocks.forEach((block, blockIndex) => checkBlock(errors, `${path}.blocks[${blockIndex}]`, block, cited));
+      if (Array.isArray(scene.blocks) && isObject(scene.visual)
+        && Number.isInteger(scene.visual.afterBlock) && scene.visual.afterBlock > scene.blocks.length) {
+        errors.add(`${path}.visual.afterBlock`, 'PLACEMENT_PAST_END', 'the drawing cannot follow a block the scene does not have');
+      }
+    }
+    checkVisual(errors, `${path}.visual`, scene.visual, assetsByRef);
+    return true;
+  });
+
+  const chapterIds = new Set();
+  const assigned = [];
+  chapters.forEach((chapter, index) => {
+    const path = `.chapters[${index}]`;
+    if (!isObject(chapter)) return errors.add(path, 'NOT_AN_OBJECT', 'must be an object');
+    if (!CHAPTER_ID_PATTERN.test(chapter.id ?? '')) {
+      errors.add(`${path}.id`, 'INVALID_ID', 'must be c1 through c8');
+    } else if (chapterIds.has(chapter.id)) {
+      errors.add(`${path}.id`, 'DUPLICATE_ID', `${chapter.id} appears more than once`);
+    } else {
+      chapterIds.add(chapter.id);
+    }
+    if (chapter.number !== index + 1) {
+      errors.add(`${path}.number`, 'OUT_OF_ORDER', `chapters are numbered in reading order; expected ${index + 1}`);
+    }
+    // No chapter question, opening or closing: the approved script has none,
+    // and a renderer that supplied them would be writing the essay.
+    errors.text(`${path}.title`, chapter.title);
+    if (!errors.list_(`${path}.sceneIds`, chapter.sceneIds)) return false;
+    if (chapter.sceneIds.length === 0) {
+      errors.add(`${path}.sceneIds`, 'EMPTY_CHAPTER', 'a chapter carries at least one scene');
+    }
+    if (chapter.sceneIds[0] !== CHAPTER_ANCHORS[index]) {
+      errors.add(`${path}.sceneIds[0]`, 'ANCHOR_MISMATCH',
+        `chapter ${index + 1} is anchored at ${CHAPTER_ANCHORS[index]}`);
+    }
+    chapter.sceneIds.forEach((id, sceneIndex) => {
+      if (!sceneIds.has(id)) {
+        errors.add(`${path}.sceneIds[${sceneIndex}]`, 'UNKNOWN_SCENE', `${id} is not a scene in this document`);
+      }
+      assigned.push(id);
+    });
+    return true;
+  });
+
+  // Reading order is the chapters' declared scene order, and it has to be the
+  // authored one: every scene assigned once, in the order the scenes are
+  // stored, with none left out of the reading path.
+  if (assigned.length !== new Set(assigned).size) {
+    errors.add('.chapters', 'SCENE_ASSIGNED_TWICE', 'a scene belongs to one chapter');
+  }
+  const authored = scenes.filter(isObject).map((scene) => scene.id);
+  if (assigned.length === authored.length && assigned.some((id, index) => id !== authored[index])) {
+    errors.add('.chapters', 'READING_ORDER', 'the chapters must list the scenes in their authored order');
+  }
+  for (const scene of scenes.filter(isObject)) {
+    if (!assigned.includes(scene.id)) {
+      errors.add('.chapters', 'SCENE_UNREACHABLE', `${scene.id} is in no chapter and no reader would reach it`);
+    }
+    const chapter = chapters.find((entry) => isObject(entry) && entry.id === scene.chapterId);
+    if (chapter && !chapter.sceneIds?.includes(scene.id)) {
+      errors.add(`.scenes[${authored.indexOf(scene.id)}].chapterId`, 'CHAPTER_MISMATCH',
+        `${scene.id} names ${scene.chapterId}, which does not list it`);
+    }
+  }
+
+  /* --- Landing --- */
+
+  if (!isObject(doc.landing)) {
+    errors.add('.landing', 'NOT_AN_OBJECT', 'must be an object');
+  } else {
+    // The landing carries the approved title, the opening drawing, Begin and
+    // Sources & Credits. There is deliberately no field here for a subtitle,
+    // a byline, a summary or a reading-time estimate.
+    errors.text('.landing.title', doc.landing.title);
+    errors.text('.landing.beginLabel', doc.landing.beginLabel);
+    errors.text('.landing.sourcesLabel', doc.landing.sourcesLabel);
+    if (!sceneIds.has(doc.landing.beginSceneId)) {
+      errors.add('.landing.beginSceneId', 'UNKNOWN_SCENE', 'Begin must open a scene in this document');
+    } else if (doc.landing.beginSceneId !== CHAPTER_ANCHORS[0]) {
+      errors.add('.landing.beginSceneId', 'ANCHOR_MISMATCH', `Begin opens ${CHAPTER_ANCHORS[0]}`);
+    }
+    checkVisual(errors, '.landing.visual', doc.landing.visual, assetsByRef);
+  }
+
+  /* --- Sources --- */
+
+  const page = doc.sourcesPage;
+  if (!isObject(page)) {
+    errors.add('.sourcesPage', 'NOT_AN_OBJECT', 'must be an object');
+    return { valid: errors.list.length === 0, errors: errors.list };
+  }
+  for (const key of SOURCES_PAGE_KEYS) {
+    if (page[key] === undefined) errors.add(`.sourcesPage.${key}`, 'MISSING_BLOCK', 'the approved page copy is required');
+  }
+  errors.text('.sourcesPage.title', page.title);
+  errors.text('.sourcesPage.returnLabel', page.returnLabel);
+  for (const key of ['intro', 'classNote', 'credits', 'methodNote']) {
+    if (page[key] !== undefined) checkRichText(errors, `.sourcesPage.${key}`, page[key]);
+  }
+
+  const sources = Array.isArray(page.sources) ? page.sources : [];
+  if (!errors.list_('.sourcesPage.sources', page.sources)) {
+    return { valid: false, errors: errors.list };
+  }
+  if (sources.length !== SOURCE_COUNT) {
+    errors.add('.sourcesPage.sources', 'SOURCE_COUNT',
+      `the approved reader page carries ${SOURCE_COUNT} entries, not ${sources.length}`);
+  }
+  sources.forEach((source, index) => checkSource(errors, `.sourcesPage.sources[${index}]`, source, index + 1));
+
+  const numbers = new Set(sources.filter(isObject).map((source) => source.number));
+  const identities = sources.filter(isObject).map((source) => source.sourceId);
+  if (new Set(identities).size !== identities.length) {
+    errors.add('.sourcesPage.sources', 'DUPLICATE_SOURCE_ID', 'one R identifier cannot be two register entries');
+  }
+  for (const number of [...cited].sort((a, b) => a - b)) {
+    if (!numbers.has(number)) {
+      errors.add('.sourcesPage.sources', 'DANGLING_CITATION', `a scene cites [${number}], which has no register entry`);
+    }
+  }
+  for (const number of [...numbers].sort((a, b) => a - b)) {
+    if (!cited.has(number)) {
+      errors.add('.sourcesPage.sources', 'UNCITED_SOURCE', `entry [${number}] supports no claim in the essay`);
+    }
+  }
+
+  /* --- Measurement --- */
+
+  if (!isObject(doc.measure) || !Number.isInteger(doc.measure.number ?? doc.measure.words)) {
+    errors.add('.measure', 'MISSING_MEASURE', 'must record the main-path word count');
+  } else if (!isText(doc.measure.rule)) {
+    // The number alone invites tuning. The rule says what was counted.
+    errors.add('.measure.rule', 'MISSING_RULE', 'must record how the words were counted');
+  }
+
+  return { valid: errors.list.length === 0, errors: errors.list };
 }
 
-/** Formats errors for a terminal, one actionable line each. */
-export function formatErrors(errors) {
-  return errors.map((error) => `  ${error.path}: [${error.code}] ${error.message}`).join('\n');
-}
+/** One error per line, in a form an editor can act on. */
+export const formatErrors = (errors) =>
+  errors.map((error) => `  ${error.path}  ${error.code}: ${error.message}`).join('\n');

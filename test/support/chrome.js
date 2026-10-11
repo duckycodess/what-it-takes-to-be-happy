@@ -25,7 +25,7 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
@@ -81,13 +81,18 @@ function workspace(binary) {
  *   links to, by the path it links them at — a stylesheet, a script, a font.
  *   The hosted output is a page plus linked files, and a question about a
  *   linked font cannot be asked of a document that has none.
+ * @param {string} [options.query] a query string, as a citation or the shared
+ *   Sources control would supply. It is part of the address the browser is
+ *   given, because `history.replaceState` with a relative URL is refused on a
+ *   `file:` origin -- the same refusal the reader script has to cope with.
  * @param {string} [options.hash] a fragment, as a deep link would supply
  * @param {number} [options.width] layout width in CSS pixels
  * @param {number} [options.height] layout height in CSS pixels
  * @param {string[]} [options.flags] extra browser flags
  * @returns {{value: unknown, dom: string}}
  */
-export function runInChrome({ html, driver, files = {}, hash = '', width = 360, height = 780, flags = [] }) {
+export function runInChrome({ html, driver, files = {}, query = '', hash = '', width = 360, height = 780, flags = [] }) {
+  const address = `${query}${hash}`;
   const binary = findChrome();
   if (!binary) throw new Error('No browser is installed; callers should have skipped.');
 
@@ -110,8 +115,15 @@ export function runInChrome({ html, driver, files = {}, hash = '', width = 360, 
   const framed = width < FRAME_BELOW;
   const windowSize = framed ? `${Math.max(width, FRAME_BELOW) + FRAME_MARGIN},${height + FRAME_MARGIN}` : `${width},${height}`;
 
-  writeFileSync(join(space.directory, 'page.html'), framed ? html : html.replace('</body>', `<script>\n${PROBE}\n${driver}\n</script>\n</body>`));
-  if (framed) writeFileSync(join(space.directory, 'host.html'), hostPage({ width, height, hash, driver }));
+  // The driver waits for `load`. An inline script at the end of the body runs
+  // while the document is still parsing, which is *before* the page's own
+  // deferred script: a driver that did not wait would measure a page whose
+  // reader script had not run yet and report that nothing works. The framed
+  // path below already waits, because it drives the frame from its load
+  // event; this is the same guarantee for the unframed one.
+  const injected = `<script>\n${PROBE}\nwindow.addEventListener('load', function () {\n${driver}\n});\n</script>`;
+  writeFileSync(join(space.directory, 'page.html'), framed ? html : html.replace('</body>', `${injected}\n</body>`));
+  if (framed) writeFileSync(join(space.directory, 'host.html'), hostPage({ width, height, address, driver }));
 
   try {
     const dom = execFileSync(binary, [
@@ -128,12 +140,189 @@ export function runInChrome({ html, driver, files = {}, hash = '', width = 360, 
       ...(framed ? ['--allow-file-access-from-files'] : []),
       ...flags,
       '--dump-dom',
-      framed ? space.url('host.html') : `${space.url('page.html')}${hash}`,
+      framed ? space.url('host.html') : `${space.url('page.html')}${address}`,
     ], { encoding: 'utf8', timeout: 120000, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
 
     const match = dom.match(/data-probe="([A-Za-z0-9+/=]*)"/);
     if (!match) throw new Error('The driver did not finish; the page recorded nothing.');
     return { value: JSON.parse(Buffer.from(match[1], 'base64').toString('utf8')), dom };
+  } finally {
+    rmSync(space.directory, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Inspects the page as a reader with no scripting receives it.
+ *
+ * `--blink-settings=scriptEnabled=false` turns scripting off but also stops
+ * `--dump-dom` producing anything, and `--disable-javascript` is ignored by
+ * current builds. A sandboxed frame does the same job honestly: the page
+ * inside it gets no scripting at all, while `allow-same-origin` lets the
+ * host read its document and computed styles. What the host reports is what
+ * a browser laid out for a page whose own script never ran.
+ *
+ * The driver here runs in the host, not in the page, so it is given `doc`
+ * and `win` for the frame rather than the usual globals.
+ *
+ * @param {object} options
+ * @param {string} options.html
+ * @param {string} options.driver statements using `doc`, `win` and `report`
+ * @param {Record<string, string|Buffer>} [options.files]
+ * @param {number} [options.width]
+ * @param {number} [options.height]
+ * @returns {unknown} whatever the driver left in `report`
+ */
+export function withoutScriptInChrome({ html, driver, files = {}, width = 1024, height = 900 }) {
+  const binary = findChrome();
+  if (!binary) throw new Error('No browser is installed; callers should have skipped.');
+
+  const space = workspace(binary);
+  const profile = join(space.directory, 'profile');
+  for (const [path, data] of Object.entries(files)) {
+    const destination = join(space.directory, path);
+    mkdirSync(dirname(destination), { recursive: true });
+    writeFileSync(destination, data);
+  }
+  writeFileSync(join(space.directory, 'page.html'), html);
+  writeFileSync(join(space.directory, 'host.html'), `<!doctype html>
+<html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0}
+iframe{width:${width}px;height:${height}px;border:0;display:block}</style></head><body>
+<iframe id="frame" src="page.html" sandbox="allow-same-origin"></iframe>
+<script>
+document.getElementById('frame').addEventListener('load', function () {
+  var frame = document.getElementById('frame');
+  var doc = frame.contentDocument;
+  var win = frame.contentWindow;
+  var report = {};
+  ${driver}
+  var bytes = unescape(encodeURIComponent(JSON.stringify(report)));
+  document.documentElement.setAttribute('data-probe', btoa(bytes));
+});
+</script></body></html>
+`);
+
+  try {
+    const dom = execFileSync(binary, [
+      '--headless=new',
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-extensions',
+      `--window-size=${Math.max(width, 520) + 80},${height + 80}`,
+      `--user-data-dir=${space.windowsPath ? `${space.windowsPath}\\profile` : profile}`,
+      '--virtual-time-budget=10000',
+      '--allow-file-access-from-files',
+      '--dump-dom',
+      space.url('host.html'),
+    ], { encoding: 'utf8', timeout: 120000, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
+
+    const match = dom.match(/data-probe="([A-Za-z0-9+/=]*)"/);
+    if (!match) throw new Error('The scriptless frame reported nothing.');
+    return JSON.parse(Buffer.from(match[1], 'base64').toString('utf8'));
+  } finally {
+    rmSync(space.directory, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Loads a page and returns the DOM the browser built, with no driver.
+ *
+ * The one question that cannot be asked through a driver is what happens
+ * with scripting off, because the driver is a script. Dumping the DOM is
+ * enough for it: what matters is whether the whole essay is in the document
+ * a scriptless reader receives.
+ *
+ * @param {object} options
+ * @param {string} options.html
+ * @param {Record<string, string|Buffer>} [options.files]
+ * @param {string[]} [options.flags]
+ * @returns {string} the serialised DOM
+ */
+export function dumpInChrome({ html, files = {}, flags = [] }) {
+  const binary = findChrome();
+  if (!binary) throw new Error('No browser is installed; callers should have skipped.');
+
+  const space = workspace(binary);
+  const profile = join(space.directory, 'profile');
+  for (const [path, data] of Object.entries(files)) {
+    const destination = join(space.directory, path);
+    mkdirSync(dirname(destination), { recursive: true });
+    writeFileSync(destination, data);
+  }
+  writeFileSync(join(space.directory, 'page.html'), html);
+
+  try {
+    return execFileSync(binary, [
+      '--headless=new',
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-extensions',
+      `--user-data-dir=${space.windowsPath ? `${space.windowsPath}\\profile` : profile}`,
+      '--virtual-time-budget=8000',
+      ...flags,
+      '--dump-dom',
+      space.url('page.html'),
+    ], { encoding: 'utf8', timeout: 120000, stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 64 * 1024 * 1024 });
+  } finally {
+    rmSync(space.directory, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Prints a built page to PDF and reports what came out.
+ *
+ * Print is a medium this suite cannot otherwise reach: `@media print` rules
+ * are not applied to a screen render, and emulating the print medium needs
+ * the DevTools protocol over a socket, which a Windows browser driven from
+ * WSL cannot be given. Printing the page for real is the one thing that can
+ * be done without one.
+ *
+ * What comes back is deliberately modest: the byte count and the number of
+ * page objects in the PDF. Those cannot tell you the pages are beautiful,
+ * but they can tell you the printed essay is 20 pages of argument rather
+ * than one page holding whichever scene was on screen, which is the failure
+ * the print rules exist to prevent.
+ *
+ * @param {object} options
+ * @param {string} options.html a complete built document
+ * @param {Record<string, string|Buffer>} [options.files] resources it links
+ * @returns {{pages: number, bytes: number}}
+ */
+export function printInChrome({ html, files = {} }) {
+  const binary = findChrome();
+  if (!binary) throw new Error('No browser is installed; callers should have skipped.');
+
+  const space = workspace(binary);
+  const profile = join(space.directory, 'profile');
+  for (const [path, data] of Object.entries(files)) {
+    const destination = join(space.directory, path);
+    mkdirSync(dirname(destination), { recursive: true });
+    writeFileSync(destination, data);
+  }
+  writeFileSync(join(space.directory, 'page.html'), html);
+
+  const output = join(space.directory, 'print.pdf');
+  const windowsOutput = space.windowsPath ? `${space.windowsPath}\\print.pdf` : output;
+
+  try {
+    execFileSync(binary, [
+      '--headless=new',
+      '--disable-gpu',
+      '--no-first-run',
+      '--no-default-browser-check',
+      '--disable-extensions',
+      `--user-data-dir=${space.windowsPath ? `${space.windowsPath}\\profile` : profile}`,
+      '--virtual-time-budget=20000',
+      '--no-pdf-header-footer',
+      `--print-to-pdf=${windowsOutput}`,
+      space.url('page.html'),
+    ], { encoding: 'utf8', timeout: 180000, stdio: ['ignore', 'ignore', 'ignore'] });
+
+    const pdf = readFileSync(output);
+    // Page objects, counted from the file itself. A PDF names each one.
+    const pages = (pdf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length;
+    return { pages, bytes: pdf.length };
   } finally {
     rmSync(space.directory, { recursive: true, force: true });
   }
@@ -148,12 +337,12 @@ const FRAME_MARGIN = 80;
  * to run the driver inside it. The driver still sees the page's own `window`
  * and `document`, so it is written the same way either side of this.
  */
-const hostPage = ({ width, height, hash, driver }) => `<!doctype html>
+const hostPage = ({ width, height, address, driver }) => `<!doctype html>
 <html><head><meta charset="utf-8"><style>
 html,body{margin:0;padding:0;background:#fff}
 iframe{width:${width}px;height:${height}px;border:0;display:block}
 </style></head><body>
-<iframe id="frame" src="page.html${hash}"></iframe>
+<iframe id="frame" src="page.html${address}"></iframe>
 <script>
 (function () {
   var frame = document.getElementById('frame');
@@ -206,6 +395,8 @@ var probe = (function () {
         || active.getAttribute('id') || active.tagName.toLowerCase();
     },
     step: function (fn) { steps.push(fn); return api; },
+    /** Waits before the next step, for work a timer does rather than an event. */
+    wait: function (ms) { steps.push({ wait: ms }); return api; },
     done: function (value) {
       var json = JSON.stringify(value);
       var bytes = unescape(encodeURIComponent(json));
@@ -217,6 +408,7 @@ var probe = (function () {
         if (index >= steps.length) { finish(); return; }
         var fn = steps[index];
         index += 1;
+        if (fn && typeof fn.wait === 'number') { setTimeout(next, fn.wait); return; }
         fn();
         setTimeout(next, 0);
       })();

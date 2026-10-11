@@ -1,5 +1,16 @@
 # Storyboard
 
+> **HISTORICAL, as of 11 October 2026.** This is the superseded 87-beat build's editorial source:
+> beats `s001`–`s087`, their prose, their dialogue and their visual purposes. The website is now a
+> transfer of [the approved 45-scene script](redesign/approved-scene-script.md), which reuses the
+> `s088`–`s132` identifiers and none of the ones below. Nothing here is implemented, and nothing
+> here should be implemented from.
+>
+> It is kept, unaltered, because it is the evidence behind work that was really done: the audit in
+> [the research register](research.md) was carried out against these beats, and
+> `./tools/check-storyboard.sh` still keeps this document internally consistent. What the current
+> essay covers is [the coverage matrix](coverage.md).
+
 The authored main path of the illustrated essay, in reading order. This document is the editorial
 source of truth for chapters, scenes, exact prose, dialogue, visible caveats, and visual purpose. It
 is not an implementation: it selects no framework, no file format, and no artwork.

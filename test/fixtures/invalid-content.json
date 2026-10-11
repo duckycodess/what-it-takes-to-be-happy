@@ -1,269 +1,113 @@
 {
-  "schema": "happiness-essay-content/v1",
-  "status": { "final": false, "label": "Broken fixture", "notice": "   " },
-  "project": {
-    "title": "Broken fixture",
-    "question": "What does it take to be happy?",
-    "summary": "Deliberately invalid document used to prove the validator reports real problems.",
-    "readingTimeEstimate": null
+  "_comment": "A deliberately broken v2 document. Every fault below is one a careless edit or a drifting transfer would really make, and each must be reported with the path that locates it. Nothing here is reader-facing copy.",
+  "schema": "happiness-essay-content/v2",
+  "source": {
+    "path": "docs/redesign/approved-scene-script.md",
+    "sha256": "a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f"
+  },
+  "interface": {
+    "title": "What it takes to be happy",
+    "begin": "Begin",
+    "sources": "Sources & Credits",
+    "chapters": "Chapters",
+    "continuous": "Read continuously",
+    "scene": "Scene view",
+    "print": "Print",
+    "skip": "Skip to scene",
+    "back": "Back",
+    "next": "   ",
+    "readAgain": "Read again",
+    "backToReading": "Back to reading"
+  },
+  "landing": {
+    "title": "What it takes to be happy",
+    "beginLabel": "Begin",
+    "beginSceneId": "s089",
+    "sourcesLabel": "Sources & Credits",
+    "visual": {
+      "layout": "group",
+      "views": [{ "ref": "A01", "image": 0, "label": null }],
+      "control": null,
+      "afterBlock": 0
+    }
   },
   "chapters": [
     {
-      "id": "ch-one",
-      "title": "First",
-      "question": "First?",
-      "number": 0,
-      "opening": "Opens.",
-      "sceneIds": ["sc-a", "sc-missing", "sc-a"]
-    },
-    {
-      "id": "ch-two",
-      "title": "Second",
-      "question": "Second?",
-      "number": 2,
-      "opening": "Opens.",
-      "closing": "Closes.",
-      "sceneIds": ["sc-b"]
-    },
-    {
-      "id": "ch-one",
-      "title": "Duplicate identifier",
-      "question": "Duplicate?",
-      "number": 2,
-      "opening": "Opens.",
-      "closing": "Closes.",
-      "sceneIds": ["sc-c"]
+      "id": "c1",
+      "number": 1,
+      "title": "One afternoon, three different answers",
+      "sceneIds": ["s088", "s999"]
     }
   ],
   "scenes": [
     {
-      "id": "sc-a",
-      "chapterId": "ch-one",
-      "title": "Empty essential scene",
-      "narration": ["   "],
-      "dialogue": [
+      "id": "s088",
+      "title": "No special occasion",
+      "chapterId": "c1",
+      "blocks": [
         {
-          "id": "dl-invented",
-          "speakerId": "cast-nobody",
-          "text": "   ",
-          "stance": "member-endorsed",
-          "sourceIds": ["S-missing"],
-          "provenanceId": null
+          "kind": "narration",
+          "speaker": null,
+          "parts": [{ "text": "An afternoon with friends, with a citation nothing can resolve." }, { "citation": 9 }]
+        },
+        {
+          "kind": "dialogue",
+          "speaker": "Bob",
+          "parts": [{ "text": "A speaker the cast does not contain." }]
         }
       ],
-      "mainPath": [
-        { "kind": "narration", "index": 0 },
-        { "kind": "dialogue", "index": 3 }
+      "visual": {
+        "layout": "group",
+        "views": [{ "ref": "A01", "image": 0, "label": null }],
+        "control": null,
+        "afterBlock": 7
+      }
+    },
+    {
+      "id": "s089",
+      "title": "Three answers",
+      "chapterId": "c1",
+      "blocks": [],
+      "visual": { "layout": "text", "views": [], "control": null, "afterBlock": 0 }
+    }
+  ],
+  "assets": [
+    {
+      "ref": "A01",
+      "id": "rewrite-opening-v1",
+      "manifestGeneration": "a01",
+      "assetBranch": "codex/art-rewrite-opening-v1",
+      "images": [
+        {
+          "path": "assets/generated/rewrite-opening-v1/opening.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "not-a-checksum",
+          "alt": "TJ, Koj and Vier share a casual afternoon around a basketball."
+        }
       ],
-      "visual": {
-        "description": "Describes the drawing.",
-        "artId": "art-nowhere",
-        "artState": "revealed",
-        "artAbsence": "pending",
-        "cast": [{ "characterId": "cast-tj", "expressionId": "ex-smug" }]
-      },
-      "conceptIds": [],
-      "sourceIds": ["S-missing"],
-      "limitations": [],
-      "detailIds": [],
-      "interactionIds": ["in-hidden-detail"],
-      "narraton": ["A misspelled field that would otherwise vanish silently."]
-    },
-    {
-      "id": "sc-b",
-      "chapterId": "ch-one",
-      "title": "Ordered under a chapter it does not declare",
-      "narration": ["Reads on the main path."],
-      "dialogue": [],
-      "mainPath": [
-        { "kind": "narration", "index": 0 },
-        { "kind": "narration", "index": 0 }
-      ],
-      "visual": {
-        "description": "Describes the drawing.",
-        "artId": "art-figure-row",
-        "artState": "revealed",
-        "artAbsence": null,
-        "cast": []
-      },
-      "conceptIds": [],
-      "sourceIds": [],
-      "limitations": [],
-      "detailIds": ["dt-shared"],
-      "interactionIds": []
-    },
-    {
-      "id": "sc-c",
-      "chapterId": "ch-one",
-      "title": "Also claims the shared detail",
-      "narration": ["Reads on the main path."],
-      "dialogue": [],
-      "mainPath": [{ "kind": "narration", "index": "first" }],
-      "visual": {
-        "description": "Describes the drawing.",
-        "artId": null,
-        "artState": "situation",
-        "artAbsence": "not-drawn-yet",
-        "cast": []
-      },
-      "conceptIds": ["cn-planned-but-written"],
-      "sourceIds": [],
-      "limitations": [],
-      "detailIds": ["dt-shared"],
-      "interactionIds": []
-    },
-    {
-      "id": "sc-orphan",
-      "chapterId": "ch-two",
-      "title": "Never listed in any chapter order",
-      "narration": ["Reads on the main path, but no reader reaches it."],
-      "dialogue": [],
-      "mainPath": [{ "kind": "nattering", "index": 0 }],
-      "visual": {
-        "description": "Describes the drawing.",
-        "artId": null,
-        "artState": null,
-        "artAbsence": "text-only",
-        "cast": [{ "characterId": "cast-bob", "expressionId": "ex-joy" }]
-      },
-      "conceptIds": [],
-      "sourceIds": [],
-      "limitations": [],
-      "detailIds": [],
-      "interactionIds": []
+      "labels": [{ "kind": "name", "text": "TJ", "x": 1.8, "yDesktop": 0.03, "yPhone": 0.01 }]
     }
   ],
-  "cast": [
-    {
-      "id": "cast tj",
-      "role": "member",
-      "displayName": "TJ",
-      "appearance": "Original stickman.",
-      "artId": "bob",
-      "expressions": [
-        { "id": "ex-joy", "label": "Joy", "artId": "joy" },
-        { "id": "ex-joy", "label": "Joy again", "artId": "delighted" }
-      ]
-    },
-    {
-      "id": "cast-bob",
-      "role": "acquaintance",
-      "displayName": "Bob",
-      "appearance": "Original stickman.",
-      "artId": "nobody-drawn",
-      "expressions": [{ "id": "ex-joy", "label": "Joy", "artId": "joy" }]
-    }
-  ],
-  "sources": [
-    {
-      "id": "S-claiming",
-      "label": "Unaudited source carrying an evidence record",
-      "url": "https://example.org/unaudited",
-      "type": "Research",
-      "intendedRole": "Listed role.",
-      "limitation": "Listed limitation.",
-      "reviewStatus": "unreviewed",
-      "evidenceBasis": "Read in full, supposedly.",
-      "citation": "Someone (2020). A citation written before anyone opened the work.",
-      "supportedClaim": "A claim nobody has checked."
-    },
-    {
-      "id": "S-abstract-empty",
-      "label": "Abstract-level source with nothing recorded",
-      "url": "https://example.org/abstract",
-      "type": "Research",
-      "intendedRole": "Listed role.",
-      "limitation": "Listed limitation.",
-      "reviewStatus": "verified-abstract",
-      "evidenceBasis": null,
-      "citation": null,
-      "supportedClaim": null
-    },
-    {
-      "id": "S-unopened-claiming",
-      "label": "Unopened source asserting what it supports",
-      "url": "https://example.org/unopened",
-      "type": "Research",
-      "intendedRole": "Listed role.",
-      "limitation": "Listed limitation.",
-      "reviewStatus": "not-accessed",
-      "evidenceBasis": "Not opened; the publisher refused access.",
-      "citation": "Someone Else (2019). A work nobody could open.",
-      "supportedClaim": "A claim drawn from a work that was never read."
-    },
-    {
-      "id": "S-bad-status",
-      "label": "Source with an invented evidence level",
-      "url": "https://example.org/status",
-      "type": "Research",
-      "intendedRole": "Listed role.",
-      "limitation": "Listed limitation.",
-      "reviewStatus": "looked-at-the-abstract",
-      "evidenceBasis": null,
-      "citation": null,
-      "supportedClaim": null
-    },
-    {
-      "id": "S-bad-url",
-      "label": "Source pointing at something a reader cannot open",
-      "url": "www.example.org/no-scheme",
-      "type": "Research",
-      "intendedRole": "Listed role.",
-      "limitation": "Listed limitation.",
-      "reviewStatus": "unreviewed",
-      "evidenceBasis": null,
-      "citation": null,
-      "supportedClaim": null
-    }
-  ],
-  "concepts": [
-    {
-      "id": "cn-planned-but-written",
-      "name": "Planned concept carrying text",
-      "status": "planned",
-      "explanation": "An explanation that status says does not exist.",
-      "application": null,
-      "question": null,
-      "sourceIds": []
-    }
-  ],
-  "details": [
-    {
-      "id": "dt-shared",
-      "title": "Detail claimed by two scenes",
-      "body": ["Longer supporting text."],
-      "sourceIds": []
-    },
-    {
-      "id": "dt-unused",
-      "title": "Detail no scene references",
-      "body": ["Longer supporting text."],
-      "sourceIds": []
-    },
-    {
-      "id": "dt-hidden",
-      "title": "Detail reachable only through an optional reveal",
-      "body": ["Longer supporting text."],
-      "sourceIds": []
-    }
-  ],
-  "interactions": [
-    {
-      "id": "in-hidden-detail",
-      "surface": "scene-detail",
-      "purpose": "Reveals a detail the scene does not carry statically.",
-      "trigger": "Activating the control.",
-      "keyboard": "",
-      "staticEquivalent": "",
-      "detailId": "dt-hidden"
-    }
-  ],
-  "provenance": [
-    {
-      "id": "pv-dangling",
-      "appliesTo": "sc-deleted-last-week",
-      "note": "Authoring record pointing at something that no longer exists.",
-      "sourceNote": "docs/notes/example.md"
-    }
-  ]
+  "sourcesPage": {
+    "title": "Sources & Credits",
+    "intro": [{ "text": "Research informs the argument; it does not measure whether our own lives are happy." }],
+    "classNote": [{ "text": "The class lens is recorded in our group notes." }],
+    "credits": [{ "text": "Based on shared notes by TJ, Koj and Vier." }],
+    "methodNote": [{ "text": "Empirical findings refer to their studied populations and measures." }],
+    "returnLabel": "Back to reading",
+    "sources": [
+      {
+        "number": 1,
+        "sourceId": "R02",
+        "auditStatus": "verified-everything",
+        "label": "[1]",
+        "accessibleName": "Source 1",
+        "citation": "Daniel Kahneman and Angus Deaton, \"High income improves evaluation of life but not emotional well-being\", PNAS 107(38), 2010.",
+        "url": "pnas.org/doi/10.1073/pnas.1011492107",
+        "note": [{ "text": "Read: full article." }]
+      }
+    ]
+  },
+  "measure": { "words": 12 }
 }

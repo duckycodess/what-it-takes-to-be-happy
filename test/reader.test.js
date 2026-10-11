@@ -1,469 +1,478 @@
 /**
- * The reader's behaviour, run against the markup the renderer really produces
- * and the browser script as it really ships.
+ * The browser script, run against the markup the renderer actually produces.
  *
- * These are journeys a reader takes, not a transcript of the implementation:
- * each one states what a reader should be able to do and then does it. The
- * harness is `test/support/dom.js`, whose own limits are pinned in
- * `test/dom.test.js`; `test/browser.test.js` repeats the same journeys in
- * Chrome where one is installed.
+ * `test/support/dom.js` is a small DOM that runs `src/runtime/reader.js`
+ * unmodified. It answers what the script does; `test/browser.test.js` answers
+ * what a browser does with the stylesheet, and runs the same journeys in
+ * Chrome when one is installed.
+ *
+ * The journeys here are the ones the approved contract names: moving scene by
+ * scene with Back and Next, leaving the first scene back to the landing,
+ * reaching the end and being offered Read again, revisiting a chapter, moving
+ * between scene and continuous reading, switching an optional comparison, and
+ * leaving for a source and coming back to the same place in the same mode.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { renderDocument } from '../src/runtime/render.js';
-import { openDocument } from './support/dom.js';
+import { renderEssay, renderSourcesPage, sourceAnchor } from '../src/runtime/render.js';
 import { loadValidContent } from './helpers.js';
+import { openDocument } from './support/dom.js';
 
 const content = loadValidContent();
-const ORDER = content.chapters.flatMap((chapter) => chapter.sceneIds);
-const LAST = ORDER.length - 1;
+const order = content.chapters.flatMap((chapter) => chapter.sceneIds);
 
-const html = renderDocument(content, {
+const essay = renderEssay(content, {
   mode: 'hosted',
   stylesheetUrl: 'styles.css',
   scriptUrl: 'reader.js',
-  fontNotice: 'Bundled fallback font.',
-  fontLicense: 'Test licence.\n',
-  illustration: { url: 'art.png', alt: 'Concept sheet.', caption: 'Provisional.', width: 10, height: 10 },
+  sourcesHref: 'sources.html',
+  sourceHref: (number, sceneId) => `sources.html?from=${sceneId}&view=scene#${sourceAnchor(number)}`,
 });
 
-const open = (options) => openDocument(html, options);
-const begin = (options) => {
-  const page = open(options);
-  page.click(page.find('[data-begin]'));
-  return page;
-};
+const open = (options) => openDocument(essay, options);
 
-const focusedSceneId = (page) => {
-  const active = page.document.activeElement;
-  return active ? active.getAttribute('data-scene') : null;
-};
+/* --- Starting state ------------------------------------------------------ */
 
-/* --- Moving through the essay -------------------------------------------- */
-
-test('the essay opens on the question, not inside it', () => {
+test('the page opens on the landing with every scene still in the document', () => {
   const page = open();
   assert.equal(page.view(), 'landing');
-  assert.equal(page.find('[data-begin]').getAttribute('href'), `#${ORDER[0]}`);
+  assert.equal(page.currentSceneId(), null);
+  assert.equal(page.scenes().length, 45);
 });
 
-test('Begin and Next walk the authored order, and Back walks it in reverse', () => {
-  const page = begin();
-  assert.equal(page.currentSceneId(), ORDER[0]);
+test('Begin opens the first scene', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.currentSceneId(), 's088');
+});
 
-  const forwards = [page.currentSceneId()];
-  for (let i = 0; i < LAST; i += 1) {
+/* --- Moving -------------------------------------------------------------- */
+
+test('Next and Back walk the consecutive scene order', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  for (let index = 1; index < 6; index += 1) {
     page.click(page.find('[data-next]'));
-    forwards.push(page.currentSceneId());
+    assert.equal(page.currentSceneId(), order[index]);
   }
-  assert.deepEqual(forwards, ORDER, 'Next follows the chapters\' declared scene order');
+  page.click(page.find('[data-back]'));
+  assert.equal(page.currentSceneId(), order[4]);
+});
 
-  const backwards = [page.currentSceneId()];
-  for (let i = 0; i < LAST; i += 1) {
-    page.click(page.find('[data-back]'));
-    backwards.push(page.currentSceneId());
+test('Back at the first scene returns to the landing', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.currentSceneId(), 's088');
+  page.click(page.find('[data-back]'));
+  assert.equal(page.view(), 'landing');
+});
+
+test('the last scene drops Next and offers Read again', () => {
+  const page = open({ hash: '#s132' });
+  assert.equal(page.currentSceneId(), 's132');
+  assert.equal(page.find('[data-next]').hidden, true);
+  assert.equal(page.find('[data-read-again]').hidden, false);
+  // Sources & Credits is in the shared controls at every scene, including
+  // this one, and from here it is the only route to the register. It carries
+  // the scene, so "Back to reading" has somewhere to come back to.
+  assert.equal(
+    page.find('.reader-controls [data-sources]').getAttribute('href'),
+    'sources.html?from=s132&view=scene',
+  );
+  // The landing's own copy is never rewritten: nothing has been read yet.
+  assert.equal(page.find('.landing-actions [data-sources]').getAttribute('href'), 'sources.html');
+
+  page.click(page.find('[data-read-again]'));
+  assert.equal(page.currentSceneId(), 's088');
+  assert.equal(page.find('[data-next]').hidden, false);
+});
+
+test('every other scene keeps both Back and Next', () => {
+  for (const id of ['s089', 's103', 's120', 's131']) {
+    const page = open({ hash: `#${id}` });
+    assert.equal(page.find('[data-back]').hidden, false, id);
+    assert.equal(page.find('[data-next]').hidden, false, id);
+    assert.equal(page.find('[data-read-again]').hidden, true, id);
   }
-  assert.deepEqual(backwards, [...ORDER].reverse());
 });
 
-test('the two ends are disabled and said out loud', () => {
-  const page = begin();
-  assert.equal(page.find('[data-back]').disabled, true, 'there is nothing before the first beat');
-  assert.equal(page.find('[data-next]').disabled, false);
-  assert.match(page.text('[data-position-boundary]'), /first beat/);
-
-  for (let i = 0; i < LAST; i += 1) page.click(page.find('[data-next]'));
-  assert.equal(page.find('[data-next]').disabled, true, 'there is nothing after the last beat');
-  assert.equal(page.find('[data-back]').disabled, false);
-  assert.match(page.text('[data-position-boundary]'), /last beat/);
-});
-
-test('progress names the beat and the chapter it belongs to', () => {
-  const page = begin();
+test('focus moves to the scene a reader asked for, so the move is announced once', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.focused(), 's088');
   page.click(page.find('[data-next]'));
-  page.click(page.find('[data-next]'));
-
-  assert.equal(page.text('[data-position-current]'), '3');
-  const counted = content.chapters.filter((chapter) => chapter.number !== null).length;
-  assert.equal(page.text('[data-position-where]'), `Chapter ${content.chapters[1].number} of ${counted}: ${content.chapters[1].title}`);
-  assert.equal(page.text('[data-position-boundary]'), '', 'nothing is said about a boundary in the middle');
+  assert.equal(page.focused(), 's089');
 });
 
-test('a move is announced once: focus carries it and nothing is a live region', () => {
-  const page = begin();
-  assert.equal(focusedSceneId(page), ORDER[0], 'Begin moves focus to the beat it opened');
+/* --- Keyboard ------------------------------------------------------------ */
 
-  page.click(page.find('[data-next]'));
-  assert.equal(focusedSceneId(page), ORDER[1]);
-
-  const scene = page.currentScene();
-  assert.equal(scene.getAttribute('aria-labelledby'), `${ORDER[1]}-title`, 'the focused beat is named by its own title');
-  assert.equal(page.find('.beat-position').hasAttribute('aria-live'), false, 'a live region would report the same move a second time');
-});
-
-test('arrow keys move between beats, but never inside something that owns them', () => {
-  const page = begin();
+test('arrow keys move between scenes, and left at the first one leaves to the landing', () => {
+  const page = open({ hash: '#s090' });
   page.press('ArrowRight');
-  assert.equal(page.currentSceneId(), ORDER[1]);
+  assert.equal(page.currentSceneId(), 's091');
   page.press('ArrowLeft');
-  assert.equal(page.currentSceneId(), ORDER[0]);
+  assert.equal(page.currentSceneId(), 's090');
 
-  page.press('ArrowLeft');
-  assert.equal(page.currentSceneId(), ORDER[0], 'the first beat is the floor');
+  const first = open({ hash: '#s088' });
+  first.press('ArrowLeft');
+  assert.equal(first.view(), 'landing');
 
-  for (const selector of ['summary', '[data-next]', '.source-head a']) {
-    const inside = page.find(selector);
-    assert.ok(inside, `the fixture should contain ${selector}`);
-    const before = page.currentSceneId();
-    page.press('ArrowRight', inside);
-    assert.equal(page.currentSceneId(), before, `an arrow key inside ${selector} belongs to ${selector}`);
-  }
+  const last = open({ hash: '#s132' });
+  last.press('ArrowRight');
+  assert.equal(last.currentSceneId(), 's132', 'the end does not wrap');
 });
 
-/* --- Chapters ------------------------------------------------------------- */
-
-test('arriving at a beat brings that beat to the top of the window', () => {
-  // The page is taller than one beat: the draft notice and the chapter list
-  // sit above it. Scrolling to the document's top would land a reader on the
-  // banner rather than on the beat they asked for.
-  const page = begin();
-  assert.equal(page.document.lastScrolledInto, page.currentScene());
-
-  page.click(page.find('[data-next]'));
-  assert.equal(page.document.lastScrolledInto, page.currentScene());
-
-  page.click(page.find(`[data-chapter-link="${content.chapters[2].id}"]`));
-  assert.equal(page.document.lastScrolledInto, page.currentScene());
+test('arrow keys do not fire while a control has focus', () => {
+  const page = open({ hash: '#s090' });
+  page.press('ArrowRight', page.find('[data-next]'));
+  assert.equal(page.currentSceneId(), 's090');
+  page.press('ArrowRight', page.find('.citation'));
+  assert.equal(page.currentSceneId(), 's090');
 });
 
-test('a chapter shortcut revisits that chapter from its first beat', () => {
-  const page = begin();
-  for (const chapter of content.chapters) {
+/* --- Chapters ------------------------------------------------------------ */
+
+test('a chapter link opens that chapter from its first scene', () => {
+  const page = open();
+  const anchors = ['s088', 's092', 's097', 's103', 's109', 's114', 's122', 's128'];
+  content.chapters.forEach((chapter, index) => {
     page.click(page.find(`[data-chapter-link="${chapter.id}"]`));
-    assert.equal(page.currentSceneId(), chapter.sceneIds[0], `${chapter.id} should open at its first beat`);
-    assert.equal(focusedSceneId(page), chapter.sceneIds[0], 'and focus should follow');
+    assert.equal(page.currentSceneId(), anchors[index]);
     assert.equal(page.find(`[data-chapter-link="${chapter.id}"]`).getAttribute('aria-current'), 'true');
-  }
-});
-
-test('revisiting a chapter needs nothing that was done earlier', () => {
-  const page = begin();
-  const lastChapter = content.chapters[content.chapters.length - 1];
-  page.click(page.find(`[data-chapter-link="${lastChapter.id}"]`));
-  assert.equal(page.currentSceneId(), lastChapter.sceneIds[0], 'no beat in between had to be visited first');
-  assert.equal(page.view(), 'beat');
-});
-
-/* --- Deep links and the Back button --------------------------------------- */
-
-test('every beat and every chapter can be linked to directly', () => {
-  for (const sceneId of ORDER) {
-    const page = open({ hash: `#${sceneId}` });
-    assert.equal(page.view(), 'beat');
-    assert.equal(page.currentSceneId(), sceneId);
-  }
-  for (const chapter of content.chapters) {
-    const page = open({ hash: `#${chapter.id}` });
-    assert.equal(page.currentSceneId(), chapter.sceneIds[0], 'a chapter link lands on its first beat');
-  }
-});
-
-test('an unknown fragment opens the essay rather than failing', () => {
-  const page = open({ hash: '#not-a-thing' });
-  assert.equal(page.view(), 'landing');
-});
-
-test('arriving by link does not steal focus, but moving afterwards does', () => {
-  const page = open({ hash: `#${ORDER[3]}` });
-  assert.equal(page.document.activeElement, null, 'a reader who has just arrived keeps their focus');
-
-  page.click(page.find('[data-next]'));
-  assert.equal(focusedSceneId(page), ORDER[4]);
-});
-
-test('each move is recorded, so the browser Back button walks back through them', () => {
-  const page = begin();
-  page.click(page.find('[data-next]'));
-  page.click(page.find('[data-next]'));
-  assert.equal(page.location.hash, `#${ORDER[2]}`);
-
-  page.goBack();
-  assert.equal(page.currentSceneId(), ORDER[1]);
-  page.goBack();
-  assert.equal(page.currentSceneId(), ORDER[0]);
-  page.goBack();
-  assert.equal(page.view(), 'landing', 'back past the first beat leaves the essay the way it was opened');
-});
-
-// A file:// document can be refused the History API in two different ways,
-// and the fallback has to be reached by both. Missing is the easy one; a
-// method that is present and throws is the one a browser actually does.
-for (const [label, history] of [['is missing', false], ['throws a SecurityError', 'throws']]) {
-  test(`Back works where pushState ${label}, as it can on a local file`, () => {
-    const page = openDocument(html, { history });
-    page.click(page.find('[data-begin]'));
-    page.click(page.find('[data-next]'));
-    assert.equal(page.location.hash, `#${ORDER[1]}`, 'the fragment is still written');
-
-    page.goBack();
-    assert.equal(page.currentSceneId(), ORDER[0]);
-    page.goBack();
-    assert.equal(page.view(), 'landing');
   });
-}
+});
 
-test('a refused pushState is refused on every move, not detected once', () => {
-  const page = openDocument(html, { history: 'throws' });
+test('revisiting a chapter while reading continuously keeps the continuous view', () => {
+  const page = open({ hash: '#s090' });
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'reading');
+  page.click(page.find('[data-chapter-link="c5"]'));
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.focused(), 's109');
+});
+
+/* --- Views --------------------------------------------------------------- */
+
+test('the view switch names the view it moves to', () => {
+  const page = open({ hash: '#s090' });
+  const toggle = page.find('[data-view-toggle]');
+  assert.equal(toggle.textContent, 'Read continuously');
+  page.click(toggle);
+  assert.equal(page.view(), 'reading');
+  assert.equal(toggle.textContent, 'Scene view');
+  page.click(toggle);
+  assert.equal(page.view(), 'beat');
+  assert.equal(toggle.textContent, 'Read continuously');
+});
+
+test('the continuous view keeps the reader where they were', () => {
+  const page = open({ hash: '#s117' });
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.focused(), 's117');
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.currentSceneId(), 's117');
+});
+
+test('Print asks the browser to print rather than changing the argument', () => {
+  const page = open({ hash: '#s117' });
+  const before = page.scenes().length;
+  assert.equal(page.pressPrint(), 1);
+  assert.equal(page.scenes().length, before);
+});
+
+/* --- Optional comparisons ------------------------------------------------ */
+
+test('a comparison switches between two drawn states and says which is chosen', () => {
+  for (const id of ['s105', 's114']) {
+    const page = open({ hash: `#${id}` });
+    const figure = page.find(`[data-scene="${id}"] .art-comparison`);
+    const buttons = figure.querySelectorAll('[data-art-state]');
+
+    assert.equal(figure.getAttribute('data-active'), '0');
+    assert.deepEqual(buttons.map((node) => node.getAttribute('aria-pressed')), ['true', 'false']);
+
+    page.click(buttons[1]);
+    assert.equal(figure.getAttribute('data-active'), '1');
+    assert.deepEqual(buttons.map((node) => node.getAttribute('aria-pressed')), ['false', 'true']);
+
+    page.click(buttons[0]);
+    assert.equal(figure.getAttribute('data-active'), '0');
+    assert.deepEqual(buttons.map((node) => node.getAttribute('aria-pressed')), ['true', 'false']);
+  }
+});
+
+test('switching a comparison never removes a paragraph or disables Next', () => {
+  const page = open({ hash: '#s105' });
+  const scene = page.find('[data-scene="s105"]');
+  const before = scene.querySelectorAll('.narration').length;
+  page.click(scene.querySelectorAll('[data-art-state]')[1]);
+  assert.equal(scene.querySelectorAll('.narration').length, before);
+  assert.equal(page.find('[data-next]').hidden, false);
+  assert.equal(page.find('[data-next]').disabled ?? false, false);
+  // Both drawings stay in the document; only the stylesheet chooses which is
+  // on screen, and print shows both.
+  assert.equal(scene.querySelectorAll('img').length, 2);
+});
+
+/* --- Leaving for a source and coming back -------------------------------- */
+
+test('a citation link carries the scene and the current reading mode', () => {
+  const page = open({ hash: '#s105' });
+  const link = page.find('[data-scene="s105"] .citation');
+  assert.equal(link.getAttribute('href'), 'sources.html?from=s105&view=scene#source-9');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(link.getAttribute('href'), 'sources.html?from=s105&view=continuous#source-9');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(link.getAttribute('href'), 'sources.html?from=s105&view=scene#source-9');
+});
+
+test('the shared Sources control carries the place too, not only a citation', () => {
+  const page = open();
+  const shared = () => page.find('.reader-controls [data-sources]').getAttribute('href');
+
+  // Nothing has been read yet, so there is nowhere to come back to.
+  assert.equal(page.view(), 'landing');
+  assert.equal(shared(), 'sources.html');
+  assert.equal(page.find('.landing-actions [data-sources]').getAttribute('href'), 'sources.html');
+
+  page.click(page.find('[data-begin]'));
+  assert.equal(shared(), 'sources.html?from=s088&view=scene');
+  page.click(page.find('[data-next]'));
+  assert.equal(shared(), 'sources.html?from=s089&view=scene');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(shared(), 'sources.html?from=s089&view=continuous');
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(shared(), 'sources.html?from=s089&view=scene');
+
+  // The last scene is where this matters most: the shared control is the only
+  // route to the register from there, and s132 cites nothing.
+  const end = open({ hash: '#s132' });
+  assert.equal(end.find('[data-scene="s132"] .citation'), null, 's132 carries no citation');
+  assert.equal(
+    end.find('.reader-controls [data-sources]').getAttribute('href'),
+    'sources.html?from=s132&view=scene',
+  );
+});
+
+test('the reading controls are not offered before the reader has begun', () => {
+  const page = open();
+  // The approved landing is the title, the drawing, Begin and Sources &
+  // Credits. Read continuously and Print would let someone switch view or
+  // print the essay without meeting it.
+  assert.equal(page.find('[data-view-toggle]').hidden, true);
+  assert.equal(page.find('[data-print]').hidden, true);
+  assert.equal(page.find('[data-back]').hidden, true);
+  assert.equal(page.find('[data-next]').hidden, true);
+  assert.equal(page.find('[data-read-again]').hidden, true);
+  // The bar goes with them: its Sources & Credits link is a second copy of
+  // the one the landing itself renders, and the approved landing lists one of
+  // each action.
+  assert.equal(page.find('.reader-controls').hidden, true);
+  assert.equal(page.find('.landing-actions [data-sources]').hidden, false, 'the landing keeps its own');
+  assert.deepEqual(
+    page.find('.landing-actions').querySelectorAll('a').map((link) => link.textContent),
+    ['Begin', 'Sources & Credits'],
+  );
+
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.find('.reader-controls').hidden, false);
+  assert.equal(page.find('[data-view-toggle]').hidden, false);
+  assert.equal(page.find('[data-print]').hidden, false);
+  // And now the bar's copy is the only one a reader can reach, because the
+  // landing is off screen.
+  assert.equal(page.find('.reader-controls [data-sources]').hidden, false);
+
+  // And they go again if the reader leaves the first scene back to the landing.
+  page.click(page.find('[data-back]'));
+  assert.equal(page.view(), 'landing');
+  assert.equal(page.find('.reader-controls').hidden, true);
+  assert.equal(page.find('[data-view-toggle]').hidden, true);
+  assert.equal(page.find('[data-print]').hidden, true);
+});
+
+test('the sources page sends the reader back to the scene and mode they left', () => {
+  const html = renderSourcesPage(content, {
+    mode: 'hosted',
+    stylesheetUrl: 'styles.css',
+    scriptUrl: 'reader.js',
+    essayUrl: 'index.html',
+  });
+
+  const fromScene = openDocument(html, { search: '?from=s105&view=scene', hash: '#source-9' });
+  assert.equal(fromScene.find('[data-return]').getAttribute('href'), 'index.html#s105');
+
+  const fromContinuous = openDocument(html, { search: '?from=s126&view=continuous', hash: '#source-5' });
+  assert.equal(fromContinuous.find('[data-return]').getAttribute('href'), 'index.html?view=continuous#s126');
+
+  // A reader who arrived directly is offered the essay, which is the only
+  // honest destination when there is no place to return to.
+  const direct = openDocument(html, {});
+  assert.equal(direct.find('[data-return]').getAttribute('href'), 'index.html');
+
+  // The shared control carries the same two parameters a citation does, and
+  // with no fragment, because it names no entry. The last scene cites nothing,
+  // so this is the only way the register is reached from there.
+  const shared = openDocument(html, { search: '?from=s132&view=scene' });
+  assert.equal(shared.find('[data-return]').getAttribute('href'), 'index.html#s132');
+
+  const sharedContinuous = openDocument(html, { search: '?from=s132&view=continuous' });
+  assert.equal(sharedContinuous.find('[data-return]').getAttribute('href'), 'index.html?view=continuous#s132');
+});
+
+/*
+ * Returning is three separate promises: the scene, the reading mode, and
+ * being put back at that scene on the page. None of them is focus. A reader
+ * arriving on a fresh document has not asked for anything yet, so the script
+ * scrolls and leaves focus where the browser put it, which is why each
+ * promise is checked on its own below.
+ */
+test('returning restores the scene, and returning from continuous restores that too', () => {
+  const back = open({ hash: '#s105' });
+  assert.equal(back.view(), 'beat');
+  assert.equal(back.currentSceneId(), 's105');
+  assert.equal(back.scrolledInto(), 's105', 'the reader is put back at the scene they left');
+  assert.equal(back.focused(), 'body', 'and arriving does not take their focus');
+
+  const continuous = openDocument(essay, { hash: '#s105', search: '?view=continuous' });
+  assert.equal(continuous.view(), 'reading');
+  assert.equal(continuous.scrolledInto(), 's105');
+  assert.equal(continuous.focused(), 'body');
+  // Nothing is "current" while the whole essay is on the page, so the place
+  // the reader came back to is read from the view they switch to next.
+  assert.equal(continuous.currentSceneId(), null);
+  continuous.click(continuous.find('[data-view-toggle]'));
+  assert.equal(continuous.view(), 'beat');
+  assert.equal(continuous.currentSceneId(), 's105');
+});
+
+test('the first, middle and final citing scenes all return correctly', () => {
+  const html = renderSourcesPage(content, {
+    mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js', essayUrl: 'index.html',
+  });
+  for (const [id, number] of [['s092', 1], ['s109', 13], ['s126', 5]]) {
+    const page = openDocument(html, { search: `?from=${id}&view=scene`, hash: `#${sourceAnchor(number)}` });
+    assert.equal(page.find('[data-return]').getAttribute('href'), `index.html#${id}`);
+    // The reader lands on the entry they followed, not the top of the list.
+    assert.equal(page.focused(), sourceAnchor(number));
+
+    const essayPage = openDocument(essay, { hash: `#${id}` });
+    assert.equal(essayPage.currentSceneId(), id);
+  }
+});
+
+/* --- The address bar ----------------------------------------------------- */
+
+test('the address carries the reading mode, so reloading it opens the same view', () => {
+  const page = open();
+  page.click(page.find('[data-begin]'));
+  assert.equal(page.address(), '#s088', 'the scene view is the default, and needs no parameter');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.address(), '?view=continuous#s088', 'continuous reading has to be in the URL to survive a reload');
+
+  // And opening that address really does come back to continuous reading.
+  const reloaded = openDocument(essay, { search: '?view=continuous', hash: '#s088' });
+  assert.equal(reloaded.view(), 'reading');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.address(), '#s088', 'and leaving it has to take the parameter out again');
+});
+
+test('a stale mode in the address is cleared, not left to contradict the view', () => {
+  // The way back from Sources & Credits carries the mode the reader left in.
+  // Switching out of it has to rewrite the address, or the URL in the bar
+  // says continuous while the reader is looking at one scene -- and reloading
+  // or sending it opens the wrong view.
+  const page = openDocument(essay, { search: '?view=continuous', hash: '#s105' });
+  assert.equal(page.view(), 'reading');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.address(), '#s105', 'the stale parameter survived the switch');
+
+  const reloaded = openDocument(essay, { hash: '#s105' });
+  assert.equal(reloaded.view(), 'beat');
+});
+
+test('a parameter this script does not own is left alone', () => {
+  const page = openDocument(essay, { search: '?utm_source=chat&view=continuous', hash: '#s105' });
+  assert.equal(page.view(), 'reading');
+
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'beat');
+  assert.ok(page.address().includes('utm_source=chat'), 'an unrelated parameter was discarded');
+  assert.ok(!page.address().includes('view=continuous'), 'and the mode was not updated');
+  assert.equal(page.address(), '?utm_source=chat#s105');
+
+  // Still there when the mode goes back on.
+  page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.view(), 'reading');
+  assert.equal(page.address(), '?utm_source=chat&view=continuous#s105');
+});
+
+test('Back leaves no stale mode behind in the address', () => {
+  const page = open();
   page.click(page.find('[data-begin]'));
   page.click(page.find('[data-next]'));
-  page.click(page.find('[data-next]'));
+  assert.equal(page.address(), '#s089');
 
-  assert.ok(page.historyRefusals >= 3, `expected every move to try and be refused, saw ${page.historyRefusals}`);
-  assert.equal(page.currentSceneId(), ORDER[2], 'and the reader moved anyway');
-  assert.equal(page.location.hash, `#${ORDER[2]}`);
-});
-
-test('a fragment the script itself wrote does not send it round again', () => {
-  const page = begin();
-  const applied = [];
-  for (let i = 0; i < 3; i += 1) {
-    page.click(page.find('[data-next]'));
-    applied.push(page.currentSceneId());
-  }
-  assert.deepEqual(applied, ORDER.slice(1, 4), 'each click moved exactly one beat');
-});
-
-/* --- Sources -------------------------------------------------------------- */
-
-/* --- Landmarks that are not the reader's state ---------------------------- */
-
-// The document has fragments of its own that mean "move within this page":
-// the skip link's #essay, the chapter list's #chapters. Following one must
-// not be read as "go somewhere else in the essay".
-for (const landmark of ['essay', 'chapters', 'landing']) {
-  test(`following #${landmark} from a beat leaves the reader on that beat`, () => {
-    const page = begin();
-    page.click(page.find('[data-next]'));
-    const where = page.currentSceneId();
-
-    page.navigateTo(`#${landmark}`);
-
-    assert.equal(page.view(), 'beat', `#${landmark} is a place on the page, not a change of view`);
-    assert.equal(page.currentSceneId(), where);
-  });
-}
-
-test('#essay from the continuous view keeps the continuous view', () => {
-  const page = begin();
   page.click(page.find('[data-view-toggle]'));
+  assert.equal(page.address(), '?view=continuous#s089');
 
-  page.navigateTo('#essay');
-
-  assert.equal(page.view(), 'reading');
-  assert.equal(page.scenes().length, ORDER.length);
+  // How you read is not a place, so switching the view replaces the entry
+  // rather than adding one: Back goes to the scene before, not back out of
+  // continuous reading. What matters here is that the address it returns to
+  // is the address that entry was written with -- no parameter left over.
+  page.goBack();
+  assert.equal(page.currentSceneId(), 's088');
+  assert.equal(page.view(), 'beat');
+  assert.equal(page.address(), '#s088', 'Back landed on a scene with a continuous-reading URL');
 });
 
-test('the skip link points at a target that can take focus', () => {
+test('a deep link opens that scene without stealing focus', () => {
+  const page = open({ hash: '#s120' });
+  assert.equal(page.currentSceneId(), 's120');
+  assert.equal(page.scrolledInto(), 's120', 'the scene is brought into view');
+  assert.equal(page.focused(), 'body', 'nothing was focused, so nothing was taken');
+});
+
+test('a chapter fragment opens that chapter', () => {
+  const page = open({ hash: '#c6' });
+  assert.equal(page.currentSceneId(), 's114');
+});
+
+test('Back in the browser returns to the previous scene', () => {
   const page = open();
-  const target = page.find('#essay');
-  assert.equal(page.find('.skip-link').getAttribute('href'), '#essay');
-  assert.equal(target.getAttribute('tabindex'), '-1', 'a main element is not focusable without this, so the skip link would do nothing');
-});
-
-test('an unknown fragment still opens the essay on a first load', () => {
-  // Only on a first load: that is the one moment with no reader state to lose.
-  const page = open({ hash: '#not-a-thing' });
-  assert.equal(page.view(), 'landing');
-});
-
-test('the register is reachable from the landing and from inside a beat', () => {
-  const fromLanding = open();
-  fromLanding.click(fromLanding.find('.landing-sources a'));
-  assert.equal(fromLanding.view(), 'reading');
-  assert.equal(fromLanding.location.hash, '#sources');
-
-  const fromBeat = begin();
-  fromBeat.click(fromBeat.find('.nav-aside a'));
-  assert.equal(fromBeat.view(), 'reading', 'the register is readable as a whole, not a beat at a time');
-  assert.equal(fromBeat.document.activeElement, fromBeat.find('#sources'));
-});
-
-test('a source beside a beat keeps its evidence level and links its full entry', () => {
-  const page = begin();
-  const reference = page.find('.scene .source');
-  assert.ok(reference, 'the fixture should cite a source inside a beat');
-
-  const id = reference.getAttribute('data-source');
-  const source = content.sources.find((entry) => entry.id === id);
-  const text = reference.textContent;
-  assert.ok(text.includes(source.limitation), 'the limitation is on the page, not behind the link');
-  assert.match(text, /Limitation/);
-
-  page.click(reference.querySelector('[data-source-link]'));
-  assert.equal(page.location.hash, `#${id}`);
-  assert.equal(page.document.activeElement.getAttribute('data-source'), id, 'the reader lands on that entry');
-});
-
-test('a single source entry can be linked to directly', () => {
-  const source = content.sources[2];
-  const page = open({ hash: `#${source.id}` });
-  assert.equal(page.view(), 'reading');
-  assert.equal(page.find('#sources').textContent.includes(source.label), true);
-});
-
-test('leaving for the sources and coming back keeps the beat the reader was on', () => {
-  const page = begin();
+  page.click(page.find('[data-begin]'));
   page.click(page.find('[data-next]'));
-  page.click(page.find('[data-next]'));
-  const where = page.currentSceneId();
-
-  page.click(page.find('.nav-aside a'));
-  assert.equal(page.view(), 'reading');
-
-  page.click(page.find('[data-return-to-beats]'));
-  assert.equal(page.view(), 'beat');
-  assert.equal(page.currentSceneId(), where);
-  assert.equal(focusedSceneId(page), where);
-});
-
-test('the return control is offered only when there is a beat to return to', () => {
-  const landing = open();
-  assert.equal(landing.find('.register-return').hidden, true, 'nothing has been left behind yet');
-
-  landing.click(landing.find('[data-begin]'));
-  assert.equal(landing.find('.register-return').hidden, false);
-});
-
-/* --- Optional panels ------------------------------------------------------ */
-
-test('a panel is a reveal between beats and plain text in the continuous view', () => {
-  const page = begin();
-  const count = page.panels().length;
-  assert.ok(count >= 2, 'the essay carries optional panels');
-  assert.deepEqual(page.panels().map((panel) => panel.open), Array(count).fill(false), 'collapsed while moving beat by beat');
-
-  page.click(page.find('[data-view-toggle]'));
-  assert.deepEqual(page.panels().map((panel) => panel.open), Array(count).fill(true), 'open where the text simply reads');
-});
-
-test('a panel the reader opened or closed stays that way across view switches', () => {
-  const page = begin();
-  const [first, second] = page.panels();
-
-  page.togglePanel(first, true);
-  assert.equal(first.open, true);
-
-  page.click(page.find('[data-view-toggle]'));
-  page.click(page.find('[data-view-toggle]'));
-  assert.equal(first.open, true, 'the reader opened it, so it is still open back among the beats');
-  assert.equal(second.open, false, 'a panel they never touched still follows the view');
-
-  page.togglePanel(second, true);
-  page.togglePanel(first, false);
-  page.click(page.find('[data-view-toggle]'));
-  const [firstOpen, secondOpen] = page.panels().map((panel) => panel.open);
-  assert.deepEqual([firstOpen, secondOpen], [false, true], 'both choices survive the continuous view');
-});
-
-test('opening or dismissing a panel changes nothing else about where the reader is', () => {
-  const page = begin();
-  page.click(page.find('[data-next]'));
-  const where = page.currentSceneId();
-  const view = page.view();
-
-  page.togglePanel(page.panels()[0], true);
-  page.togglePanel(page.panels()[0], false);
-
-  assert.equal(page.currentSceneId(), where, 'the beat did not move');
-  assert.equal(page.view(), view);
-  assert.equal(page.find('[data-next]').disabled, false, 'and Next is still there to take');
-  assert.equal(page.location.hash, `#${where}`);
-});
-
-test('printing opens every panel and then gives the reader their choices back', () => {
-  const page = begin();
-  const count = page.panels().length;
-  page.togglePanel(page.panels()[1], true);
-
-  const whilePrinting = page.print();
-  assert.deepEqual(whilePrinting, Array(count).fill(true), 'the printed argument is complete, whatever is collapsed on screen');
-  const after = page.panels().map((panel) => panel.open);
-  assert.deepEqual(after.slice(0, 2), [false, true], 'and the reader gets their own panels back');
-  assert.deepEqual(after.slice(2), Array(count - 2).fill(false), 'panels nobody touched are collapsed again');
-});
-
-/* --- Views ---------------------------------------------------------------- */
-
-test('the view switch says what it will do and does not also claim a state', () => {
-  const page = begin();
-  const toggle = page.find('[data-view-toggle]');
-  assert.equal(toggle.textContent, 'Read the whole thing');
-  assert.equal(toggle.hasAttribute('aria-pressed'), false, 'a changing label and aria-pressed would contradict each other');
-
-  page.click(toggle);
-  assert.equal(page.view(), 'reading');
-  assert.equal(toggle.textContent, 'Back to the beats');
-
-  page.click(toggle);
-  assert.equal(page.view(), 'beat');
-  assert.equal(toggle.textContent, 'Read the whole thing');
-});
-
-test('Back out of the sources returns to the beats, not just to the fragment', () => {
-  const page = begin();
-  page.click(page.find('[data-next]'));
-  const where = page.currentSceneId();
-
-  page.click(page.find('.nav-aside a'));
-  page.click(page.find('[data-return-to-beats]'));
-  assert.equal(page.view(), 'beat');
-
+  assert.equal(page.currentSceneId(), 's089');
   page.goBack();
-  assert.equal(page.view(), 'reading', 'the register is where they were');
-  assert.equal(page.location.hash, '#sources');
-
-  page.goBack();
-  assert.equal(page.view(), 'beat', 'and before that they were among the beats');
-  assert.equal(page.currentSceneId(), where);
+  assert.equal(page.currentSceneId(), 's088');
 });
 
-test('switching view updates where the reader is rather than adding somewhere to go back to', () => {
-  const page = begin();
-  const entries = page.historyEntries.length;
-
-  page.click(page.find('[data-view-toggle]'));
-  assert.equal(page.historyEntries.length, entries, 'how you read is not a place');
-  assert.equal(page.location.hash, `#${ORDER[0]}`);
-
-  page.click(page.find('[data-view-toggle]'));
-  assert.equal(page.historyEntries.length, entries);
+test('an unrecognised fragment does not move a reader who is already reading', () => {
+  const page = open({ hash: '#s120' });
+  page.navigateTo('#chapters');
+  assert.equal(page.currentSceneId(), 's120');
+  assert.equal(page.view(), 'beat');
 });
 
-test('the continuous view is how the reader is reading, and a jump does not change it', () => {
-  const page = begin();
-  page.click(page.find('[data-view-toggle]'));
-
-  const chapter = content.chapters[3];
-  page.click(page.find(`[data-chapter-link="${chapter.id}"]`));
-  assert.equal(page.view(), 'reading', 'they asked to go somewhere, not to change how they read');
-  assert.equal(page.currentSceneId(), chapter.sceneIds[0]);
-
-  page.goBack();
-  assert.equal(page.view(), 'reading', 'and Back does not change it either');
+test('the script works where pushState is refused', () => {
+  const page = openDocument(essay, { history: 'throws' });
+  page.click(page.find('[data-begin]'));
+  page.click(page.find('[data-next]'));
+  assert.equal(page.currentSceneId(), 's089');
+  assert.ok(page.historyRefusals > 0);
 });
 
-test('every beat stays in the document in every view, so nothing depends on the script', () => {
-  const page = begin();
-  for (const view of ['beat', 'reading']) {
-    if (page.view() !== view) page.click(page.find('[data-view-toggle]'));
-    assert.equal(page.scenes().length, ORDER.length, `all beats are present in the ${view} view`);
-    for (const scene of content.scenes) {
-      const element = page.find(`[data-scene="${scene.id}"]`);
-      for (const paragraph of scene.narration) {
-        assert.ok(element.textContent.includes(paragraph), `${scene.id} keeps its narration in the ${view} view`);
-      }
-    }
-  }
+test('a document with no scenes does not throw', () => {
+  assert.doesNotThrow(() => openDocument('<!doctype html><html><body><p>Nothing</p></body></html>'));
 });

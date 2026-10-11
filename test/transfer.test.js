@@ -1,200 +1,227 @@
 /**
- * The website against the editorial storyboard, sentence by sentence.
+ * The approved copy, and nothing else.
  *
- * `docs/storyboard.md` is where the essay was written and audited.
- * `content/content.json` is what the site is built from. Two documents holding
- * the same prose will drift unless something compares them, and a drift here
- * is not a formatting problem: it is the site saying something the group did
- * not write, or quietly losing a caveat that the audit put on the main path.
- *
- * Two differences are deliberate, and both are listed here rather than
- * tolerated by a loose comparison:
- *
- *  - The landing. `s001`'s blockquote holds the question, an introduction, and
- *    a sentence of names and reading time. On the site the question is the
- *    landing heading, the names are the landing byline, and the reading time is
- *    measured rather than retyped, so the beat carries the introduction alone.
- *  - The fourteen chapter bridges. They are authored for the site from the
- *    storyboard's transition notes, and are not storyboard prose. The test
- *    below checks exactly that: no bridge may be a storyboard blockquote, and
- *    every bridge must carry a provenance record saying where it came from.
+ * The owner approved one artefact: `docs/redesign/approved-scene-script.md`.
+ * Everything a reader sees has to come from it. These checks read that file
+ * directly and compare it against the content document and against the
+ * rendered pages, sentence by sentence and in order, so a changed, reordered,
+ * missing or invented line fails here rather than reaching a reader.
  */
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
 
-import { loadValidContent } from './helpers.js';
-import { readStoryboard, storyboardChapters } from './support/storyboard.js';
+import { APPROVED_SCRIPT, visibleText, countWords } from '../src/content/transfer.js';
+import { buildContent, serialise } from '../src/tools/transfer.js';
+import { renderEssay, renderSourcesPage, esc } from '../src/runtime/render.js';
+import { readerSentences } from '../src/build/verify.js';
+import { loadValidContent, repoRoot } from './helpers.js';
+import { parseHtml } from './support/dom.js';
 
+const script = readFileSync(join(repoRoot, APPROVED_SCRIPT.path), 'utf8');
 const content = loadValidContent();
-const storyboard = readStoryboard();
-const sceneById = new Map(content.scenes.map((scene) => [scene.id, scene]));
 
-/** A beat's essential blocks in the order a reader meets them. */
-const mainPath = (scene) =>
-  scene.mainPath.map((entry) => {
-    if (entry.kind === 'narration') return { kind: 'narration', text: scene.narration[entry.index] };
-    if (entry.kind === 'limitations') return { kind: 'limitations', text: scene.limitations[entry.index] };
-    const line = scene.dialogue[entry.index];
-    return { kind: 'dialogue', text: line.text, speaker: line.speakerId.replace('cast-', ''), stance: line.stance };
-  });
+/** Every `Narrator:`/`TJ:` line of reader copy, in the file's own order. */
+function approvedCopy() {
+  const lines = [];
+  let inScene = false;
+  let copy = false;
+  for (const raw of script.split('\n')) {
+    const line = raw.trimEnd();
+    if (/^### s\d{3} \| /.test(line)) {
+      inScene = true;
+      copy = false;
+      lines.push({ kind: 'title', text: line.replace(/^### s\d{3} \| /, '') });
+      continue;
+    }
+    if (/^## /.test(line)) inScene = false;
+    if (!inScene) continue;
+    if (line === '**Reader copy**') { copy = true; continue; }
+    if (line.startsWith('**Production:**')) { copy = false; continue; }
+    if (!copy || line === '') continue;
+    const spoken = line.match(/^(Narrator|TJ|Koj|Vier): (.+)$/);
+    assert.ok(spoken, `unlabelled reader copy in the approved script: ${line}`);
+    // What the reader sees: the authored sentence with `[^07]` shown as `[7]`.
+    lines.push({ kind: 'copy', speaker: spoken[1], text: spoken[2].replace(/\[\^0?(\d+)\]/g, '[$1]') });
+  }
+  return lines;
+}
 
-/** The storyboard paragraphs the landing carries instead of the first beat. */
-const LANDING_SPLIT = [
-  'What does it take to be happy?',
-  'TJ. Koj. Vier. Roughly 35 to 44 minutes, depending on how long you look at things. Next and Back are yours.',
-];
+test('the approved script is still the revision the owner approved', () => {
+  assert.equal(createHash('sha256').update(script).digest('hex'), APPROVED_SCRIPT.sha256);
+  assert.equal(content.source.sha256, APPROVED_SCRIPT.sha256);
+});
 
-test('the site holds every authored beat, in the storyboard order, under the right chapter', () => {
-  assert.equal(storyboard.length, 87, 'the storyboard should still hold 87 authored beats');
-  assert.deepEqual(content.scenes.map((scene) => scene.id), storyboard.map((scene) => scene.id));
+test('the committed content document is the one the approved script transfers to', async () => {
+  const rebuilt = serialise(await buildContent());
+  const committed = readFileSync(join(repoRoot, 'content/content.json'), 'utf8');
+  assert.equal(rebuilt, committed,
+    'content/content.json has drifted from the approved script; run npm run content:transfer');
+});
 
-  const chapters = storyboardChapters(storyboard);
-  assert.deepEqual(content.chapters.map((chapter) => chapter.id), chapters.map((chapter) => chapter.id));
-  for (const chapter of chapters) {
-    const published = content.chapters.find((entry) => entry.id === chapter.id);
-    assert.deepEqual(published.sceneIds, chapter.sceneIds, `${chapter.id} is ordered differently on the site`);
-    assert.equal(published.title, chapter.title, `${chapter.id} is titled differently on the site`);
+test('every reader-visible sentence matches the approved script, in order', () => {
+  const approved = approvedCopy();
+  const transferred = [];
+  for (const chapterId of content.chapters.map((chapter) => chapter.id)) {
+    const chapter = content.chapters.find((entry) => entry.id === chapterId);
     for (const sceneId of chapter.sceneIds) {
-      assert.equal(sceneById.get(sceneId).chapterId, chapter.id);
+      const scene = content.scenes.find((entry) => entry.id === sceneId);
+      transferred.push({ kind: 'title', text: scene.title });
+      for (const block of scene.blocks) {
+        transferred.push({
+          kind: 'copy',
+          speaker: block.kind === 'narration' ? 'Narrator' : block.speaker,
+          text: visibleText(block.parts),
+        });
+      }
     }
   }
+  assert.deepEqual(transferred, approved);
 });
 
-test('every main-path paragraph, line and caveat is transferred in the authored order', () => {
-  let compared = 0;
-  for (const authored of storyboard) {
-    const scene = sceneById.get(authored.id);
-    assert.equal(scene.title, authored.title, `${authored.id} is titled differently on the site`);
-
-    const expected = authored.blocks
-      .filter((block) => !(authored.id === 's001' && LANDING_SPLIT.includes(block.text)))
-      .map((block) => (block.kind === 'dialogue'
-        ? { kind: 'dialogue', text: block.text, speaker: block.speaker, stance: 'member-endorsed' }
-        : { kind: block.kind, text: block.text }));
-
-    assert.deepEqual(mainPath(scene), expected, `${authored.id} does not read the way it was written`);
-    compared += expected.length;
+test('the rendered essay carries those same sentences, in the same order', () => {
+  const html = renderEssay(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+  const document = parseHtml(html);
+  const rendered = [];
+  for (const scene of document.querySelectorAll('[data-scene]')) {
+    rendered.push(scene.querySelector('.scene-title').textContent);
+    for (const block of scene.querySelectorAll('.narration, .line')) {
+      const text = block.localName === 'p' && block.getAttribute('class') === 'narration'
+        ? block.textContent
+        : block.querySelector('.line-text').textContent;
+      rendered.push(text);
+    }
   }
-  // The storyboard's own count, minus the two paragraphs the landing carries.
-  assert.equal(compared, 235, `expected every authored block to be compared, compared ${compared}`);
+  assert.deepEqual(rendered, readerSentences(content).map((text) => text));
 });
 
-test('the landing carries the question, the names and the time, and the first beat does not repeat them', () => {
-  const landing = storyboard[0];
-  assert.equal(landing.id, 's001');
+test('a speaker label is an element, never part of the sentence', () => {
+  const html = renderEssay(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+  const document = parseHtml(html);
+  for (const line of document.querySelectorAll('.line')) {
+    const speaker = line.querySelector('.speaker').textContent;
+    assert.ok(['TJ', 'Koj', 'Vier'].includes(speaker), `unexpected speaker ${speaker}`);
+    assert.ok(!line.querySelector('.line-text').textContent.startsWith(`${speaker}:`));
+  }
+  // Narration is unlabelled: the approved script gives the narrator no visible
+  // name, and a rendered "Narrator" would be a word the owner did not write.
+  assert.ok(!html.includes('>Narrator<'));
+});
 
-  // The question is the landing heading, word for word.
-  assert.equal(content.project.question, LANDING_SPLIT[0]);
-  // The names are the landing byline, in the order the sentence gives them.
+test('citations are normalised to the approved visible and accessible forms', () => {
+  const html = renderEssay(content, {
+    mode: 'hosted',
+    stylesheetUrl: 's.css',
+    scriptUrl: 'r.js',
+    sourceHref: (number, scene) => `sources.html?from=${scene}&view=scene#source-${number}`,
+  });
+  const document = parseHtml(html);
+  const links = document.querySelectorAll('.citation');
+  assert.ok(links.length >= 26);
+
+  for (const link of links) {
+    const number = Number(link.getAttribute('data-citation'));
+    assert.equal(link.textContent, `[${number}]`);
+    assert.equal(link.getAttribute('aria-label'), `Source ${number}`);
+    assert.match(link.getAttribute('href'), new RegExp(`#source-${number}$`));
+  }
+  // The authoring marker never reaches the page.
+  assert.ok(!html.includes('[^'), 'a raw footnote marker survived the transfer');
+});
+
+test('no renderer-added prose reaches the essay', () => {
+  const html = renderEssay(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+  const document = parseHtml(html);
+  const approved = new Set([
+    ...readerSentences(content),
+    ...content.chapters.map((chapter) => chapter.title),
+    ...Object.values(content.interface),
+    ...content.assets.flatMap((asset) => asset.labels.map((label) => label.text)),
+    ...content.scenes.flatMap((scene) => scene.visual.views.map((view) => view.label)).filter(Boolean),
+  ]);
+
+  // Every visible string in the essay body is one the owner approved. The
+  // numbered citation labels are the one structural addition, and the approved
+  // interface section names them. Each element is judged on the text it holds
+  // itself, so a container is not read as the run-together text of its
+  // children.
+  const ownText = (node) => node.childNodes
+    .filter((child) => child.nodeType === 3)
+    .map((child) => child.data)
+    .join('');
+
+  for (const node of document.querySelectorAll('p, h1, h2, h3, a, button, span, li')) {
+    const text = ownText(node).replace(/\s+/g, ' ').trim();
+    if (text === '') continue;
+    if (/^\[\d+\]$/.test(text)) continue;
+    if (approved.has(text)) continue;
+    // A paragraph containing a citation link reads as sentence + [n] + rest;
+    // its own sentence is the approved one with the markers restored.
+    const normalised = text.replace(/\s*\[\d+\]\s*/g, (match) => (match.startsWith(' ') ? ' ' : ''));
+    const matches = [...approved].some((value) => value.replace(/\s*\[\d+\]\s*/g, ' ').replace(/\s+/g, ' ').trim()
+      === normalised.replace(/\s+/g, ' ').trim());
+    assert.ok(matches, `unapproved text reached the essay: ${JSON.stringify(text.slice(0, 90))}`);
+  }
+});
+
+test('the Sources & Credits page carries only approved copy', () => {
+  const page = content.sourcesPage;
+  const html = renderSourcesPage(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+
+  assert.ok(html.includes(esc(page.title)));
+  // Each block is checked part by part, because a part may be a link: the
+  // approved file writes it as Markdown and the page writes it as an anchor,
+  // so the label and the destination are checked rather than the syntax.
+  for (const key of ['intro', 'classNote', 'credits', 'methodNote']) {
+    for (const part of page[key]) {
+      if (part.link === undefined) {
+        assert.ok(script.includes(part.text), `${key} carries text the approved script does not: ${part.text}`);
+      } else {
+        assert.ok(script.includes(`[${part.link}](${part.url})`), `${key} link is not the approved one: ${part.link}`);
+        assert.ok(html.includes(esc(part.url)));
+      }
+    }
+  }
+  // The font grant and the visual reference both stay on this page.
+  const credits = page.credits.map((part) => (part.link === undefined ? part.text : part.link)).join('');
+  assert.match(credits, /Futura Handwritten/);
+  assert.match(credits, /Billy Snyder/);
+  assert.match(credits, /The Evolution of Trust/);
+  assert.equal(page.returnLabel, 'Back to reading');
+
+  // The register's bibliographic lines and access notes are the approved ones.
+  for (const source of page.sources) {
+    assert.ok(script.includes(source.citation), `citation ${source.number} is not in the approved script`);
+    assert.ok(html.includes(source.url));
+  }
+});
+
+test('the measured word count is recomputed, not stored as a target', () => {
+  assert.equal(content.measure.words, countWords(content.scenes));
+  assert.match(content.measure.rule, /excluding speaker labels, citation markers/);
+  // The handoff estimated 4,138; the rule above recomputes 4,137 from the
+  // approved copy. Neither number is a band the copy may be trimmed to reach.
+  assert.equal(content.measure.words, 4137);
+});
+
+test('the approved structure is intact: 45 scenes, 8 chapters, 26 sources', () => {
+  assert.equal(content.scenes.length, 45);
+  assert.equal(content.chapters.length, 8);
+  assert.equal(content.sourcesPage.sources.length, 26);
+  assert.equal(content.scenes[0].id, 's088');
+  assert.equal(content.scenes.at(-1).id, 's132');
   assert.deepEqual(
-    content.cast.filter((entry) => entry.role === 'member').map((entry) => entry.displayName),
-    ['TJ', 'Koj', 'Vier'],
+    content.chapters.map((chapter) => chapter.sceneIds[0]),
+    ['s088', 's092', 's097', 's103', 's109', 's114', 's122', 's128'],
   );
-  // The reading time is measured rather than retyped, so the site does not
-  // promise a range it has not counted. That it matches what was counted is
-  // checked in test/measure.test.js.
-  assert.match(content.project.readingTimeEstimate, /^\d+ to \d+ minutes$/);
-
-  const beat = sceneById.get('s001');
-  for (const repeated of LANDING_SPLIT) {
-    assert.ok(!beat.narration.includes(repeated), 'the first beat must not repeat what the landing already said');
-  }
-  assert.equal(beat.narration.length, 1);
-  assert.match(beat.narration[0], /^Three of us tried to answer that for a class\./);
 });
 
-test('the chapter bridges are authored for the site and say so, rather than passing as quoted prose', () => {
-  const quoted = new Set(storyboard.flatMap((scene) => scene.blocks.map((block) => block.text)));
-  const records = new Map(content.provenance.map((record) => [record.appliesTo, record]));
-
-  for (const chapter of content.chapters) {
-    for (const bridge of [chapter.opening, chapter.closing]) {
-      assert.match(bridge, /\S/);
-      assert.ok(!quoted.has(bridge), `${chapter.id} presents a storyboard blockquote as a bridge`);
-    }
-    const record = records.get(chapter.id);
-    assert.ok(record, `${chapter.id} has no provenance record for its bridges`);
-    assert.equal(record.sourceNote, 'docs/storyboard.md');
+test('no scaffolding from the superseded storyboard survived', () => {
+  const serialised = JSON.stringify(content);
+  for (const term of ['readingTimeEstimate', 'artId', 'provenance', 'detailIds', 'conceptIds', 'limitations']) {
+    assert.ok(!serialised.includes(term), `the content document still contains ${term}`);
   }
-  assert.equal(content.chapters.length * 2, 14, 'fourteen bridges, two per chapter');
-});
-
-test('who is drawn in a beat, and how they are feeling, is what the storyboard cast line says', () => {
-  const expressionName = new Map();
-  for (const character of content.cast) {
-    for (const expression of character.expressions) expressionName.set(`${character.id}/${expression.id}`, expression.artId);
-  }
-
-  for (const authored of storyboard) {
-    const scene = sceneById.get(authored.id);
-    if (scene.visual.artAbsence === 'text-only') {
-      assert.deepEqual(scene.visual.cast, [], `${authored.id} is text-only and places nobody`);
-      continue;
-    }
-    assert.deepEqual(
-      scene.visual.cast.map((entry) => entry.characterId.replace('cast-', '')),
-      authored.cast.map((entry) => entry.figure),
-      `${authored.id} draws different figures from the ones the storyboard places`,
-    );
-
-    for (const [index, entry] of scene.visual.cast.entries()) {
-      const drawn = expressionName.get(`${entry.characterId}/${entry.expressionId}`);
-      const states = authored.cast[index].expressions;
-      if (states.length === 0) continue; // the two cast lines that give states as prose
-      assert.ok(states.includes(drawn), `${authored.id}: ${entry.characterId} is drawn ${drawn}, which the storyboard does not give it`);
-    }
-  }
-});
-
-test('every member line is spoken by its author, and no invented figure is given a position', () => {
-  const role = new Map(content.cast.map((entry) => [entry.id, entry.role]));
-  for (const authored of storyboard) {
-    const scene = sceneById.get(authored.id);
-    const spoken = authored.blocks.filter((block) => block.kind === 'dialogue');
-    assert.equal(scene.dialogue.length, spoken.length, `${authored.id} has a different number of lines`);
-
-    for (const [index, line] of scene.dialogue.entries()) {
-      assert.equal(line.speakerId, `cast-${spoken[index].speaker}`);
-      assert.equal(role.get(line.speakerId), 'member', `${line.id} attributes a position to an invented figure`);
-      assert.equal(line.stance, 'member-endorsed');
-      const record = content.provenance.find((entry) => entry.id === line.provenanceId);
-      assert.ok(record, `${line.id} has no provenance record`);
-      assert.ok(
-        record.note.includes(spoken[index].notes),
-        `${line.id} records "${record.note}", which does not name the notes at ${spoken[index].notes}`,
-      );
-    }
-  }
-});
-
-test('each beat cites the sources the storyboard gives it, and the last beat hands over to the register', () => {
-  for (const authored of storyboard) {
-    const scene = sceneById.get(authored.id);
-    if (authored.id === 's087') {
-      // The source note is followed immediately by the register itself, so it
-      // points at it rather than reprinting thirty-two entries above it.
-      assert.deepEqual(scene.sourceIds, []);
-      assert.equal(scene.detailIds.length, 1);
-      continue;
-    }
-    assert.deepEqual(scene.sourceIds, authored.sources, `${authored.id} cites different sources from the storyboard`);
-  }
-
-  // And every audited source is reachable: either cited on a beat or in the
-  // register, which carries all of them.
-  const cited = new Set(content.scenes.flatMap((scene) => scene.sourceIds));
-  assert.equal(content.sources.length, 32);
-  for (const source of content.sources) {
-    if (['R11', 'R14', 'R22'].includes(source.id)) continue; // cited on their beats too
-    assert.ok(cited.has(source.id) || source.reviewStatus === 'not-accessed', `${source.id} is in the register and on no beat`);
-  }
-});
-
-test('no scaffolding prose survived the transfer', () => {
-  const everything = JSON.stringify(content);
-  for (const phrase of ['Placeholder', 'placeholder', 'fixture', 'stand-in', 'TODO', 'Lorem']) {
-    assert.ok(!everything.includes(phrase), `the content document still contains "${phrase}"`);
-  }
-  assert.equal(content.status.final, true);
 });

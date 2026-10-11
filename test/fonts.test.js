@@ -91,35 +91,47 @@ test('the committed fallback is the licensed DejaVu Sans', () => {
   assert.match(readFileSync(join(repoRoot, 'assets/fonts/DejaVuSans.LICENSE.txt'), 'utf8'), /Bitstream Vera/);
 });
 
-test('every character the essay prints is drawn by a font the hosted page carries', async () => {
-  const { hosted } = await buildOutputs(loadValidContent());
-  const project = codePoints(bytes(PROJECT_FONT));
-  const fallback = codePoints(bytes(FALLBACK_FONT));
-
+/** Every character above the space that an output actually prints. */
+function printedIn(html) {
   const printed = new Set();
-  for (const character of visibleText(hosted)) {
+  for (const character of visibleText(html)) {
     const point = character.codePointAt(0);
     if (point > 32) printed.add(point);
   }
-  assert.ok(printed.size > 60, 'the essay prints a real range of characters');
+  return printed;
+}
 
-  const uncovered = [...printed].filter((point) => !project.has(point) && !fallback.has(point));
-  assert.deepEqual(uncovered, [], 'a character no packaged font can draw would appear as a missing-glyph box');
+test('every character either page prints is drawn by a font the site carries', async () => {
+  const { hosted, sources } = await buildOutputs(loadValidContent());
+  const project = codePoints(bytes(PROJECT_FONT));
+  const fallback = codePoints(bytes(FALLBACK_FONT));
 
-  // The gap the fallback exists to close, named rather than assumed. All three
-  // are punctuation the essay cannot drop: the en dash in number ranges and
-  // dates, the em dash throughout the prose, and the tilde operator inside a
-  // quoted figure from a paper. Changing a quotation to suit a font would be
-  // changing the evidence, so the fallback draws them instead.
-  const missingFromProject = [...printed].filter((point) => !project.has(point)).sort((a, b) => a - b);
-  assert.deepEqual(
-    missingFromProject.map((point) => String.fromCodePoint(point)),
-    ['–', '—', '∼'],
-    'these are the printed characters Futura Handwritten has no glyph for',
-  );
-  for (const point of [0x2013, 0x2014, 0x223c]) {
-    assert.ok(fallback.has(point), `the bundled fallback must draw U+${point.toString(16).toUpperCase()}`);
+  // Both pages, because the register is where the quoted bibliographic detail
+  // lives and is the half most likely to print something unusual.
+  for (const [name, html] of [['the essay', hosted], ['Sources & Credits', sources]]) {
+    const printed = printedIn(html);
+    assert.ok(printed.size > 60, `${name} prints a real range of characters`);
+    const uncovered = [...printed].filter((point) => !project.has(point) && !fallback.has(point));
+    assert.deepEqual(uncovered, [], `${name} prints a character no packaged font can draw`);
   }
+
+  // The gap the fallback exists to close, named rather than assumed. The
+  // approved essay copy stays inside Futura Handwritten; the register does
+  // not, because its page ranges are quoted from the papers themselves.
+  // Respelling a citation to suit a font would be changing the evidence, so
+  // the fallback draws the en dash instead.
+  const missingFromProject = (html) => [...printedIn(html)]
+    .filter((point) => !project.has(point))
+    .sort((a, b) => a - b)
+    .map((point) => String.fromCodePoint(point));
+
+  assert.deepEqual(missingFromProject(hosted), [], 'the approved scene copy needs no fallback glyph');
+  assert.deepEqual(
+    missingFromProject(sources), ['–'],
+    'this is the printed character Futura Handwritten has no glyph for',
+  );
+  assert.match(sources, /pp\. \d+–\d+/, 'the en dash is there because a page range is quoted');
+  assert.ok(fallback.has(0x2013), 'the bundled fallback must draw U+2013');
 });
 
 test('the offline file prints nothing the fallback alone cannot draw', async () => {

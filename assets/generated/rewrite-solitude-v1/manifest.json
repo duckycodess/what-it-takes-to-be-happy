@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-solitude-v1",
+  "ref": "A14",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-solitude-v1",
+  "purpose": "Scene s113 “Boundaries belong in connection” (single): chosen solitude as part of connection rather than a picture of loneliness.",
+  "description": "Fictional Bob reading alone, relaxed posture and content face; one simple book. Empty surrounding space stays transparent, without loneliness symbols.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "76ad2a66c17f54382aeb31fd8dd6cf24438b05eb2ec690f80e9f3038950249a2"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "Bob reads alone with a relaxed expression.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1274,
+    "height": 1235,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      255
+    ],
+    "transparent_corners": true,
+    "sha256": "754ffd09bec8c5f57af6d53a33cdfdbd4b3d864b49235b769d08393d6820ac8a",
+    "alt": "Bob reads alone with a relaxed expression."
+  }
+}

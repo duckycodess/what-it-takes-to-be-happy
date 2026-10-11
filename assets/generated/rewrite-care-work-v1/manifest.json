@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-care-work-v1",
+  "ref": "A13",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-care-work-v1",
+  "purpose": "Scene s112 “Who keeps the relationship going?” (single): the unnoticed organizing work behind a shared meal, carried by a fictional person and never assigned to a member.",
+  "description": "One fictional organizer arranging plates while checking a blank phone. Focused rather than permanently unhappy; other guests need not appear. No gender-coded duty or inferred member household.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "5c583e14a1711e7df5f3d271122d90293d30da9df177e2382db9ac764c8e5bbc"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "A fictional organizer arranges plates while checking a schedule.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "08ab49f902c7c11939c226e7a4b6de218228f9ea1af5bb0dacfb703a88c42829",
+    "alt": "A fictional organizer arranges plates while checking a schedule."
+  }
+}

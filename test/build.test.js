@@ -9,13 +9,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join, relative } from 'node:path';
 
-import { buildOutputs, auditOutputs } from '../src/build/build.js';
-import { auditOfflineHtml, auditBundledLicence, auditInlineArtwork } from '../src/build/verify.js';
-import { PROJECT_FONT, FALLBACK_FONT } from '../src/build/assets.js';
+import { buildOutputs, auditOutputs, selectedImages, ArtworkError } from '../src/build/build.js';
+import { auditSelfContainedHtml, auditArtwork, auditBundledLicence } from '../src/build/verify.js';
+import { PROJECT_FONT, FALLBACK_FONT, FALLBACK_FONT_LICENSE } from '../src/build/assets.js';
 import { createPreviewServer } from '../src/tools/preview.js';
 import { loadValidContent, repoRoot } from './helpers.js';
 
@@ -43,32 +43,190 @@ function visibleText(html) {
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ')
+    // What a reader sees is the decoded character, not the escape the
+    // renderer wrote: an apostrophe in approved copy arrives as `&#39;`.
+    .replace(/&#39;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
-/** The colophon's font credits, which each output owes for its own fonts. */
-const fontCredits = (html) =>
-  [...html.matchAll(/<p class="colophon-font">([^<]*)<\/p>/g)].map((match) => match[1]);
+/** Every `<img>` tag in an output, as written. */
+const images = (html) => [...html.matchAll(/<img\b[^>]*>/gi)].map((match) => match[0]);
 
-const withoutFontCredits = (html) => html.replace(/<p class="colophon-font">[^<]*<\/p>/g, '');
+const attribute = (tag, name) => (tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`)) || [])[1];
 
 test('the build produces outputs that pass every packaging check', async () => {
   const content = loadValidContent();
   const outputs = await buildOutputs(content);
   assert.doesNotThrow(() => auditOutputs(outputs, content));
-  assert.deepEqual(auditOfflineHtml(outputs.offline), []);
+  assert.deepEqual(auditSelfContainedHtml(outputs.offline), []);
 });
 
-test('the offline file embeds the font and the illustration rather than fetching them', async () => {
-  const { offline, fontBytes } = await buildOutputs(loadValidContent());
-  assert.match(offline, /@font-face[\s\S]{0,200}url\(data:font\/ttf;base64,/);
-  assert.match(offline, /<img src="data:image\/png;base64,/);
-  assert.ok(offline.length > 1_000_000, 'the embedded binaries should dominate the file size');
+test('the deployment build refuses artwork whose bytes are not the inspected ones', async () => {
+  // A selected PNG replaced or corrupted in place leaves its manifest and its
+  // content entry agreeing with each other and with the page, so nothing in
+  // the rendered markup can catch it. `npm test` compares these digests; a
+  // deployment runs `npm run build` and nothing else, so the comparison has
+  // to be on that path.
+  //
+  // No real asset is touched. The byte-level fault is reproduced on a copy in
+  // a scratch directory under the git-ignored `dist/`, pointed at by a copy of
+  // the content document, so nothing another suite reads is ever mutated.
+  const content = loadValidContent();
+  const original = content.assets.find((asset) => asset.ref === 'A14').images[0];
+  const scratch = join(DIST, 'artwork-digest-check');
+  const copied = 'dist/artwork-digest-check/scene.png';
+  const bytes = readFileSync(join(repoRoot, original.path));
 
-  // Once. The substitution is textual, and the token used to be spelled out
-  // in the stylesheet's own header comment as well as in the rule, which put
-  // a second megabyte of base64 into every copy of this file.
+  try {
+    mkdirSync(scratch, { recursive: true });
+    writeFileSync(join(repoRoot, copied), bytes);
+
+    const pointed = loadValidContent();
+    pointed.assets.find((asset) => asset.ref === 'A14').images[0].path = copied;
+
+    // The same bytes under a different name still build: the check is on the
+    // digest, not on where the file sits.
+    await assert.doesNotReject(() => buildOutputs(pointed));
+
+    // One byte different is enough, and the build says which file and what it
+    // found rather than failing vaguely.
+    const corrupted = Buffer.from(bytes);
+    corrupted[corrupted.length - 1] ^= 0xff;
+    writeFileSync(join(repoRoot, copied), corrupted);
+
+    await assert.rejects(
+      () => buildOutputs(pointed),
+      (error) => {
+        assert.ok(error instanceof ArtworkError, 'the build should name this as an artwork fault');
+        assert.match(error.message, /is not the artwork that was inspected/);
+        assert.ok(error.message.includes(copied), 'the message names the file');
+        assert.ok(error.message.includes(original.sha256), 'and the digest it was inspected at');
+        return true;
+      },
+    );
+
+    // A file that has gone missing is refused the same way rather than
+    // publishing a page with a drawing that is not there.
+    rmSync(join(repoRoot, copied));
+    await assert.rejects(() => buildOutputs(pointed), ArtworkError);
+  } finally {
+    rmSync(scratch, { recursive: true, force: true });
+  }
+
+  // And the real document, with its real files, still builds.
+  await assert.doesNotReject(() => buildOutputs(loadValidContent()));
+});
+
+test('the deployment build refuses copy the owner did not approve', () => {
+  // The deployment runs `npm run build` and nothing else. Structural
+  // validation cannot tell approved prose from well-formed prose, so a gate
+  // that lived only in `npm run validate` would be one the deployment walks
+  // around. This edits a narration block the way a careful hand would, leaves
+  // the document perfectly schema-valid, and asks both commands.
+  const path = join(repoRoot, 'content/content.json');
+  const original = readFileSync(path, 'utf8');
+  const tampered = JSON.parse(original);
+  tampered.scenes[0].blocks[0].parts[0].text = 'A perfectly well-formed sentence nobody approved.';
+
+  try {
+    writeFileSync(path, `${JSON.stringify(tampered, null, 2)}\n`);
+
+    // Schema-valid: the validator alone is happy with it.
+    const validated = execFileSync(process.execPath, ['src/tools/validate.js'], {
+      cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    assert.match(validated, /^ok {2}content\/content\.json/m, 'the edit is structurally valid, which is the point');
+
+    // And refused by the build, which is the path a deployment takes.
+    let failure = null;
+    try {
+      runBuild();
+    } catch (error) {
+      failure = error;
+    }
+    assert.ok(failure, 'the build published unapproved copy');
+    assert.equal(failure.status, 1, 'the build must exit nonzero');
+    const said = `${failure.stdout ?? ''}${failure.stderr ?? ''}`;
+    assert.match(said, /is not what docs\/redesign\/approved-scene-script\.md transfers to/);
+    assert.match(said, /nothing was built/);
+  } finally {
+    writeFileSync(path, original);
+  }
+
+  // And the untouched document builds, so the gate is not simply always on.
+  assert.doesNotThrow(() => runBuild());
+});
+
+test('the hosted page links the drawings as files, with their boxes reserved', async () => {
+  const content = loadValidContent();
+  const { hosted } = await buildOutputs(content);
+  const selected = new Set(selectedImages(content));
+  const tags = images(hosted);
+
+  assert.ok(tags.length >= 20, `the essay should show every delivered drawing, found ${tags.length}`);
+  assert.deepEqual(auditArtwork(hosted, content), []);
+
+  for (const tag of tags) {
+    const src = attribute(tag, 'src');
+    // A linked file, not 28 MB of base64 in the first response, and not a
+    // resized or regenerated copy of something nobody inspected.
+    assert.ok(selected.has(src), `${src} is not one of the inspected selected assets`);
+    assert.match(tag, /width="\d+"/);
+    assert.match(tag, /height="\d+"/, 'the box is reserved before the image arrives');
+    assert.equal(attribute(tag, 'decoding'), 'async');
+    assert.ok(attribute(tag, 'alt'), 'every drawing carries its approved alternative text');
+  }
+
+  // Exactly one eager image: the opening illustration a reader sees before
+  // scrolling. Making the other 34 eager would pull the whole 21 MB of
+  // artwork over a phone connection to read the first scene.
+  const eager = tags.filter((tag) => attribute(tag, 'loading') !== 'lazy');
+  assert.equal(eager.length, 1, 'only the first illustration loads eagerly');
+  assert.equal(attribute(eager[0], 'src'), content.landing.visual.views[0].ref === 'A01'
+    ? selectedImages(content)[0]
+    : attribute(eager[0], 'src'));
+  assert.equal(tags[0], eager[0], 'and it is the first one in the document');
+});
+
+test('no unselected provenance output is ever served', async () => {
+  const content = loadValidContent();
+  const { hosted, sources, offline } = await buildOutputs(content);
+  for (const [label, html] of [['the essay', hosted], ['the register', sources], ['the export', offline]]) {
+    assert.ok(!html.includes('source-generation'), `${label} serves an output nobody selected`);
+  }
+});
+
+test('the single-file export inlines every drawing instead, and fetches nothing', async () => {
+  const content = loadValidContent();
+  const { offline, hosted } = await buildOutputs(content);
+
+  assert.equal(images(offline).length, images(hosted).length, 'the export shows exactly what the site shows');
+  for (const tag of images(offline)) {
+    assert.match(attribute(tag, 'src'), /^data:image\/png;base64,/);
+  }
+  assert.deepEqual(auditArtwork(offline, content, { inline: true }), []);
+  assert.deepEqual(auditSelfContainedHtml(offline), []);
+  assert.match(offline, /@font-face[\s\S]{0,200}url\(data:font\/ttf;base64,/);
+
+  // Reported, not asserted as a quality: about 28 MB of base64 is what
+  // inlining 21 MB of PNGs costs. This file is retained tooling, and its size
+  // is the reason the hosted site links the same drawings rather than
+  // embedding them. It is not a release gate and no threshold here is proof
+  // of performance.
+  const megabytes = offline.length / 1024 / 1024;
+  assert.ok(megabytes > 20, `the export inlines the artwork; it is ${megabytes.toFixed(1)} MB`);
+});
+
+test('the font is embedded in the export exactly once', async () => {
+  const { offline, fontBytes } = await buildOutputs(loadValidContent());
+  // The substitution is textual, and the token used to be spelled out in the
+  // stylesheet's own header comment as well as in the rule, which put a second
+  // megabyte of base64 into every copy of this file.
   const embedded = offline.split(fontBytes.toString('base64').slice(0, 512)).length - 1;
   assert.equal(embedded, 1, 'the font is embedded exactly once');
 });
@@ -97,11 +255,19 @@ test('the offline file carries the fallback alone and no trace of the project ty
 
   assert.ok(!offline.includes(projectFontBytes.toString('base64').slice(0, 512)), 'none of its bytes');
   assert.ok(!offline.includes(PROJECT_FONT.published), 'no URL pointing at it');
-  assert.ok(!offline.includes(PROJECT_FONT.family), 'and not even its name, in a stack with no face for it');
 
   const faces = [...offline.matchAll(/@font-face\s*\{[^}]*\}/g)];
   assert.equal(faces.length, 1, 'one @font-face, which is the bundled fallback');
   assert.match(faces[0][0], new RegExp(`font-family:\\s*'${FALLBACK_FONT.family}'`));
+
+  // The typeface's name does survive, once: the approved credits say what the
+  // website is set in, and that copy may not be rewritten for an export. What
+  // must not survive is any rule asking a browser for a face this file does
+  // not carry, which would silently fall back and misrepresent the design.
+  const styles = offline.slice(offline.indexOf('<style>'), offline.lastIndexOf('</style>'));
+  assert.ok(!styles.includes(PROJECT_FONT.family), 'no stack asks for a face the file has no bytes for');
+  const named = offline.split(PROJECT_FONT.family).length - 1;
+  assert.equal(named, 1, 'the name appears only in the approved credits');
 });
 
 test('a build that would ship the project typeface offline fails instead', async () => {
@@ -122,44 +288,65 @@ test('a build that would ship the project typeface offline fails instead', async
   }
 });
 
-test('each output credits the fonts it actually carries, and only those', async () => {
+test('the typeface credit is the approved register copy, not a renderer-written notice', async () => {
   const content = loadValidContent();
-  const outputs = await buildOutputs(content);
+  const { hosted, sources, offline } = await buildOutputs(content);
 
-  assert.ok(outputs.hosted.includes('Futura Handwritten by Billy Snyder'), 'the hosted page credits the author');
-  assert.ok(outputs.hosted.includes('Feel free to use this font for anything you want'), 'and quotes the permission it is served under');
-  assert.ok(outputs.hosted.includes('Bitstream Vera'), 'and still carries the fallback licence');
-  assert.ok(!outputs.offline.includes('Billy Snyder'), 'the offline file does not credit a font it does not carry');
+  // The approved script puts credits on Sources & Credits and forbids a
+  // credits footer on the scenes themselves. So the grant is named where the
+  // approved copy names it, and nowhere else.
+  assert.ok(sources.includes('Futura Handwritten'), 'the register credits the typeface');
+  assert.ok(sources.includes('Billy Snyder'), 'and its author');
+  assert.ok(!hosted.includes('Billy Snyder'), 'the essay carries no credits footer');
 
-  const stripped = { ...outputs, hosted: outputs.hosted.replace(/<p class="colophon-font">[^<]*Billy Snyder[^<]*<\/p>/, '') };
-  assert.throws(() => auditOutputs(stripped, content), /does not credit every font it carries/);
+  const credit = content.sourcesPage.credits.map((part) => part.text ?? part.link).join('');
+  assert.ok(credit.includes('Futura Handwritten'), 'and that copy is the approved copy, not written here');
+
+  // The export bundles a different face, so it owes its own notice, which it
+  // carries in addition to the approved credits rather than instead of them.
+  assert.ok(offline.includes(FALLBACK_FONT.noticeAlone));
+  assert.ok(!offline.includes(PROJECT_FONT.notice), 'and claims no grant for a font it does not serve');
 });
 
-test('both outputs carry the complete font licence', async () => {
-  const { hosted, offline, fontLicense } = await buildOutputs(loadValidContent());
+test('every output that bundles the fallback carries its licence, and the site publishes it', async () => {
+  const { offline, fontLicense } = await buildOutputs(loadValidContent());
   assert.match(fontLicense, /Bitstream Vera/, 'the committed licence file should be the real one');
-  assert.deepEqual(auditBundledLicence(offline, fontLicense), [], 'the single offline file is a copy of the font and must carry its notice');
-  assert.deepEqual(auditBundledLicence(hosted, fontLicense), []);
-});
+  assert.deepEqual(auditBundledLicence(offline, fontLicense), [],
+    'the single file is a copy of the font and must carry its notice inside it');
 
-test('optional panels print open without depending on a beforeprint handler', async () => {
-  const { offline } = await buildOutputs(loadValidContent());
-  const print = offline.slice(offline.indexOf('@media print'));
-  assert.match(print, /details::details-content/, 'modern engines need the details content made visible for print');
-  assert.match(print, /details:not\(\[open\]\) > \*:not\(summary\)/, 'older engines need the fallback rule');
+  // The hosted site serves the font as a file, so the notice travels as the
+  // file beside it rather than as prose the approved page does not contain.
+  runBuild();
+  const published = join(DIST, FALLBACK_FONT_LICENSE.published);
+  assert.ok(existsSync(published), 'the licence is published next to the font it covers');
+  assert.match(readFileSync(published, 'utf8'), /Bitstream Vera/);
+  assert.ok(existsSync(join(DIST, FALLBACK_FONT.published)));
 });
 
 test('the hosted page and the offline file read identically apart from their font credits', async () => {
-  const { hosted, offline } = await buildOutputs(loadValidContent());
-  assert.equal(visibleText(withoutFontCredits(offline)), visibleText(withoutFontCredits(hosted)));
+  const content = loadValidContent();
+  const { hosted, sources, offline } = await buildOutputs(content);
 
-  // The one sanctioned difference, asserted rather than assumed: the outputs
-  // carry different fonts, so they owe different credits. Everything that is
-  // part of the argument is covered by the comparison above.
-  assert.deepEqual(fontCredits(hosted).length, 2, 'the hosted page credits the project typeface and the fallback');
-  assert.deepEqual(fontCredits(offline).length, 1, 'the offline file carries the fallback alone');
-  assert.match(fontCredits(hosted)[0], /Futura Handwritten by Billy Snyder/);
-  assert.ok(fontCredits(offline).every((credit) => !credit.includes('Futura')), 'the offline file must not credit a font it does not carry');
+  // The export is one document: the essay and the register together. So the
+  // comparison is against both hosted pages, and what is left over is the
+  // notice the export owes for the face it bundles.
+  const site = visibleText(`${hosted} ${sources}`);
+  const exported = visibleText(offline).replace(FALLBACK_FONT.noticeAlone, '').replace(/\s+/g, ' ').trim();
+
+  // Part by part, because a citation sits inside a run of prose: the text
+  // either side of `[4]` is contiguous, the two together are not.
+  for (const scene of content.scenes) {
+    for (const block of scene.blocks) {
+      for (const part of block.parts) {
+        if (part.text === undefined) continue;
+        const normalised = part.text.replace(/\s+/g, ' ').trim();
+        if (normalised === '') continue;
+        assert.ok(site.includes(normalised), `the site is missing a sentence of ${scene.id}`);
+        assert.ok(exported.includes(normalised), `the export is missing a sentence of ${scene.id}`);
+      }
+    }
+  }
+  assert.ok(exported.includes(content.sourcesPage.sources.at(-1).citation.replace(/\s+/g, ' ').trim()));
 });
 
 test('an output that reaches outside itself fails the build instead of shipping', async () => {
@@ -172,76 +359,21 @@ test('an output that reaches outside itself fails the build instead of shipping'
 test('an output that drops essential content fails the build instead of shipping', async () => {
   const content = loadValidContent();
   const outputs = await buildOutputs(content);
-  const narration = content.scenes[0].narration[0];
-  const broken = { ...outputs, hosted: outputs.hosted.replace(narration, '') };
-  assert.throws(() => auditOutputs(broken, content), /does not carry the complete content/);
+  const sentence = content.scenes[0].blocks[0].parts[0].text;
+  const broken = { ...outputs, hosted: outputs.hosted.replace(sentence, '') };
+  assert.throws(() => auditOutputs(broken, content), /does not carry the complete approved argument/);
 });
 
-test('the single offline file carries every drawing, with nothing left to fetch', async () => {
-  const content = loadValidContent();
-  const { hosted, offline } = await buildOutputs(content);
-
-  const count = (html) => (html.match(/<svg class="scene-art"/g) ?? []).length;
-  const drawn = content.scenes.filter((scene) => scene.visual.artId !== null).length;
-  const landing = content.project.visual.artId ? 1 : 0;
-  assert.equal(count(offline), drawn + landing, 'every drawn beat, plus the landing when it has a drawing');
-  assert.equal(count(offline), count(hosted), 'the offline file draws exactly what the hosted page draws');
-
-  assert.deepEqual(auditInlineArtwork(offline), []);
-  assert.deepEqual(auditOfflineHtml(offline), []);
-
-  // The artwork is markup, not a packaged file: it costs the offline file no
-  // request and no asset, which is the whole reason it is drawn this way.
-  assert.ok(!/<img[^>]*scene-art/.test(offline));
-});
-
-test('a drawing that reached outside itself would fail the build rather than ship', async () => {
+test('an output that drops a drawing or its alternative text fails the build', async () => {
   const content = loadValidContent();
   const outputs = await buildOutputs(content);
-  const broken = {
-    ...outputs,
-    hosted: outputs.hosted.replace('<svg class="scene-art"', '<svg class="scene-art"><image href="https://example.org/art.png"/>'),
-  };
-  assert.throws(() => auditOutputs(broken, content), /reaches outside itself or carries its own lettering/);
-});
+  const first = images(outputs.hosted)[0];
 
-test('the drawing is settled in the markup, and motion is only an entrance on top of it', async () => {
-  const { offline } = await buildOutputs(loadValidContent());
-  const styles = offline.slice(offline.indexOf('<style>'), offline.indexOf('</style>'));
+  const withoutAlt = { ...outputs, hosted: outputs.hosted.replace(first, first.replace(/ alt="[^"]*"/, ' alt=""')) };
+  assert.throws(() => auditOutputs(withoutAlt, content), /does not present the inspected generated artwork correctly/);
 
-  // Nothing hides the condition layer by default, so a scriptless browser, the
-  // print route, and the offline file all show the finished explanation.
-  assert.ok(!/\[data-art-layer=.reveal.\]\s*\{[^}]*(display:\s*none|opacity:\s*0)/.test(styles));
-
-  // The entrance runs only for the beat a reader is actually on, which is also
-  // why Next and Back cannot strand it: the state it settles into is the state
-  // the markup already has.
-  assert.match(styles, /@keyframes art-reveal/);
-  assert.match(styles, /\.scene\[data-current\] \[data-art-layer='reveal'\]\s*\{\s*animation: art-reveal/);
-
-  // Reduced motion keeps the same drawing and drops the movement.
-  const reduced = styles.slice(styles.indexOf('@media (prefers-reduced-motion: reduce)'));
-  assert.match(reduced, /\[data-art-layer='reveal'\][\s\S]*?animation: none !important/);
-  assert.match(reduced, /opacity: 1 !important/);
-
-  // Print does not depend on an event or a view state either.
-  const print = styles.slice(styles.indexOf('@media print'));
-  assert.match(print, /\[data-art-layer='reveal'\][\s\S]*?opacity: 1 !important/);
-});
-
-test('names over a drawing reflow instead of shrinking with it', async () => {
-  const { offline } = await buildOutputs(loadValidContent());
-  const styles = offline.slice(offline.indexOf('<style>'), offline.indexOf('</style>'));
-
-  // The frame is the measuring context, so label type is sized against the
-  // drawing's own width rather than the window's.
-  assert.match(styles, /\.scene-visual-frame\s*\{[^}]*container-type: inline-size/);
-  assert.match(styles, /\.art-label\s*\{[^}]*font-size: clamp\(/);
-  assert.match(styles, /@container \(max-width: [\d.]+rem\)/);
-
-  // A name is positioned from the drawing's own anchor and sits above the head.
-  assert.match(styles, /\.art-label\s*\{[^}]*left: var\(--art-x/);
-  assert.match(styles, /\.art-label\s*\{[^}]*transform: translate\(-50%, -100%\)/);
+  const resized = { ...outputs, hosted: outputs.hosted.replace(first, first.replace(/src="[^"]*"/, 'src="assets/generated/resized/opening.png"')) };
+  assert.throws(() => auditOutputs(resized, content), /does not present the inspected generated artwork correctly/);
 });
 
 test('building twice from the same commit produces byte-identical output', () => {
@@ -259,7 +391,8 @@ test('the offline export writes only the single file and leaves the hosted outpu
   const output = runBuild(['--only=offline']);
   const after = hashTree(DIST);
 
-  assert.match(output, /Offline export only/);
+  assert.match(output, /dist\/offline\.html is retained tooling, not a release gate/);
+  assert.ok(!/dist\/index\.html\s+\d+ bytes/.test(output), 'an offline export writes no hosted file');
   assert.deepEqual(after, before, 'an offline export changes nothing else in dist/');
   assert.ok(existsSync(join(DIST, 'index.html')), 'the hosted entry point survives an offline export');
 });
@@ -275,7 +408,7 @@ test('the preview server serves the built site and refuses to escape it', async 
     const page = await fetch(`${base}/`);
     assert.equal(page.status, 200);
     assert.equal(page.headers.get('content-type'), 'text/html; charset=utf-8');
-    assert.match(await page.text(), /<h1 id="landing-title">/);
+    assert.match(await page.text(), /<h1 id="landing-title"[^>]*>What it takes to be happy<\/h1>/);
 
     const styles = await fetch(`${base}/styles.css`);
     assert.equal(styles.status, 200);

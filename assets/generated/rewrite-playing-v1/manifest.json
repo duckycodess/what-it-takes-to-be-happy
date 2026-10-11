@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-playing-v1",
+  "ref": "A05",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-playing-v1",
+  "purpose": "Scenes s096 “A hobby can offer several things” (single) and s100 “Who ranks pleasures?” (pair with A03, view label “Playing”): a freely chosen hobby supplying competence, autonomy and relatedness at once.",
+  "description": "TJ and fictional Bob sit together with simple game controllers; relaxed expressive faces. One small unlettered screen off to the side, no game logo or generated UI. Preserve both full figures.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "generation-prompt.txt",
+      "sha256": "6ecc4b31d0d1e8ea56744c410a1ddf366dff265581068544dac18a09bcce90a4"
+    },
+    {
+      "path": "identity-edit-prompt.txt",
+      "sha256": "4f12b08e301d0e8dce59ad4914bb1184574ce2c1b54f7c3e8dcf4566738cc530"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.23,
+        "y_fraction": 0.15
+      }
+    ],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "TJ and Bob enjoy playing a game together.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "format": "PNG",
+    "mode": "RGBA",
+    "transparent_background": true,
+    "alpha_extrema": [
+      0,
+      254
+    ],
+    "transparent_corners": true,
+    "sha256": "3edb56bcb3ff705b098ac73898c174ce5687b3d93faf8e66fd50be9e66d82e83",
+    "alt": "TJ and Bob enjoy playing a game together."
+  },
+  "unselected_source_generation": {
+    "path": "source-generation.png",
+    "sha256": "8e6fee038d19c6ff2e8fe3ebdbe3e4ebae2330bae7394a1810aad210410aecf2",
+    "reason": "Initial member identity drift corrected by the recorded built-in edit; use selected scene.png only"
+  }
+}

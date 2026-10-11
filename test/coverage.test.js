@@ -1,14 +1,18 @@
 /**
- * The site against the coverage matrix and the source register.
+ * The site against the coverage matrix.
  *
- * `docs/coverage.md` is the audit of what this essay covers: which beat answers
- * which part of the assignment, where each lens is explained, applied and
- * questioned, and which note every member position comes from. `docs/research.md`
- * is the audit of how far each source was actually checked.
+ * `docs/coverage.md` is the audit of what this essay covers: where each part
+ * of the assignment is answered, which scenes each chapter holds, who speaks
+ * in it, which source supports which claim, and which drawing appears where.
+ * That is where the editorial promises were made.
  *
- * Those two documents are where the editorial promises were made. These checks
- * ask whether the published document keeps them, rather than whether it looks
- * as though it does.
+ * A matrix is worth nothing if it drifts from the thing it describes, and it
+ * drifts silently: nobody re-reads a table of 45 rows. So every figure in it
+ * is recomputed here from `content/content.json`, and a row that no longer
+ * matches the published document fails rather than quietly misdescribing it.
+ *
+ * `test/register.test.js` is the other half, and checks the published source
+ * entries against the audit in `docs/research.md`.
  */
 
 import test from 'node:test';
@@ -16,194 +20,226 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { SOURCE_EVIDENCE_LEVELS } from '../src/content/schema.js';
 import { loadValidContent, repoRoot } from './helpers.js';
-import { readStoryboard } from './support/storyboard.js';
 
 const content = loadValidContent();
 const coverage = readFileSync(join(repoRoot, 'docs/coverage.md'), 'utf8');
-const storyboard = readStoryboard();
+
 const sceneById = new Map(content.scenes.map((scene) => [scene.id, scene]));
+const readingOrder = content.chapters.flatMap((chapter) => chapter.sceneIds);
 
-/** Every beat identifier the coverage matrix names anywhere. */
-const beatsNamedInCoverage = new Set([...coverage.matchAll(/`(s\d{3})`/g)].map((match) => match[1]));
+/** The section under a `## ` heading, up to the next one. */
+function section(heading) {
+  const start = coverage.indexOf(`## ${heading}`);
+  assert.ok(start > 0, `docs/coverage.md no longer has a "${heading}" section`);
+  const rest = coverage.slice(start + heading.length + 3);
+  const end = rest.indexOf('\n## ');
+  return end < 0 ? rest : rest.slice(0, end);
+}
 
-test('every beat the coverage matrix names is in the published essay', () => {
-  assert.ok(beatsNamedInCoverage.size > 60, `the matrix should reference most beats, found ${beatsNamedInCoverage.size}`);
-  for (const id of beatsNamedInCoverage) {
+/**
+ * A section's table rows, as arrays of trimmed cells, without the header.
+ *
+ * The header is the line immediately above the `| --- |` separator, so it is
+ * found rather than guessed: a table whose columns were renamed still has its
+ * body read correctly, and a header is never counted as content.
+ */
+function rows(text) {
+  const lines = text.split('\n');
+  const body = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index].trim();
+    if (!/^\|.*\|$/.test(line)) continue;
+    if (/^\|[\s-]+\|[\s|-]*$/.test(line)) continue;
+    if (/^\|[\s-]+\|[\s|-]*$/.test((lines[index + 1] ?? '').trim())) continue; // the header
+    body.push(line.slice(1, -1).split(' | ').map((cell) => cell.trim()));
+  }
+  return body;
+}
+
+const ids = (cell) => [...cell.matchAll(/`(s\d{3})`/g)].map((match) => match[1]);
+const bare = (cell) => cell.replace(/`/g, '').trim();
+
+/** Scenes a brief reference is actually drawn in, in reading order. */
+function scenesUsing(ref) {
+  return readingOrder.filter((id) => sceneById.get(id).visual.views.some((view) => view.ref === ref));
+}
+
+test('every scene the matrix names is in the published essay', () => {
+  const named = new Set([...coverage.matchAll(/`(s\d{3})`/g)].map((match) => match[1]));
+  assert.equal(named.size, 45, `the matrix should name every scene, found ${named.size}`);
+  for (const id of named) {
     assert.ok(sceneById.has(id), `docs/coverage.md names ${id}, which the site does not carry`);
   }
 });
 
-test("the assignment's four parts are each answered on the main path", () => {
-  // The matrix lists where each part is answered; the beats it names must
-  // actually carry prose rather than being a reference nobody reads.
-  const rows = [...coverage.matchAll(/^\| (What do you think of happiness\?|What constitutes happiness\?|Is it achievable in the society we have today\?|If not, how could it be achieved\?) \| ([^|]+) \|/gm)];
-  assert.equal(rows.length, 4, 'the matrix should still answer four parts');
+test("the assignment's four parts are each answered on the main reading path", () => {
+  const table = rows(section("The assignment's four parts"));
+  assert.equal(table.length, 4, 'the matrix should still answer four parts');
 
-  for (const [, part, where] of rows) {
-    const named = [...where.matchAll(/`(s\d{3})`/g)].map((match) => match[1]);
-    assert.ok(named.length > 0, `${part} names no beat`);
+  for (const [part, where, answer] of table) {
+    assert.match(part, /\?$/, `"${part}" is not a question`);
+    const named = ids(where);
+    assert.ok(named.length > 0, `${part} names no scene`);
     for (const id of named) {
       const scene = sceneById.get(id);
       assert.ok(scene, `${part} names ${id}, which does not exist`);
-      assert.ok(scene.mainPath.length > 0, `${part} is answered at ${id}, which reads as nothing`);
+      // The scene it points at has to read as something: a row that answered
+      // the assignment at an empty scene would be an answer in name only.
+      assert.ok(scene.blocks.length > 0, `${part} is answered at ${id}, which reads as nothing`);
     }
+    assert.ok(answer.length > 40, `${part} has no answer written beside it`);
   }
 });
 
-test('every lens is explained, applied and questioned, and attached to the beats that carry it', () => {
-  // The matrix's lens table is the audit; the content document is where the
-  // treatment is written. Both halves have to hold.
-  const named = new Set(storyboard.flatMap((scene) => scene.conceptIds ?? []));
-  const used = new Set(content.scenes.flatMap((scene) => scene.conceptIds));
+test('the chapter table is the chapters the document has', () => {
+  const table = rows(section('The eight chapters'));
+  assert.equal(table.length, 8);
 
-  for (const concept of content.concepts) {
-    assert.equal(concept.status, 'drafted', `${concept.id} is named without a treatment`);
-    assert.ok(used.has(concept.id), `${concept.id} is treated but attached to no beat, so no reader would meet it`);
-    for (const field of ['explanation', 'application', 'question']) {
-      assert.match(concept[field], /\S/, `${concept.id} has no ${field}`);
-    }
-    // A concept that cites a source may only cite one the register carries.
-    for (const sourceId of concept.sourceIds) {
-      assert.ok(content.sources.some((source) => source.id === sourceId), `${concept.id} cites ${sourceId}, which is not in the register`);
-    }
-  }
-  assert.equal(named.size, 0, 'the storyboard parser reports concepts per scene, not as identifiers');
+  table.forEach(([id, title, range, count, koj, tj, vier], index) => {
+    const chapter = content.chapters[index];
+    assert.equal(bare(id), chapter.id);
+    assert.equal(title, chapter.title);
+    assert.deepEqual(ids(range), [chapter.sceneIds[0], chapter.sceneIds.at(-1)]);
+    assert.equal(Number(count), chapter.sceneIds.length);
+
+    const blocks = chapter.sceneIds.flatMap((sceneId) => sceneById.get(sceneId).blocks);
+    const spoken = (speaker) => blocks.filter((block) => block.speaker === speaker).length;
+    assert.deepEqual(
+      [Number(koj), Number(tj), Number(vier)],
+      [spoken('Koj'), spoken('TJ'), spoken('Vier')],
+      `${chapter.id} does not have the spoken lines docs/coverage.md says it has`,
+    );
+  });
+
+  const narration = content.scenes.flatMap((scene) => scene.blocks).filter((block) => block.kind === 'narration');
+  assert.ok(
+    coverage.includes(`The remaining ${narration.length} blocks are narration`),
+    `the matrix states a narration count that is not ${narration.length}`,
+  );
 });
 
-test('a concept that cites a source does not claim more than that source was checked for', () => {
-  const byId = new Map(content.sources.map((source) => [source.id, source]));
-  for (const concept of content.concepts) {
-    for (const sourceId of concept.sourceIds) {
-      const source = byId.get(sourceId);
-      const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
-      if (level.requiresSupportedClaim) continue;
-      // A concept resting on a work nobody could open has to say so somewhere
-      // in its own treatment, since the source itself supports nothing.
-      const treatment = `${concept.explanation} ${concept.application} ${concept.question}`.toLowerCase();
-      assert.match(
-        treatment,
-        /could not|not open|did not read|we read|rather than|instead|secondary|entry|overview/,
-        `${concept.id} rests on ${sourceId}, which was never opened, and does not say so`,
-      );
-    }
-  }
+test('the scene index is every scene, in reading order, with its real layout', () => {
+  const table = rows(section('Scenes'));
+  assert.equal(table.length, 45);
+
+  table.forEach(([id, title, layout], index) => {
+    const scene = sceneById.get(readingOrder[index]);
+    assert.equal(bare(id), scene.id, 'the index is in reading order');
+    assert.equal(title, scene.title, `${scene.id} is listed under a different title`);
+    assert.equal(layout, scene.visual.layout, `${scene.id} is listed with the wrong layout`);
+  });
 });
 
-test('every member position in the notes reaches the reader, in that member\'s own voice', () => {
-  // The matrix lists each member's distinct positions with the note lines they
-  // come from. Every one of those line references must appear on a published
-  // line spoken by that member, or in a provenance record behind one.
-  const sections = coverage.split(/^### /m).filter((block) => /^(Koj|TJ|Vier) —/.test(block));
-  assert.equal(sections.length, 3, 'the matrix should still list three contributors');
+test('every source row names the entry, its register identity and where it is cited', () => {
+  const table = rows(section('Research'));
+  assert.equal(table.length, 26);
 
-  const spoken = new Map(); // member -> set of note references published for them
-  for (const scene of content.scenes) {
-    for (const line of scene.dialogue) {
-      const record = content.provenance.find((entry) => entry.id === line.provenanceId);
-      if (!record) continue;
-      const member = line.speakerId.replace('cast-', '');
-      if (!spoken.has(member)) spoken.set(member, new Set());
-      for (const number of record.note.matchAll(/\d+/g)) spoken.get(member).add(Number(number[0]));
-    }
-  }
-
-  for (const section of sections) {
-    const member = section.slice(0, section.indexOf(' ')).toLowerCase();
-    const rows = [...section.matchAll(/^\| (?!-)([^|]+) \| ([\d–\-, ]+) \| ([^|]+) \|$/gm)]
-      .filter(([, position]) => !/^-+$/.test(position.trim()));
-    assert.ok(rows.length > 5, `${member} should have a table of positions`);
-
-    for (const [, position, , where] of rows) {
-      const beats = [...where.matchAll(/`(s\d{3})`/g)].map((match) => match[1]);
-      assert.ok(beats.length > 0, `"${position.trim()}" names no beat`);
-      for (const id of beats) {
-        assert.ok(sceneById.get(id), `"${position.trim()}" names ${id}, which does not exist`);
+  const citedIn = new Map();
+  for (const id of readingOrder) {
+    for (const block of sceneById.get(id).blocks) {
+      for (const part of block.parts) {
+        if (!part.citation) continue;
+        if (!citedIn.has(part.citation)) citedIn.set(part.citation, []);
+        if (!citedIn.get(part.citation).includes(id)) citedIn.get(part.citation).push(id);
       }
     }
   }
 
-  // And nobody published a line for a member with no note behind it.
-  for (const [member, references] of spoken) {
-    assert.ok(references.size > 0, `${member} speaks with no note reference recorded`);
-  }
-});
-
-test('the spoken-line distribution the matrix admits to is the distribution the site has', () => {
-  const stated = [...coverage.matchAll(/^\| `(c\d)` \| (\d+) \| (\d+) \| (\d+) \|$/gm)];
-  assert.equal(stated.length, 6, 'the matrix should still state the distribution per chapter');
-
-  for (const [, chapterId, koj, tj, vier] of stated) {
-    const chapter = content.chapters.find((entry) => entry.id === chapterId);
-    const lines = chapter.sceneIds.flatMap((id) => sceneById.get(id).dialogue);
-    const count = (member) => lines.filter((line) => line.speakerId === `cast-${member}`).length;
+  table.forEach(([number, register, where, level], index) => {
+    const source = content.sourcesPage.sources[index];
+    assert.equal(number, `[${source.number}]`);
+    assert.equal(bare(register), source.sourceId, `entry ${source.number} is listed under another identity`);
+    assert.equal(bare(level), source.auditStatus, `${source.sourceId} is listed at another audit level`);
     assert.deepEqual(
-      [count('koj'), count('tj'), count('vier')],
-      [Number(koj), Number(tj), Number(vier)],
-      `${chapterId} does not have the spoken lines docs/coverage.md says it has`,
+      ids(where), citedIn.get(source.number),
+      `${source.sourceId} is listed as cited somewhere it is not`,
     );
-  }
+  });
 });
 
-test('an invented friend appears where the matrix says, and never speaks', () => {
-  const section = coverage.slice(coverage.indexOf('## Fictional friends'), coverage.indexOf('## Who speaks'));
-  const rows = [...section.matchAll(/^\| `([a-z]+)` \| [^|]+ \| ([^|]+) \|$/gm)];
-  assert.equal(rows.length, 5, 'five invented figures');
+test('every artwork row is an inspected asset, used where the matrix says', () => {
+  const table = rows(section('Artwork'));
+  assert.equal(table.length, content.assets.length);
+  assert.equal(table.length, 20);
 
-  for (const [, figure, where] of rows) {
-    const beats = [...where.matchAll(/`(s\d{3})`/g)].map((match) => match[1]);
-    const drawn = content.scenes
-      .filter((scene) => scene.visual.cast.some((entry) => entry.characterId === `cast-${figure}`))
-      .map((scene) => scene.id);
-    assert.deepEqual(drawn, beats, `${figure} is drawn in different beats from the ones the matrix lists`);
+  table.forEach(([ref, id, where, cutouts, labels], index) => {
+    const asset = content.assets[index];
+    assert.equal(bare(ref), asset.ref);
+    assert.equal(bare(id), asset.id);
+    assert.equal(Number(cutouts), asset.images.length, `${asset.ref} has a different number of cutouts`);
 
-    const spoke = content.scenes.flatMap((scene) => scene.dialogue).filter((line) => line.speakerId === `cast-${figure}`);
-    assert.deepEqual(spoke, [], `${figure} is invented and may not hold a position`);
-  }
-});
-
-test('a source is shown at the level the register recorded, and an unopened one supports nothing', () => {
-  const research = readFileSync(join(repoRoot, 'docs/research.md'), 'utf8');
-  for (const source of content.sources) {
-    const level = SOURCE_EVIDENCE_LEVELS[source.reviewStatus];
-    assert.ok(level, `${source.id} has an evidence level the contract does not define`);
-    assert.ok(research.includes(`### ${source.id} —`), `${source.id} has no evidence record in docs/research.md`);
-
-    if (level.requiresSupportedClaim) {
-      assert.match(source.supportedClaim, /\S/);
-      assert.match(source.evidenceBasis, /\S/);
-    } else {
-      assert.equal(source.supportedClaim, null, `${source.id} was not read, so it supports nothing`);
-    }
-    assert.match(source.limitation, /\S/, `${source.id} must carry its limitation to the reader`);
-  }
-
-  // The register's own rollup, against the published document.
-  const tally = content.sources.reduce((counts, source) => {
-    counts[source.reviewStatus] = (counts[source.reviewStatus] ?? 0) + 1;
-    return counts;
-  }, {});
-  assert.deepEqual(tally, {
-    'verified-full': 13, 'verified-abstract': 11, 'verified-locator': 3, 'not-accessed': 5,
-  }, 'the published levels no longer match the audit rollup in docs/research.md');
-});
-
-test('a work nobody could open is introduced with a visible caveat, not quietly cited', () => {
-  const unopened = content.sources.filter((source) => source.reviewStatus === 'not-accessed').map((source) => source.id);
-  const order = content.chapters.flatMap((chapter) => chapter.sceneIds);
-  const introduced = new Set();
-
-  for (const id of order) {
-    const scene = content.scenes.find((entry) => entry.id === id);
-    for (const sourceId of scene.sourceIds.filter((entry) => unopened.includes(entry))) {
-      if (introduced.has(sourceId)) continue; // said once, where the reader first meets it
-      introduced.add(sourceId);
+    const expected = scenesUsing(asset.ref);
+    const listed = ids(where);
+    if (where.includes('`landing`')) {
       assert.ok(
-        scene.limitations.length > 0,
-        `${scene.id} is where a reader first meets ${sourceId}, which nobody could open, and it carries no visible caveat`,
+        content.landing.visual.views.some((view) => view.ref === asset.ref),
+        `${asset.ref} is listed on the landing but is not drawn there`,
       );
     }
+    assert.deepEqual(listed, expected, `${asset.ref} is listed in scenes it is not drawn in`);
+
+    const names = asset.labels.map((label) => label.text);
+    assert.equal(labels, names.length > 0 ? names.join(', ') : '—', `${asset.ref} carries different labels`);
+  });
+});
+
+test('an invented figure appears where the matrix says, and never speaks', () => {
+  const table = rows(section('Fictional figures'));
+  assert.equal(table.length, 5, 'five kinds of invented figure');
+
+  for (const [figure, where, what] of table) {
+    const named = ids(where);
+    assert.ok(named.length > 0, `${figure} is listed as drawn nowhere`);
+    for (const id of named) {
+      const scene = sceneById.get(id);
+      assert.ok(scene, `${figure} is listed in ${id}, which does not exist`);
+      assert.ok(scene.visual.views.length > 0, `${figure} is listed in ${id}, which carries no drawing`);
+    }
+    assert.ok(what.length > 20, `${figure} is listed without saying what it illustrates`);
   }
-  assert.equal(introduced.size, unopened.length, 'every unopened source is cited somewhere a reader reaches');
+
+  // The contract admits three speakers, so no invented figure can hold a
+  // position. This is the check that would catch one being given a line.
+  const speakers = new Set(content.scenes
+    .flatMap((scene) => scene.blocks)
+    .map((block) => block.speaker)
+    .filter(Boolean));
+  assert.deepEqual([...speakers].sort(), ['Koj', 'TJ', 'Vier']);
+});
+
+test('the optional comparisons are the two the document has, with their approved labels', () => {
+  const table = rows(section('Optional interactions'));
+  const optional = content.scenes.filter((scene) => scene.visual.control !== null);
+  assert.equal(table.length, optional.length);
+  assert.equal(table.length, 2);
+
+  table.forEach(([id, control, states], index) => {
+    const scene = optional[index];
+    assert.equal(bare(id), scene.id);
+    assert.match(control, /aria-pressed/, 'the control is described as the accessible control it is');
+    assert.deepEqual(
+      states.split(',').map((state) => bare(state)),
+      scene.visual.control.labels,
+      `${scene.id} is listed with labels the document does not use`,
+    );
+  });
+
+  // And the claim the section ends on: nothing essential is behind a control.
+  assert.ok(coverage.includes('Nothing essential is reachable only by interacting.'));
+  for (const scene of optional) {
+    assert.ok(scene.blocks.length > 1, `${scene.id} would read as nothing without its comparison`);
+  }
+});
+
+test('the matrix describes this build, not the superseded one', () => {
+  // The 87-beat argument used s001-s087 and a vocabulary of beats, concepts,
+  // provenance records and detail panels. A matrix still carrying any of that
+  // is describing a site that no longer exists.
+  assert.ok(!/`s0[0-8][0-7]`/.test(coverage.replace(/`s08[89]`/g, '')), 'a superseded beat identifier survives');
+  for (const term of ['conceptId', 'detailIds', 'mainPath', 'provenanceId', 'reading-time']) {
+    assert.ok(!coverage.includes(term), `the matrix still refers to ${term}`);
+  }
+  assert.ok(coverage.includes('docs/storyboard.md') || coverage.includes('storyboard.md'),
+    'the superseded build is recorded as historical rather than deleted');
 });

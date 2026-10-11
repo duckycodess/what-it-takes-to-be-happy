@@ -6,22 +6,27 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 
 ## What the automated suite already checks
 
-`npm run check` runs the content validation, the automated suite, and the build. The build itself refuses to write an output that drops essential content or an offline file that depends on anything it does not carry.
+`npm run check` runs the content validation, the automated suite, and the build. The build itself refuses to write an output that drops essential content, serves a drawing nobody inspected, or produces an offline file that depends on anything it does not carry.
 
 | Suite | What it covers |
 | --- | --- |
-| `test/validate.test.js`, `test/reorder.test.js`, `test/register.test.js` | Contract rules against a deliberately broken fixture, reordering beats by stable identifier, and the content document agreeing with the source register. |
-| `test/render.test.js`, `test/build.test.js`, `test/cli.test.js` | Essential-content coverage, no authoring provenance in any output, the packaging audits, build determinism, and the preview server. |
-| `test/reader.test.js` | The reader's journeys: authored order, both boundaries, chapter revisiting, deep links to a beat, a chapter, and a source, the browser Back button with and without the History API, focus on every move, optional panels keeping the reader's own choices, and print opening them and handing the choices back. |
-| `test/browser.test.js` | The same journeys in real Chrome against the real `dist/offline.html`, plus the questions only a browser can answer, plus the typography against the real hosted build with its stylesheet, script, and both fonts linked beside it. Skips with a stated reason where no browser is installed. |
-| `test/fonts.test.js` | Each committed font file's size and SHA-256, and — read from both `cmap` tables — that every character the essay prints is one a packaged face can draw. |
-| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, the focus ring; and that nothing depending on the project typeface sits outside the region the offline file drops. |
+| `test/transfer.test.js` | The content document against [the approved script](redesign/approved-scene-script.md) by content hash: every reader-visible sentence in order, speaker labels as elements rather than text, citation normalisation to `[n]`/`Source n`, the approved Sources & Credits copy, the recomputed word count, and that no renderer-written prose and no superseded scaffolding survived. |
+| `test/validate.test.js`, `test/cli.test.js` | Every contract rule, each proved by breaking one thing in the real document; and the command's own located, named reporting against a deliberately broken v2 fixture. |
+| `test/reorder.test.js` | That links are by identifier, that registries with no authored order may be stored in any order, that source numbers follow first appearance, and that the approved reading order is now the argument rather than a presentational choice. |
+| `test/register.test.js` | The published 26-entry page against the 32-entry audit in `docs/research.md`: destination, audit level, the six entries held back, and that a work nobody could open never reaches a reader. |
+| `test/coverage.test.js` | Every figure in [the coverage matrix](coverage.md) recomputed from the document: the four assignment parts, the chapters, all 45 scenes and layouts, the sources and where they are cited, the 20 assets and their labels, the invented figures, and the two optional comparisons. |
+| `test/render.test.js`, `test/art.test.js` | The markup: the landing carrying only approved copy, scenes in authored order, frameless art with reserved boxes and lazy loading after the first illustration, name anchors in both manifest generations, pair cutouts and their view labels, and the two comparisons. |
+| `test/reader.test.js` | The reader's journeys in a scripted DOM: authored order, both boundaries, chapter revisiting, scene and continuous views, deep links, the browser Back button with and without the History API, the optional comparisons, and leaving for a source and coming back to the same place in the same mode. |
+| `test/browser.test.js` | The same site in real Chrome, built and linked as it is served. See below. Skips with a stated reason where no browser is installed. |
+| `test/build.test.js` | The packaging audits, the artwork actually linked, build determinism, the offline export, and the preview server over real HTTP. |
+| `test/fonts.test.js` | Each committed font file's size and SHA-256, and — read from both `cmap` tables — that every character either page prints is one a packaged face can draw. |
+| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, the focus ring on every target the script focuses; and that nothing depending on the project typeface sits outside the region the offline file drops. |
+| `test/measure.test.js` | `./tools/count-main-path.sh` against the document's own recorded figure and rule, the per-chapter breakdown, and that the counted text is the reader's own sentences with titles, speaker labels, citation markers and the register excluded. |
 | `test/dom.test.js` | The test harness itself, so the reader suite cannot pass on a harness that answers wrongly. |
-| `test/transfer.test.js` | The content document against `docs/storyboard.md`: every beat identifier and chapter order, every main-path paragraph, line and caveat in the authored order, every cast placement and expression, every source citation, and that the two documented differences — the landing split and the fourteen authored bridges — are the only ones. |
-| `test/coverage.test.js` | The content document against `docs/coverage.md` and `docs/research.md`: the beats each assignment part is answered at, every lens explained/applied/questioned and attached to a beat, the spoken-line distribution per chapter, where each invented figure is drawn and that none of them speaks, the evidence-level rollup, and that a work nobody could open is introduced with a visible caveat. |
-| `test/measure.test.js` | The landing's reading estimate against a recount of the published main path, and that no source is reachable only from inside an optional panel. |
 
 ### Checked in a real browser
+
+*(Historical: this records the superseded 87-beat build. What the current site was checked with is under **What the rewrite integration checked** below.)*
 
 Run on 9 October 2026, headless Chrome 154 on Windows, driven from WSL. The reader's journeys ran against `dist/offline.html` opened through a `file://` URL with nothing served; the typography ran against the hosted build with its linked files beside it. All eleven browser tests ran; none skipped.
 
@@ -54,6 +59,8 @@ That the browser suite drives `dist/offline.html` is a convenience, not a requir
 Not yet checked, and still owned by the later packages: a real phone and a real desktop browser, a screen reader, the typeface arriving over the deployment's own network, and anything about the finished prose.
 
 ## What the artwork package checked, and how
+
+*(Historical: the browser-drawn artwork described here was replaced by generated illustrations on 11 October 2026. The record is kept as provenance.)*
 
 
 Checked on 9 October 2026, after the drawings were added. `npm run check` covers the drawing system
@@ -97,6 +104,8 @@ not is below.
 No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every source file instead.
 
 ## What the integration package checked, and how
+
+*(Historical: this records the 87-beat essay, superseded by the approved rewrite on 11 October 2026.)*
 
 Checked on 10 October 2026, after the storyboard's prose and the drawings were wired into the
 content document. Everything below was run in this working environment; what could not be run here
@@ -260,6 +269,189 @@ Both are fixed, and measured rather than argued:
   to the layout, by applying them on screen.
 - **The deployment.** Nothing here has been served over the deployment's own network, and no
   production build exists. That is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s.
+
+## What the rewrite integration checked, and how
+
+Checked on 11 October 2026, after [the approved 45-scene script](redesign/approved-scene-script.md)
+was transferred into the website and all nineteen asset handoffs were consumed. Everything below
+was run in this working environment; what could not be run here is named at the end rather than
+left out.
+
+### Automated
+
+`npm run check` passes: **187 tests, 0 failures, 0 skipped** — Chrome is installed here, so the
+whole browser suite ran rather than skipping. It takes about five minutes, most of it spent
+rendering the 45.7 MB single-file export several times over.
+
+`node src/tools/transfer.js --check` reports the content document identical to a rebuild from the
+approved script, whose SHA-256 is
+`a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f`. `node src/tools/validate.js`
+reports `8 chapter(s), 45 scene(s), 26 source(s), 20 generated asset(s), 4137 main-path words`.
+`./tools/count-main-path.sh` recomputes the same 4,137 words — about 17 to 21 minutes at 250 and 200
+words a minute, which is the order of magnitude the owner's handoff quotes and which **no reader is
+shown**. `./tools/check-storyboard.sh` passes; it is now scoped to the superseded storyboard's own
+corpus, because a storyboard check that reached into the rewrite would report the rewrite as a
+storyboard fault.
+
+`npm run build` writes `dist/` twice to byte-identical output: 21.3 MB hosted, of which the first
+page is 66 KB of HTML plus one eagerly loaded illustration, and a 45.7 MB `dist/offline.html` that
+inlines every drawing as base64. That file is retained tooling. Its size is reported rather than
+treated as evidence of anything; it is the reason the hosted site links the same files instead.
+
+### Looked at, in a real browser
+
+Headless Chrome on Windows, driven from WSL, against the built hosted site — `index.html` and
+`sources.html` with their stylesheet, script, both fonts and all 22 selected PNGs beside them at the
+paths they are linked at, so every drawing and both faces are fetched over real requests. All
+twenty-two browser tests ran; none skipped.
+
+- **The phone journey at 375px**: the landing shows the landing; Begin, Next, chapter shortcuts, the
+  continuous view and the way back all behave; a scene arrives at the top of the window; every
+  visible control measures at least 44 CSS pixels tall.
+- **Reflow at 360px**, measured on the landing, on each of the 45 scenes in turn, in continuous
+  reading, and on the register, where the longest unbroken runs are: no horizontal overflow
+  anywhere.
+- **Focus**: moving to a scene is painted, not only announced — `outline-style: solid` with a
+  non-zero width on the scene Begin opened, on the scene Next moved to, on the scene a chapter link
+  jumped to, and on the register entry a citation landed on. Arrow keys walk the scenes. The skip
+  link moves focus to the essay and leaves the reader on their scene.
+- **Every selected drawing loads** at its inspected dimensions, and every name is browser text over
+  its own head, inside the image, unclipped and not overlapping another name, checked at 375px and
+  1200px. A prop label sits at its own anchor.
+- **Both optional comparisons** switch between two drawn states: `aria-pressed` follows, no
+  paragraph disappears, Next stays available, the control is a native button in the tab order, and
+  the unshown drawing is fetched only when a reader asks for it.
+- **Citation returns at the first, a middle and the final citing scene**: the link carries the scene
+  and the reading mode, the entry it names is on screen and ringed, the return control is the
+  approved "Back to reading", and following it comes back to the scene that was left. Continuous
+  reading restores all 45 scenes.
+- **The real face**: the browser fetched `assets/fonts/FuturaHandwritten.ttf`, reported one
+  `FontFace` for `Futura Handwritten` with `status: "loaded"` and `display: "swap"`, and the same
+  sentence measures the project typeface's width rather than the fallback's — so the essay is drawn
+  with it, not merely told to use it. The rules the browser parsed ask for it from this site, with
+  no `local()` and no third party. The prose holds its measure at both widths.
+- **Reduced motion**: with `--force-prefers-reduced-motion=reduce` the browser reported the
+  preference, nothing on the page has an animation name, and the drawings are simply there. There is
+  no entrance to suppress.
+
+#### Two things that needed new machinery
+
+**A reader with no scripting.** `--blink-settings=scriptEnabled=false` turns scripting off but also
+stops `--dump-dom` producing anything, and `--disable-javascript` is ignored by current builds. The
+page is now loaded in a sandboxed frame instead, which denies it scripting while letting the host
+read its document: no `js` class, no view ever applied, all 45 scenes and all eight chapter titles
+visible, the script-only controls not shown, both states of both comparisons simply present, the
+register an ordinary link, and 20,000+ characters of readable text.
+
+**Print.** Emulating the print medium needs a DevTools connection, which a Windows browser driven
+from WSL cannot be given. So the page is printed for real: Chrome prints the hosted essay to PDF
+with the print stylesheet applied, and the page count is read from the file. The essay prints to
+20+ pages and the register to 3+. That rules out the failure the print rules exist to prevent — a
+printed page carrying only whichever scene was on screen — without claiming the pagination has been
+looked at.
+
+### What this found
+
+Four defects, all fixed in this change, none of which any earlier assertion had caught:
+
+1. **The reader test suite could not report its own results.** A focus assertion compared
+   `document.activeElement` to `document.documentElement`; the fixture started it as `null`, and
+   formatting the failed comparison expanded a cyclic DOM until the process exhausted 3.5 GB. The
+   fixture now answers as a browser does, and focus is read as a short name instead of an element.
+2. **`Read again` and `Next` were never hidden.** `.button { display: inline-block }` is an author
+   rule and beats the browser's own `[hidden] { display: none }` whatever its specificity, so both
+   were on screen for the whole essay.
+3. **Focus moved invisibly.** `[tabindex="-1"]:focus { outline: none }` removed the ring from
+   exactly the elements the script focuses.
+4. **The controls were 39px tall on a phone**, under the 44px a fingertip reliably hits.
+
+A fifth was in the browser harness itself: its driver was injected as an inline script at the end of
+the body, which runs *during parsing* and therefore before the page's own deferred script. Every
+unframed measurement was being taken from a page whose reader script had not run — which is why an
+assertion that a deep link takes no focus had been passing. The driver now waits for `load`, and
+that assertion was corrected to what a browser actually does: it focuses the fragment's target
+itself, because a scene is focusable so the script can send a reader to it.
+
+### What the exact-head review found
+
+An automated review of the pushed head, plus an independent reviewer, raised four further
+defects. All are fixed, each with a regression test, and all four were things assertions had
+agreed with rather than caught.
+
+1. **The pair layout was not a pair.** `.art-view` is `display: contents`, so the four items —
+   image, label, image, label — were auto-placed in DOM order and the first label took the cell the
+   second drawing was meant for. All four `pair` scenes rendered as one column of drawings with a
+   caption beside each, on screen and on paper. Measured in Chrome at 1200px before the fix: the
+   drawings at `top: 212` and `top: 476`, the first label at `left: 596` beside the first drawing.
+   Each item now has an explicit cell. Measured after: both drawings at `top: 212`, `left: 200` and
+   `left: 596`, each label directly under its own drawing — and the same with the print rules
+   rendered, checked by rewriting the print block to `@media all` and measuring it.
+2. **The landing offered reading controls.** `Read continuously` and `Print` sat in the fixed bar
+   before Begin had been pressed, so a first-time visitor could switch view or print the essay
+   without meeting it. The approved landing is the title, the opening drawing, Begin and Sources &
+   Credits. Both controls are now hidden in the landing view and return when there is something to
+   read. Sources & Credits stays, because it is on that approved list.
+3. **The shared Sources & Credits control discarded the reader's place.** Only numbered citations
+   carried `from` and `view`, so following the shared control left `Back to reading` pointed at a
+   bare `index.html`. That is worst at `s132`, which cites nothing and where the shared control is
+   the only route to the register. The control now carries the scene and the reading mode exactly as
+   a citation does. The landing's own copy is deliberately left bare — nothing has been read yet —
+   and the single-file export is left alone, because its register is in the same document.
+4. **A count was wrong.** Twenty assets supply **22** selected PNGs, not 21: `A16` and `A18` each
+   carry two cutouts. Corrected in the renderer, the build, the audit and this document.
+
+One nit was taken as well: a citation's visible label and accessible name are now read from that
+source's own register entry rather than composed again in the renderer. The validator already
+requires the two to agree with the number, so the markup is unchanged and the approved copy has one
+origin instead of two.
+
+### Not checked, and by what
+
+- **A real phone and a real desktop browser.** Headless Chrome at a 360-pixel layout viewport is not
+  a device: it says nothing about touch accuracy, a software keyboard, an address bar that grows and
+  shrinks, or how the page feels in the hand.
+- **A screen reader.** The structure is there — one accessible name per scene, semantic controls,
+  `aria-pressed` on the comparisons, one named landmark rather than two with the same name — but no
+  assistive technology has read it.
+- **Print pagination, as pages.** The page count was read from a PDF; nobody has looked at where the
+  breaks fall or whether a drawing is orphaned from the sentence it belongs to.
+- **Contrast as perceived**, rather than computed from the declared tokens.
+- **The deployment, as a deployment.** Vercel builds a **Preview** for each pushed commit on this
+  branch, and one exists for the reviewed head with a `success` status. It was **not**
+  browser-validated: the preview URL is behind the project's access protection and answers an
+  anonymous request with a Vercel login redirect, so nothing was exercised against it.
+
+  The repository has two environments, `Preview` and `production`. **One production deployment
+  record exists** — id `6978921582`, for commit `6423ece` ("chore: disable commit and pull request
+  attribution"), created 2026-10-10T09:32:17Z — and it carries **zero statuses**: nothing ever
+  reported success, failure, or an environment URL for it. So there is a production deployment
+  *record*, and there is no production deployment anyone has seen work. No production URL has been
+  verified, and none is served from this branch's work.
+
+  Everything checked above was checked against the locally built hosted tree, opened through
+  `file://` after being written to a directory — Chrome fetches the fonts and the artwork over real
+  requests either way, but it is not the deployment's own network. A Windows browser driven from
+  WSL cannot reach a loopback port inside it, so serving the tree to it was not available; what the
+  preview server returns over real HTTP is covered in `test/build.test.js`. Release verification
+  against a deployed URL is [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s,
+  and nothing here anticipates it.
+- **Anything about the approved prose itself**, which is the owner's to review and was approved
+  before this integration began.
+
+`node ~/.claude/skills/impeccable/scripts/detect.mjs` over the runtime files reports no findings on
+this revision.
+
+Relative links were checked across the **active** documents in `docs/`. The check deliberately stops
+at `docs/redesign/`, which holds the immutable approved handoff: that material is imported
+unaltered, and `redesign-scene-blueprint.md` records six targets that cannot resolve here — five
+absolute paths on the authoring machine where the opening art was inspected, and one link to the
+script under the name it was written at before it was imported as `approved-scene-script.md`. Those
+are an accurate record of where that work was done. Repairing them would edit an immutable handoff,
+so they are left exactly as delivered and excluded from the check rather than silently counted as
+passing.
+
+No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every
+source file instead.
 
 ## Scenarios for the finished essay
 

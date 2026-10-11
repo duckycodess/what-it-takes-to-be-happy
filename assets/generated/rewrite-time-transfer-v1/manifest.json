@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "id": "rewrite-time-transfer-v1",
+  "ref": "A16",
+  "requesting_issue": 15,
+  "request_branch": "codex/issue-15",
+  "request_origin": "Approved full-script art brief and matching docs/art-requests.json on PR #16",
+  "source_base_commit": "71576db5d1672a33195e51766fe90c3bfeb1cdc3",
+  "asset_branch": "codex/art-rewrite-time-transfer-v1",
+  "purpose": "Scene s115 “Buying time moves the work” (pair, view labels “Time gained” then “Work performed”): bought time reappearing as someone else's labour; the pair layout needs two separately usable cutouts.",
+  "description": "Two fictional people in separate transparent groups: one resting, the other doing dishes. Distinguish through pose and browser labels, not a rich/poor caricature. Keep task tools fully visible. Supply separately usable cutouts for pair layout.",
+  "status": "complete",
+  "generation_status": "complete",
+  "approval_status": "owner_brief_approved_provider_selected_and_inspected",
+  "owner_inspected_selected_output": false,
+  "implementation_ready": true,
+  "method": "Built-in image generation; targeted built-in identity edit where recorded. Selected PNG bytes copied unchanged; no manual drawing or pixel editing.",
+  "reference_assets": [
+    "assets/concepts/stickman-character-sheet-v1.png",
+    "assets/generated/rewrite-opening-v1/opening.png"
+  ],
+  "prompt_records": [
+    {
+      "path": "rest-prompt.txt",
+      "sha256": "a91d1dd27e175eb6eb0d95eb7b37c9bdfe05f9a6d1a608a033264328e636e8b3"
+    },
+    {
+      "path": "worker-prompt.txt",
+      "sha256": "b0fe2212131f111328acd07402741fedbf52ba52ba7b2c81b6e801633d16bbd5"
+    }
+  ],
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "coordinate_system": "Fractions of selected image box, unmodified aspect ratio; text uses translate(-50%, -100%). All labels are browser text.",
+    "name_anchors": [],
+    "prop_or_dialogue_anchors": [],
+    "inspection_image_css_width": 336,
+    "integration_requirement": "Recheck labels and faces at final phone/desktop/pair widths; these inspected provider anchors do not replace application review."
+  },
+  "alt": "First cutout: A fictional person rests. Second cutout: A fictional worker does the dishes.",
+  "motion": "none",
+  "inspection": {
+    "record": "browser-inspection.json",
+    "provider_inspected": true
+  },
+  "handoff": {
+    "asset_only": true,
+    "integration_authorized": true,
+    "authorization": "Owner full-script approval and overnight execution; canonical #15 is queued",
+    "instruction": "Consume asset commit into own issue branch, mark real request consumed, run actual checks and independently review exact final pushed head. Asset handoff alone is not completed scene/application review."
+  },
+  "selected_images": [
+    {
+      "path": "rest.png",
+      "width": 1536,
+      "height": 1024,
+      "format": "PNG",
+      "mode": "RGBA",
+      "transparent_background": true,
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "transparent_corners": true,
+      "sha256": "b314bfd7c0dc84b1f50b280ebf007569f6f81f0af6ab855ac46e9f1793f5d97e",
+      "alt": "A fictional person rests."
+    },
+    {
+      "path": "worker.png",
+      "width": 1374,
+      "height": 1145,
+      "format": "PNG",
+      "mode": "RGBA",
+      "transparent_background": true,
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "transparent_corners": true,
+      "sha256": "879d31f56883b6d25364610942fce3735df5cb9f7dcbfb7a879b7cb483744fce",
+      "alt": "A fictional worker does the dishes."
+    }
+  ]
+}

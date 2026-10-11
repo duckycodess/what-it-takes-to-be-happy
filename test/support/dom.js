@@ -172,6 +172,14 @@ class Element {
     return null;
   }
 
+  /** `node.contains(node)` is true in a browser, so it is true here. */
+  contains(other) {
+    for (let node = other; node; node = node.parentNode) {
+      if (node === this) return true;
+    }
+    return false;
+  }
+
   querySelectorAll(selector) {
     const groups = parseSelector(selector);
     const found = [];
@@ -366,6 +374,9 @@ export function parseHtml(html) {
 
   document.documentElement = rootHolder.children.find((child) => child.localName === 'html') || rootHolder;
   document.root = rootHolder;
+  document.body = document.documentElement.children.find((child) => child.localName === 'body')
+    || document.documentElement;
+  document.activeElement = document.body;
   return document;
 }
 
@@ -408,7 +419,11 @@ class HtmlDocument {
   constructor() {
     this.nodeType = 9;
     this.documentElement = null;
+    this.body = null;
     this.root = null;
+    // A browser never answers `null` here: with nothing focused the answer is
+    // the body, which is what `test/browser.test.js` measures in Chrome. The
+    // parser sets it as soon as there is a body to point at.
     this.activeElement = null;
     this.lastScrolledInto = null;
     this.listeners = new Map();
@@ -452,10 +467,17 @@ export function openDocument(html, options = {}) {
     historyEntries: [],
     scrollPositions: [],
     historyRefusals: 0,
+    prints: 0,
   };
 
   const location = {
     _hash: options.hash || '',
+    // A citation link carries the originating scene and reading mode in a
+    // query, and the Sources & Credits page reads them back from here. The
+    // essay writes it too: the fragment is where the reader is and the query
+    // is how they are reading, so a reloaded or shared URL opens both.
+    search: options.search || '',
+    pathname: options.pathname || '/index.html',
     get hash() { return this._hash; },
     set hash(value) {
       const next = String(value).startsWith('#') ? String(value) : `#${value}`;
@@ -466,7 +488,7 @@ export function openDocument(html, options = {}) {
       // reason it is a usable fallback when `pushState` is refused.
       // Assigning the fragment carries no state object, which is exactly
       // why the script has to be able to infer the view without one.
-      page.historyEntries.push({ hash: next, state: null });
+      page.historyEntries.push({ hash: next, search: this.search, state: null });
       window.dispatchEvent({ type: 'hashchange' });
     },
   };
@@ -476,17 +498,33 @@ export function openDocument(html, options = {}) {
     replaceState(state, title, url) { apply(url, state, true); },
   };
 
+  /**
+   * What `pushState`/`replaceState` do to the address.
+   *
+   * A browser resolves the given URL against the current one and updates the
+   * whole address, not only its fragment: `?view=continuous#s105` changes the
+   * query *and* the fragment, and `/index.html#s105` clears the query. The
+   * script relies on both, so this models both rather than treating every
+   * argument as a fragment.
+   */
   function apply(url, state, replace) {
     const next = String(url);
-    location._hash = next.startsWith('#') ? next : `#${next}`;
-    const entry = { hash: location._hash, state: state ?? null };
+    const hashAt = next.indexOf('#');
+    const hash = hashAt < 0 ? '' : next.slice(hashAt);
+    const before = hashAt < 0 ? next : next.slice(0, hashAt);
+
+    if (before.startsWith('?')) location.search = before;
+    else if (before !== '') location.search = '';          // a path clears the query
+    if (hash !== '' || before !== '') location._hash = hash;
+
+    const entry = { hash: location._hash, search: location.search, state: state ?? null };
     if (replace) page.historyEntries[page.historyEntries.length - 1] = entry;
     else page.historyEntries.push(entry);
   }
 
   // Loading a document with a fragment is itself a history entry, so Back
   // from the first move returns to the deep link rather than to nothing.
-  page.historyEntries.push({ hash: location._hash, state: null });
+  page.historyEntries.push({ hash: location._hash, search: location.search, state: null });
 
   if (options.history === false) {
     delete history.pushState;
@@ -512,6 +550,7 @@ export function openDocument(html, options = {}) {
     dispatchEvent(event) { return Element.prototype.dispatchEvent.call(this, event); },
     listeners: new Map(),
     scrollTo(x, y) { page.scrollPositions.push([x, y]); },
+    print() { page.prints += 1; },
     matchMedia: () => ({ matches: false, addEventListener() {} }),
   };
 
@@ -538,12 +577,6 @@ export function openDocument(html, options = {}) {
     page.settle();
   };
 
-  /** What a reader does to a panel: the state changes, then `toggle` arrives. */
-  page.togglePanel = (element, open) => {
-    element.open = open;
-    page.settle();
-  };
-
   /**
    * The browser's Back button. Both events are dispatched because which one a
    * real browser fires depends on whether the entry was pushed or came from
@@ -554,6 +587,7 @@ export function openDocument(html, options = {}) {
     page.historyEntries.pop();
     const entry = page.historyEntries[page.historyEntries.length - 1];
     location._hash = entry.hash;
+    if (entry.search !== undefined) location.search = entry.search;
     window.dispatchEvent({ type: 'popstate', state: entry.state });
     window.dispatchEvent({ type: 'hashchange' });
     page.settle();
@@ -565,17 +599,16 @@ export function openDocument(html, options = {}) {
     page.settle();
   };
 
-  page.print = () => {
-    window.dispatchEvent({ type: 'beforeprint' });
-    page.settle();
-    const snapshot = page.panels().map((panel) => panel.open);
-    window.dispatchEvent({ type: 'afterprint' });
-    page.settle();
-    return snapshot;
+  /** The reader pressing the Print control. */
+  page.pressPrint = () => {
+    page.click(document.querySelector('[data-print]'));
+    return page.prints;
   };
 
   /* --- Reading the page -------------------------------------------------- */
 
+  /** The address as a reader would copy it: query and fragment together. */
+  page.address = () => `${location.search}${location.hash}`;
   page.view = () => document.documentElement.getAttribute('data-view');
   page.currentScene = () => document.querySelector('[data-scene][data-current]');
   page.currentSceneId = () => {
@@ -583,7 +616,25 @@ export function openDocument(html, options = {}) {
     return scene ? scene.getAttribute('data-scene') : null;
   };
   page.scenes = () => document.querySelectorAll('[data-scene]');
-  page.panels = () => document.querySelectorAll('details.detail');
+  page.comparisons = () => document.querySelectorAll('.art-comparison');
+
+  /**
+   * What holds focus, and what was last scrolled to, as short strings.
+   *
+   * Both answer with a name rather than an element on purpose. Comparing two
+   * elements with `assert.equal` reads well until it fails, at which point
+   * the runner formats a cyclic document into the diff and the test process
+   * dies of heap exhaustion instead of reporting the mismatch. `'body'` is
+   * what a browser reports when nothing is focused, which is the same answer
+   * `probe.activeId()` collects from Chrome in `test/browser.test.js`.
+   */
+  const name = (element) => {
+    if (!element) return null;
+    if (element === document.body) return 'body';
+    return element.getAttribute('id') || element.getAttribute('data-scene') || element.localName;
+  };
+  page.focused = () => name(document.activeElement);
+  page.scrolledInto = () => name(document.lastScrolledInto);
   page.find = (selector) => document.querySelector(selector);
   page.text = (selector) => {
     const element = document.querySelector(selector);
