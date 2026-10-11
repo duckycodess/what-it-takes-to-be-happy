@@ -9,7 +9,8 @@
     "behaviour": [
       "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/core/Scratcher.js",
       "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/main.js",
-      "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/css/slides.css"
+      "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/css/slides.css",
+      "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/js/core/Button.js"
     ]
   },
   "files": [
@@ -23,14 +24,14 @@
       "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/ui/scratch.png"
     },
     {
-      "id": "sound-in",
+      "id": "scratch-in",
       "path": "assets/ui/trust/scratch_in.mp3",
       "mediaType": "audio/mpeg",
       "sha256": "55f6c0cd71e4511e252b1a25666852a334609af0dfe3b6ed1ca27d0101a6969b",
       "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/scratch_in.mp3"
     },
     {
-      "id": "sound-out",
+      "id": "scratch-out",
       "path": "assets/ui/trust/scratch_out.mp3",
       "mediaType": "audio/mpeg",
       "sha256": "5c2c714e463521538b5ef097cb9e7ea8e634a9a3eedfdfcbcdf5705ec1e1f987",
@@ -44,6 +45,27 @@
       "height": 100,
       "sha256": "c5c2907c3767851f10270ede0fde2419bf740aa043516352aaf1b947ee062f1e",
       "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/ui/sound.png"
+    },
+    {
+      "id": "click-1",
+      "path": "assets/ui/trust/button1.mp3",
+      "mediaType": "audio/mpeg",
+      "sha256": "344e23206f642bea14c1cac02133fac6e7d7f7d054ee102e6d6ab91fd840ac03",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/button1.mp3"
+    },
+    {
+      "id": "click-2",
+      "path": "assets/ui/trust/button2.mp3",
+      "mediaType": "audio/mpeg",
+      "sha256": "826ca1285a8d3f8f5202921501a2b700d2ff0da188115cfa44f94e06816a0485",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/button2.mp3"
+    },
+    {
+      "id": "click-3",
+      "path": "assets/ui/trust/button3.mp3",
+      "mediaType": "audio/mpeg",
+      "sha256": "8a64cf9ca9a04a1bfa1e059cc25b13c9c4302460cdf5feedbccef0d643c31733",
+      "source": "https://github.com/ncase/trust/blob/6ec45d73befdb922bd40654dd1c1c903a953562f/assets/sounds/button3.mp3"
     }
   ]
 }

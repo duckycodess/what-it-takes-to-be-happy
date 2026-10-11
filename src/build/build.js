@@ -200,7 +200,7 @@ export async function buildOutputs(content) {
     scriptUrl: 'reader.js',
     sourcesHref: 'sources.html',
     sourceHref: hostedSourceHref,
-    scratch: trustUrls(false),
+    trust: trustUrls(false),
   };
   const hosted = renderEssay(content, hostedOptions);
   const sources = renderSourcesPage(content, { ...hostedOptions, essayUrl: 'index.html' });
@@ -225,7 +225,7 @@ export async function buildOutputs(content) {
     sourceHref: (number) => `#${sourceAnchor(number)}`,
     fontLicense,
     fontNotice: FALLBACK_FONT.noticeAlone,
-    scratch: trustUrls(true),
+    trust: trustUrls(true),
   });
 
   return { hosted, sources, hostedCss, script, offline, projectFontBytes, fontBytes, fontLicense, artwork, uiArtwork, trust };

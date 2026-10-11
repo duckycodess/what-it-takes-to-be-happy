@@ -152,7 +152,7 @@ test('a move is scribbled over, made underneath, then rubbed out to reveal the n
     'the repeated press did not move twice, and nothing is left behind');
 });
 
-test('sound starts on, with each scratch recording 100 ms into its phase, and the speaker turns it off', { skip }, () => {
+test('sound starts on, buttons click and each scratch starts 100 ms into its phase, quietly, until the speaker turns it off', { skip }, () => {
   const { value } = runInChrome({ html: hosted, files: scratchFiles, width: 1280,
     flags: ['--autoplay-policy=no-user-gesture-required'], driver: `
     var report = { played: [] };
@@ -162,7 +162,7 @@ test('sound starts on, with each scratch recording 100 ms into its phase, and th
     // Recorded rather than heard. A page opened from disk cannot fetch the
     // recordings, so it plays them through audio elements.
     HTMLMediaElement.prototype.play = function () {
-      report.played.push({ file: this.src.split('/').pop(), at: Math.round(performance.now() - started), column: scratcher.style.backgroundPosition.split(' ')[0] });
+      report.played.push({ file: this.src.split('/').pop(), at: Math.round(performance.now() - started), column: scratcher.style.backgroundPosition.split(' ')[0], volume: this.volume });
       return Promise.resolve();
     };
     probe
@@ -193,9 +193,15 @@ test('sound starts on, with each scratch recording 100 ms into its phase, and th
   assert.equal(value.name, 'Sound', 'the approved label is the accessible name');
   assert.deepEqual(value.icon, { image: true, x: '0px', width: 40 }, "Trust's speaker, its waves half");
   assert.deepEqual(value.button, { border: 'none', background: 'rgba(0, 0, 0, 0)', width: 44 }, 'an icon, not a boxed button');
-  assert.deepEqual(value.played.slice(0, 2).map((entry) => [entry.file, entry.column]),
+  const clicks = value.played.filter((entry) => entry.file.startsWith('button'));
+  const scratches = value.played.filter((entry) => entry.file.startsWith('scratch'));
+  assert.equal(clicks.length, 1, 'Begin clicks once');
+  assert.match(clicks[0].file, /^button[123]\.mp3$/, "one of Trust's three button clicks");
+  assert.ok(clicks[0].at < 20, `the click is immediate, at ${clicks[0].at} ms`);
+  assert.deepEqual(scratches.map((entry) => [entry.file, entry.column]),
     [['scratch_in.mp3', '0%'], ['scratch_out.mp3', '-100%']]);
-  const [scribble, rub] = value.played.map((entry) => entry.at);
+  assert.deepEqual([...new Set(value.played.map((entry) => entry.volume))], [0.3], 'every clip plays at 30% of full volume');
+  const [scribble, rub] = scratches.map((entry) => entry.at);
   assert.ok(scribble >= 100 && scribble < 140, `scratch_in at ${scribble} ms`);
   assert.ok(rub >= 900 && rub < 960, `scratch_out at ${rub} ms`);
   assert.equal(value.turnedOff, 'false');

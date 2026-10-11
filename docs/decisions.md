@@ -262,7 +262,7 @@ On review of PR #21 the owner asked for Nicky Case's own erase-and-reveal transi
 [The Evolution of Trust](https://github.com/ncase/trust) rather than an original imitation of it. This
 replaces the generated paper wipe and refines two sentences above:
 
-- **Assets.** The reference's sprite sheet, its two scratch recordings and its speaker sprite are copied unchanged into
+- **Assets.** The reference's sprite sheet, its two scratch recordings, its three button clicks and its speaker sprite are copied unchanged into
   [`assets/ui/trust/`](../assets/ui/trust/README.md), pinned to a commit and hash-checked by the
   build. The reference is CC0. They are served from this site, never fetched from elsewhere. The
   generated `scratch-paper.png` stays in the repository as provenance but is no longer published.
@@ -277,8 +277,10 @@ replaces the generated paper wipe and refines two sentences above:
   completes it immediately.
 - **Sound.** On by default, as in Trust, until the reader turns it off; this replaces "start OFF"
   above. Nothing plays before the reader's first press, tap or key, which also starts audio, and the
-  choice is not saved. The two original recordings replace the synthesised scratch and are fetched as
-  the page loads; the button click stays synthesised. Reduced motion still moves instantly with no
+  choice is not saved. Every sound is now Trust's own: the two scratches for transitions and, as in
+  its `Button.js`, one of its three button clicks at random for each button press, replacing the
+  synthesised click. All are fetched as the page loads and played at 30% of their recorded
+  volume, because at full volume they were too loud beside reading. Reduced motion still moves instantly with no
   overlay.
 - **Sound control.** Trust's own speaker (waves on, cross off) replaces the bordered `Sound` button,
   still fixed at the top right because the footer holds only Back and Next. Trust's white "on" half is

@@ -32,73 +32,69 @@
 
   // Sound, on until the reader turns it off, as in The Evolution of Trust. No
   // autoplay, remote samples or saved choice: nothing is heard before the
-  // reader presses, taps or types something. Buttons tick with a short
-  // synthesised click; page transitions play Trust's own scratch recordings.
-  // A browser that cannot play sound still offers the complete essay.
+  // reader presses, taps or types something. Every sound is one of Trust's
+  // own recordings: a button press plays one of its three clicks at random,
+  // and a page transition plays its two scratches. A browser that cannot play
+  // sound still offers the complete essay.
   var soundButton = document.querySelector('[data-sound]');
   var soundOn = true;
   var audio = null;
   var AudioContextType = window.AudioContext || window.webkitAudioContext;
-  var scratcher = document.querySelector('[data-scratcher]');
-  var scratchBytes = {};
-  var scratchSounds = {};
+  var OfflineAudioContextType = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  var decoder = null;
+  var CLIPS = ['scratch-in', 'scratch-out', 'click-1', 'click-2', 'click-3'];
+  // Trust plays its recordings at full volume, which is loud beside a page
+  // of reading. Every clip is played at this fraction of it instead.
+  var SOUND_VOLUME = 0.3;
+  var clipBytes = {};
+  var clips = {};
   var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  function sound() {
-    if (!soundOn || !audio) return;
-    try {
-      var start = audio.currentTime;
-      var gain = audio.createGain();
-      gain.connect(audio.destination);
-      var duration = 0.055;
-      var source = audio.createOscillator();
-      source.frequency.setValueAtTime(650, start);
-      source.frequency.exponentialRampToValueAtTime(280, start + duration);
-      source.connect(gain);
-      gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(0.018, start + 0.008);
-      gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-      source.onended = function () { source.disconnect(); gain.disconnect(); };
-      source.start(start);
-      source.stop(start + duration);
-    } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
+  function clipSource(name) {
+    return soundButton && soundButton.getAttribute('data-clip-' + name);
   }
   /* A page opened from disk cannot fetch its neighbours, and a browser
      without Web Audio cannot decode them; both get plain audio elements. */
-  function scratchElement(phase) {
-    var url = scratcher && scratcher.getAttribute('data-sound-' + phase);
+  function clipElement(name) {
+    var url = clipSource(name);
     if (!url || !window.Audio) return;
     var element = new window.Audio(url);
     element.preload = 'auto';
-    scratchSounds[phase] = element;
+    element.volume = SOUND_VOLUME;
+    clips[name] = element;
   }
-  /* Fetched as the page loads, so the first move has its sound ready rather
-     than racing a download that only started when it was asked for. */
-  function preloadScratchSounds() {
-    ['in', 'out'].forEach(function (phase) {
-      var url = scratcher && scratcher.getAttribute('data-sound-' + phase);
+  /* Fetched as the page loads, so the first press or move has its sound
+     ready rather than racing a download that only started when asked for. */
+  function preloadClips() {
+    CLIPS.forEach(function (name) {
+      var url = clipSource(name);
       if (!url) return;
-      if (!window.fetch || !AudioContextType) { scratchElement(phase); return; }
+      if (!window.fetch || !AudioContextType) { clipElement(name); return; }
       window.fetch(url)
         .then(function (response) {
           if (!response.ok) throw new Error('Sound unavailable');
           return response.arrayBuffer();
         })
-        .then(function (data) { scratchBytes[phase] = data; decodeScratchSounds(); })
-        .catch(function () { scratchElement(phase); });
+        .then(function (data) { clipBytes[name] = data; decodeClips(); })
+        .catch(function () { clipElement(name); });
     });
   }
-  /* Decoding needs the audio context, which waits for the reader's first
-     gesture; whichever of the two arrives second does the decoding. */
-  function decodeScratchSounds() {
-    if (!audio) return;
-    Object.keys(scratchBytes).forEach(function (phase) {
-      var data = scratchBytes[phase];
-      delete scratchBytes[phase];
+  /* Decoded straight away by an offline context, which needs no gesture, so
+     a clip is ready before the press that plays it. A browser without one
+     decodes in the audio context the first gesture opens. */
+  function decodeClips() {
+    if (!decoder && !audio && OfflineAudioContextType) {
+      try { decoder = new OfflineAudioContextType(1, 1, 44100); } catch (error) { decoder = null; }
+    }
+    var context = decoder || audio;
+    if (!context) return;
+    Object.keys(clipBytes).forEach(function (name) {
+      var data = clipBytes[name];
+      delete clipBytes[name];
       try {
-        var decoding = audio.decodeAudioData(data, function (buffer) { scratchSounds[phase] = buffer; },
-          function () { scratchElement(phase); });
+        var decoding = context.decodeAudioData(data, function (buffer) { clips[name] = buffer; },
+          function () { clipElement(name); });
         if (decoding && decoding.catch) decoding.catch(function () {});
-      } catch (error) { scratchElement(phase); }
+      } catch (error) { clipElement(name); }
     });
   }
   /* Browsers keep sound shut until the reader does something, and some shut
@@ -109,7 +105,7 @@
     try {
       if (!audio) {
         audio = new AudioContextType();
-        decodeScratchSounds();
+        decodeClips();
       }
       if (audio.state === 'suspended') {
         var resumed = audio.resume();
@@ -117,8 +113,9 @@
       }
     } catch (error) { audio = null; }
   }
-  function playScratch(phase) {
-    var clip = soundOn && scratchSounds[phase];
+  /** Plays a clip that has loaded; one that has not is skipped, never late. */
+  function play(name) {
+    var clip = soundOn && clips[name];
     if (!clip) return;
     try {
       if (clip.play) {
@@ -129,23 +126,33 @@
       }
       if (!audio) return;
       var source = audio.createBufferSource();
+      var gain = audio.createGain();
+      gain.gain.value = SOUND_VOLUME;
       source.buffer = clip;
-      source.connect(audio.destination);
-      source.onended = function () { source.disconnect(); };
+      source.connect(gain);
+      gain.connect(audio.destination);
+      source.onended = function () { source.disconnect(); gain.disconnect(); };
       source.start();
     } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
   }
-  preloadScratchSounds();
+  /** As Trust's Button.js: one of its three clicks, chosen at random. */
+  function click() {
+    play('click-' + (1 + Math.floor(Math.random() * 3)));
+  }
+  function playScratch(phase) {
+    play('scratch-' + phase);
+  }
+  preloadClips();
   ['pointerdown', 'touchend', 'keydown', 'click'].forEach(function (type) {
     document.addEventListener(type, unlockAudio, true);
   });
   if (soundButton) soundButton.addEventListener('click', function () {
     soundOn = !soundOn;
     soundButton.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
-    if (soundOn) { unlockAudio(); sound(); }
+    if (soundOn) { unlockAudio(); click(); }
   });
   document.addEventListener('click', function (event) {
-    if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) sound();
+    if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) click();
   });
 
   /** Reads one parameter out of a query string without URLSearchParams. */
@@ -205,6 +212,7 @@
   var launcher = document.querySelector('.rail-launcher');
   var landing = document.getElementById('landing');
   var essayBody = document.querySelector('.essay-body');
+  var scratcher = document.querySelector('[data-scratcher]');
 
   /* --- The scratch transition --------------------------------------------
      Nicky Case's erase-and-redraw from The Evolution of Trust

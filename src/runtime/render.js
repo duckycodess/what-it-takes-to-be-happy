@@ -458,10 +458,13 @@ function context(content, options) {
 
 /**
  * The Sound control: Trust's speaker, on until the reader turns it off. The
- * approved label is its accessible name rather than visible text.
+ * approved label is its accessible name rather than visible text. It carries
+ * where Trust's recordings are, for the script to load.
  */
-function renderSoundToggle(label) {
-  return `<button type="button" class="sound-toggle js-only" data-sound aria-pressed="true"><span class="sound-icon" aria-hidden="true"></span><span class="sound-label">${esc(label ?? 'Sound')}</span></button>`;
+const TRUST_CLIPS = ['scratch-in', 'scratch-out', 'click-1', 'click-2', 'click-3'];
+function renderSoundToggle(label, trust) {
+  const clips = trust ? TRUST_CLIPS.map((id) => ` data-clip-${id}="${esc(trust[id])}"`).join('') : '';
+  return `<button type="button" class="sound-toggle js-only" data-sound aria-pressed="true"${clips}><span class="sound-icon" aria-hidden="true"></span><span class="sound-label">${esc(label ?? 'Sound')}</span></button>`;
 }
 
 /**
@@ -470,9 +473,9 @@ function renderSoundToggle(label) {
  * reading area between moves. Without its files there is no overlay, and
  * moves happen at once.
  */
-function renderScratcher(scratch) {
-  if (!scratch) return '';
-  return `<div class="scratcher js-only" data-scratcher data-sheet="${esc(scratch.sheet)}" data-sound-in="${esc(scratch['sound-in'])}" data-sound-out="${esc(scratch['sound-out'])}" aria-hidden="true" hidden></div>`;
+function renderScratcher(trust) {
+  if (!trust) return '';
+  return `<div class="scratcher js-only" data-scratcher data-sheet="${esc(trust.sheet)}" aria-hidden="true" hidden></div>`;
 }
 
 /**
@@ -515,7 +518,7 @@ ${head(content, options, content.landing.title)}
 </head>
 <body>
 <a class="skip-link" href="#essay">${esc(ui.skip)}</a>
-${renderSoundToggle(ui.sound)}
+${renderSoundToggle(ui.sound, options.trust)}
 ${renderRailLauncher(content)}
 <main id="essay" tabindex="-1">
 ${renderLanding(content, ctx)}
@@ -529,7 +532,7 @@ ${renderClosing(content)}
 ${inlineSources}
 </main>
 ${renderControls(content)}
-${renderScratcher(options.scratch)}
+${renderScratcher(options.trust)}
 ${exportColophon}
 ${script(options)}
 </body>
@@ -552,7 +555,7 @@ ${head(content, options, content.sourcesPage.title)}
 </head>
 <body>
 <a class="skip-link" href="#sources">${esc(content.interface.skip)}</a>
-${renderSoundToggle(content.interface.sound)}
+${renderSoundToggle(content.interface.sound, options.trust)}
 <main id="sources-main" tabindex="-1">
 ${renderSourcesBody(content, { heading: 'h1', returnHref: options.essayUrl ?? 'index.html' })}
 </main>

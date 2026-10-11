@@ -1,15 +1,16 @@
 # Assets from The Evolution of Trust
 
-These four files are Nicky Case's own, copied unchanged from
+These files are Nicky Case's own, copied unchanged from
 [The Evolution of Trust](https://github.com/ncase/trust) at commit
-`6ec45d73befdb922bd40654dd1c1c903a953562f`, so the page transition and the sound control are the
-originals rather than imitations of them:
+`6ec45d73befdb922bd40654dd1c1c903a953562f`, so the page transition, the sounds and the sound control
+are the originals rather than imitations of them:
 
 | File | Original path | Use |
 | --- | --- | --- |
 | `scratch.png` | `assets/ui/scratch.png` | 2 × 20 frame sprite sheet (1422 × 8000). The left column scribbles over the page, the right column rubs the scribble out. |
 | `scratch_in.mp3` | `assets/sounds/scratch_in.mp3` | Played as the page is scribbled over. |
 | `scratch_out.mp3` | `assets/sounds/scratch_out.mp3` | Played as the next page is revealed. |
+| `button1.mp3`, `button2.mp3`, `button3.mp3` | `assets/sounds/button1.mp3` … `button3.mp3` | Button clicks; as in `js/core/Button.js`, each press plays one of the three at random. |
 | `sound.png` | `assets/ui/sound.png` | The Sound control: a speaker with waves (on) beside a speaker with a cross (off). |
 
 The reference project is dedicated to the public domain under
@@ -23,5 +24,8 @@ phases. The Sound control follows `#sound` in the same stylesheet and `js/main.j
 sprite at a time, and sound on until the reader turns it off. The original sits in a dark (`#222`)
 footer, so its "on" speaker is white; on this site's paper the stylesheet darkens it to the grey of
 the "off" one. It stays at the top right because this reader's footer holds only Back and Next.
+
+Trust plays every recording at full volume. Here each one plays at 30% of that (`SOUND_VOLUME` in
+`src/runtime/reader.js`); the files themselves are unchanged.
 
 The build refuses to publish these files if their digests differ from `manifest.json`.
