@@ -12,6 +12,30 @@ Status: implementation-neutral architecture for the confirmed experience. This d
 >
 > The content contract below described the earlier document's entities. [The content contract](content-contract.md) is the current one and takes precedence where the two disagree.
 
+> **Amended a third time on 11 October 2026, by the owner's reader-interface amendment.** [That
+> amendment](decisions.md#owner-amendment--11-october-2026-how-the-essay-is-read) is canonical for
+> how the essay is read, and supersedes four things described below:
+>
+> - **Chapter navigation is a rail, not a row.** Every chapter *and every part inside it* is in the
+>   markup, beside the essay on a wide screen and in a dismissible drawer at phone width. The whole
+>   rail collapses, and a launcher outside it brings it back. "Chapter shortcuts revisit the
+>   beginning of a chosen chapter" still holds; a reader can now also open a named part directly.
+> - **The reading footer is Back and Next.** The view switch and the link to the register moved into
+>   the rail's secondary section, `Read again` moved to the end of the essay, and the visible
+>   `Print` control was removed. Browser printing is unchanged and still carries the whole argument.
+> - **The prose is broader and the drawings are smaller.** The measure is 35rem in the project
+>   typeface; a drawing is held to its own column and sits beside the passage it follows on a wide
+>   screen, under it otherwise. "Desktop may place narrative and illustration side by side" below is
+>   now what the build does rather than an option.
+> - **A whole scene is no longer ringed on every move.** Focus still moves to the scene, which is
+>   how the move is announced; the ring is `:focus-visible`, so a keyboard reader sees it and a
+>   pointer move does not outline the reading column. "Visible keyboard focus" below is unchanged
+>   and is why every interactive control still carries a ring.
+>
+> What that amendment does not change: the approved 45-scene copy, the scene and source
+> identifiers, paginated Next/Back, the fragment as the place and the query as the mode, the
+> typeface, the artwork, the comparisons, continuous reading, and print.
+
 ## Overall shape
 
 The essay is a static, browser-readable experience. Author the story, cast, references, and original scene assets in the repository, then package them for Vercel. The build also still emits a self-contained offline HTML file from the same content and renderer; since the 9 October amendment that file is retained tooling rather than a deliverable. Runtime access to Google Docs is unnecessary; source imports and later deltas are editorial inputs.

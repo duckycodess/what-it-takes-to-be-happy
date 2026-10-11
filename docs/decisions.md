@@ -4,6 +4,13 @@ The user confirmed the shared brief and subsequently requested repository creati
 
 > **The 9 October 2026 owner amendment below is canonical.** It changes what this project delivers.
 > Read it before the table.
+>
+> **A second owner amendment, on 11 October 2026, changes how the essay is read**: the chapter rail
+> and its phone drawer, a reading footer of Back and Next alone, no visible Print control, broader
+> prose, smaller contextual artwork, and no red ring around a whole scene. It is
+> [further down this page](#owner-amendment--11-october-2026-how-the-essay-is-read) and governs the
+> reader's interface. It does not touch the approved copy, and the replacement prose it anticipates
+> is **not** approved and **not** integrated.
 
 ## Owner amendment — 9 October 2026
 
@@ -86,6 +93,60 @@ and amends [#1](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/
 [#6](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/6), and
 [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7) without rewriting their
 canonical ticket text; [the work plan](work-plan.md) names the clauses it supersedes.
+
+## Owner amendment — 11 October 2026: how the essay is read
+
+The owner read the integrated website and changed the reader's interface. The complaint was
+specific: the illustrations dominated the page, the prose ran in a strip too narrow to read
+comfortably, and every move through the essay drew a red outline around the whole scene. The
+settled interview that followed asked for blog-like prose with supporting illustrations, a
+collapsible chapter sidebar on a wide screen and a compact drawer on a phone, and a reading footer
+carrying Back and Next alone. Published as
+[#17](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/17).
+
+Where an earlier document in this repository still describes the superseded chrome — a toolbar
+carrying Print and the view switch, a chapter list as a row of links above the essay, a narrow
+column, or a focus ring forced onto every scene — this section governs and that document is out of
+date on those points.
+
+| Amended | Now | Before the amendment |
+| --- | --- | --- |
+| Chapter navigation | A rail of chapters **and their parts** beside the essay on a wide screen, collapsible as a whole with a launcher that brings it back; the same list as a dismissible drawer at phone width | One row of eight chapter titles above the essay, always on screen in every view |
+| Reading footer | Back and Next, and nothing else | Back, Next, Read again, the view switch, Print and Sources & Credits in one fixed bar |
+| `Read continuously`, `Sources & Credits` | A separate secondary section of the rail and the drawer | In the reading footer |
+| `Read again` | With the final passage, at the end of the essay | In the reading footer |
+| Print control | Removed. A browser's own print command still produces the complete essay, which is what the print rules are for | A visible `Print` button |
+| Progress indication | `aria-current` on the part being read, and nothing visible beyond it | Already none; unchanged, and no counter may be added |
+| Prose measure | 35rem with the project typeface, about 64 characters a line measured in Chrome | 31rem, about 57 |
+| Illustration | Held to its own column — 18rem beside the passage on a wide screen, 24rem otherwise — and placed beside the related passage above 78rem, under it below | As wide as the essay column, up to 48rem |
+| Scene focus ring | `.scene:focus-visible` only, so a keyboard reader still sees where they are and a pointer move does not outline the reading column | `.scene:focus`, which painted a red ring on every Next |
+
+What the amendment does **not** change: the approved 45-scene copy, which is untouched; the scene
+and source identifiers; paginated Next/Back as the default; the fragment as the reader's place and
+the query as their reading mode; `Futura Handwritten`; frameless artwork with names as browser text;
+the two optional comparisons; complete continuous reading; and complete browser printing. No
+reader-facing string was invented for the new controls: the rail and its launcher carry the approved
+`Chapters`, each part is labelled with that scene's own approved title, and each chapter's expand
+control is named by the chapter title beside it through `aria-labelledby`. State is `aria-expanded`
+and `aria-current`, not a word.
+
+`interface.print` stays in [the content document](../content/content.json) because that document is
+a transfer of [the approved script](redesign/approved-scene-script.md), not a record of this
+interface; what changed is the interface. The build's coverage audit therefore no longer requires
+that one string to appear in an output, and `src/build/verify.js` names it and `backToReading` as
+the only two exceptions, so a control that goes missing by accident still fails a build.
+
+### Still open under this amendment
+
+- **The replacement prose is not integrated and is not approved.** The interview also settled that
+  the chat would draft richer exact-copy Markdown for the owner to review as an outline, a developed
+  middle chapter, and then a full essay. None of those gates has been met. The website continues to
+  carry the approved 45-scene copy verbatim, and no part of a draft may be integrated until the
+  owner has approved all of it. A layout revision is not copy approval.
+- **The new revision is preview-only.** Nothing here authorises a production deployment, and a
+  reviewed merge is not a promotion. Release verification against a deployed URL remains
+  [#7](https://github.com/duckycodess/what-it-takes-to-be-happy/issues/7)'s, whose contract this
+  amendment does not touch.
 
 ## Confirmed choices
 

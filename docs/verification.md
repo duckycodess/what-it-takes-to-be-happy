@@ -16,11 +16,11 @@ These are concrete acceptance scenarios for the finished essay. Avoid tests that
 | `test/register.test.js` | The published 26-entry page against the 32-entry audit in `docs/research.md`: destination, audit level, the six entries held back, and that a work nobody could open never reaches a reader. |
 | `test/coverage.test.js` | Every figure in [the coverage matrix](coverage.md) recomputed from the document: the four assignment parts, the chapters, all 45 scenes and layouts, the sources and where they are cited, the 20 assets and their labels, the invented figures, and the two optional comparisons. |
 | `test/render.test.js`, `test/art.test.js` | The markup: the landing carrying only approved copy, scenes in authored order, frameless art with reserved boxes and lazy loading after the first illustration, name anchors in both manifest generations, pair cutouts and their view labels, and the two comparisons. |
-| `test/reader.test.js` | The reader's journeys in a scripted DOM: authored order, both boundaries, chapter revisiting, scene and continuous views, deep links, the browser Back button with and without the History API, the optional comparisons, and leaving for a source and coming back to the same place in the same mode. |
+| `test/reader.test.js` | The reader's journeys in a scripted DOM: authored order, both boundaries, chapter and part revisiting, scene and continuous views, deep links, the browser Back button with and without the History API, the optional comparisons, leaving for a source and coming back to the same place in the same mode, and the chapter rail — collapse and restore, per-chapter expansion, the part being read, and the phone drawer's open, Escape, close and return-focus behaviour. |
 | `test/browser.test.js` | The same site in real Chrome, built and linked as it is served. See below. Skips with a stated reason where no browser is installed. |
 | `test/build.test.js` | The packaging audits, the artwork actually linked, build determinism, the offline export, and the preview server over real HTTP. |
 | `test/fonts.test.js` | Each committed font file's size and SHA-256, and — read from both `cmap` tables — that every character either page prints is one a packaged face can draw. |
-| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; measured contrast for every declared colour; reflow, reduced motion, the focus ring on every target the script focuses; and that nothing depending on the project typeface sits outside the region the offline file drops. |
+| `test/styles.test.js` | That every view selector which hides something is answered by a print rule or is listed as screen apparatus; that print drops the rail, the launcher and Read again and that the rail is only ever hidden by its own state; measured contrast for every declared colour; reflow, reduced motion, the ring on each target the script focuses and the absence of the forced `.scene:focus` ring; the measure on both font stacks and the cap on a drawing; that the stylesheet's drawer width is the one the script asks about; and that nothing depending on the project typeface sits outside the region the offline file drops. |
 | `test/measure.test.js` | `./tools/count-main-path.sh` against the document's own recorded figure and rule, the per-chapter breakdown, and that the counted text is the reader's own sentences with titles, speaker labels, citation markers and the register excluded. |
 | `test/dom.test.js` | The test harness itself, so the reader suite cannot pass on a harness that answers wrongly. |
 
@@ -452,6 +452,126 @@ passing.
 
 No linter or type checker is configured, so none was run; `npm test` runs Node's parser over every
 source file instead.
+
+## What the readability revision checked, and how
+
+Checked on 11 October 2026, after [the owner's reader-interface
+amendment](decisions.md#owner-amendment--11-october-2026-how-the-essay-is-read) was implemented:
+the chapter rail and its phone drawer, a reading footer of Back and Next alone, broader prose,
+smaller contextual artwork, and no forced ring around a whole scene. **The approved 45-scene copy
+is untouched by this revision**; `content/content.json`, the approved script and every source
+identifier are byte-for-byte what they were.
+
+### Automated
+
+`npm run validate` passes: the content document is still identical to a rebuild from the approved
+script, and reports `8 chapter(s), 45 scene(s), 26 source(s), 20 generated asset(s), 4137 main-path
+words`. `./tools/count-main-path.sh` recomputes the same 4,137 words against the document's own
+recorded figure and rule — unchanged, because no copy changed.
+
+`npm test` passes: **236 tests, 0 failures, 0 skipped**. Chrome is installed in this
+environment, so the whole browser suite ran rather than skipping. The run takes about nine minutes,
+most of it spent rendering the 45.7 MB single-file export several times over. `npm run build` writes
+`dist/` and the output audits pass.
+
+`node ~/.claude/skills/impeccable/scripts/detect.mjs src/runtime` reports no findings.
+
+No linter, formatter or type checker is configured in this project, so none was run; `npm test` runs
+Node's own parser over every source file instead.
+
+### Looked at, in a real browser
+
+Headless Chrome on Windows, driven from WSL, against the built hosted site — `index.html` and
+`sources.html` with their stylesheet, script, both fonts and all 22 selected PNGs beside them at the
+paths they are linked at. Narrow widths are laid out in a frame, because a desktop browser window
+will not go below roughly 500 CSS pixels.
+
+- **The rail, at 1280px.** The rail is a column to the left of the prose and does not overlap it;
+  only the chapter being read is expanded, and that chapter's parts are the only ones a reader can
+  tab to. Collapsing it from the control inside it removes its column, puts the launcher on screen
+  with `aria-expanded="false"`, moves focus onto the launcher rather than dropping it to the body,
+  widens the prose column, and leaves the reader on the same scene, still in the window after the
+  reflow. Restoring it puts focus back inside the rail.
+- **The drawer, at 375px.** It starts shut, with no part link tabbable and the launcher on screen.
+  Opening it covers the full width and at least 80% of the window height, hides the launcher so the
+  word `Chapters` is never offered twice at once, and moves focus inside onto the control that
+  closes it. Every row in it measures at least 44 CSS pixels tall. Escape closes it and returns
+  focus to the launcher; so does the close control. Choosing a part closes the drawer *before* the
+  destination takes focus, and focus lands on the scene rather than back on the trigger. None of
+  that moves the reader through the essay by itself.
+- **The reading footer** carries exactly `Back` and `Next` at phone width, both at least 44 CSS
+  pixels tall, and `Read again` is not in it. At the last scene `Next` is absent and `Read again`
+  is offered with the final passage.
+- **A scene arrives under the launcher, not behind it**: at 375px the scene's top is at the
+  launcher's bottom edge, which is what `scroll-margin-top` exists for.
+- **A drawing beside its passage, at 1440px**, on six scenes with a drawing in the authored
+  position: the drawing is narrower than the widest line of prose, sits entirely to the right of the
+  sentences, keeps its authored position in the reading order, and every name and prop label is
+  still inside the image and inside the window at the smaller size. No horizontal overflow.
+- **The measure, in the face that sets it**, at 375px, 1024px and 1440px, against a fixture
+  paragraph built in the browser rather than against the manuscript: 64 characters a line at 1024px
+  and above, 41 on a phone, measured in `Futura Handwritten` after `document.fonts.ready`. The
+  column was about 57 characters before this revision.
+- **Reflow at 360px** on the landing, each of the 45 scenes in turn, and continuous reading: no
+  horizontal overflow anywhere, unchanged by the new layout.
+- **Print, with the print rules rendered** — the print block rewritten to `@media all` and measured,
+  which is the only way to see what those rules do to a layout without a DevTools socket. From a
+  scene *and* from continuous reading: all 45 scenes, all 8 chapter headings, the title page, and
+  both drawings of both comparisons with both labels. None of the apparatus: no rail, no part links,
+  no launcher, no `Read again`, no footer, no comparison control. Chrome also printed the essay to
+  PDF for real; it is 20+ pages and the register 3+.
+- **A reader with no scripting**, in a sandboxed frame: all 45 scenes, all 8 chapter titles, the
+  rail as an ordinary list with every one of the 45 parts visible — because nothing collapsed a
+  chapter — and none of the script-only controls, neither the expand controls nor `Read again`.
+- **Source returns and the address bar** are unchanged and still pass: a citation carries the scene
+  and the reading mode, the entry it names is on screen and ringed, `Back to reading` returns to the
+  scene that was left, the shared control in the rail carries the reader's place including while
+  scrolling continuously, and a stale `view=continuous` is cleared from the address.
+
+#### The focus ring, and the honest limit on checking it
+
+What the amendment removed is the rule `.scene:focus { outline: 3px solid }`, which painted a red
+outline around the entire reading column on every press of Next. `.scene:focus-visible` replaces it,
+so the ring is the browser's own judgement about whether the reader is using a keyboard.
+
+In Chrome, driven from this harness, a keyboard move is painted: after an arrow key the focused
+scene matches `:focus-visible` and computes `outline-style: solid` with a non-zero width. The
+pointer case **cannot be reproduced here**. Every click this harness can make is `element.click()`,
+which is a script call rather than a pointer interaction, so Chrome keeps its keyboard modality and
+reports `:focus-visible` afterwards; a real mouse press would not, and driving one needs a DevTools
+connection a Windows browser driven from WSL cannot be given. Rather than claim a check that did not
+happen, the pointer case is verified from the rule that decides it: a browser test reads the
+`CSSStyleRule` selectors the browser actually parsed out of the served stylesheet and asserts that
+no rule outlines `.scene:focus`, that `.scene:focus-visible` does, that `.source:focus` still does —
+a citation has to mark the entry it landed on — and that `:focus-visible` still rings every
+interactive control.
+
+**So: on a real pointer device the ring should not appear, and that has not been observed on one.**
+It is a stated limitation, not a passed check.
+
+### Not checked, and by what
+
+- **A real phone and a real desktop browser.** Headless Chrome in a 375-pixel frame is not a device.
+  Touch accuracy on the drawer rows, a software keyboard, and an address bar that grows and shrinks
+  are all unexercised. The 44-pixel row heights are measured, not felt.
+- **A pointer-driven focus move**, as above.
+- **A screen reader.** The structure is there — one accessible name per scene, `aria-expanded` on
+  the rail and on each chapter, `aria-current` on the part being read, the rail as one named
+  landmark, and no live region — but no assistive technology has read it. In particular, nobody has
+  heard how a chapter's expand control announces when its name comes from the chapter title beside
+  it through `aria-labelledby`.
+- **Print pagination, as pages.** The page count was read from a PDF and the print rules were
+  measured with `@media all`; nobody has looked at where the breaks fall, or at whether a floated
+  drawing is orphaned from its sentence on paper. The float is reset for print, so the drawing
+  prints under its passage.
+- **The deployment.** Nothing was deployed. This revision is preview-only by the owner's amendment,
+  no production promotion is authorised, and no deployed URL was exercised. Everything above ran
+  against the locally built hosted tree opened through `file://`; what the preview server returns
+  over real HTTP is covered in `test/build.test.js`.
+- **The replacement prose.** It is **not integrated and not approved**. The site still carries the
+  approved 45-scene copy verbatim, and the owner's outline, middle-chapter and full-essay reviews
+  are all outstanding. No copy-fidelity test in this repository can establish editorial approval,
+  and none of them claims to.
 
 ## Scenarios for the finished essay
 
