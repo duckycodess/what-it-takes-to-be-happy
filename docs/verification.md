@@ -465,7 +465,9 @@ ids, the project settings read back, and where the evidence files live. In short
 
 - **Public production, unauthenticated**: all 29 published files fetched over HTTPS and compared by
   SHA-256 against the reviewed build; all 29 match. `/offline.html` returns 404. That digest check
-  covers the published tree and nothing else.
+  covers the published tree and nothing else. On the protected preview the same fetch gives 27
+  digest matches: its access protection injects 163 bytes into each HTML response, so the two pages
+  were checked by confirming the reviewed source HTML is intact around that injection instead.
 - **Windows Chrome 154 at actual 360 and 1280 CSS-pixel viewports**, on production and on the tested
   preview: landing, Begin, Next, Back, Read again; all eight chapter jumps; all 45 scenes read
   continuously; reading mode carried in the address; Sources & Credits returning to the scene *and*
@@ -492,7 +494,9 @@ to a rebuild from the approved script, and `node src/tools/validate.js` reports 
 `8 chapter(s), 45 scene(s), 26 source(s), 20 generated asset(s), 4137 main-path words` as before.
 No content, renderer or stylesheet file was touched.
 
-What the three new packaging checks assert, each of which fails on the previous build:
+What the three new packaging checks assert. The first two fail on the previous build; the third
+pins behaviour that was already correct — no hosted page has ever linked the export — so that a
+later change cannot quietly start offering a download the deployment does not serve:
 
 - A normal build publishes the hosted site and **nothing else**: no `offline.html` in the tree, no
   line reporting one written, and the hosted files, both fonts, the bundled licence and the

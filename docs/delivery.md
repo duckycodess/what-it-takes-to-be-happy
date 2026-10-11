@@ -108,6 +108,13 @@ the whole published tree — `index.html`, `sources.html`, `styles.css`, `reader
 bundled font's licence and all 22 selected PNGs — and no other path was hashed. `/offline.html`
 returns 404; so does `/favicon.ico`, which the site does not carry.
 
+The preview was checked the same way with one unavoidable difference: it is behind the project's
+access protection, which **injects 163 bytes into each HTML response**. So `index.html` and
+`sources.html` could not match by digest there, and were checked by confirming the served document
+still carries the reviewed source HTML intact around that injection; the other **27** files match
+the reviewed build by digest. The clean, byte-for-byte comparison is the production one above,
+which answers an anonymous request with nothing added.
+
 **Checked in a real browser**, Windows Chrome 154, at actual 360 and 1280 CSS-pixel viewports, on
 both the production and the preview deployment:
 
@@ -217,7 +224,7 @@ Complete this for the reviewed, integrated essay, not for a fixture. Offline sub
 
 - The exact commit the release was built from, and the checks that passed on it. **Done:** `67f571de34d932d82dfd344e3589982c495b734b`.
 - The actual preview URL, and the actual production URL, each recorded verbatim rather than described. **Done**, with their deployment ids.
-- Both URLs confirmed to serve that exact commit. **Done** by digest: all 29 published files on each match the reviewed build.
+- Both URLs confirmed to serve that exact commit. **Done:** on production all 29 published files match the reviewed build by digest; on the protected preview 27 match by digest and the two HTML responses carry the reviewed source HTML intact around the access protection's 163-byte injection.
 - The project typeface, the artwork, the stylesheet, and the browser script all actually loading on the deployed page — observed on the deployment, not inferred from the build. **Done:** `Futura Handwritten` reported `loaded`, all 22 drawings fetched, the stylesheet and script fetched, over the deployment's own requests.
 - Reading and navigation exercised on a real phone and a real desktop browser: Begin, Next, Back, the first and last boundaries, chapter shortcuts, and the optional panels. **Partly:** all of it at 360 and 1280 CSS pixels in Windows Chrome 154. A 360-pixel viewport is not a phone, and one engine is not two.
 - The full reading view and the printed output, each carrying the complete argument. **Done:** 45 scenes read continuously, and a 45-page PDF carrying all 45 scene titles and all 147 approved reader text parts. Nobody has used a physical printer.
