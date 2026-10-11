@@ -30,62 +30,122 @@
 
   var root = document.documentElement;
 
-  // Optional local sound. No autoplay, remote samples or saved opt-in. A
-  // browser that cannot play sound still offers the complete essay.
+  // Sound, on until the reader turns it off, as in The Evolution of Trust. No
+  // autoplay, remote samples or saved choice: nothing is heard before the
+  // reader presses, taps or types something. Buttons tick with a short
+  // synthesised click; page transitions play Trust's own scratch recordings.
+  // A browser that cannot play sound still offers the complete essay.
   var soundButton = document.querySelector('[data-sound]');
-  var soundOn = false;
+  var soundOn = true;
   var audio = null;
+  var AudioContextType = window.AudioContext || window.webkitAudioContext;
+  var scratcher = document.querySelector('[data-scratcher]');
+  var scratchBytes = {};
+  var scratchSounds = {};
   var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
-  function sound(kind) {
+  function sound() {
     if (!soundOn || !audio) return;
     try {
       var start = audio.currentTime;
       var gain = audio.createGain();
       gain.connect(audio.destination);
-      var source;
-      var duration = kind === 'scratch' ? 0.28 : 0.055;
-      var filter = null;
-      if (kind === 'scratch') {
-        var buffer = audio.createBuffer(1, Math.ceil(audio.sampleRate * duration), audio.sampleRate);
-        var samples = buffer.getChannelData(0);
-        for (var i = 0; i < samples.length; i += 1) samples[i] = (Math.random() * 2 - 1) * 0.25;
-        source = audio.createBufferSource();
-        source.buffer = buffer;
-        filter = audio.createBiquadFilter();
-        filter.type = 'bandpass';
-        filter.frequency.value = 1600;
-        source.connect(filter);
-        filter.connect(gain);
-      } else {
-        source = audio.createOscillator();
-        source.frequency.setValueAtTime(650, start);
-        source.frequency.exponentialRampToValueAtTime(280, start + duration);
-        source.connect(gain);
-      }
+      var duration = 0.055;
+      var source = audio.createOscillator();
+      source.frequency.setValueAtTime(650, start);
+      source.frequency.exponentialRampToValueAtTime(280, start + duration);
+      source.connect(gain);
       gain.gain.setValueAtTime(0.0001, start);
-      gain.gain.exponentialRampToValueAtTime(kind === 'scratch' ? 0.035 : 0.018, start + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.018, start + 0.008);
       gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
-      source.onended = function () { source.disconnect(); gain.disconnect(); if (filter) filter.disconnect(); };
+      source.onended = function () { source.disconnect(); gain.disconnect(); };
       source.start(start);
       source.stop(start + duration);
     } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
   }
+  /* A page opened from disk cannot fetch its neighbours, and a browser
+     without Web Audio cannot decode them; both get plain audio elements. */
+  function scratchElement(phase) {
+    var url = scratcher && scratcher.getAttribute('data-sound-' + phase);
+    if (!url || !window.Audio) return;
+    var element = new window.Audio(url);
+    element.preload = 'auto';
+    scratchSounds[phase] = element;
+  }
+  /* Fetched as the page loads, so the first move has its sound ready rather
+     than racing a download that only started when it was asked for. */
+  function preloadScratchSounds() {
+    ['in', 'out'].forEach(function (phase) {
+      var url = scratcher && scratcher.getAttribute('data-sound-' + phase);
+      if (!url) return;
+      if (!window.fetch || !AudioContextType) { scratchElement(phase); return; }
+      window.fetch(url)
+        .then(function (response) {
+          if (!response.ok) throw new Error('Sound unavailable');
+          return response.arrayBuffer();
+        })
+        .then(function (data) { scratchBytes[phase] = data; decodeScratchSounds(); })
+        .catch(function () { scratchElement(phase); });
+    });
+  }
+  /* Decoding needs the audio context, which waits for the reader's first
+     gesture; whichever of the two arrives second does the decoding. */
+  function decodeScratchSounds() {
+    if (!audio) return;
+    Object.keys(scratchBytes).forEach(function (phase) {
+      var data = scratchBytes[phase];
+      delete scratchBytes[phase];
+      try {
+        var decoding = audio.decodeAudioData(data, function (buffer) { scratchSounds[phase] = buffer; },
+          function () { scratchElement(phase); });
+        if (decoding && decoding.catch) decoding.catch(function () {});
+      } catch (error) { scratchElement(phase); }
+    });
+  }
+  /* Browsers keep sound shut until the reader does something, and some shut
+     it again later. Every press, tap or key opens it, in time for the click
+     or move that gesture causes. */
+  function unlockAudio() {
+    if (!soundOn || !AudioContextType) return;
+    try {
+      if (!audio) {
+        audio = new AudioContextType();
+        decodeScratchSounds();
+      }
+      if (audio.state === 'suspended') {
+        var resumed = audio.resume();
+        if (resumed && resumed.catch) resumed.catch(function () {});
+      }
+    } catch (error) { audio = null; }
+  }
+  function playScratch(phase) {
+    var clip = soundOn && scratchSounds[phase];
+    if (!clip) return;
+    try {
+      if (clip.play) {
+        clip.currentTime = 0;
+        var playing = clip.play();
+        if (playing && playing.catch) playing.catch(function () {});
+        return;
+      }
+      if (!audio) return;
+      var source = audio.createBufferSource();
+      source.buffer = clip;
+      source.connect(audio.destination);
+      source.onended = function () { source.disconnect(); };
+      source.start();
+    } catch (error) { /* Sound is supplementary; reading never depends on it. */ }
+  }
+  preloadScratchSounds();
+  ['pointerdown', 'touchend', 'keydown', 'click'].forEach(function (type) {
+    document.addEventListener(type, unlockAudio, true);
+  });
   if (soundButton) soundButton.addEventListener('click', function () {
     soundOn = !soundOn;
-    if (soundOn) {
-      try {
-        var Audio = window.AudioContext || window.webkitAudioContext;
-        if (!Audio) throw new Error('Audio unavailable');
-        if (!audio) audio = new Audio();
-        var ready = audio.resume();
-        if (ready && ready.catch) ready.catch(function () { soundOn = false; soundButton.setAttribute('aria-pressed', 'false'); });
-      } catch (error) { soundOn = false; }
-    }
     soundButton.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
-    sound('click');
+    if (soundOn) { unlockAudio(); sound(); }
   });
   document.addEventListener('click', function (event) {
-    if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) sound('click');
+    if (event.target && event.target.closest && event.target.closest('button, .button') && !event.target.closest('[data-sound]')) sound();
   });
 
   /** Reads one parameter out of a query string without URLSearchParams. */
@@ -144,37 +204,146 @@
   var railRestore = document.querySelector('[data-rail-restore]');
   var launcher = document.querySelector('.rail-launcher');
   var landing = document.getElementById('landing');
-  var wipe = document.querySelector('[data-page-wipe]');
-  var wipeAnimation = null;
-  function cancelWipe() {
-    if (wipeAnimation) wipeAnimation.cancel();
-    wipeAnimation = null;
-    if (wipe) wipe.hidden = true;
+  var essayBody = document.querySelector('.essay-body');
+
+  /* --- The scratch transition --------------------------------------------
+     Nicky Case's erase-and-redraw from The Evolution of Trust
+     (js/core/Scratcher.js), with its own sprite sheet and sounds. The left
+     column of the sheet scribbles over the page a frame every 40 ms; once the
+     page is covered the move is made underneath; the right column then rubs
+     the scribble away to show where the reader arrived. Each phase's sound
+     starts 100 ms in. As in the original, a move asked for while one is being
+     drawn is ignored rather than stacked.
+
+     Only the reading area is drawn over: the rail, footer, launcher and Sound
+     button stay put. The move is made at once, as it always was, whenever the
+     transition cannot be drawn properly: reduced motion, a hidden tab, a page
+     with no layout, or a sheet that has not finished loading. */
+
+  var SCRATCH_FRAMES = 20;
+  var SCRATCH_FRAME_MS = 40;
+  var SCRATCH_SOUND_MS = 100;
+  var sheetReady = false;
+  var scratch = null;
+
+  // Loaded up front, and only put on the overlay once it has arrived, so a
+  // transition never shows a half-loaded sheet. Decoding it early as well
+  // keeps the first transition from waiting on a bitmap; the first frame of
+  // the scribble is blank in any case.
+  if (scratcher && window.Image) {
+    var sheet = new window.Image();
+    var sheetUrl = scratcher.getAttribute('data-sheet');
+    sheet.onload = function () {
+      sheetReady = true;
+      scratcher.style.backgroundImage = 'url("' + sheetUrl + '")';
+      if (sheet.decode) sheet.decode().catch(function () {});
+    };
+    sheet.src = sheetUrl;
   }
-  function redraw() {
-    cancelWipe();
-    if (!wipe || !wipe.animate || (reduced && reduced.matches)) return;
-    var content = view === 'landing' ? landing : scenes[current];
-    if (!content) return;
+
+  /** The visible reading area, above the footer: what the scribble covers. */
+  function scratchArea() {
+    var content = view === 'landing' ? landing : essayBody;
+    if (!content || !content.getBoundingClientRect) return null;
     var box = content.getBoundingClientRect();
-    var footer = controls && !controls.hidden ? controls.getBoundingClientRect().top : window.innerHeight;
-    wipe.style.left = box.left + 'px';
-    wipe.style.top = Math.max(0, box.top) + 'px';
-    wipe.style.width = box.width + 'px';
-    wipe.style.height = Math.max(0, footer - Math.max(0, box.top)) + 'px';
-    wipe.hidden = false;
-    var animation = wipe.animate([
-      { clipPath: 'inset(0 100% 0 0)', opacity: 0.9 },
-      { clipPath: 'inset(0 0 0 0)', opacity: 0.9, offset: 0.45 },
-      { clipPath: 'inset(0 0 0 100%)', opacity: 0 }
-    ], { duration: 600, easing: 'ease-in-out' });
-    wipeAnimation = animation;
-    sound('scratch');
-    animation.onfinish = function () { if (wipeAnimation === animation) cancelWipe(); };
+    var top = Math.max(0, box.top);
+    var bottom = controls && !controls.hidden
+      ? controls.getBoundingClientRect().top
+      : (window.innerHeight || root.clientHeight);
+    if (!(box.width > 0) || !(bottom > top)) return null;
+    return { left: box.left, right: box.right, top: top, bottom: bottom };
   }
-  window.addEventListener('beforeprint', cancelWipe);
-  window.addEventListener('resize', cancelWipe);
-  if (reduced && reduced.addEventListener) reduced.addEventListener('change', cancelWipe);
+
+  function fitScratcher(area) {
+    scratch.area = area;
+    scratcher.style.left = area.left + 'px';
+    scratcher.style.top = area.top + 'px';
+    scratcher.style.width = (area.right - area.left) + 'px';
+    scratcher.style.height = (area.bottom - area.top) + 'px';
+  }
+
+  /** One phase: the sheet's left column scribbling in, or its right rubbing out. */
+  function scratchPhase(scribble, then) {
+    var frame = 0;
+    var column = scribble ? 0 : -100;
+    scratcher.style.backgroundPosition = column + '% 0%';
+    scratch.voice = setTimeout(function () { playScratch(scribble ? 'in' : 'out'); }, SCRATCH_SOUND_MS);
+    scratch.timer = setInterval(function () {
+      frame += 1;
+      if (frame >= SCRATCH_FRAMES) {
+        clearInterval(scratch.timer);
+        scratch.timer = null;
+        then();
+        return;
+      }
+      // As the original writes it: on a repeating background a negative
+      // percentage wraps, so this shows row `frame` of the column.
+      scratcher.style.backgroundPosition = column + '% ' + (frame * -100) + '%';
+    }, SCRATCH_FRAME_MS);
+  }
+
+  /**
+   * Makes `move` -- a function that changes the page -- behind the scratch
+   * transition, or at once when there is no transition to draw.
+   */
+  function scratchTo(move) {
+    if (scratch) return;
+    var area = scratcher && sheetReady && !(reduced && reduced.matches) && !document.hidden ? scratchArea() : null;
+    if (!area) { move(); return; }
+    scratch = { move: move, area: null, timer: null, voice: null, swapping: false };
+    fitScratcher(area);
+    scratcher.hidden = false;
+    scratchPhase(true, function () {
+      swapUnderScratch();
+      scratchPhase(false, endScratch);
+    });
+  }
+
+  /** The move itself, made while the page is completely covered. */
+  function swapUnderScratch() {
+    var move = scratch.move;
+    var failure = null;
+    scratch.move = null;
+    scratch.swapping = true;
+    try { move(); } catch (error) { failure = error; }
+    scratch.swapping = false;
+    // The destination can be laid out differently -- after Begin the essay
+    // sits beside the rail, where the landing did not -- so the cover moves
+    // to the new reading area while it is still solid. Anything it leaves is
+    // blank paper or the rail, never the passage being revealed.
+    var area = scratchArea();
+    if (area) fitScratcher(area);
+    // A move that failed still leaves a page to reveal. The error is reported
+    // rather than left to strand the reader under the scribble.
+    if (failure) setTimeout(function () { throw failure; }, 0);
+  }
+
+  /** Removes the overlay and its timers. A move not yet made is dropped. */
+  function endScratch() {
+    if (!scratch || scratch.swapping) return;
+    clearInterval(scratch.timer);
+    clearTimeout(scratch.voice);
+    scratch = null;
+    scratcher.hidden = true;
+  }
+
+  /** Completes a transition at once: the move it was drawing, without the drawing. */
+  function finishScratch() {
+    if (!scratch || scratch.swapping) return;
+    var move = scratch.move;
+    endScratch();
+    if (move) move();
+  }
+
+  window.addEventListener('beforeprint', finishScratch);
+  window.addEventListener('resize', function () {
+    if (!scratch) return;
+    var area = scratchArea();
+    if (area) fitScratcher(area);
+    else finishScratch();
+  });
+  document.addEventListener('visibilitychange', function () { if (document.hidden) finishScratch(); });
+  if (reduced && reduced.addEventListener) reduced.addEventListener('change', finishScratch);
 
   // Illustration responds; title and actions never move. No information is
   // hidden behind the decorative pointer/tap reaction.
@@ -639,7 +808,7 @@
      bar, where taking focus would be rude rather than helpful. */
 
   function showLanding(options) {
-    cancelWipe();
+    endScratch();
     var settings = options || {};
     setView('landing');
     window.scrollTo(0, 0);
@@ -651,7 +820,7 @@
   }
 
   function showScene(index, options) {
-    cancelWipe();
+    endScratch();
     var settings = options || {};
     if (index < 0) { showLanding(); return; }
     current = Math.min(Math.max(index, 0), last);
@@ -662,7 +831,7 @@
   }
 
   function showReading(options) {
-    cancelWipe();
+    endScratch();
     var settings = options || {};
     setView('reading');
     var target = settings.target || scenes[current];
@@ -690,6 +859,7 @@
    * menu's `#chapters` are landmarks the browser already handles.
    */
   function applyFragment(options) {
+    endScratch();
     var settings = options || {};
     // Arriving at an address -- a deep link, the browser's Back button, the
     // way back from Sources & Credits -- is not a keypress, whatever the
@@ -728,7 +898,7 @@
     beginLink.addEventListener('click', function (event) {
       event.preventDefault();
       markMove(event);
-      showScene(0);
+      scratchTo(function () { showScene(0); });
     });
   }
 
@@ -751,8 +921,7 @@
       showReading({ target: scenes[index] });
       return;
     }
-    showScene(index);
-    redraw();
+    scratchTo(function () { showScene(index); });
   }
 
   chapterLinks.forEach(function (link) {
@@ -805,19 +974,23 @@
     });
   }
 
+  /* Read when the page is covered, not when the move was asked for. */
+  function moveBack() {
+    if (current === 0) showLanding();
+    else showScene(current - 1);
+  }
+  function moveNext() { showScene(current + 1); }
+
   if (backButton) {
     backButton.addEventListener('click', function (event) {
       markMove(event);
-      if (current === 0) showLanding();
-      else showScene(current - 1);
-      redraw();
+      scratchTo(moveBack);
     });
   }
   if (nextButton) {
     nextButton.addEventListener('click', function (event) {
       markMove(event);
-      showScene(current + 1);
-      redraw();
+      scratchTo(moveNext);
     });
   }
 
@@ -825,7 +998,7 @@
     readAgain.addEventListener('click', function (event) {
       event.preventDefault();
       markMove(event);
-      showScene(0);
+      scratchTo(function () { showScene(0); });
     });
   }
 
@@ -864,13 +1037,11 @@
     if (event.key === 'ArrowRight') {
       event.preventDefault();
       markMove();
-      if (current < last) { showScene(current + 1); redraw(); }
+      if (current < last) scratchTo(moveNext);
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
       markMove();
-      if (current === 0) showLanding();
-      else showScene(current - 1);
-      redraw();
+      scratchTo(moveBack);
     }
   });
 

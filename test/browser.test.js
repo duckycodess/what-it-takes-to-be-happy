@@ -56,41 +56,201 @@ if (built) {
 const hosted = built ? built.hosted : '';
 const sources = built ? built.sources : '';
 
-test('paper feedback leaves rapid navigation, reading and footer controls usable', { skip }, () => {
-  const { value } = essayPage({ width: 1280, driver: `
+/*
+ * The scratch transition draws only once its sprite sheet has loaded, and a
+ * page without the sheet moves at once. Every other test here is given the
+ * page without it, so the moves they make are not spread over 1.6 seconds of
+ * a virtual clock with an 8-second budget; these tests are given the sheet and
+ * its sounds, and watch the transition itself.
+ */
+const scratchFiles = {
+  ...hostedFiles,
+  ...(built ? Object.fromEntries(built.trust) : {}),
+};
+
+/** Counts the interval timers a page leaves running. */
+const COUNT_INTERVALS = `
+  var running = {};
+  var setI = window.setInterval, clearI = window.clearInterval;
+  window.setInterval = function () { var id = setI.apply(window, arguments); running[id] = true; return id; };
+  window.clearInterval = function (id) { delete running[id]; return clearI.call(window, id); };
+  var intervals = function () { return Object.keys(running).length; };
+`;
+
+test('a move is scribbled over, made underneath, then rubbed out to reveal the next passage', { skip }, () => {
+  const { value } = runInChrome({ html: hosted, files: scratchFiles, width: 1280, driver: `
+    ${COUNT_INTERVALS}
     var report = {};
-    probe.step(function () {
-      report.soundStartsOff = probe.q('[data-sound]').getAttribute('aria-pressed') === 'false';
-      probe.q('[data-begin]').click();
-      probe.q('[data-next]').click();
-      var first = probe.q('[data-page-wipe]').getAnimations()[0];
-      report.firstEffect = !!first;
-      probe.q('[data-next]').click();
-      report.previousCancelled = !first || first.playState === 'idle';
-      report.latestScene = probe.sceneId();
-      var wipe = probe.q('[data-page-wipe]'), box = wipe.getBoundingClientRect();
-      report.footerClear = box.bottom <= probe.q('.reader-controls').getBoundingClientRect().top + 1;
-      report.railClear = box.left >= probe.q('.chapter-rail').getBoundingClientRect().right;
-      report.clicksPassThrough = getComputedStyle(wipe).pointerEvents === 'none';
-      report.visibleChapters = probe.all('.chapter').filter(probe.visible).length;
-      report.shortPageHeight = document.documentElement.scrollHeight;
-      report.sceneBottom = probe.q('[data-current]').getBoundingClientRect().bottom + scrollY;
-      probe.q('[data-view-toggle]').click();
-      report.continuousCancels = wipe.hidden;
-      report.completeScenes = probe.all('[data-scene]').filter(probe.visible).length;
-    }).run(function () { probe.done(report); });
+    var scratcher = probe.q('[data-scratcher]');
+    var column = function () { return scratcher.style.backgroundPosition.split(' ')[0]; };
+    probe
+      .wait(300)
+      .step(function () {
+        report.sheetLoaded = scratcher.style.backgroundImage.indexOf('assets/ui/trust/scratch.png') >= 0;
+        probe.q('[data-begin]').click();
+        report.beginCovers = !scratcher.hidden;
+        report.beginWaits = document.documentElement.getAttribute('data-view') === 'landing';
+      })
+      .wait(1000)
+      .step(function () {
+        // Revealing the essay after the landing: the rail has appeared and
+        // the cover has moved off it to the reading area.
+        report.beginRevealClear = !scratcher.hidden
+          && scratcher.getBoundingClientRect().left >= probe.q('.chapter-rail').getBoundingClientRect().right;
+      })
+      .wait(700)
+      .step(function () {
+        report.beginArrived = probe.sceneId();
+        report.beginCleared = scratcher.hidden;
+        probe.q('[data-next]').click();
+        report.erasing = !scratcher.hidden && column() === '0%';
+        report.notYetMoved = probe.sceneId();
+        var box = scratcher.getBoundingClientRect();
+        report.railClear = box.left >= probe.q('.chapter-rail').getBoundingClientRect().right;
+        report.footerClear = box.bottom <= probe.q('.reader-controls').getBoundingClientRect().top + 1;
+        report.withinWindow = box.top >= 0 && box.right <= innerWidth;
+        report.sheetScale = getComputedStyle(scratcher).backgroundSize;
+        // A second press while the page is being drawn over is ignored, as in
+        // the original, rather than queued or allowed to start another.
+        probe.q('[data-next]').click();
+        report.layers = probe.all('[data-scratcher]').length;
+      })
+      .wait(400)
+      .step(function () {
+        report.midErase = { scene: probe.sceneId(), column: column(), row: scratcher.style.backgroundPosition.split(' ')[1] };
+      })
+      .wait(500)
+      .step(function () {
+        report.revealing = { scene: probe.sceneId(), column: column(), covered: !scratcher.hidden, focus: probe.activeId() };
+      })
+      .wait(900)
+      .step(function () {
+        report.done = { scene: probe.sceneId(), cleared: scratcher.hidden, intervals: intervals(), layers: probe.all('[data-scratcher]').length };
+      })
+      .run(function () { probe.done(report); });
   ` });
-  assert.equal(value.soundStartsOff, true);
-  assert.equal(value.firstEffect, true);
-  assert.equal(value.previousCancelled, true);
-  assert.equal(value.latestScene, 's203');
+
+  assert.equal(value.sheetLoaded, true, 'the original sheet is preloaded and set');
+  assert.equal(value.beginRevealClear, true, 'the reveal after Begin stays off the rail');
+  assert.equal(value.beginCovers, true, 'Begin is a move like any other');
+  assert.equal(value.beginWaits, true, 'the landing stays until it is covered');
+  assert.equal(value.beginArrived, ORDER[0]);
+  assert.equal(value.beginCleared, true);
+  assert.equal(value.erasing, true, 'the left column scribbles over the page');
+  assert.equal(value.notYetMoved, ORDER[0], 'nothing changes before the page is covered');
+  assert.equal(value.railClear, true, 'the rail is not drawn over');
+  assert.equal(value.footerClear, true, 'Back and Next are not drawn over');
+  assert.equal(value.withinWindow, true);
+  assert.equal(value.sheetScale, '200% 2000%');
+  assert.equal(value.layers, 1, 'one overlay, however often a move is asked for');
+  assert.equal(value.midErase.scene, ORDER[0]);
+  assert.equal(value.midErase.column, '0%');
+  assert.notEqual(value.midErase.row, '0%', 'frames advance');
+  assert.deepEqual(value.revealing, { scene: ORDER[1], column: '-100%', covered: true, focus: ORDER[1] },
+    'the move is made under cover and the right column reveals it');
+  assert.deepEqual(value.done, { scene: ORDER[1], cleared: true, intervals: 0, layers: 1 },
+    'the repeated press did not move twice, and nothing is left behind');
+});
+
+test('sound starts on, with each scratch recording 100 ms into its phase, and the speaker turns it off', { skip }, () => {
+  const { value } = runInChrome({ html: hosted, files: scratchFiles, width: 1280,
+    flags: ['--autoplay-policy=no-user-gesture-required'], driver: `
+    var report = { played: [] };
+    var scratcher = probe.q('[data-scratcher]');
+    var speaker = probe.q('[data-sound]');
+    var started = 0;
+    // Recorded rather than heard. A page opened from disk cannot fetch the
+    // recordings, so it plays them through audio elements.
+    HTMLMediaElement.prototype.play = function () {
+      report.played.push({ file: this.src.split('/').pop(), at: Math.round(performance.now() - started), column: scratcher.style.backgroundPosition.split(' ')[0] });
+      return Promise.resolve();
+    };
+    probe
+      .wait(300)
+      .step(function () {
+        report.startsOn = speaker.getAttribute('aria-pressed');
+        report.name = speaker.textContent.trim();
+        var icon = probe.q('.sound-icon', speaker);
+        report.icon = { image: probe.style(icon, 'backgroundImage').indexOf('assets/ui/trust/sound.png') >= 0, x: probe.style(icon, 'backgroundPositionX'), width: icon.getBoundingClientRect().width };
+        report.button = { border: probe.style(speaker, 'borderTopStyle'), background: probe.style(speaker, 'backgroundColor'), width: speaker.getBoundingClientRect().width };
+        started = performance.now();
+        probe.q('[data-begin]').click();
+      })
+      .wait(1700)
+      .step(function () {
+        speaker.click();
+        report.turnedOff = speaker.getAttribute('aria-pressed');
+        report.offIcon = probe.style(probe.q('.sound-icon', speaker), 'backgroundPositionX');
+        report.playedWhileOn = report.played.length;
+        probe.q('[data-next]').click();
+      })
+      .wait(1700)
+      .step(function () { report.playedWhileOff = report.played.length - report.playedWhileOn; })
+      .run(function () { probe.done(report); });
+  ` });
+
+  assert.equal(value.startsOn, 'true', 'sound is on until the reader turns it off');
+  assert.equal(value.name, 'Sound', 'the approved label is the accessible name');
+  assert.deepEqual(value.icon, { image: true, x: '0px', width: 40 }, "Trust's speaker, its waves half");
+  assert.deepEqual(value.button, { border: 'none', background: 'rgba(0, 0, 0, 0)', width: 44 }, 'an icon, not a boxed button');
+  assert.deepEqual(value.played.slice(0, 2).map((entry) => [entry.file, entry.column]),
+    [['scratch_in.mp3', '0%'], ['scratch_out.mp3', '-100%']]);
+  const [scribble, rub] = value.played.map((entry) => entry.at);
+  assert.ok(scribble >= 100 && scribble < 140, `scratch_in at ${scribble} ms`);
+  assert.ok(rub >= 900 && rub < 960, `scratch_out at ${rub} ms`);
+  assert.equal(value.turnedOff, 'false');
+  assert.equal(value.offIcon, '100%', 'the crossed-out half');
+  assert.equal(value.playedWhileOff, 0, 'nothing plays once it is off');
+});
+
+test('a phone gets the transition over the passage alone, and other moves are not held up by it', { skip }, () => {
+  const { value } = runInChrome({ html: hosted, files: scratchFiles, width: 360, height: 780, hash: `#${ORDER[3]}`, driver: `
+    ${COUNT_INTERVALS}
+    var report = {};
+    var scratcher = probe.q('[data-scratcher]');
+    probe
+      .wait(300)
+      .step(function () {
+        probe.q('[data-next]').click();
+        var box = scratcher.getBoundingClientRect();
+        var body = probe.q('.essay-body').getBoundingClientRect();
+        report.spansPassage = Math.abs(box.left - body.left) < 1 && Math.abs(box.right - body.right) < 1;
+        report.footerClear = box.bottom <= probe.q('.reader-controls').getBoundingClientRect().top + 1;
+        report.launcherAbove = Number(getComputedStyle(probe.q('.rail-launcher')).zIndex) > Number(getComputedStyle(scratcher).zIndex);
+      })
+      .wait(300)
+      .step(function () {
+        // Printing mid-transition finishes the move rather than dropping it.
+        window.dispatchEvent(new Event('beforeprint'));
+        report.printed = { scene: probe.sceneId(), cleared: scratcher.hidden, intervals: intervals() };
+        probe.q('[data-next]').click();
+      })
+      .wait(300)
+      .step(function () {
+        // Switching to continuous reading mid-transition supersedes it.
+        probe.q('[data-view-toggle]').click();
+        report.superseded = {
+          view: document.documentElement.getAttribute('data-view'),
+          cleared: scratcher.hidden,
+          intervals: intervals(),
+          scenes: probe.all('[data-scene]').filter(probe.visible).length
+        };
+      })
+      .wait(1600)
+      .step(function () {
+        report.stillContinuous = document.documentElement.getAttribute('data-view');
+        report.stillCleared = scratcher.hidden;
+      })
+      .run(function () { probe.done(report); });
+  ` });
+
+  assert.equal(value.spansPassage, true);
   assert.equal(value.footerClear, true);
-  assert.equal(value.railClear, true);
-  assert.equal(value.clicksPassThrough, true);
-  assert.equal(value.visibleChapters, 1);
-  assert.ok(value.shortPageHeight - value.sceneBottom < 180, 'no hidden chapters create trailing blank paper');
-  assert.equal(value.continuousCancels, true);
-  assert.equal(value.completeScenes, 31);
+  assert.equal(value.launcherAbove, true, 'the Chapters launcher is not drawn over');
+  assert.deepEqual(value.printed, { scene: ORDER[4], cleared: true, intervals: 0 });
+  assert.deepEqual(value.superseded, { view: 'reading', cleared: true, intervals: 0, scenes: 31 });
+  assert.equal(value.stillContinuous, 'reading', 'the abandoned move is never made');
+  assert.equal(value.stillCleared, true);
 });
 
 /** The essay, as the browser is given it. */
@@ -1820,20 +1980,24 @@ test('the printed pages carry the argument, not whatever was on screen', { skip 
 });
 
 test('a reader who asked for less motion gets the same essay', { skip }, () => {
-  const { value } = essayPage({
+  const { value } = runInChrome({
+    html: hosted,
+    files: scratchFiles,
     width: 1024,
     height: 900,
     flags: ['--force-prefers-reduced-motion=reduce'],
     driver: `
       var report = {};
       probe
+        .wait(300)
         .step(function () { probe.q('[data-begin]').click(); probe.q('[data-next]').click(); })
         .step(function () {
           var scene = probe.q('[data-scene][data-current]');
           report.scene = probe.sceneId();
           report.visible = probe.visible(scene);
           report.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          report.wipeHidden = probe.q('[data-page-wipe]').hidden;
+          report.sheetLoaded = !!probe.q('[data-scratcher]').style.backgroundImage;
+          report.scratcherHidden = probe.q('[data-scratcher]').hidden;
           report.runningEffects = document.getAnimations().length;
           report.imageOpacity = probe.style(probe.q('img', scene), 'opacity');
           report.animations = probe.all('*').filter(function (element) {
@@ -1848,7 +2012,8 @@ test('a reader who asked for less motion gets the same essay', { skip }, () => {
   assert.equal(value.visible, true);
   assert.equal(value.imageOpacity, '1', 'the drawing is simply there; there is no entrance to suppress');
   assert.equal(value.animations, 0, 'no CSS motion is painted');
-  assert.equal(value.wipeHidden, true, 'the paper wipe is omitted');
+  assert.equal(value.sheetLoaded, true, 'the transition was available, and declined');
+  assert.equal(value.scratcherHidden, true, 'the scratch transition is omitted and both moves are made at once');
   assert.equal(value.runningEffects, 0, 'no Web Animation is started');
 });
 

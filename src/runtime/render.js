@@ -457,6 +457,25 @@ function context(content, options) {
 }
 
 /**
+ * The Sound control: Trust's speaker, on until the reader turns it off. The
+ * approved label is its accessible name rather than visible text.
+ */
+function renderSoundToggle(label) {
+  return `<button type="button" class="sound-toggle js-only" data-sound aria-pressed="true"><span class="sound-icon" aria-hidden="true"></span><span class="sound-label">${esc(label ?? 'Sound')}</span></button>`;
+}
+
+/**
+ * The page transition's overlay: Nicky Case's scratcher from The Evolution of
+ * Trust. Empty and hidden; the reader script lays the sprite sheet over the
+ * reading area between moves. Without its files there is no overlay, and
+ * moves happen at once.
+ */
+function renderScratcher(scratch) {
+  if (!scratch) return '';
+  return `<div class="scratcher js-only" data-scratcher data-sheet="${esc(scratch.sheet)}" data-sound-in="${esc(scratch['sound-in'])}" data-sound-out="${esc(scratch['sound-out'])}" aria-hidden="true" hidden></div>`;
+}
+
+/**
  * The essay.
  *
  * @param {object} content a validated content document
@@ -496,7 +515,7 @@ ${head(content, options, content.landing.title)}
 </head>
 <body>
 <a class="skip-link" href="#essay">${esc(ui.skip)}</a>
-<button type="button" class="sound-toggle js-only" data-sound aria-pressed="false">${esc(ui.sound ?? 'Sound')}</button>
+${renderSoundToggle(ui.sound)}
 ${renderRailLauncher(content)}
 <main id="essay" tabindex="-1">
 ${renderLanding(content, ctx)}
@@ -510,7 +529,7 @@ ${renderClosing(content)}
 ${inlineSources}
 </main>
 ${renderControls(content)}
-<div class="page-wipe js-only" data-page-wipe aria-hidden="true" hidden></div>
+${renderScratcher(options.scratch)}
 ${exportColophon}
 ${script(options)}
 </body>
@@ -533,7 +552,7 @@ ${head(content, options, content.sourcesPage.title)}
 </head>
 <body>
 <a class="skip-link" href="#sources">${esc(content.interface.skip)}</a>
-<button type="button" class="sound-toggle js-only" data-sound aria-pressed="false">${esc(content.interface.sound ?? 'Sound')}</button>
+${renderSoundToggle(content.interface.sound)}
 <main id="sources-main" tabindex="-1">
 ${renderSourcesBody(content, { heading: 'h1', returnHref: options.essayUrl ?? 'index.html' })}
 </main>
