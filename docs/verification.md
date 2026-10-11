@@ -565,6 +565,14 @@ removes an output without altering the website.
 
 The release gate is the deployed site. [Delivery](delivery.md#hosted-release-checklist) holds the checklist; these are the scenarios behind it.
 
+The 11 October release of `67f571d` answered these on the deployment, with one exception: the
+real-phone and real-desktop-browser scenario was exercised at emulated 360 and 1280 CSS pixels in
+Chrome alone, and the printed output was read from a PDF rather than off a printer. That release
+went ahead with both gaps recorded as limitations. Those scenarios are unchanged and still
+outstanding; an emulated viewport does not satisfy one and a PDF does not satisfy the other, and the
+baseline being live is not a reason to drop either. Any later revision is preview-only until the
+owner approves readability and flow, whatever these scenarios report.
+
 - Deploy the reviewed revision, then confirm both the preview and the production URL serve that exact commit. Record the URLs verbatim.
 - Exercise all six chapters, navigation, typography and artwork, supplementary details, reading mode, and printing on the deployed site, on a real phone and a real desktop browser.
 - Confirm no essential text depends on a third-party request: the font, the artwork, the stylesheet, and the script come from the deployment itself.

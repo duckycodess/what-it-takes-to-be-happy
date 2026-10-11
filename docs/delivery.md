@@ -231,7 +231,21 @@ Complete this for the reviewed, integrated essay, not for a fixture. Offline sub
 - Every source's evidence level, limitation, and caveat visible on the deployed page. **Done** through the register and the citations exercised on the deployment.
 - Any remaining limitation, stated plainly — an unchecked device or an unresolved submission route is a limitation, not a footnote. **Done**, in the record and under *Submitting it* below.
 
-Until every line above is real, the site is not released. A preview of the foundation is not the essay. The lines marked *partly* are limitations of a released site, not permission to skip them next time.
+Two readings of this list, and they are not the same thing.
+
+**As a record of `67f571d`:** that release happened, on the owner's explicit request and under
+supervision, with the one *partly* line open and written down. The site is live and the baseline is
+real; what it was **not** is a release that satisfied every line. The physical-device and
+second-engine check was not performed, and neither was printing on paper; neither is waived by the
+release having gone ahead, and both are still owed — those limitations are recorded rather than
+closed, and no claim here should be read as a phone, a second browser or a printer having been
+tested.
+
+**As the bar for anything later:** the list stands unrelaxed. A preview of the foundation is not the
+essay, an emulated viewport is not a device, and the outstanding line is a thing still to do rather
+than a precedent. Separately and regardless of this list, every new revision is preview-only until
+the owner approves the reading experience's readability and flow — passing every line above would
+still not authorize a deployment, a promotion or a settings change.
 
 ## Submitting it
 
