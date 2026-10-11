@@ -1,18 +1,30 @@
 {
-  "schema": "happiness-essay-content/v2",
+  "schema": "happiness-essay-content/v3",
   "source": {
-    "path": "docs/redesign/approved-scene-script.md",
-    "sha256": "a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f"
+    "essay": {
+      "path": "docs/editorial/full-essay-v2.md",
+      "sha256": "b96ca8697becf3f62203341302dddb24f4050257cfc602ef89e78fb6995c524c"
+    },
+    "handoff": {
+      "path": "docs/editorial/full-essay-handoff-v2.json",
+      "sha256": "35a56e6e5aaafce5ba7456f51d68cf72837351b2123ba61952507e506c872c87"
+    },
+    "supersedes": {
+      "path": "docs/redesign/approved-scene-script.md",
+      "sha256": "a9bd21f3f653a7b177f754cb3d26078227fde34eb130c1a7dce8265eb8f0c97f"
+    }
   },
   "interface": {
     "title": "What it takes to be happy",
     "begin": "Begin",
     "sources": "Sources & Credits",
-    "chapters": "Chapters",
     "continuous": "Read continuously",
-    "scene": "Scene view",
-    "print": "Print",
-    "skip": "Skip to scene",
+    "partView": "Part view",
+    "chapters": "Chapters",
+    "closeChapters": "Close chapters",
+    "hideChapters": "Hide chapters",
+    "showChapters": "Show chapters",
+    "skip": "Skip to reading",
     "back": "Back",
     "next": "Next",
     "readAgain": "Read again",
@@ -21,10 +33,10 @@
   "landing": {
     "title": "What it takes to be happy",
     "beginLabel": "Begin",
-    "beginSceneId": "s088",
+    "beginSceneId": "s201",
     "sourcesLabel": "Sources & Credits",
     "visual": {
-      "layout": "group",
+      "layout": "support",
       "views": [
         {
           "ref": "A01",
@@ -40,117 +52,104 @@
     {
       "id": "c1",
       "number": 1,
-      "title": "One afternoon, three different answers",
+      "title": "An ordinary afternoon",
       "sceneIds": [
-        "s088",
-        "s089",
-        "s090",
-        "s091"
+        "s201",
+        "s202",
+        "s203"
       ]
     },
     {
       "id": "c2",
       "number": 2,
-      "title": "Feeling good or living well?",
+      "title": "A good day and a good life",
       "sceneIds": [
-        "s092",
-        "s093",
-        "s094",
-        "s095",
-        "s096"
+        "s204",
+        "s205",
+        "s206",
+        "s207"
       ]
     },
     {
       "id": "c3",
       "number": 3,
-      "title": "Must joy be productive?",
+      "title": "Does enjoyment have to be useful?",
       "sceneIds": [
-        "s097",
-        "s098",
-        "s099",
-        "s100",
-        "s101",
-        "s102"
+        "s208",
+        "s209",
+        "s210"
       ]
     },
     {
       "id": "c4",
       "number": 4,
-      "title": "Whose idea of happiness are we following?",
+      "title": "The life we are told to want",
       "sceneIds": [
-        "s103",
-        "s104",
-        "s105",
-        "s106",
-        "s107",
-        "s108"
+        "s211",
+        "s212",
+        "s213",
+        "s214"
       ]
     },
     {
       "id": "c5",
       "number": 5,
-      "title": "When does connection become pressure?",
+      "title": "Being with people, having room for yourself",
       "sceneIds": [
-        "s109",
-        "s110",
-        "s111",
-        "s112",
-        "s113"
+        "s215",
+        "s216",
+        "s217",
+        "s218"
       ]
     },
     {
       "id": "c6",
       "number": 6,
-      "title": "Who has room to choose?",
+      "title": "Who can make time?",
       "sceneIds": [
-        "s114",
-        "s115",
-        "s116",
-        "s117",
-        "s118",
-        "s119",
-        "s120",
-        "s121"
+        "s219",
+        "s220",
+        "s221",
+        "s222",
+        "s223",
+        "s224"
       ]
     },
     {
       "id": "c7",
       "number": 7,
-      "title": "What should change?",
+      "title": "What would make room?",
       "sceneIds": [
-        "s122",
-        "s123",
-        "s124",
-        "s125",
-        "s126",
-        "s127"
+        "s225",
+        "s226",
+        "s227",
+        "s228"
       ]
     },
     {
       "id": "c8",
       "number": 8,
-      "title": "What can we conclude?",
+      "title": "Back to the afternoon",
       "sceneIds": [
-        "s128",
-        "s129",
-        "s130",
-        "s131",
-        "s132"
+        "s229",
+        "s230",
+        "s231"
       ]
     }
   ],
   "scenes": [
     {
-      "id": "s088",
-      "title": "No special occasion",
+      "id": "s201",
+      "partKey": "v2-c1-p1",
       "chapterId": "c1",
+      "title": "Nothing to show for it",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Imagine an ordinary afternoon with friends: a game, a few jokes, time to talk. Nothing gets finished. Nobody earns a grade."
+              "text": "Imagine an afternoon with friends. There is a basketball, time for a game and conversation that does not need to reach a conclusion. Someone misses a shot. Someone laughs. Nobody earns a grade, finishes a project or leaves with something to show for the hours they spent together. The afternoon can still be worth having."
             }
           ]
         },
@@ -168,13 +167,31 @@
           "speaker": null,
           "parts": [
             {
-              "text": "TJ values that kind of joy. Koj puts more weight on living well. Vier asks whether he has a say in his life. Their answers overlap, but they do not mean the same thing by happiness."
+              "text": "The question matters because enjoyment becomes harder to defend when we measure time only by what it produces. We can describe the game as exercise or the conversation as a way to strengthen relationships. Those benefits are possible, but they are not the whole reason to be there. Turning every pleasure into preparation for something else leaves little room to say that spending the afternoon together was already enough."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "That does not make an enjoyable afternoon a complete answer to happiness. A person might welcome these hours while worrying about the week ahead. Another might leave tired but satisfied with the day. The same gathering could also feel uncomfortable to someone who does not enjoy the game or the company. Starting with an ordinary pleasure gives us something to examine, rather than an image everyone is expected to want."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "TJ's defense is therefore more specific than saying that any enjoyable choice is good. He wants pleasure to have a place in a life without always needing an achievement to justify it. If we cannot recognize that place, even our free time starts to sound like another assignment."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "group",
+        "layout": "support",
         "views": [
           {
             "ref": "A01",
@@ -187,43 +204,17 @@
       }
     },
     {
-      "id": "s089",
-      "title": "Three answers",
+      "id": "s202",
+      "partKey": "v2-c1-p2",
       "chapterId": "c1",
+      "title": "Three different answers",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Start with what each of us means."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "Koj",
-          "parts": [
-            {
-              "text": "Happiness is closer to living well than feeling good all the time. May purpose, relationships, choices, and room to grow."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "TJ",
-          "parts": [
-            {
-              "text": "A life na gusto kong balikan. May people, time, security, and space to enjoy things without making everything an achievement."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "Vier",
-          "parts": [
-            {
-              "text": "For me, it's my relationship with life. Hindi lahat okay, but I can still take part in it and make choices."
+              "text": "Koj thinks of happiness as living well. Relationships, purpose, choices and improvement matter to him, and some of the activities he values are difficult while he is doing them. A stressful period of learning does not automatically count against his life. He can judge the effort worthwhile even when it does not feel pleasant at every moment. His definition asks about the direction and quality of a life, rather than whether its owner stays cheerful."
             }
           ]
         },
@@ -232,35 +223,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Koj emphasizes fulfillment, TJ protects ordinary joy, and Vier emphasizes agency. One definition cannot silently replace the other two."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "group",
-        "views": [
-          {
-            "ref": "A01",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s090",
-      "title": "Where we're speaking from",
-      "chapterId": "c1",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "We are UP students discussing happiness through school, friends, hobbies and plans for the future. That position shapes this essay. We notice grades and productivity because they are close to us. We also have enough access to work together on a website."
+              "text": "TJ describes happiness as having a life he wants to return to. People, security and time for things he enjoys belong in that answer. His concern is that a serious account of happiness might dismiss an ordinary pleasure unless it contributes to growth. A game, a joke or time to rest can matter without becoming evidence that he is improving himself."
             }
           ]
         },
@@ -269,7 +232,16 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Examples that feel ordinary to us require things we can overlook: free time, transport, devices, somewhere to meet. We cannot treat that access as everyone's starting point. Our own habits belong inside the discussion, not outside it as neutral observations."
+              "text": "Vier puts more weight on his relationship with life. He does not need to approve of everything that has happened to feel that he can still take part in what happens next. Dissatisfaction and regret do not remove that possibility. Having some say, being able to respond and questioning expectations matter more to his definition than reaching a final state of contentment."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "These answers overlap, but their differences affect how we would judge the same afternoon. Koj might ask whether it belongs to a life he values. TJ would resist making that broader value a condition for enjoying it. Vier would ask how freely the person took part. Calling all three answers “balance” would hide the disagreement before we had understood it. We need to keep the disagreement long enough to see what each answer protects and what each might overlook."
             }
           ]
         }
@@ -282,16 +254,17 @@
       }
     },
     {
-      "id": "s091",
-      "title": "One bad day",
+      "id": "s203",
+      "partKey": "v2-c1-p3",
       "chapterId": "c1",
+      "title": "The lives we are speaking from",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Imagine someone tired after working on something they care about. The day felt frustrating. Looking back, they still value what they did and the people they did it with."
+              "text": "We are UP students thinking through school, friendships, hobbies and plans for the future. That position shapes what feels urgent to us. Grades and productivity are close enough to become measures of whether a day went well. We also have enough access to work together on a website. Choosing basketball, games and devices as familiar examples already says something about the lives from which we are asking the question."
             }
           ]
         },
@@ -300,16 +273,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Now imagine an easy afternoon that feels pleasant but leaves them dissatisfied with how their life is going. Neither example settles whether that person is happy. They show why we need more than one question."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "Koj",
-          "parts": [
-            {
-              "text": "Sadness or stress doesn't automatically mean a life is going badly."
+              "text": "An afternoon that looks uncomplicated can require transport, free time, a place to meet and enough energy to remain there. Treating those conditions as background makes our preferred activity seem easier to choose than it is. The problem is not that we should stop discussing what we enjoy. It is that our enjoyment cannot tell us what everyone else wants or what they can afford to do."
             }
           ]
         },
@@ -318,35 +282,57 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Being miserable isn't proof that you're living well either."
+              "text": "Our own habits need the same attention. TJ values making things and improving how he works, so it would be easy for this project to end with another tool for managing life. Koj's appreciation of meaningful effort could make a demanding day look valuable before we ask whether the person chose it. Vier's defense of agency raises the question of how much choice the person has. These are limits inside our argument, not objections we can assign only to other people."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Even within the lives we know, a good day and a good life are different judgments. We can be pleased with an afternoon while unhappy about where things are going. We can also care about our life while finding a particular day exhausting. If happiness has to explain both experiences, asking how someone feels right now cannot do all the work."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
-        "views": [
-          {
-            "ref": "A02",
-            "image": 0,
-            "label": null
-          }
-        ],
+        "layout": "text",
+        "views": [],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 0
       }
     },
     {
-      "id": "s092",
-      "title": "Two different questions",
+      "id": "s204",
+      "partKey": "v2-c2-p1",
       "chapterId": "c2",
+      "title": "Feeling good, looking back",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "“How did today feel?” and “How is my life going?” can produce different answers. Kahneman and Deaton separated everyday emotional well-being from life evaluation in their study of US respondents. The two measures related to income differently. "
+              "text": "Imagine a student working through a difficult task they have chosen. The work is slow, and by evening they are tired and irritated. Asked how the day felt, they would have little reason to call it pleasant. Asked whether the work matters to them, they could give a different answer. The frustration belongs to an activity they still want in their life. Neither answer cancels the other."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Now imagine a day with few demands. It feels comfortable, but looking back the person remains dissatisfied with a relationship or a direction they have taken. Enjoying the day did not resolve that concern. This example is not a judgment that rest is empty or that work is superior. It shows why a report of pleasure does not answer every question about how a life is going."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Kahneman and Deaton made a useful distinction in their analysis of US survey responses. Everyday emotional well-being concerned how people experienced their days; life evaluation concerned how they judged their life when reflecting on it. Those measures had different relationships with income. The finding comes from self-reports in that population and period. It distinguishes questions and their correlates; it does not decide which life a person ought to choose. "
             },
             {
               "citation": 1
@@ -358,13 +344,13 @@
           "speaker": null,
           "parts": [
             {
-              "text": "That distinction helps us avoid treating every use of “happiness” as the same claim. Someone can enjoy a moment while wanting their circumstances to change. Someone can value their life while having a painful day. The study measures self-reports; it does not decide which definition we should live by."
+              "text": "The distinction also prevents an easy dismissal. We cannot tell someone that their pleasure is meaningless because their circumstances are difficult. Nor can we tell someone satisfied with their direction that their distress is irrelevant. Koj's answer needs room for unpleasant days, while TJ's answer needs the pleasure of a day to count. An account of happiness becomes less useful when it chooses one measure and treats every other experience as a mistake."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A02",
@@ -377,16 +363,17 @@
       }
     },
     {
-      "id": "s093",
-      "title": "Living well takes more than a mood",
+      "id": "s205",
+      "partKey": "v2-c2-p2",
       "chapterId": "c2",
+      "title": "Why choose something difficult?",
       "blocks": [
         {
-          "kind": "dialogue",
-          "speaker": "Koj",
+          "kind": "narration",
+          "speaker": null,
           "parts": [
             {
-              "text": "Some things matter even while they're difficult. Studying can be stressful, but I can value what I'm learning more than an easier afternoon."
+              "text": "Koj's example of studying raises a question the pleasant-day comparison leaves open. Why value something that can be stressful? The answer depends on what the activity means to the person. Learning can be worthwhile because it develops an understanding they want, involves a problem they care about or contributes to work they consider meaningful. Finishing it is not the only possible source of fulfillment. Taking part in it can already belong to the life they want to live."
             }
           ]
         },
@@ -395,7 +382,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Aristotle's account places happiness in virtuous activity across a complete life. It also acknowledges the need for external goods and resources. It is a philosophical account of living well, not evidence that difficult work makes people happy. "
+              "text": "Aristotle's account in Book I of the *Nicomachean Ethics* gives this judgment a philosophical form. He places happiness in virtuous activity across a complete life, rather than in a momentary feeling. He also recognizes the need for external goods: worthwhile activity is difficult without the resources that permit it. This is an account of the human good, not a study proving that demanding tasks make people happy. "
             },
             {
               "citation": 2
@@ -407,13 +394,22 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Koj's view resembles that account. Our further question is about access: who has the time, support and resources to pursue the activities they value?"
+              "text": "Koj's view resembles the attention to how someone lives over time, but that resemblance does not settle the value of a particular assignment. A task can be difficult because it is worth learning or because it is badly arranged. A person can work hard for something they value or for approval they feel unable to refuse. The visible effort does not tell us which situation we are looking at."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "External conditions matter to this distinction. Time, support and resources can give a person room to persist in chosen work. When those conditions are missing, asking them to pursue fulfillment through difficulty risks making their exhaustion sound like a virtue. We can defend meaningful effort without treating every demand as an opportunity for growth. Koj's point is that pleasure is not the only reason to value an activity; it is not that pain supplies the missing value."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A03",
@@ -426,16 +422,17 @@
       }
     },
     {
-      "id": "s094",
-      "title": "Having a say",
+      "id": "s206",
+      "partKey": "v2-c2-p3",
       "chapterId": "c2",
+      "title": "Having a say",
       "blocks": [
         {
-          "kind": "dialogue",
-          "speaker": "Vier",
+          "kind": "narration",
+          "speaker": null,
           "parts": [
             {
-              "text": "I don't need to call every part of my life good. What matters is whether I can still participate in it, instead of feeling that everything is decided for me."
+              "text": "Vier's definition asks whether the person participates in their life, including when the outcome disappoints them. Regret matters here because a definition built around having none would make happiness depend on an impossible revision of the past. Having made a mistake does not prevent someone from responding to it, questioning a goal or changing what they do next. Participation can continue without the person declaring the earlier choice good."
             }
           ]
         },
@@ -444,7 +441,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "This makes agency central to Vier's definition. It includes choosing, responding and questioning what is expected of him. It does not require complete control or a life without regret."
+              "text": "That participation is more than being offered a menu of options. Choosing between two demands one cannot reasonably refuse is a narrow kind of choice. A hobby offers a different example: someone can decide to join, learn at their own pace and share it with people whose company they want. The activity may involve effort, but the person has a say in its purpose and in how they take part."
             }
           ]
         },
@@ -453,44 +450,48 @@
           "speaker": null,
           "parts": [
             {
-              "text": "A choice can still be narrow. Choosing between two exhausting options is not the same as having room to build a life. We will need to look at what makes meaningful choices possible."
+              "text": "Deci and Ryan's self-determination theory proposes autonomy, competence and relatedness as basic psychological needs. It treats contexts that support those needs as supporting growth and well-being. The theory gives names to aspects of the hobby: choosing it, developing an ability and connecting with others. It concerns motivation and functioning; these three needs are not a complete definition of every good life. "
+            },
+            {
+              "citation": 3
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "The distinction matters for our own definitions. If we insist that a hobby must always develop competence, we make improvement another condition for enjoying it. If autonomy means never depending on anyone, we ignore the people who make an opportunity possible. Vier's emphasis permits a less demanding judgment: the person can have a part in their life without controlling every condition or making every hour meaningful. Participation includes being able to choose an ordinary afternoon."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
-            "ref": "A04",
+            "ref": "A05",
             "image": 0,
             "label": null
           }
         ],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 2
       }
     },
     {
-      "id": "s095",
-      "title": "Our definitions can become demands",
+      "id": "s207",
+      "partKey": "v2-c2-p4",
       "chapterId": "c2",
+      "title": "Do needs have to wait their turn?",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Living well sounds less demanding than being cheerful every day. But it can become another standard: always have a purpose, grow through every experience, make every choice meaningful."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "Vier",
-          "parts": [
-            {
-              "text": "Even “no regrets” can become an impossible requirement. Regret doesn't mean I have no say in what happens next."
+              "text": "Suppose a person is worried about food or housing and still wants time with someone they trust. A rigid ordering of needs might describe that wish as premature: solve survival first, then think about connection. But the worry does not make affection disappear, and affection does not resolve the worry. The person can need both at once, even if one demand is harder to ignore."
             }
           ]
         },
@@ -499,7 +500,28 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Our definitions need that check. If fulfillment becomes compulsory, an ordinary or unfinished life gets treated as failure. If agency means total independence, it ignores how much anyone depends on other people. A useful definition should help us understand a life, not grade every moment of it."
+              "text": "Maslow's 1943 paper is less rigid than the familiar staircase suggests. It discusses exceptions to the order, partial satisfaction across needs and the gradual emergence of further needs. It does not require someone to complete one level before any other need can matter. These qualifications belong to the theoretical paper itself; they are not findings about contemporary Filipino households. "
+            },
+            {
+              "citation": 7
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "For our question, this helps avoid two errors. We should not dismiss joy or belonging under hardship as somehow unreal. People do not stop having a life because their security is incomplete. Yet we should not turn that joy into a reason to leave the insecurity alone. A friend can make the evening better without making food, shelter or safety less necessary."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Koj's valued effort, TJ's enjoyment and Vier's participation can therefore coexist with unresolved needs. That coexistence does not mean that every need receives equal attention or that anyone can choose their way out of deprivation. It means our account should recognize the whole person, including what they enjoy and what they lack. The same care is needed when we judge time spent resting. If an unfinished task always outranks rest, the person must finish every demand before they are allowed an ordinary pleasure."
             }
           ]
         }
@@ -512,83 +534,17 @@
       }
     },
     {
-      "id": "s096",
-      "title": "A hobby can offer several things",
-      "chapterId": "c2",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "A game with friends can offer enjoyment, a chance to improve, and time together. Those reasons can coexist. We do not have to decide that only one makes the activity worthwhile."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Self-determination theory names autonomy, competence and relatedness as basic psychological needs. It proposes that environments supporting them support well-being. "
-            },
-            {
-              "citation": 3
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "TJ",
-          "parts": [
-            {
-              "text": "That gives names to things I value in hobbies: choosing to do them, learning something, and having people to share them with."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "This theory helps describe motivation. It does not require every hobby to produce growth or explain everything we mean by happiness."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "single",
-        "views": [
-          {
-            "ref": "A05",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s097",
-      "title": "Chosen challenge, forced hardship",
+      "id": "s208",
+      "partKey": "v2-c3-p1",
       "chapterId": "c3",
+      "title": "Choosing effort, carrying obligations",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Difficulty is not valuable by itself. A chosen project can feel demanding and still be fulfilling. An obligation that leaves someone exhausted can feel demanding without giving them that choice or reward."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "TJ",
-          "parts": [
-            {
-              "text": "I can choose a hard challenge because I want it. I don't want that used to tell someone their hardship is good for them."
+              "text": "Consider the difference between continuing a project because we want to understand it and continuing a task because leaving it unfinished threatens our income or standing. Both can be tiring. Both can involve learning. But the first gives the person a reason they endorse, while the second may leave little room to choose. Describing them both as hard work misses what makes their place in a life different."
             }
           ]
         },
@@ -597,7 +553,25 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Koj's defense of meaningful effort does not require romanticizing suffering. Ask what the person values, whether they had a real choice, and what support they have. The same amount of effort can mean very different things under different conditions."
+              "text": "This is where TJ's objection qualifies Koj's defense of meaningful difficulty. TJ does not deny that a challenge can be fulfilling. Basketball can be tiring, games can become frustrating and making something can take repeated attempts. Enjoyment itself can include effort. His objection is to making that experience a justification for hardship someone did not choose: because a challenge can be good, the person is told that whatever they endure must also be good for them."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "The distinction is not perfectly clean. Chosen work contains obligations, and necessary work can be a source of pride. A student can care about learning and still need a deadline changed. Someone can value a job and object to its demands. These cases make choice, purpose and conditions more useful questions than whether the person looks tired. We need to ask what they endorse, what they can refuse and what support they have."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "That leaves room to praise an effort without praising the conditions that made it exhausting. It also lets Koj's view remain distinct: difficulty does not invalidate something he values. TJ adds that difficulty cannot establish its value on its own. If we keep both points, we do not have to choose between dismissing meaningful effort and romanticizing whatever people are required to carry."
             }
           ]
         }
@@ -621,16 +595,17 @@
       }
     },
     {
-      "id": "s098",
-      "title": "Rest does not need to pay us back",
+      "id": "s209",
+      "partKey": "v2-c3-p2",
       "chapterId": "c3",
+      "title": "Rest without repayment",
       "blocks": [
         {
-          "kind": "dialogue",
-          "speaker": "TJ",
+          "kind": "narration",
+          "speaker": null,
           "parts": [
             {
-              "text": "Sometimes I want to play or rest because I enjoy it. Hindi kailangan may lesson, improvement, or output lagi."
+              "text": "Calling rest a way to work better tomorrow sounds generous until tomorrow becomes its only purpose. The person is allowed a break because it will improve their output. When there is no improvement to measure, the break begins to look wasteful again. Work still determines whether the time was well spent."
             }
           ]
         },
@@ -639,7 +614,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "If rest is defended only because it makes us productive afterward, work still decides its value. We think rest and play can matter without that return."
+              "text": "TJ wants a stronger defense. Rest and play can be parts of a life we want, rather than services that life performs for work. A game does not need to become a skill assessment. Conversation does not need a lesson at the end. Even the wish to lie down after a demanding day can matter without a promise to become more efficient afterward. This does not imply that nobody has responsibilities; it challenges the idea that responsibilities must exhaust every reason to use our time."
             }
           ]
         },
@@ -648,19 +623,25 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Haselberger's personal essay describes building a life around work until little remains when work ends. "
+              "text": "Haselberger's personal essay reflects on work becoming so central that little remains when it ends. We use that account as a published reflection on the problem, not evidence of how often it happens. It helps articulate why a life organized entirely around work can leave a person with little space for other attachments. "
             },
             {
               "citation": 4
-            },
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
             {
-              "text": " Her reflection adds a perspective to our argument. The balance between work and enjoyment still depends on what someone values and what their life allows."
+              "text": "There is an objection we cannot answer by telling everyone to work less. Some people can reduce hours without losing what they need; others cannot. Defending rest does not create that freedom. It gives us a reason to ask why the freedom is absent. The unfinished task cannot be the only test of whether rest is deserved, especially when more work can always be added. A good life needs room that does not remain available only at someone else's discretion."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A07",
@@ -669,20 +650,30 @@
           }
         ],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 2
       }
     },
     {
-      "id": "s099",
-      "title": "Who enjoys the afternoon?",
+      "id": "s210",
+      "partKey": "v2-c3-p3",
       "chapterId": "c3",
+      "title": "Who decides what counts?",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Bentham evaluates actions through the pleasure and pain they produce: their intensity, duration, likelihood and other consequences, including how many people are affected. "
+              "text": "If enjoyment need not be useful, how should we judge it when other people are affected? Return to the afternoon. Having fun is one consequence, but so is leaving someone to organize everything or excluding a friend from the gathering. Defending pleasure does not mean that our own pleasure settles the whole question."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Bentham's framework considers the pleasure and pain an action produces, including their intensity, duration, likelihood and the people affected. Applied here, it directs our attention beyond the person who reports having a good time. The organizer's fatigue and the absent friend's experience also belong in the judgment. Those are our applications of the framework, not Bentham's description of this fictional gathering. "
             },
             {
               "citation": 5
@@ -694,44 +685,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Applied to our afternoon, the question becomes more than “Did I have fun?” Who had time to join? Who organized it? Did someone feel left out? These are our questions using his framework, not Bentham's account of this scene."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "This lens helps us notice consequences beyond ourselves. It also leaves a problem: pleasures that last equally long can matter differently to different people. Counting time alone cannot settle their value."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "group",
-        "views": [
-          {
-            "ref": "A01",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s100",
-      "title": "Who ranks pleasures?",
-      "chapterId": "c3",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Mill argues that pleasures differ in quality as well as quantity. To judge between them, he appeals to people acquainted with both. "
+              "text": "Mill introduces a further distinction: pleasures can differ in quality as well as quantity. His answer appeals to the judgment of people acquainted with both kinds. That challenges the idea that the length or intensity of enjoyment alone tells us what makes it valuable. "
             },
             {
               "citation": 6
@@ -739,11 +693,11 @@
           ]
         },
         {
-          "kind": "dialogue",
-          "speaker": "TJ",
+          "kind": "narration",
+          "speaker": null,
           "parts": [
             {
-              "text": "Pero who gets to be that judge? Taste, education and wanting approval can shape what we call a better activity."
+              "text": "TJ's concern is about who gets to make that ranking. A judgment about better pleasures can carry assumptions about education, class and taste. Studying can involve curiosity, but it can also be done only for approval. Gaming can involve habit, but it can also involve imagination, friendship and chosen difficulty. The activity's name cannot tell us which of those meanings is present. This is TJ's criticism, not a concession we attribute to Mill."
             }
           ]
         },
@@ -752,70 +706,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "That is TJ's objection, not a concession from Mill. Studying and gaming can each involve effort, imagination or company. Neither label tells us everything about what someone gets from the activity."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "We can compare experiences without pretending the person making the comparison stands outside class, upbringing or preference."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "pair",
-        "views": [
-          {
-            "ref": "A03",
-            "image": 0,
-            "label": "Studying"
-          },
-          {
-            "ref": "A05",
-            "image": 0,
-            "label": "Playing"
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s101",
-      "title": "Needs are not a rigid staircase",
-      "chapterId": "c3",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "The familiar needs pyramid can suggest that people must finish one level before another matters. Maslow's own paper describes a less rigid order: people can be partly satisfied at several levels, and higher needs emerge gradually. The pyramid is not his original figure. "
-            },
-            {
-              "citation": 7
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Someone facing insecurity can still value affection, dignity or learning. Their joy is not fake because another need remains unmet."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "The reverse also matters: finding connection does not remove the need for food, safety or rest. Needs can coexist. One fulfilled need does not excuse neglecting another."
+              "text": "We therefore need reasons for judging an activity, rather than a ranking based on its respectable appearance. Consequences matter, and so does what participants value about it. Koj can continue to put weight on fulfillment while TJ defends pleasure that has no larger outcome. Their disagreement remains useful because it prevents either usefulness or enjoyment from becoming the only acceptable answer. The ranking itself also needs examination: who taught us what a worthwhile afternoon was supposed to look like?"
             }
           ]
         }
@@ -828,71 +719,17 @@
       }
     },
     {
-      "id": "s102",
-      "title": "No winning activity",
-      "chapterId": "c3",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "We do not settle this by choosing between pleasure and fulfillment. Koj values living well, TJ wants room for ordinary enjoyment, and Vier asks about participation and choice."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "An afternoon can offer several of these at once. Another activity can matter for different reasons. Even the same person can need challenge one day and rest the next."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Our conclusion is that happiness cannot be reduced to the easiest, most productive or most meaningful activity. The next question is how we learned to call certain lives and activities better in the first place."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "group",
-        "views": [
-          {
-            "ref": "A01",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s103",
-      "title": "The expected life",
+      "id": "s211",
+      "partKey": "v2-c4-p1",
       "chapterId": "c4",
+      "title": "When a wish becomes a standard",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Good grades, a stable career, a relationship, an income that keeps growing. These can be things someone wants. They can also become the only accepted picture of a successful life."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "Vier",
-          "parts": [
-            {
-              "text": "I want to ask which parts I want, and which parts I follow because they're treated as the correct way to live."
+              "text": "Good grades, a satisfying career, a relationship and enough income can all be things a person wants. Vier's concern is not that wanting them is wrong. It is what happens when they are presented as the only acceptable shape of a life. A preference becomes a standard, then a timetable. Falling behind the timetable begins to feel like living incorrectly, even before the person asks whether that path suits them."
             }
           ]
         },
@@ -901,13 +738,31 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Our class discussion of habitus helps frame how surroundings can make certain choices feel natural. Here we use that class lens, not a passage we read in its original formulation. It asks us to examine learned expectations without assuming everyone absorbs them identically."
+              "text": "The pressure is easy to miss when the goal feels natural. We can learn what to admire through family, school, friends and media until the judgment no longer sounds borrowed. The class concept of habitus helps us examine how upbringing and social surroundings shape what feels obvious or desirable. We use it here as a lens from class, not as a quotation from a text we have not read. It makes the history of a desire worth asking about without proving that the desire is false."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Vier does not propose finding a self untouched by society. The language in which we describe a good life and the opportunities we know about are already social. Rejecting every influence would also reject relationships and possibilities we value. His alternative is to reflect on those influences and decide what to keep, question or change. Having a say includes negotiating a standard, rather than following it only because it appears settled."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "That negotiation changes what dissatisfaction means. Someone can want a relationship without treating being single as failure. A student can value learning without making every grade a verdict on their life. Income can matter without one amount becoming the measure of everyone's success. The problem begins when one desirable thing is made to stand for happiness as a whole, leaving every other way of living in need of an excuse."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A08",
@@ -920,16 +775,17 @@
       }
     },
     {
-      "id": "s104",
-      "title": "What does the purchase give me?",
+      "id": "s212",
+      "partKey": "v2-c4-p2",
       "chapterId": "c4",
+      "title": "What am I buying?",
       "blocks": [
         {
-          "kind": "dialogue",
-          "speaker": "TJ",
+          "kind": "narration",
+          "speaker": null,
           "parts": [
             {
-              "text": "I'm not above consumer happiness. I like things too. I want to ask what the purchase gives me: a hobby, convenience, a way to connect, or pressure to keep up."
+              "text": "TJ's interest in devices belongs inside this discussion. He enjoys technology and making things; it would be dishonest to criticize consumer happiness as though objects had no place in his own. A purchase can make a hobby possible, remove a frustrating task or give someone a way to stay in touch. It can also offer a brief feeling of keeping up. These possibilities can coexist in the same object."
             }
           ]
         },
@@ -938,13 +794,10 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Van Boven and Gilovich found greater reported and anticipated happiness from experiential than material purchases in their studies. "
+              "text": "Van Boven and Gilovich's abstract reports greater happiness from experiential than material purchases in their surveys, and more positive feelings when participants reflected on experiential purchases in a laboratory comparison. Our access is to that abstract, not the full study methods or every result. The finding gives us a reason to consider what a purchase offers; it does not establish that objects are shallow or that every experience is a better use of money. "
             },
             {
               "citation": 8
-            },
-            {
-              "text": " That finding does not make objects shallow. A device can make a hobby possible. An experience can arrive with debt or status pressure."
             }
           ]
         },
@@ -953,35 +806,39 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Those are our qualifications. The question is what the purchase does in someone's life, including its cost, rather than whether its category sounds more meaningful."
+              "text": "A laptop that supports a valued hobby and a trip that leaves someone unable to meet expenses complicate a simple opposition between owning and doing. These are our examples, not outcomes reported by the study. What matters to the judgment is the use someone can make of the purchase, its cost in their circumstances and whether they wanted that use in the first place."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "This makes the question more demanding than “Will buying it make me happy?” We can ask what part of life it would change and what we give up to obtain it. Wanting a device does not prove that we are trapped by comparison, and resisting a purchase does not make us free of it. TJ's interest remains legitimate. The assumption worth testing is that acquiring the next thing will supply the life in which he wants to use it. Owning the phone and having someone to talk to on it are different conditions."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
-        "views": [
-          {
-            "ref": "A09a",
-            "image": 0,
-            "label": null
-          }
-        ],
+        "layout": "text",
+        "views": [],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 0
       }
     },
     {
-      "id": "s105",
-      "title": "One phone, different uses",
+      "id": "s213",
+      "partKey": "v2-c4-p3",
       "chapterId": "c4",
+      "title": "A phone does more than one thing",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "The same phone can let someone talk with a friend and compare their life with a stream of milestones. “Stop using your phone” treats those uses as interchangeable."
+              "text": "The same phone can carry a conversation with a friend and a feed that makes someone's life feel late. It is not a different device when its use changes. A message can make distance easier to bear; a display of milestones can turn someone else's achievement into a judgment about our own. Calling the phone good or bad misses the relationship between the activity, the person and the conditions in which they use it."
             }
           ]
         },
@@ -990,13 +847,19 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Verduyn and colleagues' review reported different associations for active and passive social-network use. It proposed connection and comparison as different mechanisms. "
+              "text": "Verduyn and colleagues' review abstract distinguishes associations involving active and passive social-network use. It reports a more robust negative relationship for passive use and a weaker positive one for active use, connecting these patterns with comparison and envy or with social connectedness. We have not read the studies within that review, and its 2017 account cannot stand for every platform or use today. "
             },
             {
               "citation": 9
-            },
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
             {
-              "text": " A separate study found a very small average association between adolescent technology use and well-being. "
+              "text": "Orben and Przybylski's abstract reports a small average negative association between digital technology use and adolescent well-being in their datasets. An average that small does not explain every person's experience, rule out a serious harm in a particular situation or describe all kinds of online interaction. These are associations, not evidence that banning a phone would resolve the worries we have named. "
             },
             {
               "citation": 10
@@ -1008,13 +871,22 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Neither finding gives a rule for every person or platform. An average can miss particular harms, and a label such as “active” does not tell us whether an exchange felt supportive. Look at the use and its context."
+              "text": "For TJ, online play and conversation can be part of social life. Treating them as unreal because they use a screen would remove something he values before examining it. But defending that value does not settle whether a particular pattern of use helps him. We can ask whether the interaction gives room for a relationship or repeatedly turns attention toward a standard he does not endorse. The answer requires attention to that use, not a moral verdict about everyone who uses a phone."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "There is also an access question beneath both images. Having a device does not ensure time, privacy or reliable connectivity. Making an online group easier to find can help, but it does not make every person equally able to take part. TJ's tendency to imagine another app is useful when the obstacle is finding or coordinating something. It is less useful when the obstacle is a condition the app cannot change."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "comparison",
         "views": [
           {
             "ref": "A09a",
@@ -1037,16 +909,17 @@
       }
     },
     {
-      "id": "s106",
-      "title": "Pressure to be cheerful",
+      "id": "s214",
+      "partKey": "v2-c4-p4",
       "chapterId": "c4",
+      "title": "Being happy on command",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Being told to cheer up can feel different from being allowed to explain what is wrong. Encouragement becomes pressure when sadness itself is treated as failure."
+              "text": "Imagine someone admitting that they feel sad. Their friend says, “Cheer up!” That response can come from care, but it can also end the conversation too soon. If the person has to reassure everyone that they are fine, the original difficulty remains and a new task has been added: display the right feeling before anyone will listen."
             }
           ]
         },
@@ -1055,7 +928,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Bastian and colleagues studied perceived expectations not to feel sad. Across their studies, those expectations were associated with, and experimentally followed by, more negative emotion and lower well-being. The Australian and Japanese samples did not respond identically. "
+              "text": "Bastian and colleagues' abstract examines perceived expectations not to feel sad. It reports both associations and experimental findings linking that pressure with more negative emotion and lower well-being. The abstract includes Australian and Japanese samples and notes differences in the effects. It does not establish that encouragement is harmful or that the same results describe Philippine relationships. The relevant problem is the expectation that sadness should be absent, rather than cheerful company itself. "
             },
             {
               "citation": 11
@@ -1067,13 +940,34 @@
           "speaker": null,
           "parts": [
             {
-              "text": "This is not an argument against cheerful company. It is a reason to ask what encouragement permits: can the person still describe their experience, or must they hide it to be accepted?"
+              "text": "Koj's definition already makes room for a life containing frustration, boredom and grief. Vier can remain involved in life while dissatisfied with part of it. Their answers would lose that room if happiness became a performance of constant approval. Someone should be able to say that a day was painful without being treated as having failed at living well."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "We should also resist assuming that people will always adjust to whatever happens. Diener, Lucas and Scollon's review abstract revises the account of a fixed happiness baseline: people differ, components of well-being can move differently and set points can change. The authors revise adaptation theory rather than deny adaptation. Their account does not justify a promise that every hardship will become harmless with enough time. "
+            },
+            {
+              "citation": 12
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Gratitude can still be sincere. A person can value a friend or an enjoyable meal while wanting a difficult condition changed. Listening to both claims does more than requiring either positivity or despair. The friend need not fix the whole problem to make this possible. They can begin by allowing the account to remain complicated, without asking the person to improve its mood for their benefit."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A10",
@@ -1086,120 +980,17 @@
       }
     },
     {
-      "id": "s107",
-      "title": "Joy does not cancel the problem",
-      "chapterId": "c4",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Someone can appreciate a meal with friends and remain angry about conditions making everyday life harder. Gratitude does not require calling those conditions acceptable."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Nor can we assume people will adjust to anything. Diener, Lucas and Scollon revised the idea of one fixed happiness baseline: people differ in adaptation, and their set points can change under some conditions. "
-            },
-            {
-              "citation": 12
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "TJ",
-          "parts": [
-            {
-              "text": "Small joys count. Pero they shouldn't become a reason to tell people they don't need more time, security or support."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Resilience can describe how someone keeps going. It does not decide what burdens they should have to carry."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "single",
-        "views": [
-          {
-            "ref": "A11",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s108",
-      "title": "Choosing what to keep",
-      "chapterId": "c4",
-      "blocks": [
-        {
-          "kind": "dialogue",
-          "speaker": "Vier",
-          "parts": [
-            {
-              "text": "I can't find a version of myself that was never shaped by society. I can still question what I've learned and decide what to keep."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Agency is negotiation here, not escape. We can accept some expectations, reject others, and change our minds. The standards used to choose are also learned, so reflection does not place us outside social influence."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "That does not make choice meaningless. It means our definition of happiness has to include room to question expectations and people with whom we can discuss them. That brings us to relationships."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "single",
-        "views": [
-          {
-            "ref": "A04",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s109",
-      "title": "Ordinary care",
+      "id": "s215",
+      "partKey": "v2-c5-p1",
       "chapterId": "c5",
+      "title": "The small things someone remembers",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Remembering what a friend said. Making room for someone at lunch. Noticing when they have gone quiet. Care often happens through small acts, not a single moment that proves a relationship's value."
+              "text": "Imagine the friends sharing a meal after the game. The food is not a reward for achieving something together. It gives them time to talk, including about things too ordinary to become announcements. A friend remembers what another person was working on and asks how it went. What matters is not an impressive gesture but the experience of being someone whose day can be noticed."
             }
           ]
         },
@@ -1208,7 +999,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The publisher descriptions of Lambek's and Das's books on ordinary ethics draw attention to ethics in everyday action and attentiveness to others. We use those descriptions as an entry point, not as passages from the books. "
+              "text": "The class lens of ordinary ethics helps us take that attention seriously. The publisher describes Lambek's collection as examining ethical dimensions of everyday speech and action, and Das's book as exploring everyday life and attentiveness to others. We have access to those descriptions, not the books' arguments in full. Our application is that a way of replying, listening or making room can affect the relationship in which someone spends their day. We do not claim that the authors studied this fictional meal. "
             },
             {
               "citation": 13
@@ -1226,13 +1017,22 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The way people treat one another can make ordinary life easier to return to. Those same routines can also exclude or exhaust someone."
+              "text": "Attention matters because company alone can leave a person unheard. A table full of people might allow an ordinary concern to be received, or it might require the person to keep it quiet. The number of people present does not tell us which. The same is true of our earlier friend saying “Cheer up!” A caring intention is a starting point; what the response permits is part of its effect."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "For TJ, the value of friends includes having people with whom thoughts, disappointments and enjoyment can be shared. That is more specific than including relationships on a list of things that make people happy. It asks what happens within the relationship. Repeated attention can make ordinary company worth returning to, while repeated dismissal can make even a familiar gathering difficult to enter."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "group",
+        "layout": "support",
         "views": [
           {
             "ref": "A12",
@@ -1245,16 +1045,17 @@
       }
     },
     {
-      "id": "s110",
-      "title": "Acquaintances can matter too",
+      "id": "s216",
+      "partKey": "v2-c5-p2",
       "chapterId": "c5",
+      "title": "Company without a quota",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Connection does not have to mean a best friend or partner. A familiar person at class or a brief conversation can also make someone feel less alone."
+              "text": "The meal also raises a tempting shortcut: if company is valuable, should we advise everyone to spend more time with people? That advice is incomplete until we know what the company is like. A conversation with a familiar classmate is different from being required to stay at a gathering where one feels judged. More contact can mean more opportunities for connection; it can also mean more demands."
             }
           ]
         },
@@ -1263,7 +1064,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Sandstrom and Dunn found that people reported greater happiness and belonging on days with more interactions with weak ties. Their first study involved students. This is a daily association, not proof that adding acquaintances causes happiness. "
+              "text": "Sandstrom and Dunn's abstract reports that people experienced greater happiness and belonging on days with more interactions with weak ties. Their student study concerned contact with classmates, rather than only close friendship. These daily associations give us a reason to notice familiar people outside our closest relationships. They do not prove that adding acquaintances causes happiness or that every interaction is welcome. "
             },
             {
               "citation": 15
@@ -1275,7 +1076,19 @@
           "speaker": null,
           "parts": [
             {
-              "text": "We take it as a reason to notice ordinary contact, without turning sociability into a quota. A person does not fail at happiness because they want fewer conversations or more time alone."
+              "text": "Chapter 3 of the *World Happiness Report 2025* likewise finds an association between sharing meals and higher life evaluations in its analysis across countries and individuals. The chapter explicitly leaves the direction of causation unresolved and cannot fully account for the quality of the interaction. We read this chapter, not the whole report or its country rankings. The association is not a prescription for a certain number of meals. "
+            },
+            {
+              "citation": 16
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "The shared concern is whether a person has opportunities for company they value. A meal can create that opportunity without guaranteeing it. Eating alone can also be a chosen, comfortable part of a day. A quota would replace attention to the person's relationship with a count that cannot describe it. We should make room for connection and ask whether it is welcoming, rather than require participation as proof that someone is taking happiness seriously."
             }
           ]
         }
@@ -1288,19 +1101,17 @@
       }
     },
     {
-      "id": "s111",
-      "title": "Sharing a meal",
+      "id": "s217",
+      "partKey": "v2-c5-p3",
       "chapterId": "c5",
+      "title": "Who does the remembering?",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "A meal can give people time together without requiring a major event. The World Happiness Report's 2025 chapter on shared meals found an association with higher life evaluations in data spanning 142 countries. Its authors do not establish which causes which. "
-            },
-            {
-              "citation": 16
+              "text": "At the meal, someone has checked the schedules, followed up, arranged the food or cleaned afterward. These tasks are easy to overlook because the gathering itself appears relaxed. Remembering is also work when one person repeatedly has to make sure a relationship continues. Appreciating the result does not tell us whether that effort is shared."
             }
           ]
         },
@@ -1309,44 +1120,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The number of shared meals also cannot tell us whether the company was caring, tense or compulsory. In our opening, the value lies in enjoying time together, not meeting a meal target."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Connection needs room to happen. Food, time and a place to sit are part of that room, not background details."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "group",
-        "views": [
-          {
-            "ref": "A12",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s112",
-      "title": "Who keeps the relationship going?",
-      "chapterId": "c5",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Someone remembers dates, checks schedules, prepares food and follows up. Friendship can be meaningful while requiring work. The Working Mom Chronicles describes that effort in a personal reflection. "
+              "text": "The Working Mom Chronicles' friendship post describes deliberate practices such as remembering birthdays, showing up and arranging time together. It is one person's published reflection, not evidence of how friendship work is distributed across households or groups. It makes the effort visible. Our further question is whether others recognize and share it, rather than treating one person's willingness as an endless supply. "
             },
             {
               "citation": 17
@@ -1358,13 +1132,10 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Giving can be rewarding too. Dunn, Aknin and Norton found greater reported happiness from spending on others across their designs, including an experiment. "
+              "text": "Generosity can itself be rewarding. Dunn, Aknin and Norton's abstract reports findings connecting spending on others with happiness, including experimental evidence. That finding concerns the spending studied; it does not establish that compulsory giving, household remittances or exhausting one's resources will have the same effect. We have read the abstract, not the full methods. "
             },
             {
               "citation": 18
-            },
-            {
-              "text": " They studied money people could allocate, not an obligation to keep giving until nothing remains."
             }
           ]
         },
@@ -1373,13 +1144,13 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Our question is whether care is shared and sustainable. Appreciating generosity should not hide who supplies the time, money or effort."
+              "text": "The difference is important to our meal. Someone may enjoy preparing it and still want help with cleaning. Valuing care does not require that person to take every task. Nor should a grateful guest assume that their thanks settles the distribution of work. Sharing the preparation or allowing the organizer to decline next time changes something that appreciation alone cannot change. The relationship supports more than the people enjoying its visible result when it also gives room to the person making that result possible."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A13",
@@ -1392,16 +1163,26 @@
       }
     },
     {
-      "id": "s113",
-      "title": "Boundaries belong in connection",
+      "id": "s218",
+      "partKey": "v2-c5-p4",
       "chapterId": "c5",
+      "title": "Saying no without leaving",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Kapwa describes a shared inner self and relations with others within Sikolohiyang Pilipino. We draw this account from Bautista and Aguilar's discussion of earlier work. It is a secondary source, not a test of what every Filipino believes. "
+              "text": "The person who cannot attend needs that room too. If declining an invitation is always treated as a rejection of the friendship, belonging comes with a demand for constant availability. The person must choose between maintaining the relationship and attending to another need. A relationship that allows refusal does not lose all commitment; it recognizes that commitment has to exist within a life containing other claims."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Kapwa offers a Filipino relational starting point for this discussion. Bautista and Aguilar's account, drawing on Pe-Pua and Protacio-Marcelino, describes a shared inner self and equal dignity that reaches beyond a simple opposition between insiders and outsiders. We rely on this accessed secondary account rather than claim to have read the original article it quotes. The concept gives us a way to think about relating to others; it is not evidence that every Filipino relationship is supportive. "
             },
             {
               "citation": 19
@@ -1413,7 +1194,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Recognizing others does not mean agreeing to every demand. A relationship can allow someone to say no, rest, or spend time alone without making them prove they care."
+              "text": "Our application is to ask whether recognizing another person's worth includes recognizing their limits. A friend can care about the group and want an afternoon alone. Another can want to attend and be unable to rearrange their responsibilities. Neither should have to supply a more cheerful or socially impressive reason before their refusal counts. Chosen solitude also deserves a place without being treated as the opposite of a good life."
             }
           ]
         },
@@ -1422,13 +1203,13 @@
           "speaker": null,
           "parts": [
             {
-              "text": "That is our position: connection and boundaries can support each other. Solitude is not automatically loneliness, and belonging is not automatically freedom from pressure."
+              "text": "This puts a practical question inside belonging. We can offer a caring invitation while setting it at a time someone cannot use. We can accept their refusal kindly while leaving the same obstacle in place each week. Listening helps us distinguish what the person prefers from what prevents them from joining. The quality of the welcome and the ability to accept it both matter; kindness at the table does not shorten the journey to it."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A14",
@@ -1437,20 +1218,21 @@
           }
         ],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 3
       }
     },
     {
-      "id": "s114",
-      "title": "The same invitation, different options",
+      "id": "s219",
+      "partKey": "v2-c6-p1",
       "chapterId": "c6",
+      "title": "The same invitation",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "“Come play after class” sounds like the same invitation to everyone. Imagine one person has a free afternoon. Another has a shift, a long trip home or someone depending on their care."
+              "text": "Suppose two friends receive the same invitation to spend an afternoon together. Both want to go. One can finish what they are doing, take a short ride and arrive before everyone leaves. The other finishes work later, has a longer trip home and needs to care for someone that evening. Offering both people a place at the table does not give them the same chance to sit there. We can call the invitation welcoming and still ask why one person can accept it more easily."
             }
           ]
         },
@@ -1459,7 +1241,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Both can want to join. Their willingness does not give them the same options. These are fictional examples, not claims about any group member's circumstances."
+              "text": "This matters to the kind of happiness we have been defending. TJ's ordinary enjoyment needs time in which an afternoon does not have to produce something. Koj's chosen effort needs room to choose a demanding activity rather than have every demand imposed. Vier's participation requires some say over what happens next. Their answers differ, but each raises a question about what a person can do with their day. Caring about friends, valuing a hobby or wanting to rest cannot, by itself, move a shift or shorten a journey."
             }
           ]
         },
@@ -1468,13 +1250,13 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Advice to make time becomes thin if it never asks what already claims that time. To understand whether our definition of happiness is achievable, we have to look at schedules, resources and responsibilities as well as preferences."
+              "text": "The invitation is fictional, and people do sometimes make time under difficult conditions. Someone might arrange a swap, ask for help or join for only a few minutes. Those efforts deserve recognition. But their effort does not explain away the difference between having a free afternoon and having to negotiate for one. If we explain every absence as a failure to prioritize happiness, we stop looking at the obligations that made the decision difficult."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "single",
+        "layout": "comparison",
         "views": [
           {
             "ref": "A15a",
@@ -1497,16 +1279,17 @@
       }
     },
     {
-      "id": "s115",
-      "title": "Buying time moves the work",
+      "id": "s220",
+      "partKey": "v2-c6-p2",
       "chapterId": "c6",
+      "title": "When someone else does the work",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Whillans and colleagues found that paying for time-saving services was associated with greater life satisfaction. Their field experiment also found greater reported happiness after a time-saving purchase than a material one. The samples came from four high-income countries, none of them the Philippines. "
+              "text": "Money can change that decision. A person who pays for a household task may gain an evening they would otherwise spend doing it. In the abstract of their study, Whillans and colleagues report an association between spending on time-saving services and greater life satisfaction across samples in four countries. They also describe a field experiment in which working adults reported greater happiness after a time-saving purchase than after a material purchase. The countries were the United States, Canada, Denmark and the Netherlands; this is not evidence from a Philippine sample. Our discussion relies on that abstract. "
             },
             {
               "citation": 20
@@ -1518,7 +1301,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Buying time also requires money. And the task moves to someone else; it does not disappear. The study's finding does not tell us whether that person's work is secure or fairly paid."
+              "text": "The result helps explain why a purchase can matter even when it leaves no object to display. What the person gains is time they can use differently. Yet hiring someone to clean a room does not make the cleaning disappear. Another person spends part of their day doing it. Whether that arrangement gives both people worthwhile options depends on pay, working conditions and how much choice each has. These are questions we are adding to the finding, not worker outcomes established by the abstract."
             }
           ]
         },
@@ -1527,7 +1310,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "We need both questions: what gives one person more time, and what conditions that creates for the person doing the work?"
+              "text": "There is also a difference between advising someone to buy time and asking how people could have more usable time. The advice assumes money available after other needs. A person who cannot afford the service has not overlooked a clever purchase. And a household might need a fairer division of its existing work rather than another bill. The study offers one route to relief; it does not settle who can take that route or who should carry its cost."
             }
           ]
         }
@@ -1547,20 +1330,21 @@
           }
         ],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 2
       }
     },
     {
-      "id": "s116",
-      "title": "There is no universal price of happiness",
+      "id": "s221",
+      "partKey": "v2-c6-p3",
       "chapterId": "c6",
+      "title": "Money changes the afternoon",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Income matters partly because it changes what someone can afford and what pressures they face. But “How much is enough?” needs a place, a time, a household and a definition of happiness."
+              "text": "Return to the friend deciding whether to join. Fare, food and enough income to risk losing an hour of paid work can alter the options before anyone asks how happy they feel. We do not need to claim that money guarantees happiness to take those pressures seriously. At the same time, an improved income does not tell us everything about the quality of someone's relationships or how they experience their day."
             }
           ]
         },
@@ -1569,7 +1353,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Kahneman and Deaton's 2010 US study distinguished life evaluation from emotional well-being. Later, Killingsworth, Kahneman and Mellers found that the relationship between income and emotional well-being differed across the happiness distribution; the earlier flattening claim was overstated. "
+              "text": "Kahneman and Deaton distinguished everyday emotional well-being from people's evaluation of their life. Their 2010 analysis of US survey responses found different income relationships for those measures. The later abstract by Killingsworth, Kahneman and Mellers reports that the flattening pattern in a reanalysis applied only to the least happy group, rather than describing everyone. That later abstract is the extent of our access to this reassessment. Together, these accounts give us reason to ask what was measured and whose experience an average conceals. They do not give us one income at which every person's happiness stops changing. "
             },
             {
               "citation": 1
@@ -1587,29 +1371,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "These are still US, correlational findings. They cannot supply a peso threshold for us, or prove that money guarantees happiness. A headline number conceals the circumstances it measures."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "text",
-        "views": [],
-        "control": null,
-        "afterBlock": 0
-      }
-    },
-    {
-      "id": "s117",
-      "title": "Joy in hardship is real",
-      "chapterId": "c6",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Palanca-Tan's study surveyed 522 respondents in Koronadal City in 2019. Their mean self-rated happiness was 6.75 out of 10 despite a poverty incidence above the national figure. This was one city, not a national sample. "
+              "text": "Palanca-Tan's survey in Koronadal also complicates a simple story. Respondents reported positive happiness scores in a setting the paper describes as having low income and high poverty incidence. This was one city and one survey, not a description of every Filipino life. It shows why we should not assume that hardship cancels all joy. It does not show that the hardship is acceptable or that more secure conditions would be pointless. Its reported income threshold belongs to that study, not to a national price of happiness. "
             },
             {
               "citation": 22
@@ -1621,16 +1383,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The finding matters because deprivation does not erase people's enjoyment or relationships. It cannot tell us that deprivation is harmless. A happiness score is not an account of every pressure in a person's life."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "TJ",
-          "parts": [
-            {
-              "text": "Saying someone can find joy with little should not become “then they don't need anything to change.” Those are different claims."
+              "text": "A person can enjoy seeing their friends and still worry about the fare home. Recognizing both experiences lets us defend their enjoyment without using it as evidence that their conditions need no improvement."
             }
           ]
         }
@@ -1643,16 +1396,17 @@
       }
     },
     {
-      "id": "s118",
-      "title": "Having a resource, being able to use it",
+      "id": "s222",
+      "partKey": "v2-c6-p4",
       "chapterId": "c6",
+      "title": "Available is not usable",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "A resource is not the same as a real opportunity. Two people can receive the same bus fare while having different access to usable transport, free time or a safe route."
+              "text": "Imagine the gathering has been moved to a free public space. The entrance fee is gone, which helps. But the friend may still have no way home after the last trip, or the route into the space may be inaccessible to them. Calling the space available describes only part of what they need. To judge the improvement, we have to follow the person from their starting point through the visit and back home."
             }
           ]
         },
@@ -1661,7 +1415,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Robeyns and Byskov's account of the capability approach distinguishes resources from what someone is able to do and be. People differ in how they can turn resources into valued activities. "
+              "text": "The capability approach gives this distinction a clearer form. In the scholarly overview by Robeyns and Byskov, capabilities concern real opportunities to do or be something; functionings concern what is realized. Resources matter through the opportunities people can make of them, and circumstances affect that conversion. We rely on this overview, not on having read Sen's *Development as Freedom* itself. Applying it to our example, free entry is a resource whose value depends partly on transport, access and available time. "
             },
             {
               "citation": 23
@@ -1673,7 +1427,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Applied here, access means more than being told an activity is available. Can the person realistically reach it, participate, and choose whether it suits them?"
+              "text": "This also changes what would count as success. Making it possible to attend is different from requiring attendance. A person might have a workable journey and still prefer solitude that afternoon. Vier's emphasis on participating in one's life gives us a reason to defend that choice as well. An opportunity for company loses something if refusing it becomes another failure someone must explain. The proposal should widen what people can choose, while leaving them room to choose differently."
             }
           ]
         }
@@ -1686,16 +1440,26 @@
       }
     },
     {
-      "id": "s119",
-      "title": "Name the barrier",
+      "id": "s223",
+      "partKey": "v2-c6-p5",
       "chapterId": "c6",
+      "title": "Who sets the options?",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Galtung's idea of structural violence examines avoidable gaps between what people could realize and what social arrangements allow them to realize. What counts as avoidable is itself a difficult judgment. "
+              "text": "The remaining barriers have people and decisions behind them. Someone sets opening hours. Someone decides which routes receive service. Someone arranges shifts and decides whether a request to change one can be heard. These choices may have competing purposes and real costs. Treating them as decisions lets us ask who benefits, who is excluded and what could be revised, rather than describing the excluded person as insufficiently motivated."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Galtung's account of structural violence asks us to consider avoidable harm produced through social arrangements, even where no single person directly attacks another. Applied carefully, that question makes a persistent, harmful barrier worth investigating. It does not mean that every inconvenient timetable is violence. We would need to identify the harm, the arrangement sustaining it and why an alternative is feasible. Without those steps, the label would outrun our explanation. "
             },
             {
               "citation": 24
@@ -1707,38 +1471,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Name the barrier, the people affected and the mechanism. Imagine a space advertised as open to everyone that people cannot reach or enter accessibly. A design decision can restrict opportunity without anyone directly confronting the excluded person."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Applying this idea to an actual place requires evidence about the barrier and its effects. Calling an arrangement structural violence should explain a mechanism, not replace the explanation."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "text",
-        "views": [],
-        "control": null,
-        "afterBlock": 0
-      }
-    },
-    {
-      "id": "s120",
-      "title": "Poverty is also about relationships of power",
-      "chapterId": "c6",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Mosse argues that durable poverty is shaped by economic and political relations and social categorization, including power over the terms of debate. His work is grounded in adivasi and dalit communities in India; bringing that lens here is our application. "
+              "text": "There is a further decision about which questions get discussed at all. Mosse's abstract, grounded in Indian contexts, includes attention to power over the terms of debate. Our application is narrower: if a meeting discusses only how students should manage their time, transport hours or compulsory workloads may never become proposals anyone considers. This is our hypothetical use of an abstract-level account, not a finding about a particular Philippine institution. Asking affected people to describe the barrier can change the problem being addressed. "
             },
             {
               "citation": 25
@@ -1750,16 +1483,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "It pushes us to ask who sets schedules, allocates resources and gets heard when conditions are challenged. Someone's hardship is not always an isolated shortage they can solve alone."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "We also question treating every problem as a personal purchase or self-improvement task. Harvey's publisher description identifies market exchange as an ethic in neoliberalism; our connection to productivity and wellness advice is ours, not a claim from an unread chapter. "
+              "text": "The publisher's description of Harvey's book presents neoliberalism as treating market exchange as a guide for human action. We have not read the book's chapters. Our own question is what gets lost when the friend is told only to purchase a service, become more efficient or improve their attitude. Those options may help in some circumstances, but they leave the timetable and the distribution of work outside the discussion. We can consider individual choices while also asking whether the conditions making those choices necessary should change. "
             },
             {
               "citation": 26
@@ -1775,16 +1499,17 @@
       }
     },
     {
-      "id": "s121",
-      "title": "Options do not guarantee feelings",
+      "id": "s224",
+      "partKey": "v2-c6-p6",
       "chapterId": "c6",
+      "title": "Possible, unequally",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "More time, security and access can make valued activities possible. They cannot guarantee affection, fulfillment or a particular mood. That limit does not make those conditions irrelevant."
+              "text": "Is happiness achievable in today's society? Our answer is yes, but people do not have equal room to pursue and sustain it. The enjoyment TJ defends can happen during a difficult week. Koj can value an effort that remains tiring. Vier can participate in decisions without feeling satisfied by every result. None of these experiences requires a perfect life. None gives us reason to ignore a condition that repeatedly prevents someone from resting, joining others or choosing what matters to them."
             }
           ]
         },
@@ -1793,7 +1518,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "It also applies to our own work. Making a website is an option we have, and it encourages us to imagine technical answers. An app can help people coordinate. It cannot by itself shorten a workday, pay a fare, or make a relationship caring."
+              "text": "We therefore need to distinguish helping someone feel better from improving what they can do. Listening may help a friend through disappointment; a later meeting time may let them attend. An app might make an invitation easier to find, while doing nothing about a shift or the fare. As we imagine a website about happiness, that is a limit our own preferred medium needs to face. Information can explain an obstacle without removing it."
             }
           ]
         },
@@ -1802,7 +1527,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Our conclusion is that happiness involves experience and opportunity. Looking at either one alone misses part of the question."
+              "text": "Better conditions would not guarantee everyone the same feelings. People can disagree about how to spend a freer afternoon, and a welcome opportunity can still be followed by an unhappy day. The case for change is that people should have more usable room for the lives they value. We can now ask what a particular proposal would change, who would carry its work and how we would know whether it made that room."
             }
           ]
         }
@@ -1815,16 +1540,17 @@
       }
     },
     {
-      "id": "s122",
-      "title": "Possible, but unequally sustained",
+      "id": "s225",
+      "partKey": "v2-c7-p1",
       "chapterId": "c7",
+      "title": "What we can change together",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Is our definition of happiness achievable in today's society? Yes, but unequally. People can enjoy things, value their lives and exercise agency under difficult conditions. The opportunity to sustain those experiences is not evenly available."
+              "text": "An invitation gives us one place to begin. If a friend cannot attend, the group can ask what makes the time difficult before treating the absence as a preference. A different meeting time, a less expensive place or sharing the preparation might change whether the friend can join. These are modest actions, but they address a named obstacle rather than ask the person to want the gathering more."
             }
           ]
         },
@@ -1833,7 +1559,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "For us, the answer cannot be only “change your mindset” or only “wait until society changes.” Personal choices matter within conditions people do not choose."
+              "text": "The change has to remain negotiable. Moving the meeting may help one friend and make it harder for another. Someone may prefer to stay home even when the time becomes workable. Listening gives the group information it cannot obtain by assuming that its usual arrangement suits everyone. Sharing decisions also means accepting that the answer may be different from what the organizer expected."
             }
           ]
         },
@@ -1842,7 +1568,16 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Changes should expand time, security, access and participation without prescribing one happy life. That is the direction we defend, not a promise that one policy will make everyone feel good."
+              "text": "We can use the same approach to rest and care. A household or group can ask who keeps arranging things, which tasks can be shared and whether refusal is allowed. A person who has control over part of their schedule can protect time for a valued activity without turning that activity into another performance target. These practices cannot remove every demand, but they can change demands within the group's power."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "That boundary is part of the proposal. A friend cannot necessarily move a work shift, make transport reliable or supply secure housing. Advising better planning as though it reaches all those conditions would return the responsibility to the person facing them. Our answer therefore begins with what people can change together and continues toward the institutions that determine the rest. Happiness is already possible; the question is how more people could have room to pursue it without carrying all the cost alone."
             }
           ]
         }
@@ -1855,16 +1590,17 @@
       }
     },
     {
-      "id": "s123",
-      "title": "Changes within reach",
+      "id": "s226",
+      "partKey": "v2-c7-p2",
       "chapterId": "c7",
+      "title": "A place to stay without buying anything",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "At a personal level, we can notice which activities we value, keep room for rest, and question whether a purchase or goal serves us. In relationships, we can share planning and care instead of leaving them to the person who always remembers."
+              "text": "Consider a hypothetical campus space where students can sit, talk or spend time quietly without buying food or a drink. It would address one obstacle we have named: the cost of remaining somewhere together. This is a proposal, not a report of a facility we have built or evidence that it has improved happiness. Its value would depend on whether people could use it."
             }
           ]
         },
@@ -1873,7 +1609,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Those are practices, not duties to become happier. Some people have little room to act on them. Failing to make time does not prove someone chose badly when obligations already fill it."
+              "text": "The design would need more than a bench. Shade and seating would affect whether it is comfortable to stay; a usable route and unobstructed space would affect who can reach it and settle there. Opening hours would need to be considered alongside classes and transport home. A place available only during hours someone cannot spare would remove a purchase requirement while leaving the invitation difficult to accept."
             }
           ]
         },
@@ -1882,53 +1618,22 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Personal practices belong alongside changes to conditions. They become blame when offered as substitutes for support, safer work or a manageable schedule."
+              "text": "Students who would use the space should have a part in deciding what it is for. Some might want conversation, others quiet company or time alone. One arrangement may not serve those uses equally well. People who already have a place to meet should not be the only ones consulted, because their experience would leave out the barrier the proposal is intended to address. Nor should staff be asked only how to maintain a design everyone else has already settled."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Maintenance requires time, money and responsibility. Cleaning, repairs and opening the space would need an arrangement agreed with the people doing that work. We have not established a budget or promised institutional support. Naming those needs is part of making the proposal serious: a welcoming space cannot depend on work whose cost remains invisible. The reason to pursue it is a more usable opportunity for people to spend time as they choose, not the appearance of a happy group in its illustration."
             }
           ]
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
-        "control": null,
-        "afterBlock": 0
-      }
-    },
-    {
-      "id": "s124",
-      "title": "Make room on campus",
-      "chapterId": "c7",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "A school or community can make ordinary connection easier through places people can reach, sit and stay without needing to buy something. Schedules can also leave time for rest and participation instead of treating every gap as wasted capacity."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "These are proposals. Their design should include the people who use and maintain the space: students with different schedules and access needs, staff, cleaners and others affected."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "A free space is not accessible just because it has no entrance fee. Opening hours, transport, physical access and the cost of keeping it usable still matter."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "single",
+        "layout": "support",
         "views": [
           {
             "ref": "A17",
@@ -1941,16 +1646,17 @@
       }
     },
     {
-      "id": "s125",
-      "title": "Conditions institutions can change",
+      "id": "s227",
+      "partKey": "v2-c7-p3",
       "chapterId": "c7",
+      "title": "Who carries the improvement?",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Institutions can act on conditions individuals cannot fix alone: security of work, reasonable demands on time, usable public services and access to resources. We support examining changes in these areas because they affect people's real options."
+              "text": "Suppose students ask for the space to remain open later. Longer hours could help those occupied during the day, but somebody may need to clean, supervise or close it later too. The request would not be fair merely because more students liked the result. We would need to know how the additional work is arranged, paid and negotiated, including whether the workers have a meaningful way to object."
             }
           ]
         },
@@ -1959,47 +1665,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "That does not identify a policy already proven to increase happiness. We have not evaluated a specific intervention. A proposal needs evidence about who benefits, who is excluded, what it costs and whether people can use it."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Listening to people affected is part of the change itself. They should have a say in what counts as an improvement, rather than receive someone else's definition of a good life."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "text",
-        "views": [],
-        "control": null,
-        "afterBlock": 0
-      }
-    },
-    {
-      "id": "s126",
-      "title": "Who benefits, who pays?",
-      "chapterId": "c7",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Our proposals need the same scrutiny as anyone else's. Longer opening hours can give students more time together. If the change adds unpaid work or shifts costs onto staff, its benefit is being bought at someone else's expense."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "Bentham's attention to everyone affected helps us ask about those consequences. Mill's concern with the value of experiences reminds us not to count every benefit as interchangeable. Neither framework settles who has authority to decide. "
+              "text": "Bentham's attention to everyone affected gives us a reason to include those consequences in the judgment. Mill's concern with the quality of what is gained also prevents attendance alone from describing the benefit. These frameworks do not supply evidence that our proposal will work. We use them to question a judgment that counts visible enjoyment while leaving the conditions of providing it outside the calculation. "
             },
             {
               "citation": 5
@@ -2017,7 +1683,16 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The people doing the work need to be included in that decision. “More people can enjoy this” is the start of an assessment, not its conclusion."
+              "text": "Consultation matters only if it can affect the decision. Students unable to use the existing hours and staff asked to carry longer hours should be able to change the proposal, not merely describe their experience after its purpose has been fixed. A later closing time might be revised, paired with a different work arrangement or rejected if its burdens cannot be addressed. Calling the project inclusive would not settle these questions."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "The campus example also shows where a small project reaches its limits. Predictable work schedules, transport that people can use, accessible services and support for care responsibilities concern decisions beyond a group of friends. These are wider directions for institutional change, not policies we have tested or outcomes we can promise. Our argument is for examining who controls those conditions and who has a voice in changing them. A new website can help explain that question. It cannot take the place of the decisions and resources the answer requires."
             }
           ]
         }
@@ -2041,16 +1716,17 @@
       }
     },
     {
-      "id": "s127",
-      "title": "Test a proposal before claiming success",
+      "id": "s228",
+      "partKey": "v2-c7-p4",
       "chapterId": "c7",
+      "title": "Allowing the proposal to fail",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Consider the proposed free campus space. Start by asking intended users and staff what currently prevents access. Set hours and maintenance arrangements with them, including paid work and usable access. Then check whether the space is being used and who still cannot use it."
+              "text": "To judge the proposed space, we would need to ask who can use it, who cannot and what changed for each. Was staying without buying something useful to people previously priced out? Did the hours work with their journey home? Could people enter and use the seating without assistance they did not want? Did staff gain an acceptable work arrangement, or did the project add demands to an already full shift?"
             }
           ]
         },
@@ -2059,7 +1735,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Attendance alone would not prove happiness increased. People may value the space for different reasons, or find that it fails to meet their needs."
+              "text": "These questions would guide a limited trial if the institution and affected people agreed to one. Observing use and asking people about barriers would help assess access. Asking how the experience felt would address a different question. Neither attendance nor a positive response would establish that the project caused a lasting improvement in happiness. Someone may use the space often because there is nowhere else to go, or avoid it for reasons unrelated to its design."
             }
           ]
         },
@@ -2068,35 +1744,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "If the proposal creates a new burden or excludes the people it aimed to serve, the design should change. Testing it means allowing that conclusion, not collecting approval for a decision already made."
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "single",
-        "views": [
-          {
-            "ref": "A17",
-            "image": 0,
-            "label": null
-          }
-        ],
-        "control": null,
-        "afterBlock": 1
-      }
-    },
-    {
-      "id": "s128",
-      "title": "What we agree on",
-      "chapterId": "c8",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "We agree that happiness is not constant cheerfulness, one milestone, or proof that a person optimized their life. We also agree that pleasure in hardship is real without making hardship acceptable."
+              "text": "The people doing the work need a way to report burdens as seriously as visitors report benefits. We should also listen to people who remain absent. If evaluation includes only those who can attend and enjoy the result, it will repeatedly miss the obstacle we started with. A proposal meant to widen opportunity has to be judged partly by the lives it still does not reach."
             }
           ]
         },
@@ -2105,16 +1753,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Koj's living well, TJ's life worth returning to, and Vier's agency remain distinct. Their overlap is room to do things they value and sustain relationships that matter to them."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "That room includes social and material conditions. Happiness is personal in how it is experienced, but the chances to pursue it are not produced by the individual alone."
+              "text": "There are reasons it could fail. Its hours might be unusable, the maintenance arrangement unfair or the space uncomfortable for the people it was intended to welcome. Those would be grounds to revise or stop the proposal, not demands that people become more grateful for it. We defend changing conditions because doing so can widen real options. The defense remains credible only if the particular change is allowed to be inadequate. A good intention and an attractive drawing are not results."
             }
           ]
         }
@@ -2127,16 +1766,17 @@
       }
     },
     {
-      "id": "s129",
-      "title": "What constitutes happiness?",
+      "id": "s229",
+      "partKey": "v2-c8-p1",
       "chapterId": "c8",
+      "title": "What happiness consists of",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Our answer includes pleasure, fulfillment, rest, relationships and agency. Time, security and access shape which of these people can pursue and sustain. None replaces all the others."
+              "text": "We can now answer what constitutes happiness more clearly. In our accounts, enjoyment, valued activity, relationships and participation in life are parts of happiness. Rest belongs among the activities that can be valuable without an achievement afterward. Purpose and growth can matter without making every ordinary moment serve them. People will place different weight on these parts, as the three of us already do."
             }
           ]
         },
@@ -2145,7 +1785,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "This is not a checklist every person must complete. Connection can include solitude and boundaries. Fulfillment can include difficulty without excusing forced hardship. Rest need not become preparation for more work."
+              "text": "Security, time and access occupy a related but different place. They can make those experiences more possible and sustainable. Enough money for a journey does not supply friendship, but lacking the fare can prevent someone from seeing their friends. A workable schedule does not make a project meaningful, but it can give a person room to choose it. Treating these conditions as separate from happiness would ignore their effect on the lives people can lead; treating them as the whole of happiness would ignore what people actually value in those lives."
             }
           ]
         },
@@ -2154,7 +1794,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The useful question is how these things fit into a person's life and what prevents them from pursuing what matters. That keeps our answer concrete without turning it into a universal score."
+              "text": "This answer is not a checklist everyone has to complete. The presence of a difficult feeling does not disprove fulfillment, and the presence of pleasure does not erase a need for change. A person can be happy in part of their life while another part remains painful or constrained. Our definition needs enough depth to recognize both, without declaring that either feeling good or having acceptable conditions settles every question."
             }
           ]
         }
@@ -2167,34 +1807,17 @@
       }
     },
     {
-      "id": "s130",
-      "title": "Where we still differ",
+      "id": "s230",
+      "partKey": "v2-c8-p2",
       "chapterId": "c8",
+      "title": "Where our answers still differ",
       "blocks": [
         {
-          "kind": "dialogue",
-          "speaker": "Koj",
+          "kind": "narration",
+          "speaker": null,
           "parts": [
             {
-              "text": "I still put more weight on living well than on making life easy. Some of what I value takes effort."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "TJ",
-          "parts": [
-            {
-              "text": "I still want to protect enjoyment that doesn't need to become a lesson or achievement."
-            }
-          ]
-        },
-        {
-          "kind": "dialogue",
-          "speaker": "Vier",
-          "parts": [
-            {
-              "text": "I still ask whether I have a say in the life being called happy. A good-looking life isn't enough if I feel I can't participate in it."
+              "text": "Koj continues to give fulfillment a place beyond pleasure. He can value learning or working toward something meaningful while finding the process demanding. His account asks what kind of life the activity contributes to. It reminds us not to equate an easier afternoon with a better life, but it still needs the distinction between chosen effort and demands a person cannot refuse."
             }
           ]
         },
@@ -2203,7 +1826,25 @@
           "speaker": null,
           "parts": [
             {
-              "text": "These differences matter. We do not resolve them by assigning everyone the same balance. They help us question whose values are being used when someone tells another person how to be happy."
+              "text": "TJ continues to defend enjoyment that does not have to prove a larger result. He wants people and activities that make life worth returning to, including play and rest. His defense resists our habit of making free time useful before allowing it to count. It also has to face his own interests: an activity he enjoys is not everyone's preference, and buying a device does not provide every condition for the life in which he wants to use it."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Vier continues to emphasize participation. A person can regret a choice or question a goal and still have a part in their life. His answer also requires us to examine where the goal came from and which options can be acted on. Choosing among social expectations is not the same as having no influence from society; reflecting on those expectations can help decide what to keep."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "None of these answers replaces the others. They expose different ways our account could become too narrow: judging every pleasure by its usefulness, treating visible enjoyment as the whole of a life or calling a nominal choice freedom. Their shared concern with room to live gives us a position on conditions without forcing a consensus about the single best use of that room."
             }
           ]
         }
@@ -2216,16 +1857,17 @@
       }
     },
     {
-      "id": "s131",
-      "title": "Turn the question back on us",
+      "id": "s231",
+      "partKey": "v2-c8-p3",
       "chapterId": "c8",
+      "title": "What made the afternoon possible",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "We can turn meaningful work into a standard everyone must meet. We can defend ordinary joy while overlooking who makes it possible. We can praise agency while imagining choices wider than the ones people have."
+              "text": "Return to the friends around the basketball. The enjoyment does not become less real because we can now see conditions behind it. Someone had time to come. The place was reachable. The company allowed an ordinary afternoon to remain ordinary. There may still have been worries waiting afterward. None of that requires the gathering to produce a lesson before it was worth having."
             }
           ]
         },
@@ -2234,7 +1876,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Our student position makes school pressure and future plans easy to notice. Our access to friends, devices and time can make other barriers easier to miss. Our interest in building a website also makes technological answers attractive."
+              "text": "Happiness is achievable in our society, but the opportunity to pursue and sustain it is unequal. Joy under hardship is part of a person's life, not evidence that deprivation is acceptable. Better conditions also cannot guarantee a feeling or decide which activities everyone should value. They can give people a more workable opportunity to choose, take part and sustain relationships and activities that matter to them."
             }
           ]
         },
@@ -2243,53 +1885,22 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Naming these biases does not remove them. It tells us where our argument needs correction: when our own ordinary life is being treated as the baseline for everyone else."
+              "text": "That is the change we defend: share burdens that groups can change, and make institutional decisions about schedules, access and services answerable to the people affected. Judge a proposal by whose options it improves and whose work it requires. Leave room to refuse the offered activity. Our goal is not to organize everyone into the same pleasant afternoon, but to make an afternoon they value less dependent on obstacles they cannot alter alone."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "The game still does not need an output. Understanding what made it possible gives us a reason to care about the people and arrangements behind it. Who helped make your ordinary afternoon possible?"
             }
           ]
         }
       ],
       "visual": {
-        "layout": "text",
-        "views": [],
-        "control": null,
-        "afterBlock": 0
-      }
-    },
-    {
-      "id": "s132",
-      "title": "Back to the afternoon",
-      "chapterId": "c8",
-      "blocks": [
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "The afternoon still counts. Its jokes and company do not need a grade, output or life-changing lesson to matter."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "But it also takes time to spare, people able to join, and somewhere to stay. Happiness is possible in the society we have. Making more room for it means protecting ordinary joy while changing the conditions that restrict choice and connection."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "What would give you, and the people around you, more room for a life worth returning to?"
-            }
-          ]
-        }
-      ],
-      "visual": {
-        "layout": "group",
+        "layout": "support",
         "views": [
           {
             "ref": "A01",
@@ -2300,6 +1911,233 @@
         "control": null,
         "afterBlock": 1
       }
+    }
+  ],
+  "relocations": [
+    {
+      "from": "s088",
+      "to": "s201",
+      "partKey": "v2-c1-p1"
+    },
+    {
+      "from": "s089",
+      "to": "s202",
+      "partKey": "v2-c1-p2"
+    },
+    {
+      "from": "s090",
+      "to": "s203",
+      "partKey": "v2-c1-p3"
+    },
+    {
+      "from": "s091",
+      "to": "s204",
+      "partKey": "v2-c2-p1"
+    },
+    {
+      "from": "s092",
+      "to": "s204",
+      "partKey": "v2-c2-p1"
+    },
+    {
+      "from": "s093",
+      "to": "s205",
+      "partKey": "v2-c2-p2"
+    },
+    {
+      "from": "s094",
+      "to": "s206",
+      "partKey": "v2-c2-p3"
+    },
+    {
+      "from": "s095",
+      "to": "s206",
+      "partKey": "v2-c2-p3"
+    },
+    {
+      "from": "s096",
+      "to": "s206",
+      "partKey": "v2-c2-p3"
+    },
+    {
+      "from": "s097",
+      "to": "s208",
+      "partKey": "v2-c3-p1"
+    },
+    {
+      "from": "s098",
+      "to": "s209",
+      "partKey": "v2-c3-p2"
+    },
+    {
+      "from": "s099",
+      "to": "s210",
+      "partKey": "v2-c3-p3"
+    },
+    {
+      "from": "s100",
+      "to": "s210",
+      "partKey": "v2-c3-p3"
+    },
+    {
+      "from": "s101",
+      "to": "s207",
+      "partKey": "v2-c2-p4"
+    },
+    {
+      "from": "s102",
+      "to": "s210",
+      "partKey": "v2-c3-p3"
+    },
+    {
+      "from": "s103",
+      "to": "s211",
+      "partKey": "v2-c4-p1"
+    },
+    {
+      "from": "s104",
+      "to": "s212",
+      "partKey": "v2-c4-p2"
+    },
+    {
+      "from": "s105",
+      "to": "s213",
+      "partKey": "v2-c4-p3"
+    },
+    {
+      "from": "s106",
+      "to": "s214",
+      "partKey": "v2-c4-p4"
+    },
+    {
+      "from": "s107",
+      "to": "s214",
+      "partKey": "v2-c4-p4"
+    },
+    {
+      "from": "s108",
+      "to": "s211",
+      "partKey": "v2-c4-p1"
+    },
+    {
+      "from": "s109",
+      "to": "s215",
+      "partKey": "v2-c5-p1"
+    },
+    {
+      "from": "s110",
+      "to": "s216",
+      "partKey": "v2-c5-p2"
+    },
+    {
+      "from": "s111",
+      "to": "s216",
+      "partKey": "v2-c5-p2"
+    },
+    {
+      "from": "s112",
+      "to": "s217",
+      "partKey": "v2-c5-p3"
+    },
+    {
+      "from": "s113",
+      "to": "s218",
+      "partKey": "v2-c5-p4"
+    },
+    {
+      "from": "s114",
+      "to": "s219",
+      "partKey": "v2-c6-p1"
+    },
+    {
+      "from": "s115",
+      "to": "s220",
+      "partKey": "v2-c6-p2"
+    },
+    {
+      "from": "s116",
+      "to": "s221",
+      "partKey": "v2-c6-p3"
+    },
+    {
+      "from": "s117",
+      "to": "s221",
+      "partKey": "v2-c6-p3"
+    },
+    {
+      "from": "s118",
+      "to": "s222",
+      "partKey": "v2-c6-p4"
+    },
+    {
+      "from": "s119",
+      "to": "s223",
+      "partKey": "v2-c6-p5"
+    },
+    {
+      "from": "s120",
+      "to": "s223",
+      "partKey": "v2-c6-p5"
+    },
+    {
+      "from": "s121",
+      "to": "s224",
+      "partKey": "v2-c6-p6"
+    },
+    {
+      "from": "s122",
+      "to": "s224",
+      "partKey": "v2-c6-p6"
+    },
+    {
+      "from": "s123",
+      "to": "s225",
+      "partKey": "v2-c7-p1"
+    },
+    {
+      "from": "s124",
+      "to": "s226",
+      "partKey": "v2-c7-p2"
+    },
+    {
+      "from": "s125",
+      "to": "s227",
+      "partKey": "v2-c7-p3"
+    },
+    {
+      "from": "s126",
+      "to": "s227",
+      "partKey": "v2-c7-p3"
+    },
+    {
+      "from": "s127",
+      "to": "s228",
+      "partKey": "v2-c7-p4"
+    },
+    {
+      "from": "s128",
+      "to": "s229",
+      "partKey": "v2-c8-p1"
+    },
+    {
+      "from": "s129",
+      "to": "s229",
+      "partKey": "v2-c8-p1"
+    },
+    {
+      "from": "s130",
+      "to": "s230",
+      "partKey": "v2-c8-p2"
+    },
+    {
+      "from": "s131",
+      "to": "s230",
+      "partKey": "v2-c8-p2"
+    },
+    {
+      "from": "s132",
+      "to": "s231",
+      "partKey": "v2-c8-p3"
     }
   ],
   "assets": [
@@ -2778,36 +2616,33 @@
     "title": "Sources & Credits",
     "intro": [
       {
-        "text": "Research informs the argument; it does not measure whether our own lives are happy. Each entry says what we read. Dialogue reconstructs TJ, Koj and Vier's endorsed positions from our group notes. The pictured situations are illustrations, not reported events."
+        "text": "Research informs this argument; it does not measure whether our own lives are happy. The numbered entries state what we read. Philosophical frameworks, published findings and personal reflections serve different purposes. Our examples and proposals are applications of that material, not new research results. We have not evaluated a policy or run the proposed campus project."
       }
     ],
     "classNote": [
       {
-        "text": "Our discussion of habitus uses the class lens recorded in our group notes. We did not read its original formulation for this essay."
+        "text": "The discussion develops shared notes by TJ, Koj and Vier. The pictured situations are fictional illustrations, and the member appearances are stand-ins. Their positions come from the group notes; the illustrations do not report events in their lives. Our use of habitus follows the class lens recorded in those notes, rather than an original formulation we read for this essay."
       }
     ],
     "credits": [
-      {
-        "text": "Based on shared notes by TJ, Koj and Vier. "
-      },
       {
         "link": "Futura Handwritten",
         "url": "https://www.dafont.com/futurahandwritten.font"
       },
       {
-        "text": " by Billy Snyder, used on the basis of the author's grant on the font page. The drawings are original generated illustrations based on our character study; member appearances are stand-ins. Visual reference: Nicky Case's "
+        "text": " is by Billy Snyder and is used on the basis of the author's grant on that page. The font is not presented as CC0 or OFL. The drawings are original generated illustrations based on our character study. Visual reference: Nicky Case's "
       },
       {
         "link": "The Evolution of Trust",
         "url": "https://ncase.me/trust/"
       },
       {
-        "text": ". We did not reuse its production artwork. Font permission is separate from that project's CC0 declaration."
+        "text": ". We did not reuse its production artwork; its CC0 declaration is separate from permission for the font."
       }
     ],
     "methodNote": [
       {
-        "text": "Empirical findings refer to their studied populations and measures. Philosophy and theory provide ways to reason about happiness. Our fictional examples and proposals are applications, not new research findings. We did not evaluate a policy or run the proposed campus project."
+        "text": "Access notes describe the recorded source audit and its documented follow-ups. They do not claim that every link was reopened while writing this revision."
       }
     ],
     "returnLabel": "Back to reading",
@@ -3221,7 +3056,7 @@
     ]
   },
   "measure": {
-    "words": 4137,
-    "rule": "Reader-visible narration and dialogue of the 45 main-path scenes, whitespace-separated, excluding speaker labels, citation markers, scene and chapter titles, interface strings and the Sources & Credits page."
+    "words": 8595,
+    "rule": "Reader-visible narration and dialogue of the 31 main-path parts, whitespace-separated, excluding speaker labels, citation markers, part and chapter titles, interface strings and the Sources & Credits page."
   }
 }

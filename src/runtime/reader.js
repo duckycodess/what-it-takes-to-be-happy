@@ -105,7 +105,7 @@
   var view = 'landing';
 
   /** The two view-switch labels, taken from the markup rather than retyped. */
-  var toggleLabels = { scene: viewToggle ? viewToggle.textContent : '', continuous: '' };
+  var toggleLabels = { parts: viewToggle ? viewToggle.textContent : '', continuous: '' };
   if (viewToggle) toggleLabels.continuous = viewToggle.getAttribute('data-scene-label') || '';
 
   /* --- The chapter rail ---------------------------------------------------
@@ -183,6 +183,27 @@
   function indexOfSceneId(id) {
     for (var i = 0; i < scenes.length; i += 1) {
       if (scenes[i].getAttribute('data-scene') === id) return i;
+    }
+    return -1;
+  }
+
+  /**
+   * An address the superseded script published.
+   *
+   * The copy at `s088`–`s132` is gone, and those identifiers were deliberately
+   * not reused, so a link somebody shared before the rewrite would otherwise
+   * resolve to nothing. The approved handoff relocates each of them to the
+   * part that now carries the related passage, and the renderer writes that
+   * mapping onto the part. A reader following an old link lands on the
+   * passage, and the address bar is corrected to the part they actually
+   * reached rather than left saying something that is no longer true.
+   */
+  function relocatedSceneIndex(id) {
+    for (var i = 0; i < scenes.length; i += 1) {
+      var answers = (scenes[i].getAttribute('data-relocates') || '').split(' ');
+      for (var j = 0; j < answers.length; j += 1) {
+        if (answers[j] === id) return i;
+      }
     }
     return -1;
   }
@@ -364,8 +385,26 @@
   var behindDrawer = [landing, document.querySelector('.essay-body'), controls]
     .filter(function (element) { return !!element; });
 
+  /**
+   * The name each rail control carries, for the arrangement it is in.
+   *
+   * The approved interface names the two arrangements separately, because
+   * they are different actions: a rail beside the essay is hidden and shown,
+   * and a drawer laid over it is opened and closed. Both names are written
+   * into the markup, so neither is composed here.
+   */
+  function applyRailLabels() {
+    var attribute = isDrawer() ? 'data-drawer-label' : 'data-rail-label';
+    [railToggle, railRestore].forEach(function (control) {
+      if (!control) return;
+      var label = control.getAttribute(attribute);
+      if (label && control.textContent !== label) control.textContent = label;
+    });
+  }
+
   function applyRailState() {
     root.setAttribute('data-rail', railOpen ? 'open' : 'closed');
+    applyRailLabels();
     // Both controls answer for the same region, so both report the same
     // state; only one of them is ever on screen at a time.
     if (railToggle) railToggle.setAttribute('aria-expanded', railOpen ? 'true' : 'false');
@@ -421,7 +460,7 @@
     view = nextView;
     root.setAttribute('data-view', nextView);
     if (viewToggle) {
-      viewToggle.textContent = nextView === 'reading' ? toggleLabels.continuous : toggleLabels.scene;
+      viewToggle.textContent = nextView === 'reading' ? toggleLabels.continuous : toggleLabels.parts;
     }
     applyCitationMode();
     applySceneState();
@@ -552,6 +591,11 @@
 
     var index = indexOfSceneId(id);
     if (index < 0) index = firstSceneOfChapter(id);
+    var relocated = false;
+    if (index < 0) {
+      index = relocatedSceneIndex(id);
+      relocated = index >= 0;
+    }
     if (index < 0) {
       if (id !== '' && !settings.initial) return;
       setView(wanted === 'reading' ? 'reading' : 'landing');
@@ -561,10 +605,10 @@
     if (wanted === 'reading') {
       current = index;
       applySceneState();
-      showReading({ record: false, focus: focus });
+      showReading({ record: relocated, replace: true, focus: focus });
       return;
     }
-    showScene(index, { record: false, focus: focus });
+    showScene(index, { record: relocated, replace: true, focus: focus });
   }
 
   /* --- Wiring ------------------------------------------------------------ */

@@ -33,7 +33,7 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { loadContent, ContentError } from '../content/load.js';
-import { APPROVED_SCRIPT } from '../content/transfer.js';
+import { APPROVED_ESSAY } from '../content/transfer.js';
 import { formatErrors } from '../content/validate.js';
 import { buildContent, serialise, CONTENT_PATH } from '../tools/transfer.js';
 import { renderEssay, renderSourcesPage, sourceAnchor } from '../runtime/render.js';
@@ -270,14 +270,14 @@ async function enforceApprovedTransfer() {
   try {
     expected = serialise(await buildContent(repoRoot));
   } catch (error) {
-    console.error(`The approved transfer could not be rebuilt from ${APPROVED_SCRIPT.path}; nothing was built.`);
+    console.error(`The approved transfer could not be rebuilt from ${APPROVED_ESSAY.markdown.path}; nothing was built.`);
     console.error(error instanceof Error ? error.message : String(error));
     process.exit(1);
   }
 
   const committed = await readFile(join(repoRoot, CONTENT_PATH), 'utf8').catch(() => null);
   if (committed !== expected) {
-    console.error(`${CONTENT_PATH} is not what ${APPROVED_SCRIPT.path} transfers to; nothing was built.`);
+    console.error(`${CONTENT_PATH} is not what ${APPROVED_ESSAY.markdown.path} transfers to; nothing was built.`);
     console.error('The published copy must be the approved copy. Run: npm run content:transfer');
     process.exit(1);
   }

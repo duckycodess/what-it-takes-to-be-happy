@@ -171,12 +171,17 @@ ${control}
  */
 function renderScene(scene, context, position) {
   const art = renderArt(scene.visual, context);
+  // The addresses the superseded script published that now lead here. They
+  // are in the markup rather than in the script, so the mapping is the
+  // content document's and the script only reads it.
+  const relocated = context.relocationsTo.get(scene.id) ?? [];
+  const answers = relocated.length > 0 ? ` data-relocates="${esc(relocated.join(' '))}"` : '';
   const blocks = scene.blocks.map((block) => renderBlock(block, context, scene.id));
   const body = art
     ? [...blocks.slice(0, scene.visual.afterBlock), art, ...blocks.slice(scene.visual.afterBlock)]
     : blocks;
 
-  return `<section class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}" tabindex="-1" aria-labelledby="${esc(scene.id)}-title">
+  return `<section class="scene" id="${esc(scene.id)}" data-scene="${esc(scene.id)}" data-chapter="${esc(scene.chapterId)}" data-position="${position}"${answers} tabindex="-1" aria-labelledby="${esc(scene.id)}-title">
 <h3 class="scene-title" id="${esc(scene.id)}-title">${esc(scene.title)}</h3>
 ${body.join('\n')}
 </section>`;
@@ -257,18 +262,24 @@ ${parts}
     })
     .join('\n');
 
-  // The rail's own name lives inside the collapse control, so the approved
-  // word "Chapters" is written once. A reader with no script never sees that
-  // control -- there is nothing to collapse without one -- but the landmark
-  // still takes its name from the span, which `aria-labelledby` reads whether
-  // or not it is displayed.
-  return `<nav class="chapter-rail" id="chapters" aria-labelledby="chapter-rail-label">
-<button type="button" class="rail-toggle js-only" data-rail-toggle aria-controls="chapters" aria-expanded="true"><span id="chapter-rail-label">${esc(ui.chapters)}</span></button>
+  // The approved interface names the two arrangements separately: a rail
+  // beside the essay is hidden and shown, and a drawer over it is opened and
+  // closed. Each control is written with both of its names and the script
+  // chooses which is in force, so neither is invented and neither is a
+  // generic word standing in for both.
+  //
+  // The landmark is named `Chapters`, which is the approved word for the
+  // navigation itself rather than for an action on it. It is an `aria-label`
+  // because the control that would otherwise carry the name has to change its
+  // own text between the two arrangements, and a landmark whose name moves
+  // under a reader is worse than one that is not visible on the page.
+  return `<nav class="chapter-rail" id="chapters" aria-label="${esc(ui.chapters)}">
+<button type="button" class="rail-toggle js-only" data-rail-toggle aria-controls="chapters" aria-expanded="true" data-rail-label="${esc(ui.hideChapters)}" data-drawer-label="${esc(ui.closeChapters)}">${esc(ui.hideChapters)}</button>
 <ol class="rail-chapters">
 ${chapters}
 </ol>
 <p class="rail-secondary">
-<button type="button" class="js-only" data-view-toggle data-scene-label="${esc(ui.scene)}">${esc(ui.continuous)}</button>
+<button type="button" class="js-only" data-view-toggle data-scene-label="${esc(ui.partView)}">${esc(ui.continuous)}</button>
 <a class="button quiet" href="${esc(context.sourcesHref)}" data-sources>${esc(ui.sources)}</a>
 </p>
 </nav>`;
@@ -284,8 +295,9 @@ ${chapters}
  * the rail, so collapsing the rail can never hide the way back.
  */
 function renderRailLauncher(content) {
+  const ui = content.interface;
   return `<p class="rail-launcher js-only">
-<button type="button" data-rail-restore aria-controls="chapters" aria-expanded="true">${esc(content.interface.chapters)}</button>
+<button type="button" data-rail-restore aria-controls="chapters" aria-expanded="true" data-rail-label="${esc(ui.showChapters)}" data-drawer-label="${esc(ui.chapters)}">${esc(ui.showChapters)}</button>
 </p>`;
 }
 
@@ -417,9 +429,18 @@ function context(content, options) {
   const sourceStrings = new Map(content.sourcesPage.sources
     .map((source) => [source.number, { label: source.label, accessibleName: source.accessibleName }]));
 
+  // Every published address that now leads to a given part, in the order the
+  // approved handoff relocates them.
+  const relocationsTo = new Map();
+  for (const entry of content.relocations ?? []) {
+    if (!relocationsTo.has(entry.to)) relocationsTo.set(entry.to, []);
+    relocationsTo.get(entry.to).push(entry.from);
+  }
+
   let eager = true;
   return {
     sceneById,
+    relocationsTo,
     assetsByRef,
     positions,
     sourceStrings,

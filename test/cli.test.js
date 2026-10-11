@@ -27,7 +27,7 @@ test('validating the authored document succeeds and reports what it checked', ()
   // drawings, and the measured main path rather than a promised reading time.
   assert.match(
     stdout,
-    /^ok {2}content\/content\.json: 8 chapter\(s\), 45 scene\(s\), 26 source\(s\), 20 generated asset\(s\), \d+ main-path words\.$/m,
+    /^ok {2}content\/content\.json: 8 chapter\(s\), 31 part\(s\), 26 source\(s\), 20 generated asset\(s\), \d+ main-path words\.$/m,
   );
 });
 

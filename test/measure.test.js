@@ -82,12 +82,14 @@ test('the reported reading time is a range, and the site promises none of it', (
   const fast = Math.ceil(content.measure.words / 250);
   assert.equal(estimate, `~${fast}-${slow} minutes (not shown to readers)`);
 
-  // The owner's approved handoff puts the essay at about 20.7 minutes at 200
-  // words a minute. The measurement agrees with that order of magnitude; it is
-  // not a band the approved copy may be trimmed to reach, and the reader is
-  // shown no figure at all, which is what `test/render.test.js` asserts of the
-  // markup.
-  assert.equal(slow, 21);
+  // The approved essay is substantially longer than the 45-scene script it
+  // replaced -- about 8,600 words against 4,137 -- which is the richer prose
+  // the owner asked for. The figure is recomputed from the copy rather than
+  // asserted at a number somebody would have to edit by hand, it is not a band
+  // the approved copy may be trimmed to reach, and the reader is shown no
+  // figure at all, which is what `test/render.test.js` asserts of the markup.
+  assert.ok(slow > fast, 'the estimate is a range, not a promise');
+  assert.ok(slow >= 30 && slow <= 60, `the slow estimate is ${slow} minutes`);
   assert.equal(content.landing.readingTimeEstimate, undefined);
 });
 

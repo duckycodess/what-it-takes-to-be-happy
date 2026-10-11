@@ -1,11 +1,18 @@
 /**
  * The approved copy, and nothing else.
  *
- * The owner approved one artefact: `docs/redesign/approved-scene-script.md`.
- * Everything a reader sees has to come from it. These checks read that file
- * directly and compare it against the content document and against the
- * rendered pages, sentence by sentence and in order, so a changed, reordered,
- * missing or invented line fails here rather than reaching a reader.
+ * The owner approved two artefacts on 11 October 2026 and asked for them to be
+ * integrated exactly: `docs/editorial/full-essay-v2.md`, the essay as a
+ * reader-legible document, and `docs/editorial/full-essay-handoff-v2.json`,
+ * the same copy in machine form. Everything a reader sees has to come from
+ * them. These checks read both files directly and compare them against the
+ * content document and against the rendered pages — part by part, paragraph by
+ * paragraph, in order — so a changed, reordered, missing or invented line fails
+ * here rather than reaching a reader.
+ *
+ * What these checks are not: editorial approval. They establish that the
+ * published copy is the supplied copy. Whether the supplied copy is good is the
+ * owner's judgement, and it was given separately.
  */
 
 import test from 'node:test';
@@ -14,72 +21,115 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 
-import { APPROVED_SCRIPT, visibleText, countWords } from '../src/content/transfer.js';
+import { APPROVED_ESSAY, SUPERSEDED_SCRIPT, visibleText, countWords } from '../src/content/transfer.js';
 import { buildContent, serialise } from '../src/tools/transfer.js';
 import { renderEssay, renderSourcesPage, esc } from '../src/runtime/render.js';
 import { readerSentences } from '../src/build/verify.js';
 import { loadValidContent, repoRoot } from './helpers.js';
 import { parseHtml } from './support/dom.js';
 
-const script = readFileSync(join(repoRoot, APPROVED_SCRIPT.path), 'utf8');
+const essayMarkdown = readFileSync(join(repoRoot, APPROVED_ESSAY.markdown.path), 'utf8');
+const handoffJson = readFileSync(join(repoRoot, APPROVED_ESSAY.handoff.path), 'utf8');
+const handoff = JSON.parse(handoffJson);
 const content = loadValidContent();
 
-/** Every `Narrator:`/`TJ:` line of reader copy, in the file's own order. */
-function approvedCopy() {
-  const lines = [];
-  let inScene = false;
-  let copy = false;
-  for (const raw of script.split('\n')) {
-    const line = raw.trimEnd();
-    if (/^### s\d{3} \| /.test(line)) {
-      inScene = true;
-      copy = false;
-      lines.push({ kind: 'title', text: line.replace(/^### s\d{3} \| /, '') });
-      continue;
-    }
-    if (/^## /.test(line)) inScene = false;
-    if (!inScene) continue;
-    if (line === '**Reader copy**') { copy = true; continue; }
-    if (line.startsWith('**Production:**')) { copy = false; continue; }
-    if (!copy || line === '') continue;
-    const spoken = line.match(/^(Narrator|TJ|Koj|Vier): (.+)$/);
-    assert.ok(spoken, `unlabelled reader copy in the approved script: ${line}`);
-    // What the reader sees: the authored sentence with `[^07]` shown as `[7]`.
-    lines.push({ kind: 'copy', speaker: spoken[1], text: spoken[2].replace(/\[\^0?(\d+)\]/g, '[$1]') });
-  }
-  return lines;
-}
+const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
-test('the approved script is still the revision the owner approved', () => {
-  assert.equal(createHash('sha256').update(script).digest('hex'), APPROVED_SCRIPT.sha256);
-  assert.equal(content.source.sha256, APPROVED_SCRIPT.sha256);
+/** Every approved part, in the order the approved handoff puts them. */
+const approvedParts = handoff.chapters.flatMap((chapter) => chapter.parts);
+
+/* --- The approved documents ----------------------------------------------- */
+
+test('both approved documents are still the revisions the owner approved', () => {
+  assert.equal(sha256(essayMarkdown), APPROVED_ESSAY.markdown.sha256);
+  assert.equal(sha256(handoffJson), APPROVED_ESSAY.handoff.sha256);
+  assert.equal(content.source.essay.sha256, APPROVED_ESSAY.markdown.sha256);
+  assert.equal(content.source.handoff.sha256, APPROVED_ESSAY.handoff.sha256);
+
+  // The authorization record binds the same two checksums, so the thing that
+  // was authorized and the thing that is published are one revision.
+  const authorization = JSON.parse(
+    readFileSync(join(repoRoot, 'docs/editorial/integration-authorization.json'), 'utf8'),
+  );
+  assert.equal(authorization.replacement_integration_authorized, true);
+  assert.equal(authorization.files['full-essay-v2.md'].sha256, APPROVED_ESSAY.markdown.sha256);
+  assert.equal(authorization.files['full-essay-handoff-v2.json'].sha256, APPROVED_ESSAY.handoff.sha256);
+
+  // And what it does not authorize is recorded just as plainly.
+  assert.equal(authorization.production_release_authorized, false);
+  assert.equal(authorization.final_layout_owner_review, 'pending');
 });
 
-test('the committed content document is the one the approved script transfers to', async () => {
+test('the superseded script is kept as provenance, and is not what this builds from', () => {
+  const script = readFileSync(join(repoRoot, SUPERSEDED_SCRIPT.path), 'utf8');
+  assert.equal(sha256(script), SUPERSEDED_SCRIPT.sha256, 'the superseded script was edited');
+  assert.equal(content.source.supersedes.sha256, SUPERSEDED_SCRIPT.sha256);
+
+  // Its copy is gone from the published essay. A sentence from it that still
+  // appeared would mean the two revisions had been mixed.
+  const html = renderEssay(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+  for (const sentence of ['Masaya lang tumawa with friends', 'No special occasion']) {
+    const inScript = script.includes(sentence);
+    assert.ok(inScript, `the superseded script should contain "${sentence}"`);
+  }
+  // The one line both revisions carry is TJ's, which the approved essay keeps
+  // deliberately; the scene titles it replaced do not survive. "Back to the
+  // afternoon" is deliberately not on this list: it was a scene title in the
+  // old script and is a chapter title in the new essay, so its presence is
+  // approved copy rather than a leak.
+  for (const title of ['No special occasion', 'Three answers', 'Where we\'re speaking from', 'One bad day']) {
+    assert.ok(!html.includes(`>${esc(title)}<`), `a superseded scene title reached the page: ${title}`);
+  }
+});
+
+test('the committed content document is the one the approved essay transfers to', async () => {
   const rebuilt = serialise(await buildContent());
   const committed = readFileSync(join(repoRoot, 'content/content.json'), 'utf8');
   assert.equal(rebuilt, committed,
-    'content/content.json has drifted from the approved script; run npm run content:transfer');
+    'content/content.json has drifted from the approved essay; run npm run content:transfer');
 });
 
-test('every reader-visible sentence matches the approved script, in order', () => {
-  const approved = approvedCopy();
-  const transferred = [];
-  for (const chapterId of content.chapters.map((chapter) => chapter.id)) {
-    const chapter = content.chapters.find((entry) => entry.id === chapterId);
-    for (const sceneId of chapter.sceneIds) {
-      const scene = content.scenes.find((entry) => entry.id === sceneId);
-      transferred.push({ kind: 'title', text: scene.title });
-      for (const block of scene.blocks) {
-        transferred.push({
-          kind: 'copy',
-          speaker: block.kind === 'narration' ? 'Narrator' : block.speaker,
-          text: visibleText(block.parts),
-        });
-      }
-    }
-  }
-  assert.deepEqual(transferred, approved);
+/* --- Copy, part by part --------------------------------------------------- */
+
+test('every part carries the approved copy, by its own checksum', () => {
+  assert.equal(approvedParts.length, 31);
+  assert.equal(content.scenes.length, 31);
+
+  content.scenes.forEach((scene, index) => {
+    const approved = approvedParts[index];
+    assert.equal(scene.partKey, approved.key, `part ${index + 1} is not the approved part`);
+    assert.equal(scene.title, approved.title);
+
+    // The copy the handoff records for this part, by the checksum it records
+    // for it, and present verbatim in the Markdown the owner read.
+    assert.equal(sha256(approved.reader_copy_markdown), approved.reader_copy_sha256, approved.key);
+    assert.ok(essayMarkdown.includes(approved.reader_copy_markdown),
+      `${approved.key}: the approved copy is not in the essay document verbatim`);
+  });
+});
+
+test('every paragraph matches the approved paragraph, in order and in kind', () => {
+  let paragraphs = 0;
+  content.scenes.forEach((scene, index) => {
+    const approved = approvedParts[index];
+    assert.equal(scene.blocks.length, approved.paragraphs.length, `${approved.key}: paragraph count`);
+
+    scene.blocks.forEach((block, blockIndex) => {
+      paragraphs += 1;
+      const source = approved.paragraphs[blockIndex];
+      assert.equal(block.kind, source.kind, `${approved.key}[${blockIndex}]: kind`);
+      assert.equal(block.speaker, source.speaker ?? null, `${approved.key}[${blockIndex}]: speaker`);
+
+      // The authored paragraph, reassembled: the text parts joined back with
+      // each citation marker put back where the author wrote it.
+      const rebuilt = block.parts
+        .map((part) => (part.text === undefined ? `[${part.citation}]` : part.text))
+        .join('');
+      const authored = source.markdown.replace(/\[(\d{1,2})\]\((https?:\/\/[^\s)]+)\)/g, '[$1]');
+      assert.equal(rebuilt, authored, `${approved.key}[${blockIndex}]: the sentence changed`);
+    });
+  });
+  assert.equal(paragraphs, 123, 'the approved essay has 123 paragraphs');
 });
 
 test('the rendered essay carries those same sentences, in the same order', () => {
@@ -106,9 +156,11 @@ test('a speaker label is an element, never part of the sentence', () => {
     assert.ok(['TJ', 'Koj', 'Vier'].includes(speaker), `unexpected speaker ${speaker}`);
     assert.ok(!line.querySelector('.line-text').textContent.startsWith(`${speaker}:`));
   }
-  // Narration is unlabelled: the approved script gives the narrator no visible
+  // Narration is unlabelled: the approved essay gives the narrator no visible
   // name, and a rendered "Narrator" would be a word the owner did not write.
   assert.ok(!html.includes('>Narrator<'));
+  // The approved essay is almost entirely narration; one paragraph is TJ's.
+  assert.equal(document.querySelectorAll('.line').length, 1);
 });
 
 test('citations are normalised to the approved visible and accessible forms', () => {
@@ -128,8 +180,14 @@ test('citations are normalised to the approved visible and accessible forms', ()
     assert.equal(link.getAttribute('aria-label'), `Source ${number}`);
     assert.match(link.getAttribute('href'), new RegExp(`#source-${number}$`));
   }
-  // The authoring marker never reaches the page.
-  assert.ok(!html.includes('[^'), 'a raw footnote marker survived the transfer');
+
+  // The marker leads to the register entry, not to the work. The approved
+  // copy writes the work's own address beside the number; that address
+  // belongs to the entry, where the access note and the limitation are.
+  for (const source of content.sourcesPage.sources) {
+    assert.ok(!html.includes(`>${esc(source.url)}<`), `a work's address reached the essay: ${source.url}`);
+  }
+  assert.ok(!html.includes('](http'), 'a raw markdown link survived the transfer');
 });
 
 test('no renderer-added prose reaches the essay', () => {
@@ -145,9 +203,8 @@ test('no renderer-added prose reaches the essay', () => {
 
   // Every visible string in the essay body is one the owner approved. The
   // numbered citation labels are the one structural addition, and the approved
-  // interface section names them. Each element is judged on the text it holds
-  // itself, so a container is not read as the run-together text of its
-  // children.
+  // interface names them. Each element is judged on the text it holds itself,
+  // so a container is not read as the run-together text of its children.
   const ownText = (node) => node.childNodes
     .filter((child) => child.nodeType === 3)
     .map((child) => child.data)
@@ -167,20 +224,44 @@ test('no renderer-added prose reaches the essay', () => {
   }
 });
 
+/* --- The interface -------------------------------------------------------- */
+
+test('every control name is the one the approved handoff supplies', () => {
+  const ui = handoff.interface;
+  assert.deepEqual([content.interface.back, content.interface.next], ui.footer);
+  assert.deepEqual([content.interface.hideChapters, content.interface.showChapters], ui.desktop_sidebar_toggle);
+  assert.deepEqual([content.interface.chapters, content.interface.closeChapters], ui.phone_drawer);
+  assert.deepEqual([content.interface.continuous, content.interface.sources], ui.secondary_sidebar);
+  assert.equal(content.interface.partView, ui.continuous_mode_return);
+  assert.equal(content.interface.backToReading, ui.source_return);
+  assert.equal(content.interface.skip, ui.skip_link);
+  assert.equal(content.interface.readAgain, ui.end_content_action);
+  assert.equal(content.interface.begin, ui.landing_action);
+  assert.equal(content.interface.title, handoff.website_title);
+
+  // The approved interface names no Print control and no counter, so the
+  // contract carries neither.
+  assert.equal(content.interface.print, undefined);
+  assert.match(ui.toolbar_limits, /No Print button, counters or scene badge/);
+});
+
+/* --- The Sources & Credits page ------------------------------------------- */
+
 test('the Sources & Credits page carries only approved copy', () => {
   const page = content.sourcesPage;
+  const approved = handoff.source_page_markdown;
   const html = renderSourcesPage(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
 
   assert.ok(html.includes(esc(page.title)));
   // Each block is checked part by part, because a part may be a link: the
-  // approved file writes it as Markdown and the page writes it as an anchor,
+  // approved page writes it as Markdown and the page writes it as an anchor,
   // so the label and the destination are checked rather than the syntax.
   for (const key of ['intro', 'classNote', 'credits', 'methodNote']) {
     for (const part of page[key]) {
       if (part.link === undefined) {
-        assert.ok(script.includes(part.text), `${key} carries text the approved script does not: ${part.text}`);
+        assert.ok(approved.includes(part.text), `${key} carries text the approved page does not: ${part.text}`);
       } else {
-        assert.ok(script.includes(`[${part.link}](${part.url})`), `${key} link is not the approved one: ${part.link}`);
+        assert.ok(approved.includes(`[${part.link}](${part.url})`), `${key} link is not the approved one: ${part.link}`);
         assert.ok(html.includes(esc(part.url)));
       }
     }
@@ -192,36 +273,67 @@ test('the Sources & Credits page carries only approved copy', () => {
   assert.match(credits, /The Evolution of Trust/);
   assert.equal(page.returnLabel, 'Back to reading');
 
-  // The register's bibliographic lines and access notes are the approved ones.
-  for (const source of page.sources) {
-    assert.ok(script.includes(source.citation), `citation ${source.number} is not in the approved script`);
-    assert.ok(html.includes(source.url));
-  }
+  // The register's bibliographic lines and access notes are the approved ones,
+  // entry by entry and in the approved order.
+  page.sources.forEach((source, index) => {
+    const entry = handoff.sources[index];
+    assert.equal(source.number, entry.number);
+    assert.equal(source.sourceId, entry.id, `entry ${entry.number} changed R identity`);
+    assert.ok(entry.entry_markdown.includes(source.citation), `entry ${entry.number}: bibliographic line`);
+    assert.ok(approved.includes(`${entry.number}. ${entry.entry_markdown}`), `entry ${entry.number} is not on the page`);
+    assert.ok(html.includes(esc(source.url)));
+  });
 });
 
-test('the measured word count is recomputed, not stored as a target', () => {
+/* --- Old addresses -------------------------------------------------------- */
+
+test('every published address is relocated as the approved handoff says', () => {
+  const approved = handoff.proposed_old_address_relocations;
+  assert.equal(content.relocations.length, approved.length);
+  content.relocations.forEach((relocation, index) => {
+    assert.equal(relocation.from, approved[index].old_scene_id);
+    assert.equal(relocation.partKey, approved[index].new_part_key);
+    const destination = content.scenes.find((scene) => scene.id === relocation.to);
+    assert.ok(destination, `${relocation.from} leads nowhere`);
+    assert.equal(destination.partKey, approved[index].new_part_key);
+  });
+
+  // The approved id policy: changed copy never reuses a published address.
+  const parts = new Set(content.scenes.map((scene) => scene.id));
+  for (const relocation of content.relocations) {
+    assert.ok(!parts.has(relocation.from), `${relocation.from} was reused for changed copy`);
+  }
+  assert.match(handoff.id_policy, /Never reuse s088–s132 for changed copy/);
+});
+
+/* --- The measurement ------------------------------------------------------ */
+
+test('the recorded word count is the rule applied to the approved copy', () => {
   assert.equal(content.measure.words, countWords(content.scenes));
-  assert.match(content.measure.rule, /excluding speaker labels, citation markers/);
-  // The handoff estimated 4,138; the rule above recomputes 4,137 from the
-  // approved copy. Neither number is a band the copy may be trimmed to reach.
-  assert.equal(content.measure.words, 4137);
+  assert.match(content.measure.rule, /31 main-path parts/);
+  // The approved essay is substantially longer than the script it replaced,
+  // which is what the owner asked for. The figure is recomputed rather than
+  // asserted at a number that would have to be edited by hand.
+  assert.ok(content.measure.words > 8000, `measured ${content.measure.words} words`);
+
+  // And no reader is shown it.
+  const html = renderEssay(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+  assert.ok(!html.includes(String(content.measure.words)));
+  assert.ok(!html.includes(content.measure.rule));
 });
 
-test('the approved structure is intact: 45 scenes, 8 chapters, 26 sources', () => {
-  assert.equal(content.scenes.length, 45);
-  assert.equal(content.chapters.length, 8);
-  assert.equal(content.sourcesPage.sources.length, 26);
-  assert.equal(content.scenes[0].id, 's088');
-  assert.equal(content.scenes.at(-1).id, 's132');
-  assert.deepEqual(
-    content.chapters.map((chapter) => chapter.sceneIds[0]),
-    ['s088', 's092', 's097', 's103', 's109', 's114', 's122', 's128'],
-  );
-});
-
-test('no scaffolding from the superseded storyboard survived', () => {
-  const serialised = JSON.stringify(content);
-  for (const term of ['readingTimeEstimate', 'artId', 'provenance', 'detailIds', 'conceptIds', 'limitations']) {
-    assert.ok(!serialised.includes(term), `the content document still contains ${term}`);
+test('no scaffolding from either superseded build survives', () => {
+  const html = renderEssay(content, { mode: 'hosted', stylesheetUrl: 's.css', scriptUrl: 'r.js' });
+  for (const phrase of ['mainPath', 'reviewStatus', 'Beat ', 'detail panel', 'progress']) {
+    assert.ok(!html.includes(phrase), `superseded scaffolding reached the page: ${phrase}`);
   }
+  // The authoring keys are an internal mapping, not something a reader meets.
+  assert.ok(!html.includes('v2-c1-p1'));
+  for (const scene of content.scenes) assert.ok(!html.includes(`>${scene.partKey}<`));
+});
+
+test('visibleText reassembles a sentence the way a reader meets it', () => {
+  assert.equal(visibleText([{ text: 'A claim' }, { citation: 7 }, { text: ' and more.' }]),
+    'A claim[7] and more.');
+  assert.equal(visibleText([{ text: 'No citation here.' }]), 'No citation here.');
 });

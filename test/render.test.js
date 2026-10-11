@@ -45,7 +45,7 @@ test('the landing carries the title, the opening drawing, Begin and Sources & Cr
 
   const actions = landing.querySelectorAll('.landing-actions a');
   assert.deepEqual(actions.map((link) => link.textContent), ['Begin', 'Sources & Credits']);
-  assert.equal(actions[0].getAttribute('href'), '#s088');
+  assert.equal(actions[0].getAttribute('href'), `#${content.landing.beginSceneId}`);
   assert.equal(actions[1].getAttribute('href'), 'sources.html');
 });
 
@@ -61,16 +61,16 @@ test('the landing shows nothing the approved script does not list', () => {
 });
 
 test('no progress counter or reading-time estimate appears anywhere', () => {
-  for (const phrase of ['Beat ', ' of 45', 'minutes to read', 'About ']) {
+  for (const phrase of ['Beat ', ' of 31', 'minutes to read', 'About ']) {
     assert.ok(!essay.includes(phrase), `the essay still shows "${phrase}"`);
   }
 });
 
 /* --- Scenes -------------------------------------------------------------- */
 
-test('all 45 scenes are in the document, in reading order', () => {
+test('all 31 parts are in the document, in reading order', () => {
   const scenes = document.querySelectorAll('[data-scene]');
-  assert.equal(scenes.length, 45);
+  assert.equal(scenes.length, 31);
   assert.deepEqual(
     scenes.map((node) => node.getAttribute('data-scene')),
     content.chapters.flatMap((chapter) => chapter.sceneIds),
@@ -123,25 +123,31 @@ test('the rail lists every chapter and every part, in reading order', () => {
   }
 });
 
-test('the rail is named Chapters once, and its state is an attribute not a word', () => {
+test('the rail is named Chapters, and each control carries both approved names', () => {
   const rail = document.querySelector('#chapters');
-  assert.equal(rail.getAttribute('aria-labelledby'), 'chapter-rail-label');
-  assert.equal(document.querySelector('#chapter-rail-label').textContent, content.interface.chapters);
+  // Named by the word that names the navigation rather than an action on it.
+  // It is an `aria-label` because the control that would otherwise carry the
+  // name has to change its own text between the two arrangements.
+  assert.equal(rail.getAttribute('aria-label'), content.interface.chapters);
 
-  // The collapse control, inside the rail, and the control that brings it
-  // back, outside it. Both answer for the rail; both carry the approved word
-  // and no other, and both say what they do through `aria-expanded`.
+  // The approved interface names the arrangements separately: a rail beside
+  // the essay is hidden and shown, a drawer over it is opened and closed. Each
+  // control carries both of its names and the script picks the one in force,
+  // so neither is composed and neither is a generic word standing in for both.
   const collapse = rail.querySelector('[data-rail-toggle]');
   assert.equal(collapse.localName, 'button');
   assert.equal(collapse.getAttribute('type'), 'button');
-  assert.equal(collapse.textContent, content.interface.chapters);
   assert.equal(collapse.getAttribute('aria-controls'), 'chapters');
   assert.equal(collapse.getAttribute('aria-expanded'), 'true');
+  assert.equal(collapse.getAttribute('data-rail-label'), content.interface.hideChapters);
+  assert.equal(collapse.getAttribute('data-drawer-label'), content.interface.closeChapters);
+  assert.equal(collapse.textContent, content.interface.hideChapters);
 
   const restore = document.querySelector('[data-rail-restore]');
   assert.ok(!rail.contains(restore), 'the way back must not be inside the thing it brings back');
-  assert.equal(restore.textContent, content.interface.chapters);
   assert.equal(restore.getAttribute('aria-controls'), 'chapters');
+  assert.equal(restore.getAttribute('data-rail-label'), content.interface.showChapters);
+  assert.equal(restore.getAttribute('data-drawer-label'), content.interface.chapters);
   assert.ok(document.querySelector('.rail-launcher').getAttribute('class').includes('js-only'));
 });
 
@@ -169,12 +175,12 @@ test('Read continuously and Sources & Credits are a separate section of the rail
   // Neither is a place in the essay, so neither is in the list of places.
   assert.equal(secondary.querySelectorAll('[data-part-link]').length, 0);
   assert.equal(secondary.querySelector('[data-view-toggle]').textContent, content.interface.continuous);
-  assert.equal(secondary.querySelector('[data-view-toggle]').getAttribute('data-scene-label'), content.interface.scene);
+  assert.equal(secondary.querySelector('[data-view-toggle]').getAttribute('data-scene-label'), content.interface.partView);
   assert.equal(secondary.querySelector('[data-sources]').textContent, content.interface.sources);
   assert.equal(secondary.querySelector('[data-sources]').getAttribute('href'), 'sources.html');
 });
 
-test('a drawing sits where the production note puts it', () => {
+test('a drawing sits after the paragraph the approved anchor names', () => {
   const blocksBefore = (sceneId) => {
     const scene = document.querySelector(`[data-scene="${sceneId}"]`);
     const children = scene.childNodes.filter((node) => node.nodeType === 1);
@@ -183,14 +189,20 @@ test('a drawing sits where the production note puts it', () => {
     return art < 0 ? null : art - 1;
   };
 
-  // A group scene opens with the first narrator block above the art.
-  assert.equal(blocksBefore('s088'), 1);
-  // A single scene whose first authored block is dialogue keeps that order.
-  assert.equal(blocksBefore('s093'), 1);
-  assert.equal(blocksBefore('s094'), 1);
-  // A text scene has no drawing at all, and no substitute.
-  assert.equal(blocksBefore('s090'), null);
-  assert.equal(document.querySelector('[data-scene="s090"]').querySelectorAll('img').length, 0);
+  // Every illustrated part, against the anchor the approved handoff records.
+  // A drawing supports the passage it follows, so it never opens a part.
+  let illustrated = 0;
+  for (const scene of content.scenes) {
+    if (scene.visual.layout === 'text') {
+      assert.equal(blocksBefore(scene.id), null, `${scene.id} has a drawing it was not given`);
+      assert.equal(document.querySelector(`[data-scene="${scene.id}"]`).querySelectorAll('img').length, 0);
+      continue;
+    }
+    illustrated += 1;
+    assert.equal(blocksBefore(scene.id), scene.visual.afterBlock, scene.id);
+    assert.ok(scene.visual.afterBlock >= 1, `${scene.id}: a drawing opens the part`);
+  }
+  assert.equal(illustrated, 17, 'the approved essay illustrates 17 of its 31 parts');
 });
 
 test('every scene with a drawing matches its content entry', () => {
@@ -291,8 +303,8 @@ test('an optional comparison offers native buttons with the approved labels', ()
   }
 });
 
-test('every paragraph of a comparison scene sits outside the figure', () => {
-  for (const id of ['s105', 's114']) {
+test('every paragraph of a comparison part sits outside the figure', () => {
+  for (const id of ["s213", "s219"]) {
     const scene = content.scenes.find((entry) => entry.id === id);
     const node = document.querySelector(`[data-scene="${id}"]`);
     const figure = node.querySelector('figure.art');
@@ -321,18 +333,18 @@ test('the reading footer is Back and Next, and nothing else', () => {
 });
 
 test('no print control and no scene counter is rendered anywhere', () => {
-  // The 11 October amendment removed the visible Print control: a browser
-  // prints the complete essay with its own command, and the stylesheet's
-  // print rules are what make that worth doing. The approved string stays in
-  // the content document, which is a transfer of the script rather than a
-  // record of this interface.
+  // The 11 October amendment removed the visible Print control, and the
+  // approved essay's own interface no longer names one: a browser prints the
+  // complete essay with its own command, and the stylesheet's print rules are
+  // what make that worth doing.
   assert.equal(document.querySelector('[data-print]'), null);
   assert.ok(!essay.includes('>Print<'), 'a Print control survived in the markup');
-  assert.ok(content.interface.print === 'Print', 'and the approved string is still in the contract');
+  assert.equal(content.interface.print, undefined, 'the contract no longer carries a Print control');
+  assert.ok(!Object.values(content.interface).includes('Print'));
 
   // `Scene view` is the approved name of the reading mode and stays; what
   // must not appear is a count of where the reader is.
-  for (const phrase of [' of 45', 'Scene 1', 'Part 1', '1 / 45']) {
+  for (const phrase of [' of 31', 'Scene 1', 'Part 1', '1 / 31']) {
     assert.ok(!essay.includes(phrase), `the essay shows "${phrase}"`);
   }
 });
@@ -358,17 +370,21 @@ test('Read again is offered with the final passage, not in the footer', () => {
 
 test('the skip link uses the approved wording', () => {
   const skip = document.querySelector('.skip-link');
-  assert.equal(skip.textContent, 'Skip to scene');
+  assert.equal(skip.textContent, content.interface.skip);
+  assert.equal(skip.textContent, 'Skip to reading', 'the approved essay renamed it');
   assert.equal(skip.getAttribute('href'), '#essay');
 });
 
 /* --- Citations and the separate page ------------------------------------- */
 
 test('a citation carries where the reader was and which entry they want', () => {
-  const link = document.querySelector('[data-scene="s105"] .citation');
-  assert.equal(link.getAttribute('href'), 'sources.html?from=s105&view=scene#source-9');
-  assert.equal(link.getAttribute('aria-label'), 'Source 9');
-  assert.equal(link.textContent, '[9]');
+  const citingScene = content.scenes.find((scene) =>
+    scene.blocks.some((block) => block.parts.some((part) => part.citation !== undefined)));
+  const number = citingScene.blocks.flatMap((block) => block.parts).find((part) => part.citation).citation;
+  const link = document.querySelector(`[data-scene="${citingScene.id}"] .citation`);
+  assert.equal(link.getAttribute('href'), `sources.html?from=${citingScene.id}&view=scene#source-${number}`);
+  assert.equal(link.getAttribute('aria-label'), `Source ${number}`);
+  assert.equal(link.textContent, `[${number}]`);
 
   // Every citation names its own scene, so the return is never a guess.
   for (const scene of document.querySelectorAll('[data-scene]')) {
@@ -384,7 +400,7 @@ test('the first, a middle and the final citing scene all link out and back', () 
   const citing = content.scenes.filter((scene) =>
     scene.blocks.some((block) => block.parts.some((part) => part.citation !== undefined)));
   const sample = [citing[0], citing[Math.floor(citing.length / 2)], citing.at(-1)];
-  assert.deepEqual(sample.map((scene) => scene.id), ['s092', 's109', 's126']);
+  assert.equal(new Set(sample.map((scene) => scene.id)).size, 3, 'three different parts');
 
   for (const scene of sample) {
     const links = document.querySelectorAll(`[data-scene="${scene.id}"] .citation`);

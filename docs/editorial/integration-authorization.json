@@ -1,0 +1,20 @@
+{
+  "date_utc": "2026-10-11T08:00:41.149595+00:00",
+  "owner_request": "integrate it now?",
+  "full_copy": "approved for exact integration",
+  "source_page": "approved for exact integration",
+  "replacement_integration_authorized": true,
+  "final_layout_owner_review": "pending",
+  "production_release_authorized": false,
+  "files": {
+    "full-essay-v2.md": {
+      "path": "/mnt/c/Users/t7045/Documents/Codex/2026-10-08/grill-me-home-tj-agents-skills-2/work/readability-v2/full-essay-v2.md",
+      "sha256": "b96ca8697becf3f62203341302dddb24f4050257cfc602ef89e78fb6995c524c"
+    },
+    "full-essay-handoff-v2.json": {
+      "path": "/mnt/c/Users/t7045/Documents/Codex/2026-10-08/grill-me-home-tj-agents-skills-2/work/readability-v2/full-essay-handoff-v2.json",
+      "sha256": "35a56e6e5aaafce5ba7456f51d68cf72837351b2123ba61952507e506c872c87"
+    }
+  },
+  "scope": "Existing issue #17. No TicketSpec, UUID, labels or dependency change. Preserve exact copy and independent final-head review."
+}

@@ -20,7 +20,7 @@ let failed = false;
 for (const target of targets) {
   try {
     const doc = await loadContent(target);
-    console.log(`ok  ${target}: ${doc.chapters.length} chapter(s), ${doc.scenes.length} scene(s), `
+    console.log(`ok  ${target}: ${doc.chapters.length} chapter(s), ${doc.scenes.length} part(s), `
       + `${doc.sourcesPage.sources.length} source(s), ${doc.assets.length} generated asset(s), `
       + `${doc.measure.words} main-path words.`);
   } catch (error) {
