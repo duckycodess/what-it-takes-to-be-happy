@@ -59,13 +59,15 @@ function approvedBriefs() {
     if (row) briefs.set(row[1], { id: row[2], alt: row[4] });
   }
   for (const brief of JSON.parse(readFileSync(join(repoRoot, 'assets/ui/polish/passage-briefs.json'), 'utf8'))) briefs.set(brief.ref, brief);
+  const contribution = JSON.parse(readFileSync(join(repoRoot, 'docs/editorial/contribution-amendment.json'), 'utf8'));
+  for (const brief of contribution.art) briefs.set(brief.ref, brief);
   return briefs;
 }
 
 test('every delivered folder carries a manifest for an approved brief', () => {
   const briefs = approvedBriefs();
-  assert.equal(briefs.size, 34);
-  assert.equal(manifests.length, 34);
+  assert.equal(briefs.size, 36);
+  assert.equal(manifests.length, 36);
 
   for (const { name, manifest } of manifests) {
     const ref = manifest.ref ?? 'A01';
@@ -201,7 +203,7 @@ test('every scene that was briefed a drawing has one, and text scenes have none'
     ...content.landing.visual.views.map((view) => view.ref),
   ]);
   const unused = content.assets.map((asset) => asset.ref).filter((ref) => !used.has(ref));
-  assert.deepEqual(unused, ['A04', 'A11'],
+  assert.deepEqual(unused, ['A04', 'A08', 'A11'],
     'the set of delivered drawings this revision does not show has changed');
   for (const ref of used) {
     assert.ok(content.assets.some((asset) => asset.ref === ref), `${ref} is shown but was never delivered`);

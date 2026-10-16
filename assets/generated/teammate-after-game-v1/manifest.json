@@ -1,0 +1,47 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B15",
+  "id": "teammate-after-game-v1",
+  "asset_branch": "codex/teammate-content-20261016",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "ef0e88ab341a87b4714df8685929d97a987e2c7c1f2da5e9c4b05af93b864b9d",
+    "alt": "After a basketball game, TJ smiles and Koj catches his breath while Vier looks worried at his phone.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "TJ",
+        "x_fraction": 0.18,
+        "y_fraction": 0.22
+      },
+      {
+        "name": "Koj",
+        "x_fraction": 0.49,
+        "y_fraction": 0.2
+      },
+      {
+        "name": "Vier",
+        "x_fraction": 0.82,
+        "y_fraction": 0.22
+      }
+    ],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "d46903f7fe0d6b9768b12379a3b6b61b9e94f7bff954f506d67ca731e0f11878"
+    }
+  ],
+  "inspection": {
+    "composition": "Inspected generated output for scene, expressions, matching characters and no embedded lettering. Browser verification follows integration.",
+    "identity": "Established named cast matched to reference images",
+    "owner_inspected": false
+  }
+}

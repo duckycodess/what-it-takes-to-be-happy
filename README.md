@@ -25,7 +25,7 @@ The essay runs across eight chapters and 31 short parts:
 7. What would make room?
 8. Back to the afternoon
 
-Every claim that rests on research is numbered, and each number leads to the full citation on the **Sources & Credits** page, which lists 26 references.
+Every claim that rests on research is numbered, and each number leads to the full citation on the **Sources & Credits** page, which lists 29 references.
 
 ## Made by
 
@@ -50,7 +50,7 @@ This essay would not look, sound or feel the way it does without the generous, o
 
 **Illustrations:** original generated illustrations based on our own character study, with each character's name written above them as real text.
 
-**Research:** the 26 sources listed on the essay's Sources & Credits page, from philosophy and psychology to studies of work, time and income.
+**Research:** the 29 sources listed on the essay's Sources & Credits page, from philosophy and psychology to studies of work, time and income.
 
 ## Built with
 

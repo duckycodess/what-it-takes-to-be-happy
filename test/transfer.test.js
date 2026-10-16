@@ -37,6 +37,8 @@ const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
 /** Every approved part, in the order the approved handoff puts them. */
 const approvedParts = handoff.chapters.flatMap((chapter) => chapter.parts);
+const contribution = JSON.parse(readFileSync(join(repoRoot, 'docs/editorial/contribution-amendment.json'), 'utf8'));
+const contributionById = new Map(contribution.scenes.map((scene) => [scene.id, scene]));
 
 /* --- The approved documents ----------------------------------------------- */
 
@@ -98,7 +100,7 @@ test('every part carries the approved copy, by its own checksum', () => {
   content.scenes.forEach((scene, index) => {
     const approved = approvedParts[index];
     assert.equal(scene.partKey, approved.key, `part ${index + 1} is not the approved part`);
-    assert.equal(scene.title, approved.title);
+    assert.equal(scene.title, contributionById.get(scene.id)?.title ?? approved.title);
 
     // The copy the handoff records for this part, by the checksum it records
     // for it, and present verbatim in the Markdown the owner read.
@@ -111,7 +113,7 @@ test('every part carries the approved copy, by its own checksum', () => {
 test('every paragraph matches the approved paragraph, in order and in kind', () => {
   let paragraphs = 0;
   content.scenes.forEach((scene, index) => {
-    const approved = approvedParts[index];
+    const approved = contributionById.get(scene.id) ?? approvedParts[index];
     assert.equal(scene.blocks.length, approved.paragraphs.length, `${approved.key}: paragraph count`);
 
     scene.blocks.forEach((block, blockIndex) => {
@@ -129,7 +131,7 @@ test('every paragraph matches the approved paragraph, in order and in kind', () 
       assert.equal(rebuilt, authored, `${approved.key}[${blockIndex}]: the sentence changed`);
     });
   });
-  assert.equal(paragraphs, 123, 'the approved essay has 123 paragraphs');
+  assert.equal(paragraphs, 130, 'the four-card contribution changes the base 123 paragraphs to 130');
 });
 
 test('the rendered essay carries those same sentences, in the same order', () => {
@@ -160,7 +162,7 @@ test('a speaker label is an element, never part of the sentence', () => {
   // name, and a rendered "Narrator" would be a word the owner did not write.
   assert.ok(!html.includes('>Narrator<'));
   // The approved essay is almost entirely narration; one paragraph is TJ's.
-  assert.equal(document.querySelectorAll('.line').length, 1);
+  assert.equal(document.querySelectorAll('.line').length, 5, 'four basketball lines and one canteen reflection');
 });
 
 test('citations are normalised to the approved visible and accessible forms', () => {
@@ -282,6 +284,11 @@ test('the Sources & Credits page carries only approved copy', () => {
   // entry by entry and in the approved order.
   page.sources.forEach((source, index) => {
     const entry = handoff.sources[index];
+    if (!entry) {
+      assert.deepEqual(source, contribution.sources[index - handoff.sources.length]);
+      assert.ok(html.includes(esc(source.citation)));
+      return;
+    }
     assert.equal(source.number, entry.number);
     assert.equal(source.sourceId, entry.id, `entry ${entry.number} changed R identity`);
     assert.ok(entry.entry_markdown.includes(source.citation), `entry ${entry.number}: bibliographic line`);

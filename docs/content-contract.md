@@ -188,3 +188,14 @@ than assumed.
 ## Explicit polish amendment
 
 Transfer verifies the immutable original essay and handoff hashes, then applies the separately hash-bound issue #20 amendment. Only its exact Sources removals, three rich-text credit list items, `Sound` label and fourteen originally text-only visual mappings may change. Every main-path block, speaker, scene title, chapter order, source identity and old-address relocation remains inherited verbatim. The amended Sources intro is an empty list; an unamended document still requires its original intro. Decorative UI assets are verified by the build from their own manifest and do not become passage illustrations. A second hash-bound owner amendment, `docs/editorial/reader-amendment.json`, then empties every source's `note` and the `methodNote` (only the formatted citations remain; `auditStatus` is kept) sets the title to "What it takes to be happy?", and adds `landing.credit`, the owner-supplied credit footnote as a list of rich-text lines. Validation accepts those empty notes only when `source.readerAmendment` records exactly that file's path and digest.
+
+
+## Teammate contribution amendment
+
+After the two earlier amendments, transfer applies the pinned 16 October contribution amendment.
+Only s201–s203 and s211 change. Each replacement records the previous scene's SHA-256 and must
+match it before applying. The rest of the scene objects and all existing citation numbers are
+preserved. Three references append as [27]–[29], using the access status verified-excerpt for
+relevant primary passages that were checked without claiming the whole book was read.
+Two new cutouts (B15/B16) use the established manifest and browser-label format.
+The document records source.contributionAmendment, and its word count is recomputed.

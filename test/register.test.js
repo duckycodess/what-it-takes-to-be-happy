@@ -48,7 +48,7 @@ const neverOpened = Object.entries(register)
 
 test('the register still parses, and every level in it is one the audit defines', () => {
   const ids = Object.keys(register);
-  assert.equal(ids.length, 32, `expected the full source pool, found ${ids.length}`);
+  assert.equal(ids.length, 35, `expected the full source pool, found ${ids.length}`);
   for (const [id, entry] of Object.entries(register)) {
     // `not-accessed` is a level of the register, not of the reader's page:
     // the content contract has no name for it because nothing it describes
@@ -127,7 +127,7 @@ test('the published audit rollup is the one the register supports', () => {
   }, {});
   assert.deepEqual(
     tally,
-    { 'verified-full': 13, 'verified-abstract': 10, 'verified-locator': 3 },
+    { 'verified-full': 13, 'verified-abstract': 10, 'verified-locator': 3, 'verified-excerpt': 3 },
     'the published levels no longer match the audit in docs/research.md',
   );
   assert.equal(Object.values(tally).reduce((a, b) => a + b, 0), SOURCE_COUNT);

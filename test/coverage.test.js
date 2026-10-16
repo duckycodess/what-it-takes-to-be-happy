@@ -133,7 +133,7 @@ test('the scene index is every scene, in reading order, with its real layout', (
 
 test('every source row names the entry, its register identity and where it is cited', () => {
   const table = rows(section('Research'));
-  assert.equal(table.length, 26);
+  assert.equal(table.length, 29);
 
   const citedIn = new Map();
   for (const id of readingOrder) {
@@ -161,7 +161,7 @@ test('every source row names the entry, its register identity and where it is ci
 test('every artwork row is an inspected asset, used where the matrix says', () => {
   const table = rows(section('Artwork'));
   assert.equal(table.length, content.assets.length);
-  assert.equal(table.length, 34);
+  assert.equal(table.length, 36);
 
   table.forEach(([ref, id, where, cutouts, labels], index) => {
     const asset = content.assets[index];
@@ -205,7 +205,7 @@ test('an invented figure appears where the matrix says, and never speaks', () =>
     .flatMap((scene) => scene.blocks)
     .map((block) => block.speaker)
     .filter(Boolean));
-  assert.deepEqual([...speakers].sort(), ['TJ']);
+  assert.deepEqual([...speakers].sort(), ['Koj', 'TJ', 'Vier']);
 });
 
 test('the optional comparisons are the two the document has, with their approved labels', () => {

@@ -1,0 +1,37 @@
+{
+  "schema": "generated-art/v1",
+  "ref": "B16",
+  "id": "teammate-canteen-v1",
+  "asset_branch": "codex/teammate-content-20261016",
+  "status": "provider-inspected",
+  "selected_image": {
+    "path": "scene.png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "d492a3b6c5ccda5d8396edd565c24d5e1e3ecac77df5568514691246a3b14a2d",
+    "alt": "Vier sits at a canteen table beside a message from home, thinking about grades, a career and income.",
+    "transparent_background": true
+  },
+  "browser_text": {
+    "embedded_names_or_dialogue": false,
+    "name_anchors": [
+      {
+        "name": "Vier",
+        "x_fraction": 0.4,
+        "y_fraction": 0.22
+      }
+    ],
+    "prop_or_dialogue_anchors": []
+  },
+  "prompt_records": [
+    {
+      "path": "prompt.txt",
+      "sha256": "300dc8ba053aff82f3922ff426855a11279de38465a70bdbd8ee8c7caf0fb2e1"
+    }
+  ],
+  "inspection": {
+    "composition": "Inspected generated output for scene, expressions, matching characters and no embedded lettering. Browser verification follows integration.",
+    "identity": "Established named cast matched to reference images",
+    "owner_inspected": false
+  }
+}

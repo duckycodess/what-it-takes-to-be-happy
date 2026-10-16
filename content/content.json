@@ -20,6 +20,10 @@
     "readerAmendment": {
       "path": "docs/editorial/reader-amendment.json",
       "sha256": "005bc6a6de0ea38765f0ee98d1a1a99da79ac15d027ee8fb91792a519d037618"
+    },
+    "contributionAmendment": {
+      "path": "docs/editorial/contribution-amendment.json",
+      "sha256": "64684bdfcffaf3f26ba33e003f42361cb23dc7e4c6852b2bf731c593fa805ef3"
     }
   },
   "interface": {
@@ -163,14 +167,32 @@
       "id": "s201",
       "partKey": "v2-c1-p1",
       "chapterId": "c1",
-      "title": "Nothing to show for it",
+      "title": "Stakes of the Game",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Imagine an afternoon with friends. There is a basketball, time for a game and conversation that does not need to reach a conclusion. Someone misses a shot. Someone laughs. Nobody earns a grade, finishes a project or leaves with something to show for the hours they spent together. The afternoon can still be worth having."
+              "text": "Imagine an afternoon with friends: a casual basketball game, nowhere to be, and a conversation that drifts wherever it likes without ever needing to reach a conclusion. Someone misses a shot and someone laughs, and by the end nobody has earned a grade or finished anything or has much to show for the hours."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "By the end, the three of them are sitting on the court, catching their breath. They are exhausted but smiling, and the afternoon feels weightless. Then Koj speaks."
+            }
+          ]
+        },
+        {
+          "kind": "dialogue",
+          "speaker": "Koj",
+          "parts": [
+            {
+              "text": "Ayoko muna umuwi, parang ang saya kasi nito."
             }
           ]
         },
@@ -179,7 +201,16 @@
           "speaker": "TJ",
           "parts": [
             {
-              "text": "Masaya lang tumawa with friends. Bakit kailangan may lesson or output pa?"
+              "text": "Anong oras na ba pre?"
+            }
+          ]
+        },
+        {
+          "kind": "dialogue",
+          "speaker": "Vier",
+          "parts": [
+            {
+              "text": "hala, late na pala, parang napasobra yung pagiging masaya ko. Parang nagsayang lang ako ng oras huhu."
             }
           ]
         },
@@ -188,7 +219,16 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The question matters because enjoyment becomes harder to defend when we measure time only by what it produces. We can describe the game as exercise or the conversation as a way to strengthen relationships. Those benefits are possible, but they are not the whole reason to be there. Turning every pleasure into preparation for something else leaves little room to say that spending the afternoon together was already enough."
+              "text": "Vier's reaction shows how quickly a good afternoon can start to feel like it has to justify itself. When time is judged only by what it produces, the game becomes exercise and the conversation becomes networking. Those benefits can be real, but they are not the whole reason to be there. Even the question treats happiness as something to earn. A fun afternoon is not a complete answer either: someone can enjoy it and still dread the week ahead."
+            }
+          ]
+        },
+        {
+          "kind": "dialogue",
+          "speaker": "TJ",
+          "parts": [
+            {
+              "text": "Bakit, kailangan ba laging may napala?"
             }
           ]
         },
@@ -197,16 +237,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "That does not make an enjoyable afternoon a complete answer to happiness. A person might welcome these hours while worrying about the week ahead. Another might leave tired but satisfied with the day. The same gathering could also feel uncomfortable to someone who does not enjoy the game or the company. Starting with an ordinary pleasure gives us something to examine, rather than an image everyone is expected to want."
-            }
-          ]
-        },
-        {
-          "kind": "narration",
-          "speaker": null,
-          "parts": [
-            {
-              "text": "TJ's defense is therefore more specific than saying that any enjoyable choice is good. He wants pleasure to have a place in a life without always needing an achievement to justify it. If we cannot recognize that place, even our free time starts to sound like another assignment."
+              "text": "TJ's question opens a disagreement about what makes a moment, or a life, valuable. Enjoyment does not have to become evidence of improvement before it can matter. But the three friends do not all mean the same thing when they call a life happy. Their different answers change how they understand the afternoon they have just shared."
             }
           ]
         }
@@ -215,20 +246,20 @@
         "layout": "support",
         "views": [
           {
-            "ref": "A01",
+            "ref": "B15",
             "image": 0,
             "label": null
           }
         ],
         "control": null,
-        "afterBlock": 1
+        "afterBlock": 2
       }
     },
     {
       "id": "s202",
       "partKey": "v2-c1-p2",
       "chapterId": "c1",
-      "title": "Three different answers",
+      "title": "(For) Three Points!!",
       "blocks": [
         {
           "kind": "narration",
@@ -284,14 +315,14 @@
       "id": "s203",
       "partKey": "v2-c1-p3",
       "chapterId": "c1",
-      "title": "The lives we are speaking from",
+      "title": "Court Vision",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "We are UP students thinking through school, friendships, hobbies and plans for the future. That position shapes what feels urgent to us. Grades and productivity are close enough to become measures of whether a day went well. We also have enough access to work together on a website. Choosing basketball, games and devices as familiar examples already says something about the lives from which we are asking the question."
+              "text": "As UP students, we navigate classes, friendships and plans for the future. That position shapes what feels urgent to us. Grades and productivity can become the default measures of whether a day went well. We also have enough access to work together on a website. Even choosing a basketball court, games and devices as familiar examples says something about the lives from which we are asking these questions."
             }
           ]
         },
@@ -300,7 +331,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "An afternoon that looks uncomplicated can require transport, free time, a place to meet and enough energy to remain there. Treating those conditions as background makes our preferred activity seem easier to choose than it is. The problem is not that we should stop discussing what we enjoy. It is that our enjoyment cannot tell us what everyone else wants or what they can afford to do."
+              "text": "An afternoon that looks uncomplicated still may require transport, free time, a place to gather and energy to spare. Treating those conditions as invisible makes our choices seem easier than they are. The problem is not that we should stop discussing what we enjoy. It is that our enjoyment on this court cannot tell us what everyone else wants or what they are able to do."
             }
           ]
         },
@@ -767,14 +798,23 @@
       "id": "s211",
       "partKey": "v2-c4-p1",
       "chapterId": "c4",
-      "title": "When a wish becomes a standard",
+      "title": "Checking all the boxes",
       "blocks": [
         {
           "kind": "narration",
           "speaker": null,
           "parts": [
             {
-              "text": "Good grades, a satisfying career, a relationship and enough income can all be things a person wants. Vier's concern is not that wanting them is wrong. It is what happens when they are presented as the only acceptable shape of a life. A preference becomes a standard, then a timetable. Falling behind the timetable begins to feel like living incorrectly, even before the person asks whether that path suits them."
+              "text": "On another afternoon, Vier is in the canteen after his major classes. His phone buzzes with a message from home: “Kumusta ka na? Make sure to keep in touch!” He smiles, then puts the phone down. His mind wanders back to a list: good grades, a good job, healthy relationships, enough money. Nobody ever handed him this list, yet it feels obvious, and somehow it has already decided how far behind he is."
+            }
+          ]
+        },
+        {
+          "kind": "dialogue",
+          "speaker": "Vier",
+          "parts": [
+            {
+              "text": "I don't really know what I'm passionate about or what I want to pursue, but I've always had this idea ingrained in my mind that a comfortable life is a happy life. I should get good grades, which would lead to better opportunities and, eventually, a good life. Once I'm financially stable and capable of supporting myself, pursuing happiness would become easier. Wala naman talagang nagturo o nagsabi sa akin na ganito dapat, so where did I get these ideas, and when did I start believing in them?"
             }
           ]
         },
@@ -783,7 +823,7 @@
           "speaker": null,
           "parts": [
             {
-              "text": "The pressure is easy to miss when the goal feels natural. We can learn what to admire through family, school, friends and media until the judgment no longer sounds borrowed. The class concept of habitus helps us examine how upbringing and social surroundings shape what feels obvious or desirable. We use it here as a lens from class, not as a quotation from a text we have not read. It makes the history of a desire worth asking about without proving that the desire is false."
+              "text": "Wanting these things is fine. The trouble starts when they become the only acceptable way to live, with a timetable that makes any other pace feel like failure. Vier's question is how a familiar aspiration became a standard he feels he must meet."
             }
           ]
         },
@@ -792,7 +832,10 @@
           "speaker": null,
           "parts": [
             {
-              "text": "Vier does not propose finding a self untouched by society. The language in which we describe a good life and the opportunities we know about are already social. Rejecting every influence would also reject relationships and possibilities we value. His alternative is to reflect on those influences and decide what to keep, question or change. Having a say includes negotiating a standard, rather than following it only because it appears settled."
+              "text": "Louis Althusser's account of ideological state apparatuses asks how institutions such as schools, families and communications reproduce social relations through everyday practices and expectations. It helps us ask how an identity such as the successful student comes to feel like our own. This is a theoretical lens on Vier's situation, not proof that his family intended to pressure him. "
+            },
+            {
+              "citation": 27
             }
           ]
         },
@@ -801,7 +844,40 @@
           "speaker": null,
           "parts": [
             {
-              "text": "That negotiation changes what dissatisfaction means. Someone can want a relationship without treating being single as failure. A student can value learning without making every grade a verdict on their life. Income can matter without one amount becoming the measure of everyone's success. The problem begins when one desirable thing is made to stand for happiness as a whole, leaving every other way of living in need of an excuse."
+              "text": "Adorno and Horkheimer's account of the culture industry adds a question about the promises made through mass entertainment and advertising. Images of desirable lives can keep directing desire toward what is offered for consumption. We can use that question without assuming that every film, device or aspiration has the same effect. "
+            },
+            {
+              "citation": 28
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Bourdieu's concept of habitus gives us a way to understand why learned expectations can feel natural rather than like rules someone deliberately taught us. In the opening of “Structures and the Habitus”, he describes dispositions shaped by the conditions in which people live. Applying that idea here makes the history of Vier's wishes worth examining; it does not prove that those wishes are false. "
+            },
+            {
+              "citation": 29
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Wanting the same milestones also does not give everyone the same means to reach them. Money, educational opportunities and people who can help affect which paths are usable. A student may endorse a goal and still lack the resources to pursue it. Reflection can help someone question a timetable; it cannot, by itself, remove those unequal conditions."
+            }
+          ]
+        },
+        {
+          "kind": "narration",
+          "speaker": null,
+          "parts": [
+            {
+              "text": "Recognizing these influences does not mean Vier must abandon his aspirations. He cannot entirely escape the society that shapes him, nor would he want to leave behind every relationship and possibility he values. He can begin to distinguish what he wants to keep from what he has learned to treat as compulsory. His agency lies in deciding what to keep, question or change, while also asking what would make those choices possible."
             }
           ]
         }
@@ -810,7 +886,7 @@
         "layout": "support",
         "views": [
           {
-            "ref": "A08",
+            "ref": "B16",
             "image": 0,
             "label": null
           }
@@ -3013,6 +3089,68 @@
           "yPhone": 0.1
         }
       ]
+    },
+    {
+      "ref": "B15",
+      "id": "teammate-after-game-v1",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/teammate-content-20261016",
+      "images": [
+        {
+          "path": "assets/generated/teammate-after-game-v1/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "ef0e88ab341a87b4714df8685929d97a987e2c7c1f2da5e9c4b05af93b864b9d",
+          "alt": "After a basketball game, TJ smiles and Koj catches his breath while Vier looks worried at his phone."
+        }
+      ],
+      "labels": [
+        {
+          "kind": "name",
+          "text": "TJ",
+          "x": 0.18,
+          "yDesktop": 0.22,
+          "yPhone": 0.22
+        },
+        {
+          "kind": "name",
+          "text": "Koj",
+          "x": 0.49,
+          "yDesktop": 0.2,
+          "yPhone": 0.2
+        },
+        {
+          "kind": "name",
+          "text": "Vier",
+          "x": 0.82,
+          "yDesktop": 0.22,
+          "yPhone": 0.22
+        }
+      ]
+    },
+    {
+      "ref": "B16",
+      "id": "teammate-canteen-v1",
+      "manifestGeneration": "a02-a18",
+      "assetBranch": "codex/teammate-content-20261016",
+      "images": [
+        {
+          "path": "assets/generated/teammate-canteen-v1/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "d492a3b6c5ccda5d8396edd565c24d5e1e3ecac77df5568514691246a3b14a2d",
+          "alt": "Vier sits at a canteen table beside a message from home, thinking about grades, a career and income."
+        }
+      ],
+      "labels": [
+        {
+          "kind": "name",
+          "text": "Vier",
+          "x": 0.4,
+          "yDesktop": 0.22,
+          "yPhone": 0.22
+        }
+      ]
     }
   ],
   "sourcesPage": {
@@ -3313,6 +3451,36 @@
         "citation": "David Harvey, A Brief History of Neoliberalism, Oxford University Press, 2005. ISBN 9780199283262.",
         "url": "https://academic.oup.com/book/40603",
         "note": []
+      },
+      {
+        "number": 27,
+        "sourceId": "R33",
+        "auditStatus": "verified-excerpt",
+        "label": "[27]",
+        "accessibleName": "Source 27",
+        "citation": "Althusser, L. (1971). Ideology and ideological state apparatuses (Notes towards an investigation). In Lenin and philosophy and other essays (B. Brewster, Trans., pp. 127–186). Monthly Review Press.",
+        "url": "https://www.marxists.org/reference/archive/althusser/1970/ideology.htm",
+        "note": []
+      },
+      {
+        "number": 28,
+        "sourceId": "R34",
+        "auditStatus": "verified-excerpt",
+        "label": "[28]",
+        "accessibleName": "Source 28",
+        "citation": "Horkheimer, M., & Adorno, T. W. (1972). The culture industry: Enlightenment as mass deception. In Dialectic of enlightenment (J. Cumming, Trans.). Herder and Herder. (Original work circulated 1944).",
+        "url": "https://www.marxists.org/reference/archive/adorno/1944/culture-industry.htm",
+        "note": []
+      },
+      {
+        "number": 29,
+        "sourceId": "R35",
+        "auditStatus": "verified-excerpt",
+        "label": "[29]",
+        "accessibleName": "Source 29",
+        "citation": "Bourdieu, P. (1977). Structures and the habitus. In Outline of a theory of practice (R. Nice, Trans., pp. 72–95). Cambridge University Press. doi:10.1017/CBO9780511812507.004.",
+        "url": "https://www.cambridge.org/core/books/abs/outline-of-a-theory-of-practice/structures-and-the-habitus/CE3B114C2E778D86DEBD7A4E020263F4",
+        "note": []
       }
     ],
     "creditItems": [
@@ -3345,7 +3513,7 @@
     ]
   },
   "measure": {
-    "words": 8595,
+    "words": 8803,
     "rule": "Reader-visible narration and dialogue of the 31 main-path parts, whitespace-separated, excluding speaker labels, citation markers, part and chapter titles, interface strings and the Sources & Credits page."
   }
 }

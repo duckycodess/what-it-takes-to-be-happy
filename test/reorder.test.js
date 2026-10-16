@@ -42,14 +42,14 @@ test('register numbers are the ones the register already had', () => {
   // slightly out of sequence -- [7] arrives before [4] -- and that is the
   // approved decision rather than a number assigned by hand.
   assert.deepEqual([...firstSeen].sort((a, b) => a - b),
-    Array.from({ length: 26 }, (unused, index) => index + 1),
+    Array.from({ length: 29 }, (unused, index) => index + 1),
     'every register entry is cited exactly once somewhere');
   assert.notDeepEqual(firstSeen, [...firstSeen].sort((a, b) => a - b),
     'if first appearance has become ascending again, the retention rule has been lost');
 
   // The register itself is still stored and shown in number order.
   assert.deepEqual(doc.sourcesPage.sources.map((source) => source.number),
-    Array.from({ length: 26 }, (unused, index) => index + 1));
+    Array.from({ length: 29 }, (unused, index) => index + 1));
 });
 
 test('a drawing is found by its brief reference, not by where it is stored', () => {

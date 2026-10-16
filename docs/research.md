@@ -30,6 +30,7 @@ Review status values:
 | `verified-full` | The relevant passage was read in the full work and is quoted in the record. |
 | `verified-abstract` | Only the authors' own abstract of a study or article was read; claims are limited to what that abstract states. |
 | `verified-locator` | Only a publisher, catalogue, or index page was read — including a publisher's book description or publisher-deposited book abstract. It supports bibliographic detail and the publisher's own wording about the book, and nothing from inside the book. |
+| `verified-excerpt` | Relevant primary text was checked in an excerpt or preview, without claiming the whole work was read. |
 | `not-accessed` | The work could not be opened from this working environment. No claim rests on its contents. |
 
 ## Current sources
@@ -68,6 +69,9 @@ Review status values:
 | R30 | [Sen's Development as Freedom](https://sen.scholars.harvard.edu/publications/development-freedom) | Book/theory locator | `not-accessed` | `s068` `s079` |
 | R31 | [Bautista & Aguilar on Sikolohiyang Pilipino](https://www.um.edu.mt/library/oar/handle/123456789/116643) | Research (open access) | `verified-full` | `s053` `s054` |
 | R32 | [Robeyns & Byskov, 'The Capability Approach'](https://plato.stanford.edu/entries/capability-approach/) | Peer-reviewed reference work | `verified-full` | `s068` `s079` |
+| R33 | [Althusser on ideology and ideological state apparatuses](https://www.marxists.org/reference/archive/althusser/1970/ideology.htm) | Primary theory excerpt | `verified-excerpt` | `s211` |
+| R34 | [Horkheimer and Adorno on the culture industry](https://www.marxists.org/reference/archive/adorno/1944/culture-industry.htm) | Primary theory excerpt | `verified-excerpt` | `s211` |
+| R35 | [Bourdieu on structures and habitus](https://www.cambridge.org/core/books/abs/outline-of-a-theory-of-practice/structures-and-the-habitus/CE3B114C2E778D86DEBD7A4E020263F4) | Primary theory excerpt | `verified-excerpt` | `s211` |
 
 R31 and R32 are new identifiers added by this audit because R21 and R30 could not be opened. They
 are different works and carry their own identifiers; the original identifiers keep their original
@@ -443,6 +447,35 @@ a report, not the whole report. Each record says so.
 
 ---
 
+
+## Teammate contribution source check — 16 October 2026
+
+Three primary theory passages support the canteen reflection, bringing the pool to 35 and the
+published references to 29. Their status is verified-excerpt. The original audit is preserved;
+these are theoretical lenses for the fictional situation, not findings about Filipino families.
+
+### R33 — Althusser, ideology and ideological state apparatuses
+
+- **Access:** Primary essay in Ben Brewster's translation from the 1971 Monthly Review Press edition, at the link above; the sections on ideological state apparatuses and interpellation were checked on 16 October 2026.
+- **Supported use:** Schools, family and communications participate in reproducing social relations; interpellation concerns becoming a subject within ideology.
+- **Anchor:** “ideology interpellates individuals as subjects”
+- **Limit:** This framework does not establish that a particular family intended to impose a particular aspiration. The new card says so.
+
+### R34 — Horkheimer and Adorno, the culture industry
+
+- **Access:** Primary chapter excerpt at Marxists Internet Archive; the passages on promised satisfaction and consumption were checked on 16 October 2026.
+- **Supported use:** Critique of mass entertainment and advertising directing desire toward offered commodities.
+- **Anchor:** “the eternal consumer, the object of the culture industry”
+- **Edition:** The contributor supplied the 2002 Jephcott edition. The linked excerpt uses the earlier Cumming translation, which the published citation identifies. No edition-specific quotation from 2002 is claimed.
+- **Limit:** This critique does not establish an identical effect for every film, device or viewer.
+
+### R35 — Bourdieu, structures and the habitus
+
+- **Access:** Cambridge University Press's primary-text preview of Chapter 2, pp. 72–95, Richard Nice translation, 1977. The displayed opening was checked on 16 October 2026.
+- **Supported use:** Dispositions shaped by material and social conditions can generate patterned practices without explicit obedience to rules.
+- **Anchor:** “systems of durable, transposable dispositions”
+- **Limit:** The opening preview supports the habitus passage. The practical discussion of money, education and support is the group's application; it does not attribute a complete theory of three forms of capital to this preview.
+
 ## Claims we narrowed or dropped after the audit
 
 | Original use in the notes | What the audit changed |
@@ -455,7 +488,7 @@ a report, not the whole report. Each record says so.
 | Friendship maintenance via a blog category page (R20) | A category index supports nothing. One specific post is now the locator and is quoted. |
 | "In class we say money doesn't raise the happiness baseline" | The classroom wording is not independently available to us. `s061` names it as something we remember being said in class, not as a finding, and sets it against R02 and R09. |
 | The Koronadal study as the Philippine picture (R10) | Verified in full, and narrowed: one city, 522 respondents, November 2019, poverty incidence well above the national figure. The study's PHP 20,000 threshold is reported as that sample's, never as a national number. |
-| "Social upbringing / habitus" as a class link | No source for it exists in the pool and none was added. `s034` presents it as a phrase from class whose original formulation we have not read, and keeps it separate from Vier's own argument. |
+| "Social upbringing / habitus" as a class link | At the original audit no source existed in the pool. The 16 October contribution now adds R35 for habitus. `s034` presents it as a phrase from class whose original formulation we have not read, and keeps it separate from Vier's own argument. |
 
 ## Class concepts and attribution
 

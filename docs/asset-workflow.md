@@ -135,3 +135,12 @@ Discovery surfaced optional Figma, Runway, Higgsfield, and Adobe Express integra
 ## Issue #20 paper polish
 
 Fourteen additional B-series supporting cutouts and two original decorative UI bitmaps were supplied on `codex/art-polish-v1`. Consume its two commits oldest first; exact heads, prompts, selected dimensions and hashes are in `docs/art-requests.json` and each manifest. Generic figures use plain heads; the named cast keeps the inspected character study and browser-rendered labels. None of these bitmaps copies Trust. The page transition does use Trust's own scratch sprite sheet and recordings, copied unchanged under CC0 into `assets/ui/trust/` (see its README and `docs/decisions.md`); the generated `scratch-paper.png` is retained but no longer published. UI bitmaps stay in `assets/ui/polish/`, outside the passage register, and their selected hashes are checked by the build. Initial generation files remain outside the selected repository image when a cleanup supersedes them; both exact prompts remain recorded. Provider inspection does not claim owner inspection.
+
+
+## Teammate contribution — 16 October 2026
+
+B15 (teammate-after-game-v1) and B16 (teammate-canteen-v1) were produced with built-in image
+generation against the existing cast references. Their original transparent PNGs, prompts,
+checksums and browser-name anchors are recorded beside each selected file. They replace artwork
+only on s201 and s211. The landing and the final return to the afternoon retain A01; chapter one's
+other two cards retain B01/B02. No lettering is baked into the new cutouts.

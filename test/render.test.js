@@ -256,8 +256,9 @@ test('names and prop labels are browser text positioned over the image', () => {
     });
   }
 
-  // Both A08's four prop labels and A10's dialogue label are real text.
-  assert.ok(essay.includes('>Grades</span>'));
+  // The older A08 milestone drawing is retained as provenance; its labels
+  // are not attached to Vier's new canteen scene. A10's dialogue remains text.
+  assert.ok(!essay.includes('>Grades</span>'));
   assert.ok(essay.includes('>Cheer up!</span>'));
 });
 
@@ -432,7 +433,7 @@ test('the Sources & Credits page is a separate document with a return control', 
   assert.equal(sourcesPage.querySelector('h1').textContent, 'Sources & Credits');
 
   const entries = sourcesPage.querySelectorAll('.source');
-  assert.equal(entries.length, 26);
+  assert.equal(entries.length, 29);
   entries.forEach((entry, index) => {
     assert.equal(entry.getAttribute('id'), sourceAnchor(index + 1));
     assert.equal(entry.querySelector('.source-number').textContent, `[${index + 1}]`);
@@ -469,7 +470,7 @@ test('the retained export carries the register inside itself', () => {
     sourceHref: (number) => `#${sourceAnchor(number)}`,
   }));
   assert.ok(inline.querySelector('#sources'));
-  assert.equal(inline.querySelectorAll('.source').length, 26);
+  assert.equal(inline.querySelectorAll('.source').length, 29);
   assert.equal(inline.querySelector('.citation').getAttribute('href'), '#source-1');
 });
 

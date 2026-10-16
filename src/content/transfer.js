@@ -40,6 +40,8 @@ export const SCHEMA_ID = 'happiness-essay-content/v3';
 export const POLISH_AMENDMENT = { path: 'docs/editorial/polish-amendment.json', sha256: '3234f3285e84c542e3c3137f81d8557622c98675484d91e63600d3c87fb94c50' };
 export const READER_AMENDMENT = { path: 'docs/editorial/reader-amendment.json', sha256: '005bc6a6de0ea38765f0ee98d1a1a99da79ac15d027ee8fb91792a519d037618' };
 
+export const CONTRIBUTION_AMENDMENT = { path: 'docs/editorial/contribution-amendment.json', sha256: '64684bdfcffaf3f26ba33e003f42361cb23dc7e4c6852b2bf731c593fa805ef3' };
+
 /** The approved essay this content is transferred from, in both its forms. */
 export const APPROVED_ESSAY = {
   markdown: {
@@ -509,7 +511,7 @@ function reaches(recorded, url) {
  * @param {object} input.sourceMap `docs/redesign/source-map.json`
  * @returns {object} a content document
  */
-export function transfer({ markdown, handoffJson, manifests, sourceMap, amendmentJson, readerAmendmentJson }) {
+export function transfer({ markdown, handoffJson, manifests, sourceMap, amendmentJson, readerAmendmentJson, contributionAmendmentJson }) {
   const markdownDigest = sha256(markdown);
   if (markdownDigest !== APPROVED_ESSAY.markdown.sha256) {
     fail(`the essay at ${APPROVED_ESSAY.markdown.path} is ${markdownDigest}, `
@@ -679,6 +681,37 @@ export function transfer({ markdown, handoffJson, manifests, sourceMap, amendmen
     document.landing.title = amendment.title;
     document.landing.credit = amendment.landing_credit.map(noteParts);
     document.source.readerAmendment = { ...READER_AMENDMENT };
+  }
+  // The teammate contribution is confined to four existing cards. Match
+  // their previous content before replacing it, so later edits cannot be
+  // silently overwritten by an amendment written for a different revision.
+  if (contributionAmendmentJson !== undefined) {
+    if (sha256(contributionAmendmentJson) !== CONTRIBUTION_AMENDMENT.sha256) fail('the teammate contribution amendment changed');
+    const amendment = JSON.parse(contributionAmendmentJson);
+    for (const source of amendment.sources) {
+      if (source.number !== document.sourcesPage.sources.length + 1
+        || document.sourcesPage.sources.some((old) => old.sourceId === source.sourceId)) {
+        fail('the contribution must append distinct sources without renumbering existing citations');
+      }
+      document.sourcesPage.sources.push(source);
+    }
+    const onCitation = (number, url) => {
+      const source = document.sourcesPage.sources.find((entry) => entry.number === number);
+      if (!source || source.url !== url) fail('contribution citation ' + number + ' does not match its source');
+    };
+    for (const change of amendment.scenes) {
+      const scene = scenes.find((entry) => entry.id === change.id);
+      if (!scene || sha256(JSON.stringify(scene)) !== change.before_sha256) fail(change.id + ': contribution no longer matches the previous scene');
+      scene.title = change.title;
+      scene.blocks = change.paragraphs.map((paragraph) => readParagraph(change.id, paragraph, onCitation));
+      if (change.art) {
+        const asset = assetsByRef.get(change.art.ref);
+        if (!asset) fail(change.id + ': contribution artwork is missing');
+        scene.visual = { layout: 'support', views: [{ ref: asset.ref, image: 0, label: null }], control: null, afterBlock: change.art.afterBlock };
+      }
+    }
+    document.measure.words = countWords(scenes);
+    document.source.contributionAmendment = { ...CONTRIBUTION_AMENDMENT };
   }
   return document;
 }

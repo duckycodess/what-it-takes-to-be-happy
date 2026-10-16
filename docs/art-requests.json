@@ -5,7 +5,7 @@
       "id": "rewrite-mixed-day-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s091 \u201cOne bad day\u201d and s092 \u201cTwo different questions\u201d (single): an illustrative difficult day that lets the essay separate a passing mood from a life going well.",
+      "purpose": "Scenes s091 “One bad day” and s092 “Two different questions” (single): an illustrative difficult day that lets the essay separate a passing mood from a life going well.",
       "description": "Fictional Bob seated beside an open, unlettered notebook. Tired eyebrows, small neutral mouth, relaxed shoulders; the task looks demanding without a despairing or triumphant verdict. One intact figure.",
       "transparent_background": true,
       "reference_assets": [
@@ -38,7 +38,7 @@
       "id": "rewrite-chosen-study-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s093 \u201cLiving well takes more than a mood\u201d (single, after Koj's dialogue), s097 \u201cChosen challenge, forced hardship\u201d (pair with A06, view label \u201cChosen effort\u201d) and s100 \u201cWho ranks pleasures?\u201d (pair with A05, view label \u201cStudying\u201d): effort a person chooses, demanding and still worth it.",
+      "purpose": "Scenes s093 “Living well takes more than a mood” (single, after Koj's dialogue), s097 “Chosen challenge, forced hardship” (pair with A06, view label “Chosen effort”) and s100 “Who ranks pleasures?” (pair with A05, view label “Studying”): effort a person chooses, demanding and still worth it.",
       "description": "Koj with the recognizable curl, compact seated body, open book and pencil. Concentrated eyebrows, slightly strained expression; no ecstatic smile, grades, labels or badges.",
       "transparent_background": true,
       "reference_assets": [
@@ -71,7 +71,7 @@
       "id": "rewrite-agency-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s094 \u201cHaving a say\u201d and s108 \u201cChoosing what to keep\u201d (single, after Vier's dialogue): having a say over which demands to keep, without depicting a path or an idealized second self.",
+      "purpose": "Scenes s094 “Having a say” and s108 “Choosing what to keep” (single, after Vier's dialogue): having a say over which demands to keep, without depicting a path or an idealized second self.",
       "description": "Vier with angular tuft, thoughtful face, seated with a phone set down and a notebook nearby. One hand raised in a small questioning gesture; no pathways, arrows or idealized second self.",
       "transparent_background": true,
       "reference_assets": [
@@ -103,7 +103,7 @@
       "id": "rewrite-playing-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s096 \u201cA hobby can offer several things\u201d (single) and s100 \u201cWho ranks pleasures?\u201d (pair with A03, view label \u201cPlaying\u201d): a freely chosen hobby supplying competence, autonomy and relatedness at once.",
+      "purpose": "Scenes s096 “A hobby can offer several things” (single) and s100 “Who ranks pleasures?” (pair with A03, view label “Playing”): a freely chosen hobby supplying competence, autonomy and relatedness at once.",
       "description": "TJ and fictional Bob sit together with simple game controllers; relaxed expressive faces. One small unlettered screen off to the side, no game logo or generated UI. Preserve both full figures.",
       "transparent_background": true,
       "reference_assets": [
@@ -135,7 +135,7 @@
       "id": "rewrite-required-work-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s097 \u201cChosen challenge, forced hardship\u201d (pair with A03, view label \u201cRequired work\u201d): obligation a fictional person cannot refuse, never assigned to Koj.",
+      "purpose": "Scene s097 “Chosen challenge, forced hardship” (pair with A03, view label “Required work”): obligation a fictional person cannot refuse, never assigned to Koj.",
       "description": "Fictional Bob, visibly tired, seated with an unlettered stack of task papers and a simple clock. No bill amounts, grades, employer or hardship assigned to a member.",
       "transparent_background": true,
       "reference_assets": [
@@ -167,8 +167,8 @@
       "id": "rewrite-rest-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s098 \u201cRest does not need to pay us back\u201d (single, after TJ's dialogue): rest shown as worth having in itself, with no timer, reward or productivity framing.",
-      "description": "TJ with crown tuft reclining comfortably against a simple cushion; restful eyes, small content smile. No phone app, timer, productivity badge or \u201cbefore/after\u201d body.",
+      "purpose": "Scene s098 “Rest does not need to pay us back” (single, after TJ's dialogue): rest shown as worth having in itself, with no timer, reward or productivity framing.",
+      "description": "TJ with crown tuft reclining comfortably against a simple cushion; restful eyes, small content smile. No phone app, timer, productivity badge or “before/after” body.",
       "transparent_background": true,
       "reference_assets": [
         "assets/concepts/stickman-character-sheet-v1.png",
@@ -199,7 +199,7 @@
       "id": "rewrite-expectations-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s103 \u201cThe expected life\u201d (single): four expected milestones as separate blank props, leaving room for the browser labels \u201cGrades\u201d, \u201cCareer\u201d, \u201cRelationship\u201d and \u201cIncome\u201d beside the matching prop, with no sequence or score.",
+      "purpose": "Scene s103 “The expected life” (single): four expected milestones as separate blank props, leaving room for the browser labels “Grades”, “Career”, “Relationship” and “Income” beside the matching prop, with no sequence or score.",
       "description": "Vier thoughtful at center; four separate small props around him: blank grade sheet, work bag, two-person keepsake silhouette, blank banknote. Plenty of blank space for the four browser labels specified in s103. No milestones route or scoring.",
       "transparent_background": true,
       "reference_assets": [
@@ -231,7 +231,7 @@
       "id": "rewrite-phone-connection-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s104 \u201cWhat does the purchase give me?\u201d (single, after TJ's dialogue) and the default \u201cConnection\u201d state of scene s105 \u201cOne phone, different uses\u201d: the same phone used to stay close to someone.",
+      "purpose": "Scene s104 “What does the purchase give me?” (single, after TJ's dialogue) and the default “Connection” state of scene s105 “One phone, different uses”: the same phone used to stay close to someone.",
       "description": "TJ using a small phone with a warm smile; fictional Bob beside him, holding a phone and smiling back. No screen lettering, messages, notification counts or connection arrows. Two full figures.",
       "transparent_background": true,
       "reference_assets": [
@@ -263,7 +263,7 @@
       "id": "rewrite-phone-comparison-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Second \u201cComparison\u201d state of scene s105 \u201cOne phone, different uses\u201d: the same phone and pose turned to comparison instead; framing must stay close to A09a so the optional control swaps states instantaneously.",
+      "purpose": "Second “Comparison” state of scene s105 “One phone, different uses”: the same phone and pose turned to comparison instead; framing must stay close to A09a so the optional control swaps states instantaneously.",
       "description": "Same TJ identity and phone pose, now thoughtful and slightly tense; no second person, status symbols, numeric counts or assumed diagnosis. Preserve framing close to A09a for an instantaneous state swap.",
       "transparent_background": true,
       "reference_assets": [
@@ -295,8 +295,8 @@
       "id": "rewrite-cheer-pressure-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s106 \u201cPressure to be cheerful\u201d (single): sadness that persists while a fictional friend urges cheer, with clear space for the browser dialogue \u201cCheer up!\u201d beside the friend rather than over heads.",
-      "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text \u201cCheer up!\u201d near friend, not over heads.",
+      "purpose": "Scene s106 “Pressure to be cheerful” (single): sadness that persists while a fictional friend urges cheer, with clear space for the browser dialogue “Cheer up!” beside the friend rather than over heads.",
+      "description": "Sad fictional Bob, shoulders lowered, beside a second fictional friend making an encouraging hand gesture. Friend's face cheerful; Bob's sadness remains visible. Clear room for the browser text “Cheer up!” near friend, not over heads.",
       "transparent_background": true,
       "reference_assets": [
         "assets/concepts/stickman-character-sheet-v1.png",
@@ -327,7 +327,7 @@
       "id": "rewrite-joy-and-pressure-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s107 \u201cJoy does not cancel the problem\u201d (single): real enjoyment coexisting with unresolved demands, with neither read as the truer feeling.",
+      "purpose": "Scene s107 “Joy does not cancel the problem” (single): real enjoyment coexisting with unresolved demands, with neither read as the truer feeling.",
       "description": "Fictional Bob seated with a plate of food and a phone placed aside. A restrained smile and worried brow coexist; a small stack of blank papers nearby indicates unresolved demands, not measured debt.",
       "transparent_background": true,
       "reference_assets": [
@@ -359,7 +359,7 @@
       "id": "rewrite-shared-meal-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s109 \u201cOrdinary care\u201d and s111 \u201cSharing a meal\u201d (group): the three members eating together as ordinary care, with browser names reserved above their heads.",
+      "purpose": "Scenes s109 “Ordinary care” and s111 “Sharing a meal” (group): the three members eating together as ordinary care, with browser names reserved above their heads.",
       "description": "TJ, Koj and Vier seated around a small low table with three simple plates. Friendly, calm expressions, full visible heads and compact bodies. No restaurant brand, purchase or depicted real event. Reserve browser names above heads.",
       "transparent_background": true,
       "reference_assets": [
@@ -391,7 +391,7 @@
       "id": "rewrite-care-work-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s112 \u201cWho keeps the relationship going?\u201d (single): the unnoticed organizing work behind a shared meal, carried by a fictional person and never assigned to a member.",
+      "purpose": "Scene s112 “Who keeps the relationship going?” (single): the unnoticed organizing work behind a shared meal, carried by a fictional person and never assigned to a member.",
       "description": "One fictional organizer arranging plates while checking a blank phone. Focused rather than permanently unhappy; other guests need not appear. No gender-coded duty or inferred member household.",
       "transparent_background": true,
       "reference_assets": [
@@ -423,7 +423,7 @@
       "id": "rewrite-solitude-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s113 \u201cBoundaries belong in connection\u201d (single): chosen solitude as part of connection rather than a picture of loneliness.",
+      "purpose": "Scene s113 “Boundaries belong in connection” (single): chosen solitude as part of connection rather than a picture of loneliness.",
       "description": "Fictional Bob reading alone, relaxed posture and content face; one simple book. Empty surrounding space stays transparent, without loneliness symbols.",
       "transparent_background": true,
       "reference_assets": [
@@ -455,7 +455,7 @@
       "id": "rewrite-time-available-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Default \u201cTime available\u201d state of scene s114 \u201cThe same invitation, different options\u201d: the same fictional person with hours free to accept an invitation.",
+      "purpose": "Default “Time available” state of scene s114 “The same invitation, different options”: the same fictional person with hours free to accept an invitation.",
       "description": "Fictional Bob standing freely with a small basketball, smiling and ready to join. No literal calendar, text or estimated free hours.",
       "transparent_background": true,
       "reference_assets": [
@@ -487,7 +487,7 @@
       "id": "rewrite-time-claimed-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Second \u201cTime claimed\u201d state of scene s114 \u201cThe same invitation, different options\u201d: the same identity with those hours already claimed by work and travel.",
+      "purpose": "Second “Time claimed” state of scene s114 “The same invitation, different options”: the same identity with those hours already claimed by work and travel.",
       "description": "Same Bob identity carrying a plain work bag, glancing at a clock, with a simple bus-stop post nearby. Tired expression; no employer, route map or fictional schedule data.",
       "transparent_background": true,
       "reference_assets": [
@@ -519,7 +519,7 @@
       "id": "rewrite-time-transfer-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s115 \u201cBuying time moves the work\u201d (pair, view labels \u201cTime gained\u201d then \u201cWork performed\u201d): bought time reappearing as someone else's labour; the pair layout needs two separately usable cutouts.",
+      "purpose": "Scene s115 “Buying time moves the work” (pair, view labels “Time gained” then “Work performed”): bought time reappearing as someone else's labour; the pair layout needs two separately usable cutouts.",
       "description": "Two fictional people in separate transparent groups: one resting, the other doing dishes. Distinguish through pose and browser labels, not a rich/poor caricature. Keep task tools fully visible. Supply separately usable cutouts for pair layout.",
       "transparent_background": true,
       "reference_assets": [
@@ -557,7 +557,7 @@
       "id": "rewrite-campus-space-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scenes s124 \u201cMake room on campus\u201d and s127 \u201cTest a proposal before claiming success\u201d (single): the fictional shared space our proposal asks for, with no real location named and no success marks.",
+      "purpose": "Scenes s124 “Make room on campus” and s127 “Test a proposal before claiming success” (single): the fictional shared space our proposal asks for, with no real location named and no success marks.",
       "description": "Fictional proposed shared space: bench, modest shade and two students spending time together, with clear unobstructed space alongside seating. No actual campus landmark, commercial branding or success indicators.",
       "transparent_background": true,
       "reference_assets": [
@@ -589,7 +589,7 @@
       "id": "rewrite-space-work-v1",
       "issue": 15,
       "branch": "codex/issue-15",
-      "purpose": "Scene s126 \u201cWho benefits, who pays?\u201d (pair, view labels \u201cStudents using the space\u201d then \u201cStaff maintaining it\u201d): the maintenance the proposal creates; the pair layout needs two separately usable cutouts.",
+      "purpose": "Scene s126 “Who benefits, who pays?” (pair, view labels “Students using the space” then “Staff maintaining it”): the maintenance the proposal creates; the pair layout needs two separately usable cutouts.",
       "description": "Pair cutouts: two fictional students at a shared table; a fictional staff member cleaning the same kind of table. Staff expression attentive, not automatically miserable. No implication of measured workload.",
       "transparent_background": true,
       "reference_assets": [
@@ -1120,6 +1120,46 @@
         ],
         "verified": "Generated output visually inspected; build verifies selected bitmap hashes."
       }
+    },
+    {
+      "id": "teammate-after-game-v1",
+      "branch": "codex/teammate-content-20261016",
+      "purpose": "Matching artwork for the owner-requested teammate contribution",
+      "description": "After a basketball game, TJ smiles and Koj catches his breath while Vier looks worried at his phone.",
+      "transparent_background": true,
+      "status": "provider-inspected",
+      "ref": "B15",
+      "alt": "After a basketball game, TJ smiles and Koj catches his breath while Vier looks worried at his phone.",
+      "selected_files": [
+        {
+          "path": "assets/generated/teammate-after-game-v1/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "ef0e88ab341a87b4714df8685929d97a987e2c7c1f2da5e9c4b05af93b864b9d",
+          "alt": "After a basketball game, TJ smiles and Koj catches his breath while Vier looks worried at his phone.",
+          "transparent_background": true
+        }
+      ]
+    },
+    {
+      "id": "teammate-canteen-v1",
+      "branch": "codex/teammate-content-20261016",
+      "purpose": "Matching artwork for the owner-requested teammate contribution",
+      "description": "Vier sits at a canteen table beside a message from home, thinking about grades, a career and income.",
+      "transparent_background": true,
+      "status": "provider-inspected",
+      "ref": "B16",
+      "alt": "Vier sits at a canteen table beside a message from home, thinking about grades, a career and income.",
+      "selected_files": [
+        {
+          "path": "assets/generated/teammate-canteen-v1/scene.png",
+          "width": 1536,
+          "height": 1024,
+          "sha256": "d492a3b6c5ccda5d8396edd565c24d5e1e3ecac77df5568514691246a3b14a2d",
+          "alt": "Vier sits at a canteen table beside a message from home, thinking about grades, a career and income.",
+          "transparent_background": true
+        }
+      ]
     }
   ]
 }

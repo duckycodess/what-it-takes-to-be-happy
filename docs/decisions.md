@@ -322,3 +322,27 @@ to go straight to `main`. The Vercel production hold is lifted: every push to `m
 publishes the live site through the Git integration. [Delivery](delivery.md#current-state) records
 the change. The same change gives a marked chapter and its first part separate highlights in the
 rail, and rewrites the README for readers rather than maintainers.
+
+
+## Owner direction — 16 October 2026, teammate contribution
+
+The owner supplied two Markdown contributions and asked to incorporate them with corresponding
+artwork, clarifying that “intro” meant the first chapter. The card designs are already settled.
+
+The three opening cards become “Stakes of the Game”, “(For) Three Points!!” and “Court Vision”,
+using the basketball exchange to make Vier's unease about wasted time concrete. Dialogue retains
+the contributor's wording. Narration is lightly edited for grammar and continuity; the last
+paragraph of Court Vision still leads into the distinction between a good day and a good life.
+The existing conclusion's return to the basketball afternoon therefore still works.
+
+“Checking all the boxes” belongs at the start of chapter four, The life we are told to want.
+Vier's canteen reflection replaces the existing treatment of expected milestones, with primary
+theory references appended as [27]–[29]. The inaccessible or unneeded historical sources are not
+repurposed. The linked culture-industry excerpt is the Cumming translation; its citation identifies
+that edition rather than claiming access to the contributor's Jephcott edition.
+
+Both original documents remain byte-for-byte in docs/notes/teammate-20261016/. The separate,
+hash-bound contribution amendment changes only those four cards and adds two matching cutouts
+(B15, after the game; B16, the canteen). It checks the previous scene before applying each change.
+The original approved essay and handoff stay untouched. Navigation, existing scene addresses,
+31-card structure, chapter names, controls and layout stay unchanged.

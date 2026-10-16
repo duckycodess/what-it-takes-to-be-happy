@@ -90,7 +90,7 @@ test('identifiers keep their historical form', () => {
 /* --- Reader copy -------------------------------------------------------- */
 
 test('a block is narration or one of the three named speakers', () => {
-  assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks[1].speaker = 'Bob'; })).includes('UNKNOWN_SPEAKER'));
+  assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks.find((block) => block.kind === 'dialogue').speaker = 'Bob'; })).includes('UNKNOWN_SPEAKER'));
   assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks[0].speaker = 'Narrator'; })).includes('NARRATOR_IS_UNLABELLED'));
   assert.ok(codes(broken((doc) => { scene(doc, 's201').blocks[0].kind = 'caption'; })).includes('UNKNOWN_KIND'));
 });

@@ -65,6 +65,7 @@ export const SOURCE_AUDIT_STATUSES = {
   'verified-full': { label: 'Read in full' },
   'verified-abstract': { label: 'Abstract only' },
   'verified-locator': { label: 'Publisher or catalogue description only' },
+  'verified-excerpt': { label: 'Relevant primary-text excerpt' },
 };
 
 /** The accepted values of a source's `auditStatus`. */
@@ -92,7 +93,7 @@ export const SOURCES_PAGE_KEYS = ['title', 'intro', 'classNote', 'credits', 'met
 /** How many parts, chapters and sources the approved argument has. */
 export const SCENE_COUNT = 31;
 export const CHAPTER_COUNT = 8;
-export const SOURCE_COUNT = 26;
+export const SOURCE_COUNT = 29;
 
 /** How many published addresses the approved handoff relocates. */
 export const RELOCATION_COUNT = 45;

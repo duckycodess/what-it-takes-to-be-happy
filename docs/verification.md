@@ -711,3 +711,18 @@ The approved 31-part essay passed `npm run check` (validation, all 249 tests wit
 A separate editorial fidelity audit passed eight chapters, 31 parts, 123 paragraphs, all 26 source entries and all 45 old-address relocations. Sources paragraph order and References heading now match the approved handoff. Follow-up coverage/style checks also passed after documentation and CSS-comment cleanup.
 
 This records implementation verification, not independent approval of a pushed commit, hosted acceptance, final owner layout approval or production release. Physical phones, other engines and physical printers remain untested. Production hold stays active.
+
+## Teammate contribution — 16 October 2026 (local revision)
+
+The two supplied Markdown files are preserved byte-for-byte in docs/notes/teammate-20261016/.
+The pinned contribution amendment changes s201, s202, s203 and s211 only. Scope checks compare
+all 27 other scene objects with the earlier transfer, preserve all existing citation numbers and
+relocations, and check the five dialogue blocks against the original submissions.
+
+npm run check passed validation, all 257 tests (zero failed, cancelled or skipped), and the hosted
+build. Real Chrome cases ran, including navigation, print, reduced motion and artwork labels.
+The new opening and canteen cutouts were also visually inspected in the card at 1280px and in a
+390px-wide frame. Names stay above the heads, source links render as [27]–[29], and the existing
+layout and controls are unchanged. The 8,803-word main path is recomputed from the revised text.
+
+This is a local working revision for editorial review. It has not been pushed to main or deployed.

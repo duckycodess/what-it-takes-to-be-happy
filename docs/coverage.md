@@ -1,6 +1,6 @@
 # Coverage matrix
 
-Current approved essay: [exact copy](editorial/full-essay-v2.md), [ordered handoff](editorial/full-essay-handoff-v2.json), and [published data](../content/content.json). Eight chapters and 31 parts replace the earlier scene sequence. Historical work remains in Git history and [docs/storyboard.md](storyboard.md). Source audit limits remain in [docs/research.md](research.md); this matrix does not claim new source inspection.
+Current approved essay: [exact copy](editorial/full-essay-v2.md), [ordered handoff](editorial/full-essay-handoff-v2.json), and [published data](../content/content.json). Eight chapters and 31 parts replace the earlier scene sequence. Historical work remains in Git history and [docs/storyboard.md](storyboard.md). Source audit limits remain in [docs/research.md](research.md); the 16 October contribution check is recorded separately there.
 
 ## The assignment's four parts
 
@@ -13,14 +13,14 @@ Current approved essay: [exact copy](editorial/full-essay-v2.md), [ordered hando
 
 ## The eight chapters
 
-The remaining 122 blocks are narration, with member positions attributed in prose. Only the approved opening TJ line is dialogue.
+The remaining 125 blocks are narration. The contribution supplies four opening basketball lines and one canteen reflection; no invented figure speaks.
 
 | Chapter | Title | Scenes | Count | Koj | TJ | Vier |
 | --- | --- | --- | --- | --- | --- | --- |
-| `c1` | An ordinary afternoon | `s201` `s203` | 3 | 0 | 1 | 0 |
+| `c1` | An ordinary afternoon | `s201` `s203` | 3 | 1 | 2 | 1 |
 | `c2` | A good day and a good life | `s204` `s207` | 4 | 0 | 0 | 0 |
 | `c3` | Does enjoyment have to be useful? | `s208` `s210` | 3 | 0 | 0 | 0 |
-| `c4` | The life we are told to want | `s211` `s214` | 4 | 0 | 0 | 0 |
+| `c4` | The life we are told to want | `s211` `s214` | 4 | 0 | 0 | 1 |
 | `c5` | Being with people, having room for yourself | `s215` `s218` | 4 | 0 | 0 | 0 |
 | `c6` | Who can make time? | `s219` `s224` | 6 | 0 | 0 | 0 |
 | `c7` | What would make room? | `s225` `s228` | 4 | 0 | 0 | 0 |
@@ -30,9 +30,9 @@ The remaining 122 blocks are narration, with member positions attributed in pros
 
 | Scene | Title | Layout |
 | --- | --- | --- |
-| `s201` | Nothing to show for it | support |
-| `s202` | Three different answers | support |
-| `s203` | The lives we are speaking from | support |
+| `s201` | Stakes of the Game | support |
+| `s202` | (For) Three Points!! | support |
+| `s203` | Court Vision | support |
 | `s204` | Feeling good, looking back | support |
 | `s205` | Why choose something difficult? | support |
 | `s206` | Having a say | support |
@@ -40,7 +40,7 @@ The remaining 122 blocks are narration, with member positions attributed in pros
 | `s208` | Choosing effort, carrying obligations | pair |
 | `s209` | Rest without repayment | support |
 | `s210` | Who decides what counts? | support |
-| `s211` | When a wish becomes a standard | support |
+| `s211` | Checking all the boxes | support |
 | `s212` | What am I buying? | support |
 | `s213` | A phone does more than one thing | comparison |
 | `s214` | Being happy on command | support |
@@ -64,7 +64,7 @@ The remaining 122 blocks are narration, with member positions attributed in pros
 
 ## Research
 
-The 26 source numbers preserve their existing register identities; they are not renumbered by new first appearance. Access notes retain meaningful local limits.
+The original 26 numbers preserve their identities; [27]–[29] append the new sources. The research register records access scope; readers see formatted citations.
 
 | Source | Register | Cited in | Audit level |
 | --- | --- | --- | --- |
@@ -94,21 +94,24 @@ The 26 source numbers preserve their existing register identities; they are not 
 | [24] | `R27` | `s223` | `verified-full` |
 | [25] | `R28` | `s223` | `verified-abstract` |
 | [26] | `R29` | `s223` | `verified-locator` |
+| [27] | `R33` | `s211` | `verified-excerpt` |
+| [28] | `R34` | `s211` | `verified-excerpt` |
+| [29] | `R35` | `s211` | `verified-excerpt` |
 
 ## Artwork
 
-All 20 inspected assets remain registered. A04 and A11 are unused in the revised essay; provenance stays intact. Placement follows the approved handoff, not a requirement to fill every part with art.
+All 36 inspected assets remain registered. A04, A08 and A11 are unused in this revision. B15/B16 replace the opening and canteen illustrations; every other drawing keeps its position.
 
 | Reference | Asset | Where | Cutouts | Labels |
 | --- | --- | --- | --- | --- |
-| `A01` | `rewrite-opening-v1` | `landing`, `s201`, `s231` | 1 | TJ, Koj, Vier |
+| `A01` | `rewrite-opening-v1` | `landing`, `s231` | 1 | TJ, Koj, Vier |
 | `A02` | `rewrite-mixed-day-v1` | `s204` | 1 | — |
 | `A03` | `rewrite-chosen-study-v1` | `s205`, `s208` | 1 | Koj |
 | `A04` | `rewrite-agency-v1` | Unused in this revision | 1 | Vier |
 | `A05` | `rewrite-playing-v1` | `s206` | 1 | TJ |
 | `A06` | `rewrite-required-work-v1` | `s208` | 1 | — |
 | `A07` | `rewrite-rest-v1` | `s209` | 1 | TJ |
-| `A08` | `rewrite-expectations-v1` | `s211` | 1 | Vier, Grades, Career, Relationship, Income |
+| `A08` | `rewrite-expectations-v1` | Unused in this revision | 1 | Vier, Grades, Career, Relationship, Income |
 | `A09a` | `rewrite-phone-connection-v1` | `s213` | 1 | TJ |
 | `A09b` | `rewrite-phone-comparison-v1` | `s213` | 1 | TJ |
 | `A10` | `rewrite-cheer-pressure-v1` | `s214` | 1 | Cheer up! |
@@ -135,8 +138,10 @@ All 20 inspected assets remain registered. A04 and A11 are unused in the revised
 | `B12` | `polish-proposal-review` | `s228` | 1 | — |
 | `B13` | `polish-many-parts-of-life` | `s229` | 1 | — |
 | `B14` | `polish-answers-remain` | `s230` | 1 | TJ, Koj, Vier |
+| `B15` | `teammate-after-game-v1` | `s201` | 1 | TJ, Koj, Vier |
+| `B16` | `teammate-canteen-v1` | `s211` | 1 | Vier |
 
-All31parts have supporting artwork; fourteenBbriefs follow owner-confirmed illustration amendment. A04/A11 remain unused provenance.
+All 31 cards have supporting artwork. B15/B16 match the contribution; A04/A08/A11 remain unused provenance.
 
 ## Fictional figures
 
